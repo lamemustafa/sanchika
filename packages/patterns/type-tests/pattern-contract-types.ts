@@ -29,6 +29,7 @@ const blockedCheck: PatternA11yCheckFor<"EvidencePanel", "blocked"> = {
 const blockedStatus: PatternProgrammaticStatusFor<"EvidencePanel", "blocked"> = {
   role: "alert",
   ariaLive: "assertive",
+  ariaAtomic: true,
   slotRefs: ["uncertaintyCopy", "actionSlot"],
   requirement: "Blocked evidence updates must announce the blocking reason and next safe action.",
 };
@@ -63,6 +64,7 @@ const unknownCriterion: PatternA11yCriterion = "WCAG22:9.9.9";
 const wrongEmptyStatus: PatternProgrammaticStatusFor<"EvidencePanel", "empty"> = {
   role: "status",
   ariaLive: "polite",
+  ariaAtomic: true,
   requirement: "Should not exist",
 };
 

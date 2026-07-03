@@ -33,6 +33,7 @@ const blockedPatternCheck: PatternA11yCheckFor<"EvidencePanel", "blocked"> = {
 const blockedPatternStatus: PatternProgrammaticStatusFor<"EvidencePanel", "blocked"> = {
   role: "alert",
   ariaLive: "assertive",
+  ariaAtomic: true,
   slotRefs: ["uncertaintyCopy", "actionSlot"],
   requirement: "Blocked evidence updates must announce the blocking reason and next safe action.",
 };

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packages = ["tokens", "primitives", "patterns", "gallery"];
+const dependencyFields = ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"];
 const packagePublishCommands = [
   "npm publish ./packages/tokens --provenance",
   "npm publish ./packages/primitives --provenance",
@@ -16,6 +17,10 @@ const failures = [];
 
 const rootPackage = readJson("package.json");
 const pnpmVersion = parsePackageManagerVersion(rootPackage.packageManager);
+if (rootPackage.repository?.url !== "git+https://github.com/lamemustafa/sanchika.git") {
+  failures.push("root package repository.url must be git+https://github.com/lamemustafa/sanchika.git");
+}
+
 if (rootPackage.private !== true) {
   failures.push("root package must remain private for workspace-only orchestration");
 }
@@ -31,6 +36,14 @@ for (const packageName of packages) {
   const packagePath = `packages/${packageName}`;
   const manifest = readJson(`${packagePath}/package.json`);
   const label = manifest.name ?? packagePath;
+
+  if (manifest.repository?.url !== rootPackage.repository?.url) {
+    failures.push(`${label} repository.url must be git+https://github.com/lamemustafa/sanchika.git`);
+  }
+
+  if (manifest.repository?.directory !== packagePath) {
+    failures.push(`${label} repository.directory must be ${packagePath}`);
+  }
 
   if (manifest.private === true) {
     failures.push(`${label} must remove private: true before publish`);
@@ -52,9 +65,11 @@ for (const packageName of packages) {
     failures.push(`${label} must publish only dist files`);
   }
 
-  for (const [dependencyName, version] of Object.entries(manifest.dependencies ?? {})) {
-    if (typeof version === "string" && version.startsWith("workspace:")) {
-      failures.push(`${label} dependency ${dependencyName} must not use ${version}`);
+  for (const dependencyField of dependencyFields) {
+    for (const [dependencyName, version] of Object.entries(manifest[dependencyField] ?? {})) {
+      if (typeof version === "string" && version.startsWith("workspace:")) {
+        failures.push(`${label} ${dependencyField} ${dependencyName} must not use ${version}`);
+      }
     }
   }
 
@@ -92,7 +107,7 @@ function readJson(path) {
 
 function runPackedTarballConsumerCheck() {
   try {
-    execFileSync(process.execPath, [join(root, "scripts/check-packed-tarball-consumer.mjs")], {
+    execFileSync(process.execPath, [join(root, "scripts/check-packed-tarball-consumer.mjs"), "--strict-publish-manifests"], {
       cwd: root,
       stdio: "inherit",
     });
@@ -117,6 +132,7 @@ function validatePublishWorkflow(workflow) {
     [/^\s*permissions:\s*$/m, "publish workflow must declare explicit permissions"],
     [/^\s*contents:\s*read\s*$/m, "publish workflow must request contents: read"],
     [/^\s*id-token:\s*write\s*$/m, "publish workflow must request id-token: write for npm Trusted Publishing"],
+    [/^\s*if:\s*github\.repository\s*==\s*['"]lamemustafa\/sanchika['"]\s*$/m, "publish workflow must guard on github.repository == 'lamemustafa/sanchika'"],
     [/^\s*runs-on:\s*ubuntu-latest\s*$/m, "publish workflow must run on ubuntu-latest"],
     [/^\s*node-version:\s*['"]?24['"]?\s*$/m, "publish workflow must build on Node 24"],
     [
@@ -129,6 +145,8 @@ function validatePublishWorkflow(workflow) {
     [/\bpnpm\s+run\s+verify\b/, "publish workflow must run pnpm run verify before publish"],
     [/\bpnpm\s+publish:check\b/, "publish workflow must run pnpm publish:check before publish"],
     [/\bpnpm\s+publish:tarball-check\b/, "publish workflow must run pnpm publish:tarball-check before publish"],
+    [/\bnpm\s+--version\b/, "publish workflow must check npm --version before publish"],
+    [/\b11\.5\.1\b/, "publish workflow must document or enforce npm 11.5.1 minimum before publish"],
   ]) {
     if (!pattern.test(workflow)) {
       failures.push(message);

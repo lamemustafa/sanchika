@@ -193,11 +193,23 @@ for (const requiredPublishReadyFragment of [
   "pnpm install --frozen-lockfile",
   "pnpm run verify",
   "pnpm publish:check",
+  "pnpm publish:tarball-check",
   "npm publish ./packages/tokens",
   "npm publish ./packages/primitives",
   "npm publish ./packages/patterns",
   "npm publish ./packages/gallery",
   "--provenance",
+  "dependencyFields",
+  "peerDependencies",
+  "optionalDependencies",
+  "devDependencies",
+  "github.repository == 'lamemustafa/sanchika'",
+  "npm --version",
+  "11.5.1",
+  "--strict-publish-manifests",
+  "repository?.url",
+  "repository?.directory",
+  "git+https://github.com/lamemustafa/sanchika.git",
 ]) {
   if (publishReadyScript && !publishReadyScript.includes(requiredPublishReadyFragment)) {
     fail(`publish:check script must enforce ${requiredPublishReadyFragment}`);

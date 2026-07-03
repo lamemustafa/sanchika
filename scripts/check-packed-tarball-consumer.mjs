@@ -17,6 +17,8 @@ import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
 import { assertPackedFileList } from "./validation/tarball-contents.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+const args = new Set(process.argv.slice(2));
+const strictPublishManifests = args.has("--strict-publish-manifests");
 const packages = ["tokens", "primitives", "patterns", "gallery"];
 const packageNames = new Set(packages.map((packageName) => `@sanchika/${packageName}`));
 const simulatedVersion = "0.0.1-tarball-check.0";
@@ -64,29 +66,35 @@ function preparePackageCopy(packageName) {
 
   const manifestPath = join(targetDir, "package.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  manifest.private = false;
-  manifest.version = simulatedVersion;
-  manifest.publishConfig = {
-    registry: "https://registry.npmjs.org/",
-    access: "public",
-  };
-  manifest.dependencies = rewriteInternalDependencies(manifest.dependencies ?? {});
+  if (!strictPublishManifests) {
+    manifest.private = false;
+    manifest.version = simulatedVersion;
+    manifest.publishConfig = {
+      registry: "https://registry.npmjs.org/",
+      access: "public",
+    };
+    rewriteInternalDependencySections(manifest);
+  }
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 }
 
-function rewriteInternalDependencies(dependencies) {
-  return Object.fromEntries(
-    Object.entries(dependencies).map(([dependencyName, version]) => [
-      dependencyName,
-      packageNames.has(dependencyName) && version === "workspace:*" ? simulatedVersion : version,
-    ]),
-  );
+function rewriteInternalDependencySections(manifest) {
+  for (const dependencyField of ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"]) {
+    if (!manifest[dependencyField]) continue;
+    manifest[dependencyField] = Object.fromEntries(
+      Object.entries(manifest[dependencyField]).map(([dependencyName, version]) => [
+        dependencyName,
+        packageNames.has(dependencyName) && version === "workspace:*" ? simulatedVersion : version,
+      ]),
+    );
+  }
 }
 
 function packPackage(packageName) {
   const output = run("npm", ["pack", "--json", "--pack-destination", tarballRoot], join(packageRoot, packageName));
   const packed = JSON.parse(output)[0];
   assertPackedFileList({ packageName, packed });
+  if (strictPublishManifests) assertPackedManifestMatchesSource({ packageName, packed });
   const tarballPath = join(tarballRoot, basename(packed.filename));
   if (!existsSync(tarballPath)) {
     throw new Error(`@sanchika/${packageName} tarball was not created at ${tarballPath}`);
@@ -98,6 +106,19 @@ function packPackage(packageName) {
     path: tarballPath,
     sha256: sha256File(tarballPath),
   };
+}
+
+function assertPackedManifestMatchesSource({ packageName, packed }) {
+  const sourceManifest = JSON.parse(readFileSync(join(root, "packages", packageName, "package.json"), "utf8"));
+  const packedManifest = packed.files.find((file) => file.path === "package.json");
+  if (!packedManifest) {
+    throw new Error(`@sanchika/${packageName} strict publish manifest check could not find package.json in npm pack output`);
+  }
+
+  const packageCopyManifest = JSON.parse(readFileSync(join(packageRoot, packageName, "package.json"), "utf8"));
+  if (JSON.stringify(packageCopyManifest) !== JSON.stringify(sourceManifest)) {
+    throw new Error(`@sanchika/${packageName} strict publish manifest check must pack the unmodified source manifest`);
+  }
 }
 
 function printTarballEvidence(tarballs) {

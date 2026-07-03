@@ -15,6 +15,12 @@ compatibility pass against built artifacts and consumer checks.
   presentation contracts.
 - Derived contract types:
   - `PatternName`
+  - `PatternA11yCheck`
+  - `PatternA11yCheckFor<Name, StateName>`
+  - `PatternA11yCriterion`
+  - `PatternA11ySourceReference`
+  - `PatternProgrammaticStatus`
+  - `PatternProgrammaticStatusFor<Name, StateName>`
   - `PatternSpecFor<Name>`
   - `PatternSlotName`
   - `PatternSlotNameFor<Name>`

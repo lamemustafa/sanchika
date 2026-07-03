@@ -65,7 +65,7 @@ export function renderPrimitiveGalleryMarkup(): string {
           const signals = state.requiredVisibleSignals.map((signal) => `<li>${escapeHtml(signal)}</li>`).join("");
           const programmaticStatus = "programmaticStatus" in state ? state.programmaticStatus : null;
           const status = programmaticStatus
-            ? `<h5>Programmatic status</h5><p role="${escapeHtml(programmaticStatus.role)}" aria-live="${escapeHtml(programmaticStatus.ariaLive)}">${escapeHtml(programmaticStatus.requirement)}</p>`
+            ? `<h5>Programmatic status</h5><p role="${escapeHtml(programmaticStatus.role)}" aria-live="${escapeHtml(programmaticStatus.ariaLive)}" aria-atomic="${programmaticStatus.ariaAtomic ? "true" : "false"}">${escapeHtml(programmaticStatus.requirement)}</p>`
             : "";
           const checks = state.a11yChecks
             .map((check) => `<li><strong>${escapeHtml(check.id)}</strong> ${escapeHtml(check.criterion)}: ${escapeHtml(check.requirement)} <a href="${escapeHtml(check.sourceUrl)}">${escapeHtml(check.sourceUrl)}</a><p>${escapeHtml(check.manualTest)}</p></li>`)
@@ -127,7 +127,7 @@ function renderPatternStateExemplars(): string {
             ? [
                 `role="${escapeHtml(state.programmaticStatus.role)}"`,
                 `aria-live="${escapeHtml(state.programmaticStatus.ariaLive)}"`,
-                'aria-atomic="true"',
+                `aria-atomic="${state.programmaticStatus.ariaAtomic ? "true" : "false"}"`,
               ]
             : []),
         ].join(" ");
@@ -164,9 +164,23 @@ function statusSlotCopy(
     case "ctaSlot":
       return `${finalSignal}: Review source evidence before continuing.`;
     case "dataFlow":
+      if (patternName === "TrustBoundary" && stateName === "upload-required") {
+        return `${secondarySignal}: Destination or processor is the ComplyEaze workspace; Reason for upload is human review of the selected proof artifact.`;
+      }
+      if (patternName === "TrustBoundary" && stateName === "local-only") {
+        return `${secondarySignal}: The proof artifact stays local until the user exports a generated artifact.`;
+      }
       return `${secondarySignal}: The selected artifact leaves the device only after explicit user action.`;
     case "boundarySummary":
+      if (patternName === "TrustBoundary" && stateName === "local-only") {
+        return `${secondarySignal}: Runs locally with No upload before the user chooses export.`;
+      }
       return `${secondarySignal}: The local or upload boundary is stated before the action.`;
+    case "sourceVisibility":
+      if (patternName === "TrustBoundary") {
+        return `${finalSignal}: Users can inspect source, proof artifact, and generated artifact before continuing.`;
+      }
+      return `${finalSignal}: ${slotName} is visible before the next action.`;
     case "humanSupport":
       return `${finalSignal}: Human consultation is available before a filing or review action.`;
     default:

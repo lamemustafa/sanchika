@@ -69,12 +69,14 @@ export type PatternProgrammaticStatus =
   | {
       role: "status";
       ariaLive: "polite";
+      ariaAtomic: true;
       slotRefs?: readonly string[];
       requirement: string;
     }
   | {
       role: "alert";
       ariaLive: "assertive";
+      ariaAtomic: true;
       slotRefs?: readonly string[];
       requirement: string;
     };
@@ -126,6 +128,7 @@ export const patternSpecs = [
         programmaticStatus: {
           role: "status",
           ariaLive: "polite",
+          ariaAtomic: true,
           slotRefs: ["reviewState", "sourceList", "provenanceTimestamp"],
           requirement: "Pending review updates must be programmatically determinable without moving focus.",
         },
@@ -148,6 +151,7 @@ export const patternSpecs = [
         programmaticStatus: {
           role: "status",
           ariaLive: "polite",
+          ariaAtomic: true,
           slotRefs: ["reviewState", "sourceList", "provenanceTimestamp"],
           requirement: "Reviewed state must be programmatically tied to the source and timestamp being reviewed.",
         },
@@ -170,6 +174,7 @@ export const patternSpecs = [
         programmaticStatus: {
           role: "alert",
           ariaLive: "assertive",
+          ariaAtomic: true,
           slotRefs: ["uncertaintyCopy", "actionSlot"],
           requirement: "Blocked evidence updates must announce the blocking reason and next safe action.",
         },
@@ -215,7 +220,7 @@ export const patternSpecs = [
       {
         name: "local-only",
         purpose: "The workflow stays on the user's device.",
-        requiredVisibleSignals: ["Runs locally", "No upload"],
+        requiredVisibleSignals: ["Runs locally", "No upload", "Inspect source, proof artifact, and generated artifact"],
         requiredSlots: ["boundarySummary", "dataFlow", "sourceVisibility"],
         a11yChecks: [
           {
@@ -231,11 +236,12 @@ export const patternSpecs = [
       {
         name: "upload-required",
         purpose: "The workflow requires a file or artifact to leave the device.",
-        requiredVisibleSignals: ["Upload required", "Destination or processor", "Reason for upload"],
+        requiredVisibleSignals: ["Upload required", "Destination: ComplyEaze workspace", "Reason: human review of proof artifact"],
         requiredSlots: ["boundarySummary", "dataFlow"],
         programmaticStatus: {
           role: "alert",
           ariaLive: "assertive",
+          ariaAtomic: true,
           slotRefs: ["boundarySummary", "dataFlow"],
           requirement: "Upload-required state must announce the upload boundary before file selection or submission.",
         },
@@ -261,11 +267,12 @@ export const patternSpecs = [
       {
         name: "permission-required",
         purpose: "A browser, file, or account permission is needed.",
-        requiredVisibleSignals: ["Permission required", "Permission purpose"],
+        requiredVisibleSignals: ["Permission required", "File read permission", "Purpose: inspect selected local artifact"],
         requiredSlots: ["permissionList", "boundarySummary"],
         programmaticStatus: {
           role: "alert",
           ariaLive: "assertive",
+          ariaAtomic: true,
           slotRefs: ["permissionList", "boundarySummary"],
           requirement: "Permission-required state must announce requested permission and purpose.",
         },
@@ -291,11 +298,12 @@ export const patternSpecs = [
       {
         name: "unavailable",
         purpose: "The trust boundary cannot be completed safely.",
-        requiredVisibleSignals: ["Unavailable", "Reason", "Fallback action"],
+        requiredVisibleSignals: ["Unavailable", "Reason: boundary cannot be completed safely", "Fallback: use a manual review path"],
         requiredSlots: ["boundarySummary", "actionSlot"],
         programmaticStatus: {
           role: "alert",
           ariaLive: "assertive",
+          ariaAtomic: true,
           slotRefs: ["boundarySummary", "actionSlot"],
           requirement: "Unavailable trust-boundary state must announce reason and fallback action.",
         },
@@ -361,6 +369,7 @@ export const patternSpecs = [
         programmaticStatus: {
           role: "status",
           ariaLive: "polite",
+          ariaAtomic: true,
           slotRefs: ["serviceName", "ctaSlot"],
           requirement: "Selected service state must be programmatically available without color-only treatment.",
         },
@@ -391,6 +400,7 @@ export const patternSpecs = [
         programmaticStatus: {
           role: "status",
           ariaLive: "polite",
+          ariaAtomic: true,
           slotRefs: ["serviceName", "humanSupport"],
           requirement: "Unavailable service state must keep consultation guidance programmatically available.",
         },

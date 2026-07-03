@@ -1,5 +1,6 @@
 import ts from "typescript";
 import { requiredPatternContracts } from "./contrast.mjs";
+import { validateTrustBoundarySignals } from "./trust-boundary-contracts.mjs";
 
 const a11ySourceByCriterion = new Map([
   ["WCAG22:1.3.1", "https://www.w3.org/TR/WCAG22/#info-and-relationships"],
@@ -62,6 +63,13 @@ export function validatePatternContracts({ patternSource, patternDocs, fail }) {
       }
       validateA11yChecks({ pattern, state, topLevelSlots, fail });
       validateProgrammaticStatus({ pattern, state, topLevelSlots, fail });
+      validateTrustBoundarySignals({ pattern, state, fail });
+    }
+  }
+
+  for (const requiredDocFragment of ["ariaAtomic", "aria-atomic"]) {
+    if (!patternDocs.includes(requiredDocFragment)) {
+      fail(`docs/patterns.md must document ${requiredDocFragment}`);
     }
   }
 }
@@ -108,6 +116,9 @@ function validateProgrammaticStatus({ pattern, state, topLevelSlots, fail }) {
   }
   if (expectedAriaLive && state.programmaticStatus.ariaLive !== expectedAriaLive) {
     fail(`${pattern.name}.${state.name} programmaticStatus must pair ${state.programmaticStatus.role} with aria-live ${expectedAriaLive}`);
+  }
+  if (state.programmaticStatus.ariaAtomic !== true) {
+    fail(`${pattern.name}.${state.name} programmaticStatus must set ariaAtomic true`);
   }
   if (!state.programmaticStatus.requirement) {
     fail(`${pattern.name}.${state.name} programmaticStatus must include requirement`);
@@ -165,6 +176,7 @@ function extractPatternSpec(object, fail) {
     })),
     requiredStates: readObjectArrayProperty(object, "requiredStates", fail).map((state) => ({
       name: readStringProperty(state, "name", fail),
+      requiredVisibleSignals: readStringArrayProperty(state, "requiredVisibleSignals", fail),
       requiredSlots: readStringArrayProperty(state, "requiredSlots", fail, true),
       a11yChecks: readA11yChecks(state, fail),
       programmaticStatus: readProgrammaticStatus(state, fail),
@@ -195,6 +207,7 @@ function readProgrammaticStatus(object, fail) {
   return {
     role: readStringProperty(initializer, "role", fail),
     ariaLive: readStringProperty(initializer, "ariaLive", fail),
+    ariaAtomic: readBooleanProperty(initializer, "ariaAtomic", fail),
     requirement: readStringProperty(initializer, "requirement", fail),
     slotRefs: readStringArrayProperty(initializer, "slotRefs", fail, true),
   };
@@ -242,6 +255,15 @@ function readStringProperty(object, propertyName, fail) {
     return "";
   }
   return value;
+}
+
+function readBooleanProperty(object, propertyName, fail) {
+  const initializer = unwrapExpression(readPropertyInitializer(object, propertyName));
+  if (!initializer || initializer.kind !== ts.SyntaxKind.TrueKeyword) {
+    fail(`patternSpecs ${propertyName} must be true`);
+    return false;
+  }
+  return true;
 }
 
 function readPropertyInitializer(object, propertyName) {

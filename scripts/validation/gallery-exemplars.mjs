@@ -3,6 +3,7 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
   validateButtonExemplars({ markup, primitiveSpecs, fail });
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
+  validateTrustBoundarySignals({ markup, fail });
   validatePatternStateExemplars({ markup, patternSpecs, fail });
 
   for (const primitive of primitiveSpecs) {
@@ -78,6 +79,38 @@ function validateButtonExemplars({ markup, primitiveSpecs, fail }) {
         fail("Button APG toggle exemplar must keep a stable visible label");
       }
     }
+  }
+}
+
+function validateTrustBoundarySignals({ markup, fail }) {
+  const localOnly = findPatternStateExemplar(markup, "TrustBoundary", "local-only");
+  if (localOnly) {
+    requireBodyFragments(
+      localOnly.body,
+      ["inspect source", "proof artifact", "generated artifact"],
+      fail,
+      "TrustBoundary local-only exemplar",
+    );
+  }
+
+  const uploadRequired = findPatternStateExemplar(markup, "TrustBoundary", "upload-required");
+  if (uploadRequired) {
+    requireBodyFragments(
+      uploadRequired.body,
+      ["Destination or processor", "ComplyEaze workspace", "Reason for upload", "human review"],
+      fail,
+      "TrustBoundary upload-required exemplar",
+    );
+  }
+
+  const permissionRequired = findPatternStateExemplar(markup, "TrustBoundary", "permission-required");
+  if (permissionRequired) {
+    requireBodyFragments(
+      permissionRequired.body,
+      ["File read permission", "inspect the selected local artifact"],
+      fail,
+      "TrustBoundary permission-required exemplar",
+    );
   }
 }
 
@@ -251,6 +284,14 @@ function requireFragments(markup, fragments, fail, label) {
   for (const fragment of fragments) {
     if (!markup.includes(fragment)) {
       fail(`${label} is missing ${fragment}`);
+    }
+  }
+}
+
+function requireBodyFragments(body, fragments, fail, label) {
+  for (const fragment of fragments) {
+    if (!body.includes(fragment)) {
+      fail(`${label} must include ${fragment}`);
     }
   }
 }
