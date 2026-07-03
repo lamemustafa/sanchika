@@ -186,6 +186,7 @@ const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
 const ciWorkflow = requireText(".github/workflows/ci.yml");
 const releasePolicy = readText("docs/release-policy.md");
+const architectureDocs = readText("docs/architecture.md");
 const complyeazeAdoptionDocs = readText("docs/adoption-complyeaze.md");
 const adoptionDocs = {
   ComplyEaze: complyeazeAdoptionDocs,
@@ -428,10 +429,6 @@ if (/package link or packed artifact|Link or pack|package link\/artifact method/
   fail("docs/adoption-complyeaze.md must not present packed artifacts as a supported V0 adoption path");
 }
 
-if (!complyeazeAdoptionDocs.includes("Packed tarball artifacts are not a supported V0 adoption path")) {
-  fail("docs/adoption-complyeaze.md must state that packed tarball artifacts are not yet supported");
-}
-
 if (!complyeazeAdoptionDocs.includes("pnpm publish:tarball-check")) {
   fail("docs/adoption-complyeaze.md must name the publish:tarball-check gate before tarball adoption");
 }
@@ -446,6 +443,32 @@ for (const requiredPackageApiFragment of ["pnpm typecheck:api", "public package-
   if (!complyeazeAdoptionDocs.includes(requiredPackageApiFragment)) {
     fail(`docs/adoption-complyeaze.md must include ${requiredPackageApiFragment}`);
   }
+}
+
+for (const requiredTarballPostureFragment of [
+  "validated packaging smoke artifact",
+  "not the default V0 adoption path",
+  "consumer-specific adoption plan",
+  "tarball version and checksum",
+]) {
+  if (!complyeazeAdoptionDocs.includes(requiredTarballPostureFragment)) {
+    fail(`docs/adoption-complyeaze.md must document packed tarballs as ${requiredTarballPostureFragment}`);
+  }
+}
+
+for (const requiredArchitectureTarballFragment of [
+  "packed tarballs are verified by",
+  "`pnpm publish:tarball-check`",
+  "consumer-specific adoption plan approves",
+  "that artifact path",
+]) {
+  if (!architectureDocs.includes(requiredArchitectureTarballFragment)) {
+    fail(`docs/architecture.md must document ${requiredArchitectureTarballFragment}`);
+  }
+}
+
+if (architectureDocs.includes("packed tarball adoption remains unsupported until workspace dependency rewriting is proven")) {
+  fail("docs/architecture.md must not use stale packed-tarball unsupported-until-proven wording");
 }
 
 for (const [consumerName, docs] of Object.entries(adoptionDocs)) {

@@ -22,8 +22,10 @@ tokens -> primitives -> patterns -> gallery
 Parent applications should consume published packages or reviewed local package
 links. They should not import source files from this repository by path.
 V0 local-link adoption is checked by `pnpm consumer:check` and
-`pnpm typecheck:api`; packed tarball adoption remains unsupported until
-workspace dependency rewriting is proven.
+`pnpm typecheck:api`; packed tarballs are verified by
+`pnpm publish:tarball-check` as a pre-publish packaging and consumer-smoke path.
+Consumers may use tarballs only when a consumer-specific adoption plan approves
+that artifact path.
 
 ## Release Posture
 
