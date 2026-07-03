@@ -49,9 +49,11 @@ pnpm validate
 pnpm typecheck
 pnpm build
 pnpm typecheck:api
+pnpm artifact:check
 pnpm smoke
 pnpm consumer:check
 pnpm workflow:preflight
+pnpm publish:tarball-check
 pnpm verify
 ```
 

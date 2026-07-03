@@ -33,3 +33,6 @@ jobs:
 
       - name: Verify packages
         run: pnpm run verify
+
+      - name: Verify packed tarball consumers
+        run: pnpm publish:tarball-check

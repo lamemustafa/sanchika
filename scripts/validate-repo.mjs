@@ -185,6 +185,7 @@ const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
 const ciWorkflow = requireText(".github/workflows/ci.yml");
+const agentGuide = readText("AGENTS.md");
 const releasePolicy = readText("docs/release-policy.md");
 const architectureDocs = readText("docs/architecture.md");
 const complyeazeAdoptionDocs = readText("docs/adoption-complyeaze.md");
@@ -374,9 +375,13 @@ const requiredVerificationCommands = [
   "pnpm consumer:check",
   "pnpm smoke",
   "pnpm workflow:preflight",
+  "pnpm publish:tarball-check",
   "pnpm verify",
 ];
 for (const command of requiredVerificationCommands) {
+  if (!agentGuide.includes(command)) {
+    fail(`AGENTS.md must list ${command}`);
+  }
   if (!readText("CONTRIBUTING.md").includes(command)) {
     fail(`CONTRIBUTING.md must list ${command}`);
   }

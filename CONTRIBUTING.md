@@ -29,6 +29,7 @@ pnpm artifact:check
 pnpm consumer:check
 pnpm smoke
 pnpm workflow:preflight
+pnpm publish:tarball-check
 pnpm verify
 ```
 

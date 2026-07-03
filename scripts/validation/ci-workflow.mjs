@@ -35,6 +35,7 @@ export function validateCiWorkflow({ ciWorkflow, fail }) {
     "node-version: 24",
     "run: pnpm install --frozen-lockfile",
     "run: pnpm run verify",
+    "run: pnpm publish:tarball-check",
   ]) {
     if (!ciWorkflow.includes(requiredFragment)) {
       fail(`CI workflow must include ${requiredFragment}`);
