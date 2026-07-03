@@ -12,11 +12,13 @@ import {
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packages = ["tokens", "primitives", "patterns", "gallery"];
 const packageNames = new Set(packages.map((packageName) => `@sanchika/${packageName}`));
 const simulatedVersion = "0.0.1-tarball-check.0";
+assertBuiltPackageArtifacts({ root, commandName: "pnpm publish:tarball-check", packageNames: packages });
 const tempRoot = mkdtempSync(join(tmpdir(), "sanchika-tarball-consumer-"));
 const packageRoot = join(tempRoot, "packages");
 const tarballRoot = join(tempRoot, "tarballs");

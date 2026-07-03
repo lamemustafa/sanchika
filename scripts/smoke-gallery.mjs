@@ -1,9 +1,15 @@
 import { readFileSync } from "node:fs";
-import { colorTokens } from "../packages/tokens/dist/index.js";
-import { primitiveClassName, primitiveSpecs } from "../packages/primitives/dist/index.js";
-import { patternSpecs } from "../packages/patterns/dist/index.js";
-import { renderPrimitiveGalleryDocument, renderPrimitiveGalleryMarkup } from "../packages/gallery/dist/index.js";
+import { fileURLToPath } from "node:url";
+import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
 import { validateGalleryExemplars } from "./validation/gallery-exemplars.mjs";
+
+const root = fileURLToPath(new URL("..", import.meta.url));
+assertBuiltPackageArtifacts({ root, commandName: "pnpm smoke" });
+
+const { colorTokens } = await import("../packages/tokens/dist/index.js");
+const { primitiveClassName, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
+const { patternSpecs } = await import("../packages/patterns/dist/index.js");
+const { renderPrimitiveGalleryDocument, renderPrimitiveGalleryMarkup } = await import("../packages/gallery/dist/index.js");
 
 const markup = renderPrimitiveGalleryMarkup();
 const documentMarkup = renderPrimitiveGalleryDocument();

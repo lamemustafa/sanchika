@@ -3,8 +3,10 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+assertBuiltPackageArtifacts({ root, commandName: "pnpm consumer:check" });
 const consumerDir = mkdtempSync(join(tmpdir(), "sanchika-consumer-"));
 
 try {

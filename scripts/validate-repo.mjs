@@ -83,6 +83,10 @@ if (!existsSync(join(root, "scripts/check-local-link-consumer.mjs"))) {
   fail("consumer:check script file must exist");
 }
 
+if (!existsSync(join(root, "scripts/validation/build-artifacts.mjs"))) {
+  fail("build artifact preflight helper must exist");
+}
+
 if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
   fail("root verify script must run consumer:check");
 }
@@ -120,6 +124,21 @@ if (rootPackage.scripts?.["publish:tarball-check"] !== "node scripts/check-packe
 
 if (!existsSync(join(root, "scripts/check-packed-tarball-consumer.mjs"))) {
   fail("publish:tarball-check script file must exist");
+}
+
+for (const [scriptPath, commandName] of [
+  ["scripts/smoke-gallery.mjs", "pnpm smoke"],
+  ["scripts/check-package-api-types.mjs", "pnpm typecheck:api"],
+  ["scripts/check-local-link-consumer.mjs", "pnpm consumer:check"],
+  ["scripts/check-packed-tarball-consumer.mjs", "pnpm publish:tarball-check"],
+]) {
+  const scriptSource = requireText(scriptPath);
+  if (!scriptSource.includes("assertBuiltPackageArtifacts")) {
+    fail(`${scriptPath} must check built package artifacts before running ${commandName}`);
+  }
+  if (!scriptSource.includes(commandName)) {
+    fail(`${scriptPath} must name ${commandName} in its build-artifact preflight`);
+  }
 }
 
 const publishReadyScript = requireText("scripts/check-publish-ready.mjs");
