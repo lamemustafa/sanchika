@@ -29,6 +29,10 @@ function readText(path) {
   return readFileSync(join(root, path), "utf8");
 }
 
+function normalizeProse(text) {
+  return text.replace(/\s+/g, " ");
+}
+
 function requireText(path) {
   if (!existsSync(join(root, path))) {
     fail(`${path} must exist`);
@@ -535,6 +539,21 @@ for (const [consumerName, requiredFragment] of [
 ]) {
   if (!adoptionDocs[consumerName].includes(requiredFragment)) {
     fail(`${consumerName} adoption docs must require ${requiredFragment}`);
+  }
+}
+
+for (const [consumerName, docs] of Object.entries(adoptionDocs)) {
+  const normalizedDocs = normalizeProse(docs);
+
+  for (const requiredEvidenceFragment of [
+    "package link or artifact method",
+    "changed files",
+    "rollback files",
+    "tarball version and checksum",
+  ]) {
+    if (!normalizedDocs.includes(requiredEvidenceFragment)) {
+      fail(`${consumerName} adoption docs must require ${requiredEvidenceFragment}`);
+    }
   }
 }
 

@@ -20,7 +20,9 @@ not import Sanchika source by parent-relative path.
 ## Completion Evidence
 
 - The Pack adoption PR links the Axal completion evidence and records the
-  Sanchika commit or copied guidance being consumed.
+  Sanchika commit, package link or artifact method, changed files, and rollback
+  files. Copied guidance must identify the Sanchika source it came from.
+  Approved tarball use must record the tarball version and checksum.
 - Pack verification and release-evidence checks relevant to the changed surface
   pass.
 - Source guard search finds no parent-relative Sanchika imports and no

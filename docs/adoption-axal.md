@@ -16,7 +16,8 @@ metadata, task tables, timelines, and human-review checkpoints.
 ## Completion Evidence
 
 - The Axal adoption PR links the ComplyEaze completion evidence and records the
-  Sanchika commit being consumed.
+  Sanchika commit, package link or artifact method, changed files, and rollback
+  files. Approved tarball use must record the tarball version and checksum.
 - The adopted pattern came from a real Axal workflow, not a generic SaaS section.
 - Axal lint/typecheck and any relevant route/component tests pass.
 - Browser review covers dense operational data, long client/compliance names,

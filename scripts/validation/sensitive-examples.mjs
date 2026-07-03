@@ -1,8 +1,21 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
-const scannedRoots = ["docs", "packages", "type-tests", "README.md", "PRODUCT.md", "DESIGN.md"];
+const scannedRoots = [
+  ".github",
+  "docs",
+  "packages",
+  "scripts",
+  "type-tests",
+  "AGENTS.md",
+  "CONTRIBUTING.md",
+  "DESIGN.md",
+  "PRODUCT.md",
+  "README.md",
+  "SECURITY.md",
+];
 const skippedNames = new Set(["dist", "node_modules", ".git"]);
+const skippedRelativePaths = new Set(["scripts/validation/contrast.mjs"]);
 const scannedExtensions = new Set([".md", ".ts", ".js", ".mjs", ".css", ".json"]);
 const sensitivePatterns = [
   [/\/Users\/[^\s"'`<>]+/g, "local macOS path"],
@@ -17,8 +30,10 @@ const sensitivePatterns = [
 
 export function validateSensitiveExamples({ root, fail }) {
   for (const path of filesToScan(root)) {
-    const text = readFileSync(path, "utf8");
     const relativePath = relative(root, path);
+    if (skippedRelativePaths.has(relativePath)) continue;
+
+    const text = readFileSync(path, "utf8");
 
     for (const [pattern, label] of sensitivePatterns) {
       for (const match of text.matchAll(pattern)) {

@@ -25,7 +25,9 @@ package APIs, or product UI before the first Tools product spec exists.
 ## Completion Evidence
 
 - The Tools adoption PR links the Pack completion evidence and records the
-  Sanchika commit being consumed.
+  Sanchika commit, package link or artifact method, changed files, and rollback
+  files. Copied guidance must identify the Sanchika source it came from.
+  Approved tarball use must record the tarball version and checksum.
 - The Tools product spec names the surface, user outcome, source/provenance
   requirements, and rollback files.
 - Browser review covers mobile and desktop layouts, export/share states,
