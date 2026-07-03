@@ -9,6 +9,9 @@ Typed primitive contracts and CSS classes for Sanchika compliance interfaces.
 - `@sanchika/primitives/styles.css` - primitive CSS that consumes Sanchika token
   variables.
 
+`styles.css` is declared as the package side effect so production bundlers keep
+primitive styles when the CSS export is imported.
+
 ## Boundary
 
 This package provides framework-agnostic contracts and styles. It does not ship

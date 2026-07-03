@@ -16,6 +16,8 @@
 - [ ] Fixtures and examples are synthetic and contain no PAN, GSTIN, Aadhaar,
       taxpayer names, credentials, cookies, OTPs, notices, screenshots, or local
       file paths.
+- [ ] If this affects consumer adoption, the consumer PR records the Sanchika commit,
+      package link method, changed files, and rollback files.
 
 ## Design And Accessibility
 
@@ -34,4 +36,5 @@
 - [ ] `pnpm artifact:check`
 - [ ] `pnpm consumer:check`
 - [ ] `pnpm smoke`
+- [ ] `pnpm workflow:preflight`
 - [ ] `pnpm verify`

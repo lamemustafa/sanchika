@@ -67,6 +67,14 @@ if (rootPackage.scripts?.["consumer:check"] !== "node scripts/check-local-link-c
   fail("root package must expose consumer:check for local-link adoption proof");
 }
 
+if (rootPackage.scripts?.["workflow:preflight"] !== "node scripts/check-workflow-preflight.mjs") {
+  fail("root package must expose workflow:preflight for nested repo branch and cleanliness checks");
+}
+
+if (!existsSync(join(root, "scripts/check-workflow-preflight.mjs"))) {
+  fail("workflow:preflight script file must exist");
+}
+
 if (!existsSync(join(root, "scripts/check-local-link-consumer.mjs"))) {
   fail("consumer:check script file must exist");
 }
@@ -293,6 +301,7 @@ const requiredVerificationCommands = [
   "pnpm artifact:check",
   "pnpm consumer:check",
   "pnpm smoke",
+  "pnpm workflow:preflight",
   "pnpm verify",
 ];
 for (const command of requiredVerificationCommands) {
@@ -363,7 +372,10 @@ for (const requiredReleaseFragment of [
   "lamemustafa/sanchika",
   ".github/workflows/publish.yml",
   "ubuntu-latest",
+  "npm CLI 11.5.1 or later",
+  "Node 22.14.0 or later",
   "pnpm publish:check",
+  "npm publish",
   "workspace:*",
   "id-token: write",
 ]) {

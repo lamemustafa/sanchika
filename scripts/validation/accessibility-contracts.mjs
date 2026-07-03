@@ -16,6 +16,26 @@ export const requiredButtonApgDocFragments = [
   "focus after activation",
 ];
 
+export const requiredButtonDisabledFragments = [
+  "native disabled",
+  "aria-disabled",
+  "data-disabled",
+  "suppress click",
+  "Space",
+  "Enter",
+  "visible disabled reason",
+];
+
+export const requiredButtonDisabledDocFragments = [
+  "native `disabled`",
+  "`aria-disabled`",
+  "`data-disabled`",
+  "suppress click",
+  "`Space`",
+  "`Enter`",
+  "visible disabled reason",
+];
+
 export const controlInvalidSelector = ".sk-field :is(input, textarea, select, [data-sk-control])[aria-invalid=\"true\"]";
 
 export const requiredFocusVisibleSelectors = [

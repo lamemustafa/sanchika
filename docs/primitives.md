@@ -30,6 +30,12 @@ communicate the pressed state. Consumers must define focus after activation
 based on the resulting workflow, such as returning focus after a dialog closes or
 moving focus into newly opened content.
 
+Disabled command controls should prefer native `disabled` on native buttons.
+When a consumer uses `aria-disabled` or `data-disabled` because the control must
+remain discoverable, the consumer must suppress click, `Space`, `Enter`, and
+shortcut activation in its own handlers while keeping a visible disabled reason
+near the control.
+
 ## Current Direction
 
 - `Button` proves default, hover, focus-visible, disabled, and loading states.

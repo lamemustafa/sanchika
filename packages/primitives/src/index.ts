@@ -55,7 +55,8 @@ export const primitiveSpecs = [
         state: "disabled",
         attributes: ["disabled", "aria-disabled", "data-disabled"],
         selectors: [".sk-button:disabled", ".sk-button[aria-disabled=\"true\"]"],
-        notes: "Disabled controls must stay understandable to assistive technology.",
+        notes:
+          "Prefer native disabled. If aria-disabled or data-disabled is used, consumers must suppress click, Space, Enter, and shortcut activation while keeping a visible disabled reason.",
       },
       {
         state: "loading",

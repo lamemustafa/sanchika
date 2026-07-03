@@ -4,6 +4,8 @@ import {
   minimumControlTargetRem,
   requiredButtonApgDocFragments,
   requiredButtonApgFragments,
+  requiredButtonDisabledDocFragments,
+  requiredButtonDisabledFragments,
   requiredFocusVisibleSelectors,
 } from "./accessibility-contracts.mjs";
 
@@ -26,6 +28,18 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
   for (const fragment of requiredButtonApgDocFragments) {
     if (!primitiveDocs.includes(fragment)) {
       fail(`docs/primitives.md must include APG guidance fragment: ${fragment}`);
+    }
+  }
+
+  for (const fragment of requiredButtonDisabledFragments) {
+    if (!primitiveSource.includes(fragment)) {
+      fail(`Button disabled contract must include fragment: ${fragment}`);
+    }
+  }
+
+  for (const fragment of requiredButtonDisabledDocFragments) {
+    if (!primitiveDocs.includes(fragment)) {
+      fail(`docs/primitives.md must include disabled button fragment: ${fragment}`);
     }
   }
 

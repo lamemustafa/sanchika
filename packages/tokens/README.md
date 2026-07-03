@@ -8,6 +8,9 @@ Semantic OKLCH tokens for Sanchika compliance interfaces.
 - `@sanchika/tokens/theme.css` - CSS custom properties. Import this before
   primitive styles.
 
+`theme.css` is declared as the package side effect so production bundlers keep
+the token variables when the CSS export is imported.
+
 ## Boundary
 
 This package contains portable design tokens only. It does not include product

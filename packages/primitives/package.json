@@ -28,6 +28,9 @@
   "files": [
     "dist"
   ],
+  "sideEffects": [
+    "./dist/styles.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

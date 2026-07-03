@@ -36,11 +36,14 @@ decision is confirmed. The intended publisher contract is:
 - GitHub owner/repo: `lamemustafa/sanchika`.
 - Workflow file: `.github/workflows/publish.yml`, separate from CI.
 - Runner: GitHub-hosted `ubuntu-latest`.
-- Runtime: Node 24 with the repository-pinned pnpm version for build and pack
-  checks.
-- Publishing path: use npm Trusted Publishing/OIDC and provenance. Before
-  publish, package manifests must no longer contain `workspace:*` dependencies,
-  and package tarballs must include package-level README and LICENSE files.
+- Build runtime: Node 24 with the repository-pinned pnpm version for install,
+  build, verification, and pack checks.
+- Publish runtime: npm CLI 11.5.1 or later on Node 22.14.0 or later, matching
+  npm Trusted Publishing requirements. Use `npm publish` with OIDC/provenance
+  for the publish step, not long-lived npm tokens.
+- Before publish, package manifests must no longer contain `workspace:*`
+  dependencies, and package tarballs must include package-level README and
+  LICENSE files.
 - Package tarballs must expose built `dist` assets only. Do not publish
   `src/**/*.ts`, source CSS exports, or source maps in the V0 package shape.
 - CI remains read-only; only the future publish workflow may request

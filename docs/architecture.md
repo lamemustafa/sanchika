@@ -14,6 +14,10 @@ tokens -> primitives -> patterns -> gallery
 - `gallery` renders static markup and document strings for review and
   regression checks. It must not add routes, servers, app shells, Storybook, or
   framework runtime dependencies.
+- CSS package exports are the only declared package side effects:
+  `@sanchika/tokens/theme.css` and `@sanchika/primitives/styles.css` stay
+  side-effectful so production bundlers do not prune required styles. Code-only
+  packages declare `sideEffects: false`.
 
 Parent applications should consume published packages or reviewed local package
 links. They should not import source files from this repository by path.

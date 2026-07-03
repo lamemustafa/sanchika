@@ -51,6 +51,7 @@ pnpm build
 pnpm typecheck:api
 pnpm smoke
 pnpm consumer:check
+pnpm workflow:preflight
 pnpm verify
 ```
 

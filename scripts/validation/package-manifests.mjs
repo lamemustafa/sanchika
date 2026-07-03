@@ -1,4 +1,8 @@
 export const expectedPackageFiles = ["dist"];
+const cssSideEffectExports = new Map([
+  ["tokens", "./dist/theme.css"],
+  ["primitives", "./dist/styles.css"],
+]);
 
 export function validatePackageManifest(packageName, manifest, fail) {
   const displayName = `@sanchika/${packageName}`;
@@ -71,6 +75,15 @@ export function validatePackageManifest(packageName, manifest, fail) {
     if (typeof target !== "string" || !target.startsWith("./dist/")) {
       fail(`${displayName} export ${subpath} must point at ./dist/`);
     }
+  }
+
+  const expectedCssSideEffect = cssSideEffectExports.get(packageName);
+  if (expectedCssSideEffect) {
+    if (JSON.stringify(manifest.sideEffects) !== JSON.stringify([expectedCssSideEffect])) {
+      fail(`${displayName} must mark ${expectedCssSideEffect} as a package side effect`);
+    }
+  } else if (manifest.sideEffects !== false) {
+    fail(`${displayName} must declare sideEffects false`);
   }
 
   if (JSON.stringify(manifest.files) !== JSON.stringify(expectedPackageFiles)) {
