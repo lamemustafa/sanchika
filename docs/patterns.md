@@ -44,6 +44,12 @@ known pattern contract without stringly typed slots or states:
 These types are generated from `patternSpecs`. They do not introduce runtime
 components or framework adapters.
 
+## Pattern Status Exemplars
+
+PrimitiveGallery must include Pattern status exemplars with concrete `role` and `aria-live` markup.
+The gallery must cover visible state copy and slot IDs instead of only
+displaying the `programmaticStatus` requirement prose.
+
 ## Current Direction
 
 - `EvidencePanel` proves source, review, uncertainty, provenance, and next-action

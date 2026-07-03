@@ -250,6 +250,15 @@ for (const patternTypeExport of [
   }
 }
 
+for (const requiredPatternDocFragment of [
+  "Pattern status exemplars",
+  "concrete `role` and `aria-live` markup",
+]) {
+  if (!patternDocs.includes(requiredPatternDocFragment)) {
+    fail(`docs/patterns.md must document ${requiredPatternDocFragment}`);
+  }
+}
+
 for (const sourceUrl of [
   "https://www.w3.org/TR/css-variables-1/",
   "https://www.w3.org/community/design-tokens/",

@@ -77,7 +77,11 @@ export function renderPrimitiveGalleryMarkup(): string {
     })
     .join("");
 
-  return `<main data-sanchika-gallery="primitive"><h1>Sanchika Primitive Gallery</h1><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}</section></main>`;
+  const patternStatusExemplars = [
+    `<article data-sk-pattern="EvidencePanel" data-sk-state="pending-review" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="evidence-panel-pending-review-state" aria-describedby="evidence-panel-pending-source-list evidence-panel-pending-provenance-timestamp"><h3>Evidence review</h3><p id="evidence-panel-pending-review-state" data-sk-slot="reviewState">Pending review</p><ul id="evidence-panel-pending-source-list" data-sk-slot="sourceList"><li>1 source attached</li><li>GST portal notice summary attached</li></ul><p id="evidence-panel-pending-provenance-timestamp" data-sk-slot="provenanceTimestamp">Last checked 03-07-2026 21:45 IST</p></article>`,
+  ].join("");
+
+  return `<main data-sanchika-gallery="primitive"><h1>Sanchika Primitive Gallery</h1><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern status exemplars</h3>${patternStatusExemplars}</section></main>`;
 }
 
 export function renderPrimitiveGalleryDocument(): string {

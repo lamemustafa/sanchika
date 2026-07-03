@@ -2,6 +2,7 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, fail }) {
   validateUniqueIds({ markup, fail });
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
+  validatePatternStatusExemplars({ markup, fail });
 
   for (const primitive of primitiveSpecs) {
     for (const state of primitive.requiredStates) {
@@ -39,6 +40,25 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, fail }) {
     ],
     fail,
     "Field disabled exemplar",
+  );
+}
+
+function validatePatternStatusExemplars({ markup, fail }) {
+  requireFragments(
+    markup,
+    [
+      'data-sk-pattern="EvidencePanel" data-sk-state="pending-review"',
+      'role="status" aria-live="polite" aria-atomic="true" aria-labelledby="evidence-panel-pending-review-state" aria-describedby="evidence-panel-pending-source-list evidence-panel-pending-provenance-timestamp"',
+      'id="evidence-panel-pending-review-state" data-sk-slot="reviewState"',
+      "Pending review",
+      'id="evidence-panel-pending-source-list" data-sk-slot="sourceList"',
+      "1 source attached",
+      "GST portal notice summary attached",
+      'id="evidence-panel-pending-provenance-timestamp" data-sk-slot="provenanceTimestamp"',
+      "Last checked 03-07-2026 21:45 IST",
+    ],
+    fail,
+    "EvidencePanel pending-review status exemplar",
   );
 }
 
