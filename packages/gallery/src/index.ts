@@ -77,9 +77,7 @@ export function renderPrimitiveGalleryMarkup(): string {
     })
     .join("");
 
-  const patternStatusExemplars = [
-    `<article data-sk-pattern="EvidencePanel" data-sk-state="pending-review" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="evidence-panel-pending-review-state" aria-describedby="evidence-panel-pending-source-list evidence-panel-pending-provenance-timestamp"><h3>Evidence review</h3><p id="evidence-panel-pending-review-state" data-sk-slot="reviewState">Pending review</p><ul id="evidence-panel-pending-source-list" data-sk-slot="sourceList"><li>1 source attached</li><li>GST portal notice summary attached</li></ul><p id="evidence-panel-pending-provenance-timestamp" data-sk-slot="provenanceTimestamp">Last checked 03-07-2026 21:45 IST</p></article>`,
-  ].join("");
+  const patternStatusExemplars = renderPatternStatusExemplars();
 
   return `<main data-sanchika-gallery="primitive"><h1>Sanchika Primitive Gallery</h1><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern status exemplars</h3>${patternStatusExemplars}</section></main>`;
 }
@@ -94,6 +92,99 @@ export function renderPrimitiveGalleryDocument(): string {
 
 function titleCase(value: string): string {
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+}
+
+function renderPatternStatusExemplars(): string {
+  return patternSpecs
+    .flatMap((pattern) =>
+      pattern.requiredStates.flatMap((state) => {
+        if (!("programmaticStatus" in state) || !state.programmaticStatus) return [];
+
+        const baseId = `${kebabCase(pattern.name)}-${state.name}`;
+        const slotRefs = state.programmaticStatus.slotRefs ?? [];
+        const labelledBy = slotRefs[0] ? `${baseId}-${kebabCase(slotRefs[0])}` : `${baseId}-state`;
+        const describedBy = slotRefs.slice(1).map((slotName) => `${baseId}-${kebabCase(slotName)}`);
+        const describedByAttribute = describedBy.length ? ` aria-describedby="${describedBy.join(" ")}"` : "";
+        const slots = slotRefs
+          .map(
+            (slotName, index) =>
+              `<p id="${baseId}-${kebabCase(slotName)}" data-sk-slot="${escapeHtml(slotName)}">${escapeHtml(
+                statusSlotCopy(pattern.name, state.name, slotName, state.requiredVisibleSignals, index),
+              )}</p>`,
+          )
+          .join("");
+        const rootAttributes = [
+          `data-sk-pattern="${escapeHtml(pattern.name)}"`,
+          `data-sk-state="${escapeHtml(state.name)}"`,
+          `role="${escapeHtml(state.programmaticStatus.role)}"`,
+          `aria-live="${escapeHtml(state.programmaticStatus.ariaLive)}"`,
+          'aria-atomic="true"',
+          `aria-labelledby="${labelledBy}"${describedByAttribute}`,
+        ].join(" ");
+
+        return [
+          `<article ${rootAttributes}><h3>${escapeHtml(pattern.name)} ${escapeHtml(state.name)} status</h3>${slots}</article>`,
+        ];
+      }),
+    )
+    .join("");
+}
+
+function statusSlotCopy(
+  patternName: string,
+  stateName: string,
+  slotName: string,
+  visibleSignals: readonly string[],
+  slotIndex: number,
+): string {
+  const primarySignal = visibleSignals[0] ?? titleCase(stateName);
+  const secondarySignal = visibleSignals[1] ?? "Supporting detail";
+  const finalSignal = visibleSignals.at(-1) ?? "Next safe action";
+
+  if (slotIndex === 0) {
+    return `${primarySignal}: ${statusPrimaryDetail(patternName, stateName, slotName)}`;
+  }
+
+  switch (slotName) {
+    case "sourceList":
+      return `${secondarySignal}: 1 synthetic source attached; GST portal notice summary attached.`;
+    case "provenanceTimestamp":
+      return `${finalSignal}: Last checked 03-07-2026 21:45 IST.`;
+    case "actionSlot":
+    case "ctaSlot":
+      return `${finalSignal}: Review source evidence before continuing.`;
+    case "dataFlow":
+      return `${secondarySignal}: The selected artifact leaves the device only after explicit user action.`;
+    case "boundarySummary":
+      return `${secondarySignal}: The local or upload boundary is stated before the action.`;
+    case "humanSupport":
+      return `${finalSignal}: Human consultation is available before a filing or review action.`;
+    default:
+      return `${secondarySignal}: ${slotName} is present and referenced by the live region.`;
+  }
+}
+
+function statusPrimaryDetail(patternName: string, stateName: string, slotName: string): string {
+  if (patternName === "EvidencePanel" && slotName === "reviewState") {
+    return stateName === "reviewed" ? "Synthetic evidence has been reviewed." : "Synthetic evidence needs review.";
+  }
+  if (patternName === "EvidencePanel" && slotName === "uncertaintyCopy") {
+    return "Missing official source evidence prevents completion.";
+  }
+  if (patternName === "TrustBoundary" && slotName === "boundarySummary") {
+    return "The upload or fallback boundary is visible before the action.";
+  }
+  if (patternName === "TrustBoundary" && slotName === "permissionList") {
+    return "File read permission is needed to inspect the selected local artifact.";
+  }
+  if (patternName === "ServiceSection" && slotName === "serviceName") {
+    return stateName === "selected" ? "GST advisory review is selected." : "GST advisory review is unavailable.";
+  }
+  return `${slotName} is present and referenced by the live region.`;
+}
+
+function kebabCase(value: string): string {
+  return value.replaceAll(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
 function escapeHtml(value: string): string {

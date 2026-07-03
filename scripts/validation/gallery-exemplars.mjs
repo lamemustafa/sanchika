@@ -1,8 +1,8 @@
-export function validateGalleryExemplars({ markup, primitiveSpecs, fail }) {
+export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail }) {
   validateUniqueIds({ markup, fail });
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
-  validatePatternStatusExemplars({ markup, fail });
+  validatePatternStatusExemplars({ markup, patternSpecs, fail });
 
   for (const primitive of primitiveSpecs) {
     for (const state of primitive.requiredStates) {
@@ -43,23 +43,57 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, fail }) {
   );
 }
 
-function validatePatternStatusExemplars({ markup, fail }) {
-  requireFragments(
-    markup,
-    [
-      'data-sk-pattern="EvidencePanel" data-sk-state="pending-review"',
-      'role="status" aria-live="polite" aria-atomic="true" aria-labelledby="evidence-panel-pending-review-state" aria-describedby="evidence-panel-pending-source-list evidence-panel-pending-provenance-timestamp"',
-      'id="evidence-panel-pending-review-state" data-sk-slot="reviewState"',
-      "Pending review",
-      'id="evidence-panel-pending-source-list" data-sk-slot="sourceList"',
-      "1 source attached",
-      "GST portal notice summary attached",
-      'id="evidence-panel-pending-provenance-timestamp" data-sk-slot="provenanceTimestamp"',
-      "Last checked 03-07-2026 21:45 IST",
-    ],
-    fail,
-    "EvidencePanel pending-review status exemplar",
-  );
+function validatePatternStatusExemplars({ markup, patternSpecs, fail }) {
+  if (!Array.isArray(patternSpecs)) {
+    fail("PrimitiveGallery status exemplar validation requires patternSpecs");
+    return;
+  }
+
+  for (const pattern of patternSpecs) {
+    for (const state of pattern.requiredStates ?? []) {
+      if (!state.programmaticStatus) continue;
+
+      const label = `${pattern.name} ${state.name} status exemplar`;
+      const exemplar = findPatternStateExemplar(markup, pattern.name, state.name);
+      if (!exemplar) {
+        fail(`${label} must exist`);
+        continue;
+      }
+
+      const { attrs, body } = exemplar;
+      const { role, ariaLive, slotRefs = [] } = state.programmaticStatus;
+      if (getAttribute(attrs, "role") !== role) {
+        fail(`${label} must declare role="${role}"`);
+      }
+      if (getAttribute(attrs, "aria-live") !== ariaLive) {
+        fail(`${label} must declare aria-live="${ariaLive}"`);
+      }
+      if (getAttribute(attrs, "aria-atomic") !== "true") {
+        fail(`${label} must declare aria-atomic="true"`);
+      }
+
+      const firstVisibleSignal = state.requiredVisibleSignals?.[0];
+      if (firstVisibleSignal && !body.includes(firstVisibleSignal)) {
+        fail(`${label} must render visible state copy: ${firstVisibleSignal}`);
+      }
+
+      const describedIds = new Set(
+        `${getAttribute(attrs, "aria-labelledby") ?? ""} ${getAttribute(attrs, "aria-describedby") ?? ""}`
+          .split(/\s+/)
+          .filter(Boolean),
+      );
+      for (const slotName of slotRefs) {
+        const slotId = findSlotId(body, slotName);
+        if (!slotId) {
+          fail(`${label} must render data-sk-slot="${slotName}" with an id`);
+          continue;
+        }
+        if (!describedIds.has(slotId)) {
+          fail(`${label} must reference ${slotId} from aria-labelledby or aria-describedby`);
+        }
+      }
+    }
+  }
 }
 
 function validateUniqueIds({ markup, fail }) {
@@ -120,6 +154,32 @@ function idsForDescriptiveText(fieldMarkup) {
 
 function getAttribute(source, name) {
   return source.match(new RegExp(`\\s${name}="([^"]+)"`))?.[1] ?? null;
+}
+
+function findPatternStateExemplar(markup, patternName, stateName) {
+  const escapedPatternName = escapeRegExp(patternName);
+  const escapedStateName = escapeRegExp(stateName);
+  const match = markup.match(
+    new RegExp(
+      `<(?<tag>[a-z][\\w-]*)\\b(?<attrs>[^>]*\\bdata-sk-pattern="${escapedPatternName}"\\s+data-sk-state="${escapedStateName}"[^>]*)>(?<body>[\\s\\S]*?)<\\/\\k<tag>>`,
+    ),
+  );
+
+  return match?.groups ? { attrs: match.groups.attrs, body: match.groups.body } : null;
+}
+
+function findSlotId(markup, slotName) {
+  const escapedSlotName = escapeRegExp(slotName);
+  for (const [, attrs] of markup.matchAll(/<[a-z][\w-]*\b([^>]*)>/g)) {
+    if (!new RegExp(`\\bdata-sk-slot="${escapedSlotName}"`).test(attrs)) continue;
+    const id = getAttribute(` ${attrs}`, "id");
+    if (id) return id;
+  }
+  return null;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function requireFragments(markup, fragments, fail, label) {

@@ -167,6 +167,7 @@ const tokenCss = readText("packages/tokens/src/theme.css");
 const primitiveSource = readText("packages/primitives/src/index.ts");
 const primitiveCss = readText("packages/primitives/src/styles.css");
 const patternSource = readText("packages/patterns/src/index.ts");
+const gallerySource = readText("packages/gallery/src/index.ts");
 const tokenDocs = readText("docs/tokens.md");
 const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
@@ -288,10 +289,23 @@ for (const patternTypeExport of [
 
 for (const requiredPatternDocFragment of [
   "Pattern status exemplars",
-  "concrete `role` and `aria-live` markup",
+  "concrete `role`",
+  "`aria-live` markup",
+  "every required state that declares `programmaticStatus`",
 ]) {
   if (!patternDocs.includes(requiredPatternDocFragment)) {
     fail(`docs/patterns.md must document ${requiredPatternDocFragment}`);
+  }
+}
+
+for (const requiredGalleryStatusFragment of [
+  "renderPatternStatusExemplars",
+  "pattern.requiredStates.flatMap",
+  "state.programmaticStatus",
+  "data-sk-slot",
+]) {
+  if (!gallerySource.includes(requiredGalleryStatusFragment)) {
+    fail(`gallery source must implement ${requiredGalleryStatusFragment}`);
   }
 }
 

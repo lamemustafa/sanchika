@@ -46,7 +46,8 @@ components or framework adapters.
 
 ## Pattern Status Exemplars
 
-PrimitiveGallery must include Pattern status exemplars with concrete `role` and `aria-live` markup.
+PrimitiveGallery must include Pattern status exemplars with concrete `role` and
+`aria-live` markup for every required state that declares `programmaticStatus`.
 The gallery must cover visible state copy and slot IDs instead of only
 displaying the `programmaticStatus` requirement prose.
 

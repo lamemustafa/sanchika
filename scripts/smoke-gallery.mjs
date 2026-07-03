@@ -147,7 +147,7 @@ const missing = [
   ...requiredDocumentFragments.filter((fragment) => !documentMarkup.includes(fragment)),
 ];
 
-validateGalleryExemplars({ markup, primitiveSpecs, fail: (message) => missing.push(message) });
+validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail: (message) => missing.push(message) });
 
 if (missing.length > 0) {
   console.error("Sanchika gallery smoke failed. Missing fragments:");
