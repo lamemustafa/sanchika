@@ -12,6 +12,7 @@ import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
 import { validatePackageManifest } from "./validation/package-manifests.mjs";
 import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
 import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
+import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const failures = [];
@@ -39,6 +40,8 @@ function requireText(path) {
 
 const expectedPackages = ["gallery", "patterns", "primitives", "tokens"];
 const actualPackages = readdirSync(join(root, "packages")).filter((entry) => !entry.startsWith(".")).sort();
+
+validateSensitiveExamples({ root, fail });
 
 if (JSON.stringify(actualPackages) !== JSON.stringify(expectedPackages)) {
   fail(`packages/ must contain exactly ${expectedPackages.join(", ")}, found ${actualPackages.join(", ")}`);
@@ -85,6 +88,10 @@ if (!existsSync(join(root, "scripts/check-local-link-consumer.mjs"))) {
 
 if (!existsSync(join(root, "scripts/validation/build-artifacts.mjs"))) {
   fail("build artifact preflight helper must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/sensitive-examples.mjs"))) {
+  fail("sensitive example validator must exist");
 }
 
 if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
