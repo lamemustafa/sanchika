@@ -141,6 +141,18 @@ for (const [scriptPath, commandName] of [
   }
 }
 
+const packedTarballScript = requireText("scripts/check-packed-tarball-consumer.mjs");
+for (const requiredTarballEvidenceFragment of [
+  "createHash",
+  "sha256",
+  "Tarball evidence:",
+  "simulatedVersion",
+]) {
+  if (!packedTarballScript.includes(requiredTarballEvidenceFragment)) {
+    fail(`scripts/check-packed-tarball-consumer.mjs must emit tarball evidence with ${requiredTarballEvidenceFragment}`);
+  }
+}
+
 const publishReadyScript = requireText("scripts/check-publish-ready.mjs");
 for (const requiredPublishReadyFragment of [
   "validatePublishWorkflow",

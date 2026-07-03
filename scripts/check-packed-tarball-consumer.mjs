@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   copyFileSync,
   cpSync,
@@ -34,8 +35,9 @@ try {
   }
 
   const tarballs = packages.map((packageName) => packPackage(packageName));
+  printTarballEvidence(tarballs);
   writeConsumerPackage();
-  run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs], consumerRoot);
+  run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs.map((tarball) => tarball.path)], consumerRoot);
   runConsumerProbe();
   runConsumerTypecheck();
 } finally {
@@ -87,7 +89,24 @@ function packPackage(packageName) {
   if (!existsSync(tarballPath)) {
     throw new Error(`@sanchika/${packageName} tarball was not created at ${tarballPath}`);
   }
-  return tarballPath;
+  return {
+    packageName: `@sanchika/${packageName}`,
+    version: simulatedVersion,
+    filename: basename(tarballPath),
+    path: tarballPath,
+    sha256: sha256File(tarballPath),
+  };
+}
+
+function printTarballEvidence(tarballs) {
+  console.log("Tarball evidence:");
+  for (const tarball of tarballs) {
+    console.log(`${tarball.packageName}@${tarball.version} ${tarball.filename} sha256=${tarball.sha256}`);
+  }
+}
+
+function sha256File(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
 
 function writeConsumerPackage() {
