@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a Sanchika SDK improvement without product-specific app code.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, or real taxpayer data.
+        Use private vulnerability reporting for security issues or sensitive-data exposure.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - tokens
+        - primitives
+        - patterns
+        - gallery
+        - documentation
+        - adoption guidance
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What should become easier, safer, or clearer?
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Include accessibility, trust-boundary, or consumer constraints using synthetic examples only.
+  - type: checkboxes
+    id: sensitive-data-check
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: I removed PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, and real taxpayer data.
+          required: true
+        - label: This is not a security issue or sensitive-data exposure that belongs in private vulnerability reporting.
+          required: true

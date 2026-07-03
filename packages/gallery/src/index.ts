@@ -32,7 +32,8 @@ export function renderPrimitiveGalleryMarkup(): string {
     `<button data-sk-primitive="Button" data-sk-state="default" class="${primitiveClassName("Button", "brand", "md")}" type="button">Start review</button>`,
     `<button data-sk-primitive="Button" data-sk-state="hover" class="${primitiveClassName("Button", "neutral", "md")}" type="button">Hover target</button>`,
     `<button data-sk-primitive="Button" data-sk-state="focus-visible" class="${primitiveClassName("Button", "neutral", "md")}" type="button">Keyboard focus target</button>`,
-    `<button data-sk-primitive="Button" data-sk-state="disabled" class="${primitiveClassName("Button", "neutral", "md")}" type="button" disabled>Unavailable action</button>`,
+    `<button data-sk-primitive="Button" data-sk-state="pressed" class="${primitiveClassName("Button", "neutral", "md")}" type="button" aria-pressed="true">Show details</button>`,
+    `<button data-sk-primitive="Button" data-sk-state="disabled" class="${primitiveClassName("Button", "neutral", "md")}" type="button" aria-describedby="disabled-review-action-reason" disabled>Unavailable action</button><p id="disabled-review-action-reason" data-sk-disabled-reason>Unavailable because source evidence is still missing.</p>`,
     `<button data-sk-primitive="Button" data-sk-state="loading" class="${primitiveClassName("Button", "brand", "md")}" type="button" aria-busy="true" data-loading="true">Syncing evidence</button>`,
   ].join("");
 

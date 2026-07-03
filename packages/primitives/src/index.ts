@@ -31,7 +31,7 @@ export const primitiveSpecs = [
     role: "Command trigger",
     tones: ["brand", "neutral", "danger"],
     sizes: ["sm", "md", "lg"],
-    requiredStates: ["default", "hover", "focus-visible", "disabled", "loading"],
+    requiredStates: ["default", "hover", "focus-visible", "pressed", "disabled", "loading"],
     stateEvidence: [
       {
         state: "default",
@@ -52,9 +52,15 @@ export const primitiveSpecs = [
         notes: "Keyboard focus must be visibly distinct from hover.",
       },
       {
+        state: "pressed",
+        attributes: ["aria-pressed"],
+        selectors: [".sk-button[aria-pressed=\"true\"]"],
+        notes: "Toggle buttons must expose aria-pressed while keeping a stable visible label.",
+      },
+      {
         state: "disabled",
         attributes: ["disabled", "aria-disabled", "data-disabled"],
-        selectors: [".sk-button:disabled", ".sk-button[aria-disabled=\"true\"]"],
+        selectors: [".sk-button:disabled", ".sk-button[aria-disabled=\"true\"]", ".sk-button[data-disabled=\"true\"]"],
         notes:
           "Prefer native disabled. If aria-disabled or data-disabled is used, consumers must suppress click, Space, Enter, and shortcut activation while keeping a visible disabled reason.",
       },

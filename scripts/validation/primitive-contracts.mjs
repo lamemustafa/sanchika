@@ -33,10 +33,18 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
     }
   }
 
+  if (!/\brequiredStates:\s*\[[^\]]*"pressed"/s.test(extractPrimitiveSpecSource(primitiveSource, "Button"))) {
+    fail("Button primitive requiredStates must include pressed for the APG toggle contract");
+  }
+
   for (const fragment of requiredButtonDisabledFragments) {
     if (!primitiveSource.includes(fragment)) {
       fail(`Button disabled contract must include fragment: ${fragment}`);
     }
+  }
+
+  if (!/\.sk-button\[data-disabled=\\?"true\\?"\]/.test(primitiveSource)) {
+    fail('Button disabled selector evidence must include .sk-button[data-disabled="true"]');
   }
 
   for (const fragment of requiredButtonDisabledDocFragments) {
@@ -146,4 +154,12 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
       fail(`primitive styles reference unknown token variable ${variable}`);
     }
   }
+}
+
+function extractPrimitiveSpecSource(source, primitiveName) {
+  const marker = `name: "${primitiveName}"`;
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex === -1) return "";
+  const nextSpecIndex = source.indexOf('\n  {\n    name: "', markerIndex + marker.length);
+  return nextSpecIndex === -1 ? source.slice(markerIndex) : source.slice(markerIndex, nextSpecIndex);
 }

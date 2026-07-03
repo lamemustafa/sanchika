@@ -5,11 +5,13 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const args = new Set(process.argv.slice(2));
+const expectedRemoteUrl = "https://github.com/lamemustafa/sanchika.git";
 const protectedBranches = new Set(["main", "master"]);
 const issues = [];
 const warnings = [];
 
 checkBranch();
+checkRemote();
 checkCleanTree();
 checkBlockedRuntimeFolders();
 checkContributionGates();
@@ -40,7 +42,24 @@ function checkBranch() {
 
   const statusHeader = gitText(["status", "--short", "--branch"]).split("\n")[0] ?? "";
   if (!statusHeader.includes("...")) {
-    warnings.push("current branch has no upstream; push or set upstream before relying on remote sync state");
+    if (args.has("--allow-new-repo-bootstrap")) {
+      warnings.push("current branch has no upstream; allowed only for new repository bootstrap");
+    } else {
+      issues.push("current branch has no upstream; push or set upstream before handoff");
+    }
+  }
+}
+
+function checkRemote() {
+  const fetchUrl = gitOptionalText(["config", "--get", "remote.origin.url"]);
+  const pushUrl = gitOptionalText(["config", "--get", "remote.origin.pushurl"]) || fetchUrl;
+
+  if (fetchUrl !== expectedRemoteUrl) {
+    issues.push(`remote.origin.url must be ${expectedRemoteUrl}`);
+  }
+
+  if (pushUrl !== expectedRemoteUrl) {
+    issues.push(`remote.origin.pushurl must be ${expectedRemoteUrl}`);
   }
 }
 
@@ -85,6 +104,14 @@ function currentBranch() {
 
 function gitText(args) {
   return execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+}
+
+function gitOptionalText(args) {
+  try {
+    return gitText(args);
+  } catch {
+    return "";
+  }
 }
 
 function readText(relativePath) {

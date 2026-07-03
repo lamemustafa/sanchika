@@ -14,6 +14,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
+import { assertPackedFileList } from "./validation/tarball-contents.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packages = ["tokens", "primitives", "patterns", "gallery"];
@@ -85,6 +86,7 @@ function rewriteInternalDependencies(dependencies) {
 function packPackage(packageName) {
   const output = run("npm", ["pack", "--json", "--pack-destination", tarballRoot], join(packageRoot, packageName));
   const packed = JSON.parse(output)[0];
+  assertPackedFileList({ packageName, packed });
   const tarballPath = join(tarballRoot, basename(packed.filename));
   if (!existsSync(tarballPath)) {
     throw new Error(`@sanchika/${packageName} tarball was not created at ${tarballPath}`);

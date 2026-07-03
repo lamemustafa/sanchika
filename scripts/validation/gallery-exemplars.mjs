@@ -1,5 +1,6 @@
 export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail }) {
   validateUniqueIds({ markup, fail });
+  validateButtonExemplars({ markup, primitiveSpecs, fail });
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
   validatePatternStateExemplars({ markup, patternSpecs, fail });
@@ -41,6 +42,43 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
     fail,
     "Field disabled exemplar",
   );
+}
+
+function validateButtonExemplars({ markup, primitiveSpecs, fail }) {
+  const disabledButton = findPrimitiveStateElement(markup, "button", "Button", "disabled");
+  if (!disabledButton) {
+    fail("Button disabled exemplar must exist");
+  } else {
+    const describedBy = getAttribute(disabledButton.attrs, "aria-describedby");
+    if (!describedBy) {
+      fail("Button disabled exemplar must use aria-describedby for visible reason copy");
+    } else {
+      for (const id of describedBy.split(/\s+/).filter(Boolean)) {
+        if (!markup.includes(`id="${id}"`)) {
+          fail(`Button disabled exemplar must reference visible reason copy id ${id}`);
+        }
+      }
+    }
+  }
+
+  const buttonSpec = primitiveSpecs.find((primitive) => primitive.name === "Button");
+  const requiresPressedState = buttonSpec?.standards?.some((standard) =>
+    standard.requirements.some((requirement) => requirement.includes("aria-pressed")),
+  );
+
+  if (requiresPressedState) {
+    const pressedButton = findPrimitiveStateElement(markup, "button", "Button", "pressed");
+    if (!pressedButton) {
+      fail("Button APG toggle exemplar must render data-sk-state=\"pressed\"");
+    } else {
+      if (getAttribute(pressedButton.attrs, "aria-pressed") !== "true") {
+        fail("Button APG toggle exemplar must set aria-pressed=\"true\"");
+      }
+      if (!pressedButton.body.includes("Show details")) {
+        fail("Button APG toggle exemplar must keep a stable visible label");
+      }
+    }
+  }
 }
 
 function validatePatternStateExemplars({ markup, patternSpecs, fail }) {
@@ -109,6 +147,18 @@ function validatePatternStateExemplars({ markup, patternSpecs, fail }) {
       }
     }
   }
+}
+
+function findPrimitiveStateElement(markup, tag, primitiveName, stateName) {
+  const escapedTag = escapeRegExp(tag);
+  const escapedPrimitive = escapeRegExp(primitiveName);
+  const escapedState = escapeRegExp(stateName);
+  const match = markup.match(
+    new RegExp(
+      `<${escapedTag}\\b(?<attrs>[^>]*\\bdata-sk-primitive="${escapedPrimitive}"\\s+data-sk-state="${escapedState}"[^>]*)>(?<body>[\\s\\S]*?)<\\/${escapedTag}>`,
+    ),
+  );
+  return match?.groups ? { attrs: match.groups.attrs, body: match.groups.body } : null;
 }
 
 function validateUniqueIds({ markup, fail }) {

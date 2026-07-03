@@ -43,7 +43,8 @@ semantic loading state.
 
 ## Current Direction
 
-- `Button` proves default, hover, focus-visible, disabled, and loading states.
+- `Button` proves default, hover, focus-visible, pressed, disabled, and loading
+  states.
 - `Card` proves grouped-surface and keyboard-focus contracts without using
   side-stripe status treatment. Static cards are not focus targets; interactive
   card surfaces should use native links or buttons with visible focus treatment.

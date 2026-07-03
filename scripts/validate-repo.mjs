@@ -98,6 +98,10 @@ if (!existsSync(join(root, "scripts/validation/sensitive-examples.mjs"))) {
   fail("sensitive example validator must exist");
 }
 
+if (!existsSync(join(root, "scripts/validation/tarball-contents.mjs"))) {
+  fail("tarball contents validator must exist");
+}
+
 if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
   fail("root verify script must run consumer:check");
 }
@@ -227,8 +231,20 @@ const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
 const ciWorkflow = requireText(".github/workflows/ci.yml");
+const codeowners = requireText(".github/CODEOWNERS");
+const issueTemplateConfig = requireText(".github/ISSUE_TEMPLATE/config.yml");
+const bugIssueTemplate = requireText(".github/ISSUE_TEMPLATE/bug_report.yml");
+const featureIssueTemplate = requireText(".github/ISSUE_TEMPLATE/feature_request.yml");
+const dependabotConfig = requireText(".github/dependabot.yml");
 const agentGuide = readText("AGENTS.md");
+const contributingDocs = readText("CONTRIBUTING.md");
+const codeOfConduct = requireText("CODE_OF_CONDUCT.md");
 const releasePolicy = readText("docs/release-policy.md");
+const githubSetupDocs = requireText("docs/github-repository-setup.md");
+const repositorySettingsDocs = requireText("docs/repository-settings.md");
+const workflowPreflightSource = readText("scripts/check-workflow-preflight.mjs");
+const packedTarballCheckSource = readText("scripts/check-packed-tarball-consumer.mjs");
+const tarballContentsSource = readText("scripts/validation/tarball-contents.mjs");
 const architectureDocs = readText("docs/architecture.md");
 const complyeazeAdoptionDocs = readText("docs/adoption-complyeaze.md");
 const adoptionDocs = {
@@ -604,6 +620,128 @@ for (const requiredReleaseFragment of [
 ]) {
   if (!releasePolicy.includes(requiredReleaseFragment)) {
     fail(`docs/release-policy.md must include ${requiredReleaseFragment}`);
+  }
+}
+
+for (const requiredGithubSetupFragment of [
+  "lamemustafa/sanchika",
+  "public",
+  "Do not auto-add a README, license, or .gitignore",
+  "gh repo create lamemustafa/sanchika",
+  "--disable-wiki",
+  "pnpm verify",
+  "pnpm publish:tarball-check",
+  "git push -u origin HEAD:master",
+  "private vulnerability reporting",
+  "branch ruleset",
+  "required status checks",
+  "no long-lived npm publish tokens",
+]) {
+  if (!normalizeProse(githubSetupDocs).includes(requiredGithubSetupFragment)) {
+    fail(`docs/github-repository-setup.md must include ${requiredGithubSetupFragment}`);
+  }
+}
+
+for (const requiredRepositorySettingsFragment of [
+  "Default branch: `master`",
+  "private vulnerability reporting",
+  "branch ruleset",
+  "required status checks",
+  "Require pull requests before merging",
+  "Require conversation resolution",
+  "Block force pushes",
+  "Block branch deletion",
+  "Disable wiki",
+  "blank issues disabled",
+  "CODEOWNERS",
+  "Dependabot",
+]) {
+  if (!repositorySettingsDocs.includes(requiredRepositorySettingsFragment)) {
+    fail(`docs/repository-settings.md must include ${requiredRepositorySettingsFragment}`);
+  }
+}
+
+if (!codeowners.includes("* @lamemustafa")) {
+  fail(".github/CODEOWNERS must assign repository ownership to @lamemustafa");
+}
+
+for (const [path, text] of [
+  [".github/ISSUE_TEMPLATE/config.yml", issueTemplateConfig],
+  [".github/ISSUE_TEMPLATE/bug_report.yml", bugIssueTemplate],
+  [".github/ISSUE_TEMPLATE/feature_request.yml", featureIssueTemplate],
+]) {
+  for (const requiredFragment of ["PAN", "GSTIN", "Aadhaar", "credentials", "private vulnerability reporting"]) {
+    if (!text.includes(requiredFragment)) {
+      fail(`${path} must warn about ${requiredFragment}`);
+    }
+  }
+}
+
+if (!issueTemplateConfig.includes("blank_issues_enabled: false")) {
+  fail(".github/ISSUE_TEMPLATE/config.yml must disable blank issues");
+}
+
+for (const requiredDependabotFragment of [
+  "package-ecosystem: npm",
+  "package-ecosystem: github-actions",
+  "directory: /",
+  "interval: monthly",
+]) {
+  if (!dependabotConfig.includes(requiredDependabotFragment)) {
+    fail(`.github/dependabot.yml must include ${requiredDependabotFragment}`);
+  }
+}
+
+for (const requiredConductFragment of ["Code of Conduct", "private", "harassment", "sensitive data"]) {
+  if (!codeOfConduct.includes(requiredConductFragment)) {
+    fail(`CODE_OF_CONDUCT.md must include ${requiredConductFragment}`);
+  }
+}
+
+for (const requiredGovernanceLink of [
+  "CODE_OF_CONDUCT.md",
+  "docs/github-repository-setup.md",
+  "docs/repository-settings.md",
+]) {
+  if (!readText("README.md").includes(requiredGovernanceLink)) {
+    fail(`README.md must link ${requiredGovernanceLink}`);
+  }
+  if (!contributingDocs.includes(requiredGovernanceLink)) {
+    fail(`CONTRIBUTING.md must link ${requiredGovernanceLink}`);
+  }
+}
+
+for (const requiredPreflightFragment of [
+  "expectedRemoteUrl",
+  "https://github.com/lamemustafa/sanchika.git",
+  "--allow-new-repo-bootstrap",
+  "remote.origin.url",
+  "remote.origin.pushurl",
+]) {
+  if (!workflowPreflightSource.includes(requiredPreflightFragment)) {
+    fail(`scripts/check-workflow-preflight.mjs must include ${requiredPreflightFragment}`);
+  }
+}
+
+for (const requiredTarballCheckFragment of [
+  "assertPackedFileList",
+  "./validation/tarball-contents.mjs",
+]) {
+  if (!packedTarballCheckSource.includes(requiredTarballCheckFragment)) {
+    fail(`scripts/check-packed-tarball-consumer.mjs must include ${requiredTarballCheckFragment}`);
+  }
+}
+
+for (const requiredTarballContentsFragment of [
+  "packed.files",
+  "src",
+  ".npmrc",
+  "pnpm-lock",
+  "dist/index.js",
+  "dist/index.d.ts",
+]) {
+  if (!tarballContentsSource.includes(requiredTarballContentsFragment)) {
+    fail(`scripts/validation/tarball-contents.mjs must include ${requiredTarballContentsFragment}`);
   }
 }
 

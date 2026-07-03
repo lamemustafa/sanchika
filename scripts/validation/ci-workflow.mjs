@@ -11,6 +11,14 @@ export function validateCiWorkflow({ ciWorkflow, fail }) {
     fail("CI workflow must not use pull_request_target for untrusted code");
   }
 
+  if (!/uses:\s+actions\/checkout@[0-9a-f]{40}\s+with:\s+persist-credentials:\s+false/s.test(ciWorkflow)) {
+    fail("CI workflow checkout must set persist-credentials: false");
+  }
+
+  if (!/push:\s+branches:\s+- master/s.test(ciWorkflow)) {
+    fail("CI workflow must run branch pushes for the public master branch");
+  }
+
   const pinnedActions = {
     "actions/checkout": "34e114876b0b11c390a56381ad16ebd13914f8d5",
     "pnpm/action-setup": "f40ffcd9367d9f12939873eb1018b921a783ffaa",

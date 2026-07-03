@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a reproducible Sanchika SDK bug without sensitive data.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, or real taxpayer data.
+        Use private vulnerability reporting for security issues or sensitive-data exposure.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, using synthetic examples only?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal steps, package versions, and synthetic inputs.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: sensitive-data-check
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: I removed PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, and real taxpayer data.
+          required: true
+        - label: This is not a security issue or sensitive-data exposure that belongs in private vulnerability reporting.
+          required: true

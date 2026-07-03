@@ -6,6 +6,7 @@ SDK. It is not part of the parent ComplyEaze app workspace.
 ## Scope
 
 - Remote target: `https://github.com/lamemustafa/sanchika.git`.
+- Public default branch: `master`.
 - Package manager: pnpm only.
 - V0 packages: `tokens`, `primitives`, `patterns`, and `gallery`.
 - Consumer order: ComplyEaze, Axal, Pack, then Tools.
@@ -13,8 +14,9 @@ SDK. It is not part of the parent ComplyEaze app workspace.
   `docs/primitives.md`, `docs/patterns.md`, `docs/adoption-complyeaze.md`,
   `docs/adoption-axal.md`, `docs/adoption-pack.md`, and
   `docs/adoption-tools.md`.
-- Governance docs: `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE.brand.md`, and
-  `docs/release-policy.md`.
+- Governance docs: `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE.brand.md`,
+  `CODE_OF_CONDUCT.md`, `docs/release-policy.md`,
+  `docs/github-repository-setup.md`, and `docs/repository-settings.md`.
 
 ## Boundaries
 
