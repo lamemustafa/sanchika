@@ -1,0 +1,31 @@
+{
+  "name": "sanchika",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AI-native design system SDK for compliance-grade interfaces.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.28.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lamemustafa/sanchika.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lamemustafa/sanchika/issues"
+  },
+  "homepage": "https://github.com/lamemustafa/sanchika#readme",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "typecheck:api": "node scripts/check-package-api-types.mjs",
+    "check": "pnpm typecheck",
+    "validate": "node scripts/validate-repo.mjs",
+    "artifact:check": "node scripts/check-package-artifacts.mjs",
+    "consumer:check": "node scripts/check-local-link-consumer.mjs",
+    "publish:check": "node scripts/check-publish-ready.mjs",
+    "smoke": "node scripts/smoke-gallery.mjs",
+    "verify": "pnpm validate && pnpm typecheck && pnpm build && pnpm typecheck:api && pnpm artifact:check && pnpm consumer:check && pnpm smoke"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

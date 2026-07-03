@@ -1,0 +1,394 @@
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  contrastPairs,
+  productSections,
+  requiredMotionVariables,
+  contrastRatio,
+  parseOklch,
+} from "./validation/contrast.mjs";
+import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
+import { validatePackageManifest } from "./validation/package-manifests.mjs";
+import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
+import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
+
+const root = fileURLToPath(new URL("..", import.meta.url));
+const failures = [];
+
+function fail(message) {
+  failures.push(message);
+}
+
+function readJson(path) {
+  return JSON.parse(readFileSync(join(root, path), "utf8"));
+}
+
+function readText(path) {
+  return readFileSync(join(root, path), "utf8");
+}
+
+function requireText(path) {
+  if (!existsSync(join(root, path))) {
+    fail(`${path} must exist`);
+    return "";
+  }
+
+  return readText(path);
+}
+
+const expectedPackages = ["gallery", "patterns", "primitives", "tokens"];
+const actualPackages = readdirSync(join(root, "packages")).filter((entry) => !entry.startsWith(".")).sort();
+
+if (JSON.stringify(actualPackages) !== JSON.stringify(expectedPackages)) {
+  fail(`packages/ must contain exactly ${expectedPackages.join(", ")}, found ${actualPackages.join(", ")}`);
+}
+
+for (const blocked of ["apps", "pack", "tools", "src/app"]) {
+  if (existsSync(join(root, blocked))) {
+    fail(`${blocked} must not exist in Sanchika v0`);
+  }
+}
+
+const rootPackage = readJson("package.json");
+if (rootPackage.name !== "sanchika") {
+  fail("root package must be named sanchika");
+}
+
+if (rootPackage.repository?.url !== "git+https://github.com/lamemustafa/sanchika.git") {
+  fail("root repository URL must point at lamemustafa/sanchika");
+}
+
+if (rootPackage.private !== true) {
+  fail("root package must remain private until publish gates pass");
+}
+
+if (rootPackage.scripts?.["consumer:check"] !== "node scripts/check-local-link-consumer.mjs") {
+  fail("root package must expose consumer:check for local-link adoption proof");
+}
+
+if (!existsSync(join(root, "scripts/check-local-link-consumer.mjs"))) {
+  fail("consumer:check script file must exist");
+}
+
+if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
+  fail("root verify script must run consumer:check");
+}
+
+if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
+  fail("root package must expose typecheck:api for package API declaration proof");
+}
+
+const verifyScript = rootPackage.scripts?.verify ?? "";
+if (!verifyScript.includes("pnpm typecheck:api")) {
+  fail("root verify script must run typecheck:api after build");
+}
+
+const buildIndex = verifyScript.indexOf("pnpm build");
+const packageApiTypecheckIndex = verifyScript.indexOf("pnpm typecheck:api");
+if (buildIndex === -1 || buildIndex > packageApiTypecheckIndex) {
+  fail("root verify script must run typecheck:api after build");
+}
+
+if (!existsSync(join(root, "scripts/check-package-api-types.mjs")) || !existsSync(join(root, "type-tests/package-api.ts"))) {
+  fail("package API typecheck project must exist");
+}
+
+if (rootPackage.scripts?.["publish:check"] !== "node scripts/check-publish-ready.mjs") {
+  fail("root package must expose publish:check for future publish readiness proof");
+}
+
+if (!existsSync(join(root, "scripts/check-publish-ready.mjs"))) {
+  fail("publish:check script file must exist");
+}
+
+const productText = requireText("PRODUCT.md");
+if (productText && !productText.includes("## Register\n\nproduct")) {
+  fail("PRODUCT.md must declare product register");
+}
+
+for (const section of productSections) {
+  if (productText && !productText.includes(section)) {
+    fail(`PRODUCT.md is missing ${section}`);
+  }
+}
+
+for (const packageName of expectedPackages) {
+  const manifest = readJson(`packages/${packageName}/package.json`);
+  validatePackageManifest(packageName, manifest, fail);
+}
+
+const tokenSource = readText("packages/tokens/src/index.ts");
+const tokenCss = readText("packages/tokens/src/theme.css");
+const primitiveSource = readText("packages/primitives/src/index.ts");
+const primitiveCss = readText("packages/primitives/src/styles.css");
+const patternSource = readText("packages/patterns/src/index.ts");
+const tokenDocs = readText("docs/tokens.md");
+const primitiveDocs = requireText("docs/primitives.md");
+const patternDocs = readText("docs/patterns.md");
+const accessibilityDocs = readText("docs/accessibility.md");
+const ciWorkflow = requireText(".github/workflows/ci.yml");
+const releasePolicy = readText("docs/release-policy.md");
+const complyeazeAdoptionDocs = readText("docs/adoption-complyeaze.md");
+const adoptionDocs = {
+  ComplyEaze: complyeazeAdoptionDocs,
+  Axal: readText("docs/adoption-axal.md"),
+  Pack: readText("docs/adoption-pack.md"),
+  Tools: readText("docs/adoption-tools.md"),
+};
+
+if (tokenSource.includes("oklch(")) {
+  fail("TypeScript token metadata must not duplicate raw OKLCH values");
+}
+
+const tokenVariables = [...tokenSource.matchAll(/cssVariable: "(--sk-[^"]+)"/g)].map((match) => match[1]);
+const tokenCssDeclarations = new Map(
+  [...tokenCss.matchAll(/(--sk-[\w-]+)\s*:\s*([^;]+);/g)].map((match) => [match[1], match[2].trim()]),
+);
+
+for (const variable of tokenVariables) {
+  if (!tokenCssDeclarations.has(variable)) {
+    fail(`theme.css is missing ${variable}`);
+  }
+}
+
+for (const variable of tokenCssDeclarations.keys()) {
+  if (!tokenVariables.includes(variable)) {
+    fail(`TypeScript token metadata is missing ${variable}`);
+  }
+}
+
+for (const [variable, value] of tokenCssDeclarations) {
+  if (variable.startsWith("--sk-color-") && !value.startsWith("oklch(")) {
+    fail(`${variable} must use OKLCH in theme.css`);
+  }
+
+  if (variable.startsWith("--sk-color-") && /#|rgb\(|hsl\(/i.test(value)) {
+    fail(`${variable} must not use hex, rgb, or hsl in theme.css`);
+  }
+}
+
+for (const variable of ["--sk-color-border-control"]) {
+  if (!tokenCssDeclarations.has(variable)) {
+    fail(`theme.css is missing ${variable}`);
+  }
+}
+
+for (const pair of contrastPairs) {
+  const [name, foreground, background, minimum] = pair;
+  const ratio = contrastRatio(readOklch(foreground), readOklch(background));
+  if (ratio < minimum) {
+    fail(`${name} contrast ${ratio.toFixed(2)}:1 is below ${minimum}:1`);
+  }
+}
+
+if (/spacingTokens[\s\S]*?"[0-9.]+rem"/.test(tokenSource)) {
+  fail("TypeScript spacing token metadata must not duplicate raw rem values");
+}
+
+if (/radiusTokens[\s\S]*?"[0-9.]+rem"/.test(tokenSource)) {
+  fail("TypeScript radius token metadata must not duplicate raw rem values");
+}
+
+for (const motionVariable of requiredMotionVariables) {
+  if (!tokenCss.includes(`${motionVariable}:`)) {
+    fail(`theme.css is missing ${motionVariable}`);
+  }
+}
+
+if (tokenCss.includes("--sk-motion-standard:")) {
+  fail("theme.css must split motion duration and easing tokens");
+}
+
+if (tokenDocs.includes("--sk-motion-standard")) {
+  fail("docs/tokens.md must document split motion tokens");
+}
+
+validatePrimitiveContracts({ primitiveSource, primitiveDocs, primitiveCss, tokenCssDeclarations, fail });
+
+const primitiveManifest = readJson("packages/primitives/package.json");
+if (primitiveManifest.exports?.["./styles.css"] !== "./dist/styles.css") {
+  fail("@sanchika/primitives must export ./styles.css");
+}
+
+const tokenManifest = readJson("packages/tokens/package.json");
+if (tokenManifest.exports?.["./theme.css"] !== "./dist/theme.css") {
+  fail("@sanchika/tokens must export ./theme.css");
+}
+
+validatePatternContracts({ patternSource, patternDocs, fail });
+
+for (const patternTypeExport of [
+  "PatternA11yCheck",
+  "PatternA11yCheckFor",
+  "PatternA11yCriterion",
+  "PatternA11ySourceReference",
+  "PatternName",
+  "PatternProgrammaticStatus",
+  "PatternProgrammaticStatusFor",
+  "PatternSpecFor",
+  "PatternSlotName",
+  "PatternSlotNameFor",
+  "PatternStateName",
+  "PatternStateNameFor",
+  "PatternStateFor",
+  "PatternStateRequiredSlotNameFor",
+]) {
+  if (!patternSource.includes(patternTypeExport)) {
+    fail(`pattern package must export ${patternTypeExport}`);
+  }
+  if (!patternDocs.includes(patternTypeExport)) {
+    fail(`docs/patterns.md must document ${patternTypeExport}`);
+  }
+}
+
+for (const sourceUrl of [
+  "https://www.w3.org/TR/css-variables-1/",
+  "https://www.w3.org/community/design-tokens/",
+]) {
+  if (!tokenDocs.includes(sourceUrl)) {
+    fail(`docs/tokens.md must reference ${sourceUrl}`);
+  }
+}
+
+for (const sourceUrl of ["https://www.w3.org/TR/WCAG22/", "https://www.w3.org/WAI/ARIA/apg/"]) {
+  if (!accessibilityDocs.includes(sourceUrl)) {
+    fail(`docs/accessibility.md must reference ${sourceUrl}`);
+  }
+}
+
+for (const sourceUrl of [
+  "https://docs.npmjs.com/trusted-publishers/",
+  "https://docs.npmjs.com/generating-provenance-statements/",
+  "https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository",
+]) {
+  if (!releasePolicy.includes(sourceUrl)) {
+    fail(`docs/release-policy.md must reference ${sourceUrl}`);
+  }
+}
+
+if (!readText("CONTRIBUTING.md").includes("PRODUCT.md")) {
+  fail("CONTRIBUTING.md must tell contributors to read PRODUCT.md");
+}
+
+const pullRequestTemplate = requireText(".github/PULL_REQUEST_TEMPLATE.md");
+if (pullRequestTemplate && !pullRequestTemplate.includes("PRODUCT.md")) {
+  fail("Sanchika PR template must reference PRODUCT.md");
+}
+
+for (const adoptionChecklistPath of ["docs/adoption-complyeaze.md", "docs/adoption-axal.md", "docs/adoption-pack.md", "docs/adoption-tools.md"]) {
+  if (!readText("CONTRIBUTING.md").includes(adoptionChecklistPath)) {
+    fail(`CONTRIBUTING.md must reference ${adoptionChecklistPath}`);
+  }
+  if (pullRequestTemplate && !pullRequestTemplate.includes(adoptionChecklistPath)) {
+    fail(`Sanchika PR template must reference ${adoptionChecklistPath}`);
+  }
+}
+
+const requiredVerificationCommands = [
+  "pnpm validate",
+  "pnpm typecheck",
+  "pnpm build",
+  "pnpm typecheck:api",
+  "pnpm artifact:check",
+  "pnpm consumer:check",
+  "pnpm smoke",
+  "pnpm verify",
+];
+for (const command of requiredVerificationCommands) {
+  if (!readText("CONTRIBUTING.md").includes(command)) {
+    fail(`CONTRIBUTING.md must list ${command}`);
+  }
+  if (pullRequestTemplate && !pullRequestTemplate.includes(command)) {
+    fail(`Sanchika PR template must list ${command}`);
+  }
+}
+
+if (!readText("README.md").includes("tools.complyeaze.com")) {
+  fail("README must document Tools as the fourth consumer");
+}
+
+if (/package link or packed artifact|Link or pack|package link\/artifact method/i.test(complyeazeAdoptionDocs)) {
+  fail("docs/adoption-complyeaze.md must not present packed artifacts as a supported V0 adoption path");
+}
+
+if (!complyeazeAdoptionDocs.includes("Packed tarball artifacts are not a supported V0 adoption path")) {
+  fail("docs/adoption-complyeaze.md must state that packed tarball artifacts are not yet supported");
+}
+
+for (const requiredLocalLinkFragment of ["pnpm consumer:check", "local package-directory links"]) {
+  if (!complyeazeAdoptionDocs.includes(requiredLocalLinkFragment)) {
+    fail(`docs/adoption-complyeaze.md must include ${requiredLocalLinkFragment}`);
+  }
+}
+
+for (const requiredPackageApiFragment of ["pnpm typecheck:api", "public package-name TypeScript imports"]) {
+  if (!complyeazeAdoptionDocs.includes(requiredPackageApiFragment)) {
+    fail(`docs/adoption-complyeaze.md must include ${requiredPackageApiFragment}`);
+  }
+}
+
+for (const [consumerName, docs] of Object.entries(adoptionDocs)) {
+  for (const heading of ["## Entry Criteria", "## Completion Evidence"]) {
+    if (!docs.includes(heading)) {
+      fail(`${consumerName} adoption docs must include ${heading}`);
+    }
+  }
+}
+
+for (const [consumerName, requiredFragment] of [
+  ["Axal", "ComplyEaze completion evidence"],
+  ["Pack", "Axal completion evidence"],
+  ["Tools", "Pack completion evidence"],
+]) {
+  if (!adoptionDocs[consumerName].includes(requiredFragment)) {
+    fail(`${consumerName} adoption docs must require ${requiredFragment}`);
+  }
+}
+
+validateCiWorkflow({ ciWorkflow, fail });
+
+const securityText = readText("SECURITY.md").toLowerCase().replace(/\s+/g, " ");
+if (!securityText.includes("private vulnerability reporting")) {
+  fail("SECURITY.md must reference GitHub private vulnerability reporting");
+}
+
+for (const requiredSecurityFragment of ["lamemustafa", "Post-Create Checklist"]) {
+  if (!readText("SECURITY.md").includes(requiredSecurityFragment)) {
+    fail(`SECURITY.md must include ${requiredSecurityFragment}`);
+  }
+}
+
+for (const requiredReleaseFragment of [
+  "lamemustafa/sanchika",
+  ".github/workflows/publish.yml",
+  "ubuntu-latest",
+  "pnpm publish:check",
+  "workspace:*",
+  "id-token: write",
+]) {
+  if (!releasePolicy.includes(requiredReleaseFragment)) {
+    fail(`docs/release-policy.md must include ${requiredReleaseFragment}`);
+  }
+}
+
+if (failures.length > 0) {
+  console.error("Sanchika repo validation failed:");
+  for (const failure of failures) {
+    console.error(`- ${failure}`);
+  }
+  process.exit(1);
+}
+
+console.log("Sanchika repo validation passed.");
+
+function readOklch(variable) {
+  const value = tokenCssDeclarations.get(variable);
+  const color = value ? parseOklch(value) : null;
+  if (!color) {
+    fail(`${variable} must be an OKLCH token`);
+    return { l: 0, c: 0, h: 0 };
+  }
+
+  return color;
+}

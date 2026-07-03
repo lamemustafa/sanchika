@@ -1,0 +1,44 @@
+{
+  "name": "@sanchika/patterns",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Sanchika compliance-interface pattern contracts for evidence, trust, and service surfaces.",
+  "license": "Apache-2.0",
+  "keywords": [
+    "sanchika",
+    "design-system",
+    "compliance",
+    "patterns"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lamemustafa/sanchika.git",
+    "directory": "packages/patterns"
+  },
+  "bugs": {
+    "url": "https://github.com/lamemustafa/sanchika/issues"
+  },
+  "homepage": "https://github.com/lamemustafa/sanchika/tree/master/packages/patterns#readme",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-package.mjs",
+    "typecheck": "tsc -p tsconfig.typecheck.json --noEmit"
+  },
+  "dependencies": {
+    "@sanchika/primitives": "workspace:*"
+  }
+}

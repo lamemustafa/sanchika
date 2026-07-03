@@ -1,0 +1,29 @@
+:root {
+  --sk-color-bg-base: oklch(97.5% 0.006 255);
+  --sk-color-bg-surface: oklch(100% 0 0);
+  --sk-color-ink-primary: oklch(23% 0.018 255);
+  --sk-color-ink-muted: oklch(47% 0.025 255);
+  --sk-color-border-control: oklch(64% 0.018 255);
+  --sk-color-brand-primary: oklch(35% 0.055 250);
+  --sk-color-accent: oklch(58% 0.085 83);
+  --sk-color-success: oklch(45% 0.075 148);
+  --sk-color-warning: oklch(61% 0.115 70);
+  --sk-color-danger: oklch(48% 0.12 32);
+  --sk-color-info: oklch(48% 0.06 240);
+
+  --sk-space-1: 0.25rem;
+  --sk-space-2: 0.5rem;
+  --sk-space-3: 0.75rem;
+  --sk-space-4: 1rem;
+  --sk-space-6: 1.5rem;
+  --sk-space-8: 2rem;
+  --sk-space-12: 3rem;
+  --sk-space-16: 4rem;
+
+  --sk-radius-control: 0.5rem;
+  --sk-radius-card: 0.625rem;
+  --sk-motion-duration-standard: 180ms;
+  --sk-motion-duration-loading: 720ms;
+  --sk-motion-easing-standard: ease-out;
+  --sk-motion-easing-linear: linear;
+}

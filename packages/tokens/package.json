@@ -1,0 +1,42 @@
+{
+  "name": "@sanchika/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Sanchika semantic token metadata and CSS variables for compliance-grade interfaces.",
+  "license": "Apache-2.0",
+  "keywords": [
+    "sanchika",
+    "design-system",
+    "compliance",
+    "tokens"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lamemustafa/sanchika.git",
+    "directory": "packages/tokens"
+  },
+  "bugs": {
+    "url": "https://github.com/lamemustafa/sanchika/issues"
+  },
+  "homepage": "https://github.com/lamemustafa/sanchika/tree/master/packages/tokens#readme",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./theme.css": "./dist/theme.css"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-package.mjs theme.css",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
