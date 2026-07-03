@@ -36,5 +36,6 @@ pnpm verify
 For design-facing changes, include notes on keyboard behavior, screen-reader
 semantics, responsive behavior, and any remaining accessibility gaps.
 
-For adoption-facing changes, record the Sanchika commit, package link method,
-changed files, and rollback files in the consumer PR.
+For adoption-facing changes, record the Sanchika commit, package link or artifact
+method, changed files, and rollback files in the consumer PR. If an approved
+tarball artifact is used, record the tarball version and checksum.

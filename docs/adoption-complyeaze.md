@@ -22,8 +22,9 @@ Do not migrate Axal, Pack, or Tools before the ComplyEaze foundation is usable.
 
 ## Completion Evidence
 
-- The ComplyEaze adoption PR records the Sanchika commit, package link method,
-  changed files, and rollback files.
+- The ComplyEaze adoption PR records the Sanchika commit, package link or
+  artifact method, changed files, and rollback files. Approved tarball use must
+  record the tarball version and checksum.
 - Browser review covers the chosen public/product surface at desktop and mobile
   widths.
 - ComplyEaze lint/typecheck commands relevant to the changed surface pass.
@@ -61,8 +62,9 @@ workspace.
   widths.
 - Import guard search finds no `../sanchika`, `sanchika/packages/*/src`, or
   parent workspace inclusion of `sanchika/`.
-- The adoption PR records the Sanchika commit, package link method, changed
-  files, and rollback files.
+- The adoption PR records the Sanchika commit, package link or artifact method,
+  changed files, and rollback files. Approved tarball use must record the
+  tarball version and checksum.
 
 Packed tarball artifacts are a validated packaging smoke artifact after
 `pnpm publish:tarball-check` passes. They are not the default V0 adoption path;

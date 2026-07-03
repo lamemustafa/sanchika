@@ -17,7 +17,9 @@
       taxpayer names, credentials, cookies, OTPs, notices, screenshots, or local
       file paths.
 - [ ] If this affects consumer adoption, the consumer PR records the Sanchika commit,
-      package link method, changed files, and rollback files.
+      package link or artifact method, changed files, and rollback files.
+- [ ] If this uses an approved tarball artifact, the consumer PR records the
+      tarball version and checksum.
 
 ## Design And Accessibility
 

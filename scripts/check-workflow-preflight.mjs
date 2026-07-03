@@ -69,7 +69,8 @@ function checkContributionGates() {
     "docs/adoption-pack.md",
     "docs/adoption-tools.md",
     "Sanchika commit",
-    "package link method",
+    "package link or artifact method",
+    "tarball version and checksum",
     "rollback files",
   ]) {
     if (!contributing.includes(required) && !pullRequestTemplate.includes(required)) {
