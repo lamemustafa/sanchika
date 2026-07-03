@@ -65,12 +65,13 @@ known pattern contract without stringly typed slots or states:
 These types are generated from `patternSpecs`. They do not introduce runtime
 components or framework adapters.
 
-## Pattern Status Exemplars
+## Pattern State Exemplars
 
-PrimitiveGallery must include Pattern status exemplars with concrete `role` and
-`aria-live` markup for every required state that declares `programmaticStatus`.
-The gallery must cover visible state copy and slot IDs instead of only
-displaying the `programmaticStatus` requirement prose.
+PrimitiveGallery must include Pattern state exemplars for every required pattern
+state. Each exemplar must render all visible signals and required slots. Every
+required state that declares `programmaticStatus` must also include concrete
+`role` and `aria-live` markup. The gallery must cover visible state copy and
+slot IDs instead of only displaying the `programmaticStatus` requirement prose.
 
 ## Current Direction
 

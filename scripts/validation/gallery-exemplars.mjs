@@ -2,7 +2,7 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
   validateUniqueIds({ markup, fail });
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
-  validatePatternStatusExemplars({ markup, patternSpecs, fail });
+  validatePatternStateExemplars({ markup, patternSpecs, fail });
 
   for (const primitive of primitiveSpecs) {
     for (const state of primitive.requiredStates) {
@@ -43,17 +43,16 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
   );
 }
 
-function validatePatternStatusExemplars({ markup, patternSpecs, fail }) {
+function validatePatternStateExemplars({ markup, patternSpecs, fail }) {
   if (!Array.isArray(patternSpecs)) {
     fail("PrimitiveGallery status exemplar validation requires patternSpecs");
     return;
   }
 
   for (const pattern of patternSpecs) {
+    const topLevelSlots = (pattern.requiredSlots ?? []).map((slot) => slot.name);
     for (const state of pattern.requiredStates ?? []) {
-      if (!state.programmaticStatus) continue;
-
-      const label = `${pattern.name} ${state.name} status exemplar`;
+      const label = `${pattern.name} ${state.name} state exemplar`;
       const exemplar = findPatternStateExemplar(markup, pattern.name, state.name);
       if (!exemplar) {
         fail(`${label} must exist`);
@@ -61,36 +60,52 @@ function validatePatternStatusExemplars({ markup, patternSpecs, fail }) {
       }
 
       const { attrs, body } = exemplar;
-      const { role, ariaLive, slotRefs = [] } = state.programmaticStatus;
-      if (getAttribute(attrs, "role") !== role) {
-        fail(`${label} must declare role="${role}"`);
-      }
-      if (getAttribute(attrs, "aria-live") !== ariaLive) {
-        fail(`${label} must declare aria-live="${ariaLive}"`);
-      }
-      if (getAttribute(attrs, "aria-atomic") !== "true") {
-        fail(`${label} must declare aria-atomic="true"`);
+      for (const visibleSignal of state.requiredVisibleSignals ?? []) {
+        if (!body.includes(visibleSignal)) {
+          fail(`${label} must render visible state copy: ${visibleSignal}`);
+        }
       }
 
-      const firstVisibleSignal = state.requiredVisibleSignals?.[0];
-      if (firstVisibleSignal && !body.includes(firstVisibleSignal)) {
-        fail(`${label} must render visible state copy: ${firstVisibleSignal}`);
-      }
-
-      const describedIds = new Set(
-        `${getAttribute(attrs, "aria-labelledby") ?? ""} ${getAttribute(attrs, "aria-describedby") ?? ""}`
-          .split(/\s+/)
-          .filter(Boolean),
-      );
-      for (const slotName of slotRefs) {
+      const requiredSlotNames = new Set([
+        ...((state.requiredSlots?.length ? state.requiredSlots : topLevelSlots) ?? []),
+        ...((state.a11yChecks ?? []).flatMap((check) => check.slotRefs ?? [])),
+      ]);
+      for (const slotName of requiredSlotNames) {
         const slotId = findSlotId(body, slotName);
         if (!slotId) {
           fail(`${label} must render data-sk-slot="${slotName}" with an id`);
-          continue;
         }
-        if (!describedIds.has(slotId)) {
-          fail(`${label} must reference ${slotId} from aria-labelledby or aria-describedby`);
+      }
+
+      if (state.programmaticStatus) {
+        const { role, ariaLive, slotRefs = [] } = state.programmaticStatus;
+        if (getAttribute(attrs, "role") !== role) {
+          fail(`${label} must declare role="${role}"`);
         }
+        if (getAttribute(attrs, "aria-live") !== ariaLive) {
+          fail(`${label} must declare aria-live="${ariaLive}"`);
+        }
+        if (getAttribute(attrs, "aria-atomic") !== "true") {
+          fail(`${label} must declare aria-atomic="true"`);
+        }
+
+        const describedIds = new Set(
+          `${getAttribute(attrs, "aria-labelledby") ?? ""} ${getAttribute(attrs, "aria-describedby") ?? ""}`
+            .split(/\s+/)
+            .filter(Boolean),
+        );
+        for (const slotName of slotRefs) {
+          const slotId = findSlotId(body, slotName);
+          if (!slotId) {
+            fail(`${label} must render data-sk-slot="${slotName}" with an id`);
+            continue;
+          }
+          if (!describedIds.has(slotId)) {
+            fail(`${label} must reference ${slotId} from aria-labelledby or aria-describedby`);
+          }
+        }
+      } else if (getAttribute(attrs, "role") || getAttribute(attrs, "aria-live")) {
+        fail(`${label} must not declare live-region attributes without programmaticStatus`);
       }
     }
   }

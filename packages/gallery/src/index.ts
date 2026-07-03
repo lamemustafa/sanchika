@@ -77,9 +77,9 @@ export function renderPrimitiveGalleryMarkup(): string {
     })
     .join("");
 
-  const patternStatusExemplars = renderPatternStatusExemplars();
+  const patternStateExemplars = renderPatternStateExemplars();
 
-  return `<main data-sanchika-gallery="primitive"><h1>Sanchika Primitive Gallery</h1><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern status exemplars</h3>${patternStatusExemplars}</section></main>`;
+  return `<main data-sanchika-gallery="primitive"><h1>Sanchika Primitive Gallery</h1><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern state exemplars</h3>${patternStateExemplars}</section></main>`;
 }
 
 export function renderPrimitiveGalleryDocument(): string {
@@ -94,18 +94,22 @@ function titleCase(value: string): string {
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
 
-function renderPatternStatusExemplars(): string {
+function renderPatternStateExemplars(): string {
   return patternSpecs
     .flatMap((pattern) =>
       pattern.requiredStates.flatMap((state) => {
-        if (!("programmaticStatus" in state) || !state.programmaticStatus) return [];
-
         const baseId = `${kebabCase(pattern.name)}-${state.name}`;
-        const slotRefs = state.programmaticStatus.slotRefs ?? [];
-        const labelledBy = slotRefs[0] ? `${baseId}-${kebabCase(slotRefs[0])}` : `${baseId}-state`;
-        const describedBy = slotRefs.slice(1).map((slotName) => `${baseId}-${kebabCase(slotName)}`);
-        const describedByAttribute = describedBy.length ? ` aria-describedby="${describedBy.join(" ")}"` : "";
-        const slots = slotRefs
+        const headingId = `${baseId}-heading`;
+        const stateSlotNames = new Set([
+          ...(state.requiredSlots ?? pattern.requiredSlots.map((slot) => slot.name)),
+          ...state.a11yChecks.flatMap((check) => check.slotRefs ?? []),
+          ...("programmaticStatus" in state && state.programmaticStatus ? (state.programmaticStatus.slotRefs ?? []) : []),
+        ]);
+        const slotIds = [...stateSlotNames].map((slotName) => `${baseId}-${kebabCase(slotName)}`);
+        const visibleSignals = state.requiredVisibleSignals
+          .map((signal) => `<li data-sk-visible-signal>${escapeHtml(signal)}</li>`)
+          .join("");
+        const slots = [...stateSlotNames]
           .map(
             (slotName, index) =>
               `<p id="${baseId}-${kebabCase(slotName)}" data-sk-slot="${escapeHtml(slotName)}">${escapeHtml(
@@ -113,17 +117,22 @@ function renderPatternStatusExemplars(): string {
               )}</p>`,
           )
           .join("");
+        const describedByAttribute = slotIds.length ? ` aria-describedby="${slotIds.join(" ")}"` : "";
         const rootAttributes = [
           `data-sk-pattern="${escapeHtml(pattern.name)}"`,
           `data-sk-state="${escapeHtml(state.name)}"`,
-          `role="${escapeHtml(state.programmaticStatus.role)}"`,
-          `aria-live="${escapeHtml(state.programmaticStatus.ariaLive)}"`,
-          'aria-atomic="true"',
-          `aria-labelledby="${labelledBy}"${describedByAttribute}`,
+          `aria-labelledby="${headingId}"${describedByAttribute}`,
+          ...("programmaticStatus" in state && state.programmaticStatus
+            ? [
+                `role="${escapeHtml(state.programmaticStatus.role)}"`,
+                `aria-live="${escapeHtml(state.programmaticStatus.ariaLive)}"`,
+                'aria-atomic="true"',
+              ]
+            : []),
         ].join(" ");
 
         return [
-          `<article ${rootAttributes}><h3>${escapeHtml(pattern.name)} ${escapeHtml(state.name)} status</h3>${slots}</article>`,
+          `<article ${rootAttributes}><h3 id="${headingId}">${escapeHtml(pattern.name)} ${escapeHtml(state.name)} state</h3><ul>${visibleSignals}</ul>${slots}</article>`,
         ];
       }),
     )

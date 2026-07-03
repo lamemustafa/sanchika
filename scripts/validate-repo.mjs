@@ -301,21 +301,27 @@ for (const patternTypeExport of [
   }
 }
 
+const normalizedPatternDocs = patternDocs.replace(/\s+/g, " ").toLowerCase();
 for (const requiredPatternDocFragment of [
-  "Pattern status exemplars",
+  "Pattern state exemplars",
   "concrete `role`",
   "`aria-live` markup",
+  "every required pattern state",
+  "required slots",
+  "visible signals",
   "every required state that declares `programmaticStatus`",
 ]) {
-  if (!patternDocs.includes(requiredPatternDocFragment)) {
+  if (!normalizedPatternDocs.includes(requiredPatternDocFragment.toLowerCase())) {
     fail(`docs/patterns.md must document ${requiredPatternDocFragment}`);
   }
 }
 
 for (const requiredGalleryStatusFragment of [
-  "renderPatternStatusExemplars",
+  "renderPatternStateExemplars",
   "pattern.requiredStates.flatMap",
+  "state.requiredVisibleSignals",
   "state.programmaticStatus",
+  "data-sk-visible-signal",
   "data-sk-slot",
 ]) {
   if (!gallerySource.includes(requiredGalleryStatusFragment)) {
