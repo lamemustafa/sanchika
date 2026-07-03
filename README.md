@@ -30,6 +30,14 @@ Tools is in scope as a documented future consumer only. Do not implement tool
 templates, routes, or product-specific APIs until a specific Tools product spec
 exists.
 
+## Runtime Prerequisites
+
+Use Node 24+ and the repository-pinned `pnpm@10.28.2` for install, build,
+verification, and package checks. Package manifests currently declare
+`engines.node: ">=24"`. The Node 22.14.0+ publish-runtime note in the release
+policy is an npm Trusted Publishing minimum, not a supported Sanchika package
+runtime floor.
+
 ## Commands
 
 ```bash

@@ -63,6 +63,10 @@ if (rootPackage.private !== true) {
   fail("root package must remain private until publish gates pass");
 }
 
+if (rootPackage.engines?.node !== ">=24") {
+  fail("root package must declare engines.node >=24");
+}
+
 if (rootPackage.scripts?.["consumer:check"] !== "node scripts/check-local-link-consumer.mjs") {
   fail("root package must expose consumer:check for local-link adoption proof");
 }
@@ -387,6 +391,36 @@ if (!readText("README.md").includes("tools.complyeaze.com")) {
 for (const requiredReadmeCommand of ["pnpm artifact:check", "pnpm workflow:preflight", "pnpm publish:tarball-check"]) {
   if (!readText("README.md").includes(requiredReadmeCommand)) {
     fail(`README must list ${requiredReadmeCommand}`);
+  }
+}
+
+for (const requiredRuntimeFragment of [
+  "## Runtime Prerequisites",
+  "Node 24+",
+  "pnpm@10.28.2",
+  "npm Trusted Publishing minimum",
+  "supported Sanchika package",
+  "runtime floor",
+]) {
+  if (!readText("README.md").includes(requiredRuntimeFragment)) {
+    fail(`README must document ${requiredRuntimeFragment}`);
+  }
+}
+
+for (const packageName of expectedPackages) {
+  const packageReadme = requireText(`packages/${packageName}/README.md`);
+  for (const requiredPackageReadmeFragment of [
+    "## Runtime And Status",
+    "private and unpublished",
+    'engines.node: ">=24"',
+    "Do not lower the package runtime floor",
+    "## License And Marks",
+    "Source code is Apache-2.0",
+    "not licensed for endorsement",
+  ]) {
+    if (packageReadme && !packageReadme.includes(requiredPackageReadmeFragment)) {
+      fail(`packages/${packageName}/README.md must include ${requiredPackageReadmeFragment}`);
+    }
   }
 }
 
