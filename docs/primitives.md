@@ -36,6 +36,11 @@ remain discoverable, the consumer must suppress click, `Space`, `Enter`, and
 shortcut activation in its own handlers while keeping a visible disabled reason
 near the control.
 
+Loading command controls must expose `aria-busy` as the semantic loading state.
+`data-loading` is a visual hook only; it can trigger Sanchika loading treatment,
+but it is not assistive-technology evidence without `aria-busy` or an equivalent
+semantic loading state.
+
 ## Current Direction
 
 - `Button` proves default, hover, focus-visible, disabled, and loading states.

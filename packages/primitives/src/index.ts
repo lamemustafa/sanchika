@@ -62,7 +62,8 @@ export const primitiveSpecs = [
         state: "loading",
         attributes: ["aria-busy", "data-loading"],
         selectors: [".sk-button[aria-busy=\"true\"]", ".sk-button[data-loading=\"true\"]"],
-        notes: "Loading state must expose progress semantics in addition to motion.",
+        notes:
+          "Loading state must expose aria-busy as the semantic loading state. data-loading is a visual hook only and is not assistive-technology evidence by itself.",
       },
     ],
     standards: [

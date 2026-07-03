@@ -6,6 +6,8 @@ import {
   requiredButtonApgFragments,
   requiredButtonDisabledDocFragments,
   requiredButtonDisabledFragments,
+  requiredButtonLoadingDocFragments,
+  requiredButtonLoadingFragments,
   requiredFocusVisibleSelectors,
 } from "./accessibility-contracts.mjs";
 
@@ -40,6 +42,18 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
   for (const fragment of requiredButtonDisabledDocFragments) {
     if (!primitiveDocs.includes(fragment)) {
       fail(`docs/primitives.md must include disabled button fragment: ${fragment}`);
+    }
+  }
+
+  for (const fragment of requiredButtonLoadingFragments) {
+    if (!primitiveSource.includes(fragment)) {
+      fail(`Button loading contract must include fragment: ${fragment}`);
+    }
+  }
+
+  for (const fragment of requiredButtonLoadingDocFragments) {
+    if (!primitiveDocs.includes(fragment)) {
+      fail(`docs/primitives.md must include loading button fragment: ${fragment}`);
     }
   }
 

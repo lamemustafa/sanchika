@@ -28,6 +28,8 @@ export const contrastPairs = [
   ["ink-primary on surface", "--sk-color-ink-primary", "--sk-color-bg-surface", 4.5],
   ["ink-muted on surface", "--sk-color-ink-muted", "--sk-color-bg-surface", 4.5],
   ["danger on surface", "--sk-color-danger", "--sk-color-bg-surface", 4.5],
+  ["surface text on brand solid button", "--sk-color-bg-surface", "--sk-color-brand-primary", 4.5],
+  ["surface text on danger solid button", "--sk-color-bg-surface", "--sk-color-danger", 4.5],
   ["focus outline on surface", "--sk-color-info", "--sk-color-bg-surface", 3],
   ["control border on surface", "--sk-color-border-control", "--sk-color-bg-surface", 3],
   ["control border on base", "--sk-color-border-control", "--sk-color-bg-base", 3],

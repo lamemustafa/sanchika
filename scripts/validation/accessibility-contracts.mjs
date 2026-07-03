@@ -36,6 +36,20 @@ export const requiredButtonDisabledDocFragments = [
   "visible disabled reason",
 ];
 
+export const requiredButtonLoadingFragments = [
+  "aria-busy",
+  "semantic loading state",
+  "data-loading",
+  "visual hook only",
+];
+
+export const requiredButtonLoadingDocFragments = [
+  "`aria-busy`",
+  "semantic loading state",
+  "`data-loading`",
+  "visual hook only",
+];
+
 export const controlInvalidSelector = ".sk-field :is(input, textarea, select, [data-sk-control])[aria-invalid=\"true\"]";
 
 export const requiredFocusVisibleSelectors = [
