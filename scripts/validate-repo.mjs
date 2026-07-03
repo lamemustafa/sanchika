@@ -110,6 +110,14 @@ if (!existsSync(join(root, "scripts/check-publish-ready.mjs"))) {
   fail("publish:check script file must exist");
 }
 
+if (rootPackage.scripts?.["publish:tarball-check"] !== "node scripts/check-packed-tarball-consumer.mjs") {
+  fail("root package must expose publish:tarball-check for future packed-tarball adoption proof");
+}
+
+if (!existsSync(join(root, "scripts/check-packed-tarball-consumer.mjs"))) {
+  fail("publish:tarball-check script file must exist");
+}
+
 const publishReadyScript = requireText("scripts/check-publish-ready.mjs");
 for (const requiredPublishReadyFragment of [
   "validatePublishWorkflow",
@@ -376,12 +384,22 @@ if (!readText("README.md").includes("tools.complyeaze.com")) {
   fail("README must document Tools as the fourth consumer");
 }
 
+for (const requiredReadmeCommand of ["pnpm artifact:check", "pnpm workflow:preflight", "pnpm publish:tarball-check"]) {
+  if (!readText("README.md").includes(requiredReadmeCommand)) {
+    fail(`README must list ${requiredReadmeCommand}`);
+  }
+}
+
 if (/package link or packed artifact|Link or pack|package link\/artifact method/i.test(complyeazeAdoptionDocs)) {
   fail("docs/adoption-complyeaze.md must not present packed artifacts as a supported V0 adoption path");
 }
 
 if (!complyeazeAdoptionDocs.includes("Packed tarball artifacts are not a supported V0 adoption path")) {
   fail("docs/adoption-complyeaze.md must state that packed tarball artifacts are not yet supported");
+}
+
+if (!complyeazeAdoptionDocs.includes("pnpm publish:tarball-check")) {
+  fail("docs/adoption-complyeaze.md must name the publish:tarball-check gate before tarball adoption");
 }
 
 for (const requiredLocalLinkFragment of ["pnpm consumer:check", "local package-directory links"]) {
@@ -434,6 +452,7 @@ for (const requiredReleaseFragment of [
   "npm CLI 11.5.1 or later",
   "Node 22.14.0 or later",
   "pnpm publish:check",
+  "pnpm publish:tarball-check",
   "npm publish",
   "workspace:*",
   "id-token: write",
@@ -451,6 +470,7 @@ for (const requiredReleaseFragment of [
   "pnpm install --frozen-lockfile",
   "pnpm run verify",
   "pnpm publish:check",
+  "pnpm publish:tarball-check",
   "npm publish ./packages/tokens --provenance",
   "npm publish ./packages/primitives --provenance",
   "npm publish ./packages/patterns --provenance",

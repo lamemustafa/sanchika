@@ -1,6 +1,8 @@
 # Sanchika
 
 Sanchika is an AI-native design system SDK for compliance-grade interfaces.
+AI-native means typed, documented, agent-consumable design contracts; it does
+not mean Sanchika provides a model runtime or automated compliance judgment.
 
 This repository is independent from the ComplyEaze application repository. It is
 currently nested locally under ComplyEaze for coordinated development, but it has
@@ -36,8 +38,11 @@ pnpm validate
 pnpm typecheck
 pnpm build
 pnpm typecheck:api
+pnpm artifact:check
 pnpm smoke
 pnpm consumer:check
+pnpm workflow:preflight
+pnpm publish:tarball-check
 pnpm verify
 ```
 

@@ -21,11 +21,13 @@ Before the first package publish:
 3. Run `pnpm run verify` in a clean checkout.
 4. Run `pnpm publish:check` after manifests and publish workflow are changed
    for publishing. It is expected to fail in V0 while packages are private.
-5. Review accessibility claims against actual primitive behavior.
-6. Verify no real compliance data exists in docs, examples, tests, or fixtures.
-7. Prefer npm Trusted Publishing with GitHub Actions OIDC over long-lived npm
+5. Run `pnpm publish:tarball-check` after `pnpm build` to prove packed tarballs
+   install into a scratch consumer without publishing.
+6. Review accessibility claims against actual primitive behavior.
+7. Verify no real compliance data exists in docs, examples, tests, or fixtures.
+8. Prefer npm Trusted Publishing with GitHub Actions OIDC over long-lived npm
    publish tokens.
-8. Keep publish-only permissions, including `id-token: write`, out of CI and in
+9. Keep publish-only permissions, including `id-token: write`, out of CI and in
    a future publish workflow that runs only after repository and npm scope setup.
 
 ## Future Trusted Publishing Contract
@@ -47,7 +49,8 @@ decision is confirmed. The intended publisher contract is:
   `https://registry.npmjs.org`, set `package-manager-cache: false`, and avoid
   `NPM_TOKEN`, `NODE_AUTH_TOKEN`, or other long-lived npm token secrets.
 - The publish workflow must run `pnpm install --frozen-lockfile`,
-  `pnpm run verify`, and `pnpm publish:check` before any package publish.
+  `pnpm run verify`, `pnpm publish:check`, and
+  `pnpm publish:tarball-check` before any package publish.
 - Package publishing must target package directories in dependency order:
   `npm publish ./packages/tokens --provenance`,
   `npm publish ./packages/primitives --provenance`,

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -71,6 +72,10 @@ for (const packageName of packages) {
   }
 }
 
+if (failures.length === 0) {
+  runPackedTarballConsumerCheck();
+}
+
 if (failures.length > 0) {
   console.error("Sanchika publish readiness check failed:");
   for (const failure of failures) {
@@ -83,6 +88,17 @@ console.log("Sanchika publish readiness check passed.");
 
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
+}
+
+function runPackedTarballConsumerCheck() {
+  try {
+    execFileSync(process.execPath, [join(root, "scripts/check-packed-tarball-consumer.mjs")], {
+      cwd: root,
+      stdio: "inherit",
+    });
+  } catch {
+    failures.push("pnpm publish:tarball-check must pass before package publishing");
+  }
 }
 
 function readTextIfExists(path) {
@@ -112,6 +128,7 @@ function validatePublishWorkflow(workflow) {
     [/\bpnpm\s+install\s+--frozen-lockfile\b/, "publish workflow must install with pnpm install --frozen-lockfile"],
     [/\bpnpm\s+run\s+verify\b/, "publish workflow must run pnpm run verify before publish"],
     [/\bpnpm\s+publish:check\b/, "publish workflow must run pnpm publish:check before publish"],
+    [/\bpnpm\s+publish:tarball-check\b/, "publish workflow must run pnpm publish:tarball-check before publish"],
   ]) {
     if (!pattern.test(workflow)) {
       failures.push(message);
@@ -162,7 +179,12 @@ function validatePublishWorkflow(workflow) {
     }
   }
 
-  validateCommandOrder(workflow, ["pnpm install --frozen-lockfile", "pnpm run verify", "pnpm publish:check"]);
+  validateCommandOrder(workflow, [
+    "pnpm install --frozen-lockfile",
+    "pnpm run verify",
+    "pnpm publish:check",
+    "pnpm publish:tarball-check",
+  ]);
   validatePackagePublishCommands(workflow);
 }
 

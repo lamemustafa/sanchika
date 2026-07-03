@@ -64,6 +64,7 @@ workspace.
 - The adoption PR records the Sanchika commit, package link method, changed
   files, and rollback files.
 
-Packed tarball artifacts are not a supported V0 adoption path until a local
-consumer smoke proves workspace dependency rewriting and package installation
-from tarballs.
+Packed tarball artifacts are not a supported V0 adoption path until
+`pnpm publish:tarball-check` proves workspace dependency rewriting and package
+installation from tarballs, and a consumer-specific adoption plan approves that
+artifact path.
