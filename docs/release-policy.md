@@ -35,12 +35,24 @@ decision is confirmed. The intended publisher contract is:
 
 - GitHub owner/repo: `lamemustafa/sanchika`.
 - Workflow file: `.github/workflows/publish.yml`, separate from CI.
+- Trigger: tag push only. Do not publish from pull requests, branch pushes,
+  scheduled workflows, workflow-run chaining, or broad manual dispatch.
 - Runner: GitHub-hosted `ubuntu-latest`.
 - Build runtime: Node 24 with the repository-pinned pnpm version for install,
   build, verification, and pack checks.
 - Publish runtime: npm CLI 11.5.1 or later on Node 22.14.0 or later, matching
-  npm Trusted Publishing requirements. Use `npm publish` with OIDC/provenance
-  for the publish step, not long-lived npm tokens.
+  npm Trusted Publishing requirements. Use `npm publish` with `--provenance`
+  and OIDC for the publish step, not long-lived npm tokens.
+- The publish workflow must set `registry-url` to
+  `https://registry.npmjs.org`, set `package-manager-cache: false`, and avoid
+  `NPM_TOKEN`, `NODE_AUTH_TOKEN`, or other long-lived npm token secrets.
+- The publish workflow must run `pnpm install --frozen-lockfile`,
+  `pnpm run verify`, and `pnpm publish:check` before any package publish.
+- Package publishing must target package directories in dependency order:
+  `npm publish ./packages/tokens --provenance`,
+  `npm publish ./packages/primitives --provenance`,
+  `npm publish ./packages/patterns --provenance`, then
+  `npm publish ./packages/gallery --provenance`. Never publish the private orchestration root.
 - Before publish, package manifests must no longer contain `workspace:*`
   dependencies, and package tarballs must include package-level README and
   LICENSE files.

@@ -110,6 +110,42 @@ if (!existsSync(join(root, "scripts/check-publish-ready.mjs"))) {
   fail("publish:check script file must exist");
 }
 
+const publishReadyScript = requireText("scripts/check-publish-ready.mjs");
+for (const requiredPublishReadyFragment of [
+  "validatePublishWorkflow",
+  "contents: read",
+  "id-token: write",
+  "package-manager-cache: false",
+  "registry-url",
+  "https://registry.npmjs.org",
+  "npm publish",
+  "NPM_TOKEN",
+  "NODE_AUTH_TOKEN",
+  "_authToken",
+  "npm\\s+login",
+  "npm\\s+config",
+  "write-all",
+  "pull_request_target",
+  "pull_request",
+  "workflow_run",
+  "schedule",
+  "workflow_dispatch",
+  "branches:",
+  "tags:",
+  "pnpm install --frozen-lockfile",
+  "pnpm run verify",
+  "pnpm publish:check",
+  "npm publish ./packages/tokens",
+  "npm publish ./packages/primitives",
+  "npm publish ./packages/patterns",
+  "npm publish ./packages/gallery",
+  "--provenance",
+]) {
+  if (publishReadyScript && !publishReadyScript.includes(requiredPublishReadyFragment)) {
+    fail(`publish:check script must enforce ${requiredPublishReadyFragment}`);
+  }
+}
+
 const productText = requireText("PRODUCT.md");
 if (productText && !productText.includes("## Register\n\nproduct")) {
   fail("PRODUCT.md must declare product register");
@@ -387,6 +423,25 @@ for (const requiredReleaseFragment of [
   "npm publish",
   "workspace:*",
   "id-token: write",
+  "registry-url",
+  "https://registry.npmjs.org",
+  "package-manager-cache: false",
+  "NPM_TOKEN",
+  "NODE_AUTH_TOKEN",
+  "tag push only",
+  "pull requests",
+  "branch pushes",
+  "scheduled workflows",
+  "workflow-run chaining",
+  "--provenance",
+  "pnpm install --frozen-lockfile",
+  "pnpm run verify",
+  "pnpm publish:check",
+  "npm publish ./packages/tokens --provenance",
+  "npm publish ./packages/primitives --provenance",
+  "npm publish ./packages/patterns --provenance",
+  "npm publish ./packages/gallery --provenance",
+  "private orchestration root",
 ]) {
   if (!releasePolicy.includes(requiredReleaseFragment)) {
     fail(`docs/release-policy.md must include ${requiredReleaseFragment}`);

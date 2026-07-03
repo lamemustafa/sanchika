@@ -4,15 +4,26 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packages = ["tokens", "primitives", "patterns", "gallery"];
+const packagePublishCommands = [
+  "npm publish ./packages/tokens --provenance",
+  "npm publish ./packages/primitives --provenance",
+  "npm publish ./packages/patterns --provenance",
+  "npm publish ./packages/gallery --provenance",
+];
+const publishWorkflowPath = ".github/workflows/publish.yml";
 const failures = [];
 
 const rootPackage = readJson("package.json");
+const pnpmVersion = parsePackageManagerVersion(rootPackage.packageManager);
 if (rootPackage.private !== true) {
   failures.push("root package must remain private for workspace-only orchestration");
 }
 
-if (!existsSync(join(root, ".github/workflows/publish.yml"))) {
-  failures.push("publish workflow .github/workflows/publish.yml must exist before package publishing");
+const publishWorkflow = readTextIfExists(publishWorkflowPath);
+if (!publishWorkflow) {
+  failures.push(`publish workflow ${publishWorkflowPath} must exist before package publishing`);
+} else {
+  validatePublishWorkflow(publishWorkflow);
 }
 
 for (const packageName of packages) {
@@ -72,4 +83,143 @@ console.log("Sanchika publish readiness check passed.");
 
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
+}
+
+function readTextIfExists(path) {
+  const fullPath = join(root, path);
+  if (!existsSync(fullPath)) return null;
+  return readFileSync(fullPath, "utf8");
+}
+
+function parsePackageManagerVersion(packageManager) {
+  const match = /^pnpm@(.+)$/.exec(packageManager ?? "");
+  return match?.[1] ?? null;
+}
+
+function validatePublishWorkflow(workflow) {
+  for (const [pattern, message] of [
+    [/^\s*permissions:\s*$/m, "publish workflow must declare explicit permissions"],
+    [/^\s*contents:\s*read\s*$/m, "publish workflow must request contents: read"],
+    [/^\s*id-token:\s*write\s*$/m, "publish workflow must request id-token: write for npm Trusted Publishing"],
+    [/^\s*runs-on:\s*ubuntu-latest\s*$/m, "publish workflow must run on ubuntu-latest"],
+    [/^\s*node-version:\s*['"]?24['"]?\s*$/m, "publish workflow must build on Node 24"],
+    [
+      /^\s*registry-url:\s*['"]?https:\/\/registry\.npmjs\.org['"]?\s*$/m,
+      "publish workflow must set registry-url to https://registry.npmjs.org",
+    ],
+    [/^\s*package-manager-cache:\s*false\s*$/m, "publish workflow must set package-manager-cache: false"],
+    [/\bnpm\s+publish\b/, "publish workflow must use npm publish"],
+    [/\bpnpm\s+install\s+--frozen-lockfile\b/, "publish workflow must install with pnpm install --frozen-lockfile"],
+    [/\bpnpm\s+run\s+verify\b/, "publish workflow must run pnpm run verify before publish"],
+    [/\bpnpm\s+publish:check\b/, "publish workflow must run pnpm publish:check before publish"],
+  ]) {
+    if (!pattern.test(workflow)) {
+      failures.push(message);
+    }
+  }
+
+  if (pnpmVersion && !new RegExp(`^\\s*version:\\s*['"]?${escapeRegExp(pnpmVersion)}['"]?\\s*$`, "m").test(workflow)) {
+    failures.push(`publish workflow must pin pnpm setup to ${pnpmVersion}`);
+  }
+
+  for (const forbiddenTrigger of ["pull_request_target", "pull_request", "workflow_run", "schedule", "workflow_dispatch"]) {
+    if (new RegExp(`\\b${forbiddenTrigger}\\b`).test(workflow)) {
+      failures.push(`publish workflow must not use ${forbiddenTrigger} trigger`);
+    }
+  }
+
+  if (/^\s*branches:\s*$/m.test(workflow)) {
+    failures.push("publish workflow must not publish from branch push triggers");
+  }
+
+  if (!/^\s*tags:\s*$/m.test(workflow)) {
+    failures.push("publish workflow must publish only from tag push triggers");
+  }
+
+  if (/\bpnpm\s+publish(?:\s|$)/.test(workflow)) {
+    failures.push("publish workflow must not use pnpm publish");
+  }
+
+  if (/\bwrite-all\b/.test(workflow)) {
+    failures.push("publish workflow must not use write-all permissions");
+  }
+
+  for (const match of workflow.matchAll(/^\s*([A-Za-z][\w-]*):\s*write\b/gm)) {
+    const permission = match[1];
+    if (permission !== "id-token") {
+      failures.push(`publish workflow must not request ${permission}: write`);
+    }
+  }
+
+  if (usesNpmTokenAuth(workflow)) {
+    failures.push("publish workflow must not use long-lived npm token secrets such as NPM_TOKEN or NODE_AUTH_TOKEN");
+  }
+
+  for (const match of workflow.matchAll(/^\s*(?:-\s*)?uses:\s*([^\s#]+)\s*(?:#.*)?$/gm)) {
+    const actionRef = match[1].replace(/^['"]|['"]$/g, "");
+    if (!/@[0-9a-f]{40}$/.test(actionRef)) {
+      failures.push(`publish workflow action reference ${actionRef} must be pinned to a full commit SHA`);
+    }
+  }
+
+  validateCommandOrder(workflow, ["pnpm install --frozen-lockfile", "pnpm run verify", "pnpm publish:check"]);
+  validatePackagePublishCommands(workflow);
+}
+
+function validateCommandOrder(workflow, orderedCommands) {
+  let previousIndex = -1;
+  for (const command of orderedCommands) {
+    const index = workflow.indexOf(command);
+    if (index === -1) return;
+    if (index < previousIndex) {
+      failures.push(`publish workflow must run ${orderedCommands.join(" before ")}`);
+      return;
+    }
+    previousIndex = index;
+  }
+
+  const firstPublishIndex = workflow.match(/\bnpm\s+publish\b/)?.index ?? -1;
+  if (firstPublishIndex !== -1 && previousIndex > firstPublishIndex) {
+    failures.push(`publish workflow must run ${orderedCommands.join(" before ")} before npm publish`);
+  }
+}
+
+function validatePackagePublishCommands(workflow) {
+  let previousIndex = -1;
+
+  for (const command of packagePublishCommands) {
+    const index = workflow.indexOf(command);
+    if (index === -1) {
+      failures.push(`publish workflow must run ${command}`);
+      continue;
+    }
+    if (index < previousIndex) {
+      failures.push(`publish workflow must publish packages in dependency order: ${packages.join(", ")}`);
+    }
+    previousIndex = index;
+  }
+
+  for (const match of workflow.matchAll(/^\s*(?:-\s*)?(?:run:\s*)?npm\s+publish\b(.*)$/gm)) {
+    const args = match[1] ?? "";
+    if (!/\.\/packages\/(?:tokens|primitives|patterns|gallery)\b/.test(args)) {
+      failures.push("publish workflow must not run npm publish from the private root package");
+    }
+    if (!/\s--provenance\b/.test(args)) {
+      failures.push("publish workflow package publish commands must include --provenance");
+    }
+  }
+}
+
+function usesNpmTokenAuth(workflow) {
+  return [
+    /\b(?:NPM_TOKEN|NODE_AUTH_TOKEN|npm_token)\b/i,
+    /secrets\.[A-Za-z0-9_]*NPM[A-Za-z0-9_]*/i,
+    /_authToken/i,
+    /^\s*(?:-\s*)?(?:run:\s*)?npm\s+login\b/im,
+    /^\s*(?:-\s*)?(?:run:\s*)?npm\s+config\s+set\b.*(?:token|_authToken)/im,
+  ].some((pattern) => pattern.test(workflow));
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
