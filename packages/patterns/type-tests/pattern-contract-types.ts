@@ -1,5 +1,6 @@
 import type {
   PatternA11yCheckFor,
+  PatternA11yCriterion,
   PatternName,
   PatternProgrammaticStatusFor,
   PatternSlotName,
@@ -16,6 +17,7 @@ const evidenceSlot: PatternSlotNameFor<"EvidencePanel"> = "sourceList";
 const trustSlot: PatternSlotNameFor<"TrustBoundary"> = "permissionList";
 const serviceState: PatternStateNameFor<"ServiceSection"> = "selected";
 const emptyEvidenceSlot: PatternStateRequiredSlotNameFor<"EvidencePanel", "empty"> = "actionSlot";
+const targetSizeCriterion: PatternA11yCriterion = "WCAG22:2.5.8";
 const blockedCheck: PatternA11yCheckFor<"EvidencePanel", "blocked"> = {
   id: "blocked-reason-action-association",
   criterion: "WCAG22:3.3.2",
@@ -38,6 +40,7 @@ void evidenceSlot;
 void trustSlot;
 void serviceState;
 void emptyEvidenceSlot;
+void targetSizeCriterion;
 void blockedCheck;
 void blockedStatus;
 
@@ -53,6 +56,9 @@ const wrongState: PatternStateNameFor<"ServiceSection"> = "local-only";
 // @ts-expect-error EvidencePanel.empty only requires actionSlot.
 const wrongStateSlot: PatternStateRequiredSlotNameFor<"EvidencePanel", "empty"> = "sourceList";
 
+// @ts-expect-error Unknown WCAG criteria must not be accepted.
+const unknownCriterion: PatternA11yCriterion = "WCAG22:9.9.9";
+
 // @ts-expect-error EvidencePanel.empty has no programmatic status contract.
 const wrongEmptyStatus: PatternProgrammaticStatusFor<"EvidencePanel", "empty"> = {
   role: "status",
@@ -64,4 +70,5 @@ void unknownPattern;
 void wrongSlot;
 void wrongState;
 void wrongStateSlot;
+void unknownCriterion;
 void wrongEmptyStatus;

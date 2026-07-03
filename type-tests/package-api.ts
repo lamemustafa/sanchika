@@ -3,6 +3,7 @@ import { primitiveClassName } from "@sanchika/primitives";
 import type { PrimitiveSizeFor, PrimitiveToneFor } from "@sanchika/primitives";
 import type {
   PatternA11yCheckFor,
+  PatternA11yCriterion,
   PatternProgrammaticStatusFor,
   PatternSlotNameFor,
   PatternStateNameFor,
@@ -20,6 +21,7 @@ const fieldSize: PrimitiveSizeFor<"Field"> = "lg";
 const evidenceSlot: PatternSlotNameFor<"EvidencePanel"> = "sourceList";
 const trustState: PatternStateNameFor<"TrustBoundary"> = "local-only";
 const emptyEvidenceSlot: PatternStateRequiredSlotNameFor<"EvidencePanel", "empty"> = "actionSlot";
+const targetSizeCriterion: PatternA11yCriterion = "WCAG22:2.5.8";
 const blockedPatternCheck: PatternA11yCheckFor<"EvidencePanel", "blocked"> = {
   id: "blocked-reason-action-association",
   criterion: "WCAG22:3.3.2",
@@ -47,6 +49,7 @@ void motionRole;
 void evidenceSlot;
 void trustState;
 void emptyEvidenceSlot;
+void targetSizeCriterion;
 void blockedPatternCheck;
 void blockedPatternStatus;
 void galleryCssImport;

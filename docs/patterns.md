@@ -21,6 +21,27 @@ Each pattern declares:
   cannot be reduced to color or layout.
 - `nonGoals`: runtime behavior or claims the pattern does not provide.
 
+## WCAG Criterion Vocabulary
+
+Pattern a11y checks may use only the criteria documented here, and each
+criterion must keep its W3C WCAG 2.2 source URL:
+
+| Criterion | Source |
+| --- | --- |
+| `WCAG22:1.3.1` | https://www.w3.org/TR/WCAG22/#info-and-relationships |
+| `WCAG22:1.4.3` | https://www.w3.org/TR/WCAG22/#contrast-minimum |
+| `WCAG22:1.4.11` | https://www.w3.org/TR/WCAG22/#non-text-contrast |
+| `WCAG22:2.1.1` | https://www.w3.org/TR/WCAG22/#keyboard |
+| `WCAG22:2.4.7` | https://www.w3.org/TR/WCAG22/#focus-visible |
+| `WCAG22:2.5.8` | https://www.w3.org/TR/WCAG22/#target-size-minimum |
+| `WCAG22:3.3.1` | https://www.w3.org/TR/WCAG22/#error-identification |
+| `WCAG22:3.3.2` | https://www.w3.org/TR/WCAG22/#labels-or-instructions |
+| `WCAG22:4.1.2` | https://www.w3.org/TR/WCAG22/#name-role-value |
+| `WCAG22:4.1.3` | https://www.w3.org/TR/WCAG22/#status-messages |
+
+Every state that declares `programmaticStatus` must include a `WCAG22:4.1.3`
+a11y check so visual state changes are also status messages.
+
 ## Type Contracts
 
 Consumers can use derived TypeScript unions to bind implementation code to a

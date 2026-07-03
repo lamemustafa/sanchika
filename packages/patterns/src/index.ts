@@ -20,8 +20,28 @@ export type PatternA11ySourceReference =
       sourceUrl: "https://www.w3.org/TR/WCAG22/#info-and-relationships";
     }
   | {
+      criterion: "WCAG22:1.4.3";
+      sourceUrl: "https://www.w3.org/TR/WCAG22/#contrast-minimum";
+    }
+  | {
+      criterion: "WCAG22:1.4.11";
+      sourceUrl: "https://www.w3.org/TR/WCAG22/#non-text-contrast";
+    }
+  | {
+      criterion: "WCAG22:2.1.1";
+      sourceUrl: "https://www.w3.org/TR/WCAG22/#keyboard";
+    }
+  | {
       criterion: "WCAG22:2.4.7";
       sourceUrl: "https://www.w3.org/TR/WCAG22/#focus-visible";
+    }
+  | {
+      criterion: "WCAG22:2.5.8";
+      sourceUrl: "https://www.w3.org/TR/WCAG22/#target-size-minimum";
+    }
+  | {
+      criterion: "WCAG22:3.3.1";
+      sourceUrl: "https://www.w3.org/TR/WCAG22/#error-identification";
     }
   | {
       criterion: "WCAG22:3.3.2";
@@ -162,6 +182,14 @@ export const patternSpecs = [
             slotRefs: ["uncertaintyCopy", "actionSlot"],
             manualTest: "Confirm the blocking reason is read before or with the action needed to resolve it.",
           },
+          {
+            id: "blocked-status-message",
+            criterion: "WCAG22:4.1.3",
+            sourceUrl: "https://www.w3.org/TR/WCAG22/#status-messages",
+            requirement: "Blocked evidence updates must expose the blocking reason as a status message without moving focus.",
+            slotRefs: ["uncertaintyCopy", "actionSlot"],
+            manualTest: "Trigger the blocked state and confirm role=alert announces the reason and next action without moving focus.",
+          },
         ],
       },
     ],
@@ -220,6 +248,14 @@ export const patternSpecs = [
             slotRefs: ["boundarySummary", "dataFlow"],
             manualTest: "Confirm the upload control is described by the destination and reason for upload.",
           },
+          {
+            id: "upload-required-status-message",
+            criterion: "WCAG22:4.1.3",
+            sourceUrl: "https://www.w3.org/TR/WCAG22/#status-messages",
+            requirement: "Upload-required state must announce the upload boundary as a status message before file selection.",
+            slotRefs: ["boundarySummary", "dataFlow"],
+            manualTest: "Trigger upload-required state and confirm role=alert announces the upload destination and reason.",
+          },
         ],
       },
       {
@@ -242,6 +278,14 @@ export const patternSpecs = [
             slotRefs: ["permissionList", "boundarySummary"],
             manualTest: "Inspect the permission control name and description with a screen reader.",
           },
+          {
+            id: "permission-required-status-message",
+            criterion: "WCAG22:4.1.3",
+            sourceUrl: "https://www.w3.org/TR/WCAG22/#status-messages",
+            requirement: "Permission-required state must announce the requested permission and purpose as a status message.",
+            slotRefs: ["permissionList", "boundarySummary"],
+            manualTest: "Trigger permission-required state and confirm role=alert announces the permission and purpose.",
+          },
         ],
       },
       {
@@ -263,6 +307,14 @@ export const patternSpecs = [
             requirement: "Unavailable state must be more than a disabled-only control.",
             slotRefs: ["boundarySummary", "actionSlot"],
             manualTest: "Confirm reason and fallback action remain programmatically available when the primary action is unavailable.",
+          },
+          {
+            id: "unavailable-boundary-status-message",
+            criterion: "WCAG22:4.1.3",
+            sourceUrl: "https://www.w3.org/TR/WCAG22/#status-messages",
+            requirement: "Unavailable trust-boundary state must announce the reason and fallback action as a status message.",
+            slotRefs: ["boundarySummary", "actionSlot"],
+            manualTest: "Trigger unavailable state and confirm role=alert announces the reason and fallback action.",
           },
         ],
       },
@@ -321,6 +373,14 @@ export const patternSpecs = [
             slotRefs: ["serviceName", "ctaSlot"],
             manualTest: "Select the service with keyboard only and confirm visible focus and selected text are present.",
           },
+          {
+            id: "selected-service-status-message",
+            criterion: "WCAG22:4.1.3",
+            sourceUrl: "https://www.w3.org/TR/WCAG22/#status-messages",
+            requirement: "Selected service state must announce the selected service and next step as a status message.",
+            slotRefs: ["serviceName", "ctaSlot"],
+            manualTest: "Select the service and confirm role=status announces the selected service without moving focus.",
+          },
         ],
       },
       {
@@ -342,6 +402,14 @@ export const patternSpecs = [
             requirement: "Unavailable service explanation must not be hidden from assistive technology.",
             slotRefs: ["serviceName", "humanSupport"],
             manualTest: "Confirm service name, unavailable reason, and consultation path are announced together.",
+          },
+          {
+            id: "unavailable-service-status-message",
+            criterion: "WCAG22:4.1.3",
+            sourceUrl: "https://www.w3.org/TR/WCAG22/#status-messages",
+            requirement: "Unavailable service state must announce the service and consultation path as a status message.",
+            slotRefs: ["serviceName", "humanSupport"],
+            manualTest: "Trigger unavailable service state and confirm role=status announces the reason and consultation path.",
           },
         ],
       },

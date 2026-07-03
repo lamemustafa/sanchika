@@ -3,11 +3,29 @@ import { requiredPatternContracts } from "./contrast.mjs";
 
 const a11ySourceByCriterion = new Map([
   ["WCAG22:1.3.1", "https://www.w3.org/TR/WCAG22/#info-and-relationships"],
+  ["WCAG22:1.4.3", "https://www.w3.org/TR/WCAG22/#contrast-minimum"],
+  ["WCAG22:1.4.11", "https://www.w3.org/TR/WCAG22/#non-text-contrast"],
+  ["WCAG22:2.1.1", "https://www.w3.org/TR/WCAG22/#keyboard"],
   ["WCAG22:2.4.7", "https://www.w3.org/TR/WCAG22/#focus-visible"],
+  ["WCAG22:2.5.8", "https://www.w3.org/TR/WCAG22/#target-size-minimum"],
+  ["WCAG22:3.3.1", "https://www.w3.org/TR/WCAG22/#error-identification"],
   ["WCAG22:3.3.2", "https://www.w3.org/TR/WCAG22/#labels-or-instructions"],
   ["WCAG22:4.1.2", "https://www.w3.org/TR/WCAG22/#name-role-value"],
   ["WCAG22:4.1.3", "https://www.w3.org/TR/WCAG22/#status-messages"],
 ]);
+
+const requiredPatternCriterionReferences = [
+  ["WCAG22:1.3.1", "https://www.w3.org/TR/WCAG22/#info-and-relationships"],
+  ["WCAG22:1.4.3", "https://www.w3.org/TR/WCAG22/#contrast-minimum"],
+  ["WCAG22:1.4.11", "https://www.w3.org/TR/WCAG22/#non-text-contrast"],
+  ["WCAG22:2.1.1", "https://www.w3.org/TR/WCAG22/#keyboard"],
+  ["WCAG22:2.4.7", "https://www.w3.org/TR/WCAG22/#focus-visible"],
+  ["WCAG22:2.5.8", "https://www.w3.org/TR/WCAG22/#target-size-minimum"],
+  ["WCAG22:3.3.1", "https://www.w3.org/TR/WCAG22/#error-identification"],
+  ["WCAG22:3.3.2", "https://www.w3.org/TR/WCAG22/#labels-or-instructions"],
+  ["WCAG22:4.1.2", "https://www.w3.org/TR/WCAG22/#name-role-value"],
+  ["WCAG22:4.1.3", "https://www.w3.org/TR/WCAG22/#status-messages"],
+];
 
 const ariaLiveByRole = new Map([
   ["status", "polite"],
@@ -21,6 +39,15 @@ export function validatePatternContracts({ patternSource, patternDocs, fail }) {
     }
     if (!patternDocs.includes(requiredPatternContract)) {
       fail(`docs/patterns.md must document ${requiredPatternContract}`);
+    }
+  }
+
+  for (const [criterion, sourceUrl] of requiredPatternCriterionReferences) {
+    if (!patternSource.includes(`criterion: "${criterion}"`) || !patternSource.includes(`sourceUrl: "${sourceUrl}"`)) {
+      fail(`PatternA11ySourceReference must include ${criterion} with ${sourceUrl}`);
+    }
+    if (!patternDocs.includes(criterion) || !patternDocs.includes(sourceUrl)) {
+      fail(`docs/patterns.md must document ${criterion} with ${sourceUrl}`);
     }
   }
 
@@ -84,6 +111,9 @@ function validateProgrammaticStatus({ pattern, state, topLevelSlots, fail }) {
   }
   if (!state.programmaticStatus.requirement) {
     fail(`${pattern.name}.${state.name} programmaticStatus must include requirement`);
+  }
+  if (!state.a11yChecks.some((check) => check.criterion === "WCAG22:4.1.3")) {
+    fail(`${pattern.name}.${state.name} programmaticStatus must include a WCAG22:4.1.3 status-message a11y check`);
   }
   const stateSlots = state.requiredSlots.length > 0 ? new Set(state.requiredSlots) : topLevelSlots;
   for (const slotName of state.programmaticStatus.slotRefs) {
