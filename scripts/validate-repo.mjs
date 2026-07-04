@@ -613,9 +613,9 @@ if (galleryManifest.scripts?.typecheck !== "tsc -p tsconfig.typecheck.json --noE
 }
 
 for (const requiredGalleryTypecheckFragment of [
-  '"@sanchika/tokens": ["packages/tokens/src/index.ts"]',
-  '"@sanchika/primitives": ["packages/primitives/src/index.ts"]',
-  '"@sanchika/patterns": ["packages/patterns/src/index.ts"]',
+  '"@sanchika/tokens": ["../tokens/src/index.ts"]',
+  '"@sanchika/primitives": ["../primitives/src/index.ts"]',
+  '"@sanchika/patterns": ["../patterns/src/index.ts"]',
 ]) {
   if (!galleryTypecheckConfig.includes(requiredGalleryTypecheckFragment)) {
     fail(`packages/gallery/tsconfig.typecheck.json must include ${requiredGalleryTypecheckFragment}`);
