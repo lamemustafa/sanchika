@@ -40,6 +40,12 @@ pnpm github:ruleset --required-check "<github-check-context>" \
 Apply it only after `master` exists and GitHub has recorded the first CI check
 context.
 
+Verify repository settings, topics, refs, and the applied ruleset with:
+
+```bash
+pnpm github:verify --required-check "<github-check-context>"
+```
+
 ## Pull Request Policy
 
 - Require at least one approving review.

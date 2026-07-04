@@ -86,12 +86,20 @@ if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-mast
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
 
+if (rootPackage.scripts?.["github:verify"] !== "node scripts/check-github-repo-state.mjs") {
+  fail("root package must expose github:verify for post-push repository state checks");
+}
+
 if (!existsSync(join(root, "scripts/check-workflow-preflight.mjs"))) {
   fail("workflow:preflight script file must exist");
 }
 
 if (!existsSync(join(root, "scripts/render-github-master-ruleset.mjs"))) {
   fail("github:ruleset script file must exist");
+}
+
+if (!existsSync(join(root, "scripts/check-github-repo-state.mjs"))) {
+  fail("github:verify script file must exist");
 }
 
 if (!existsSync(join(root, "scripts/check-local-link-consumer.mjs"))) {
@@ -275,6 +283,7 @@ const repositorySettingsDocs = requireText("docs/repository-settings.md");
 const packageManifestValidationSource = readText("scripts/validation/package-manifests.mjs");
 const workflowPreflightSource = readText("scripts/check-workflow-preflight.mjs");
 const githubRulesetSource = readText("scripts/render-github-master-ruleset.mjs");
+const githubStateCheckSource = readText("scripts/check-github-repo-state.mjs");
 const packageArtifactCheckSource = readText("scripts/check-package-artifacts.mjs");
 const packedTarballCheckSource = readText("scripts/check-packed-tarball-consumer.mjs");
 const tarballContentsSource = readText("scripts/validation/tarball-contents.mjs");
@@ -666,6 +675,7 @@ for (const requiredGithubSetupFragment of [
   "pnpm publish:tarball-check",
   "git push -u origin HEAD:master",
   "pnpm github:ruleset",
+  "pnpm github:verify",
   "--required-check",
   "--owner-bypass-id",
   "private vulnerability reporting",
@@ -692,6 +702,7 @@ for (const requiredRepositorySettingsFragment of [
   "CODEOWNERS",
   "Dependabot",
   "pnpm github:ruleset",
+  "pnpm github:verify",
   "--required-check",
   "--owner-bypass-id",
 ]) {
@@ -719,6 +730,30 @@ for (const requiredRulesetFragment of [
 ]) {
   if (!githubRulesetSource.includes(requiredRulesetFragment)) {
     fail(`github:ruleset script must include ${requiredRulesetFragment}`);
+  }
+}
+
+for (const requiredGithubStateCheckFragment of [
+  "lamemustafa/sanchika",
+  "github:verify",
+  "git ls-remote",
+  "gh repo view",
+  "deleteBranchOnMerge",
+  "defaultBranchRef",
+  "hasIssuesEnabled",
+  "hasWikiEnabled",
+  "squashMergeAllowed",
+  "mergeCommitAllowed",
+  "rebaseMergeAllowed",
+  "repositoryTopics",
+  "Protect master",
+  "required_status_checks",
+  "required_review_thread_resolution",
+  "non_fast_forward",
+  "self-test",
+]) {
+  if (!githubStateCheckSource.includes(requiredGithubStateCheckFragment)) {
+    fail(`github:verify script must include ${requiredGithubStateCheckFragment}`);
   }
 }
 

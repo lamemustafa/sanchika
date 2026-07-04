@@ -90,6 +90,12 @@ gh api repos/lamemustafa/sanchika/rulesets \
 Use the exact check context from GitHub's first CI run. Do not guess it from the
 workflow file name.
 
+After the ruleset is applied, verify the public repository state:
+
+```bash
+pnpm github:verify --required-check "<github-check-context>"
+```
+
 ## References
 
 - GitHub repository creation:
