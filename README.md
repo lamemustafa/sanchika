@@ -25,10 +25,16 @@ Sanchika starts with four packages:
 2. Axal workspace surfaces.
 3. Pack local-first browser-extension surfaces.
 4. Tools at `tools.complyeaze.com`.
+5. External operational SaaS adopters, after local-link or artifact evidence is
+   reviewed.
 
 Tools is in scope as a documented future consumer only. Do not implement tool
 templates, routes, or product-specific APIs until a specific Tools product spec
 exists.
+
+External adoption is in scope as public source evaluation only. Packages remain
+private and unpublished in V0; external teams must use a documented local link or
+approved artifact path and record rollback evidence.
 
 ## Runtime Prerequisites
 
@@ -73,10 +79,11 @@ Use `primitiveClassName(...)` or equivalent class composition to apply
 ## Gallery Proof Artifact
 
 `@sanchika/gallery` exports `renderPrimitiveGalleryMarkup()` for fragment-level
-checks and `renderPrimitiveGalleryDocument()` for a static HTML review artifact.
+checks and `renderPrimitiveGalleryDocument()` for a package-specifier HTML review document.
 The document renderer includes token CSS before primitive CSS and is intended
-for CI/review proof, not as an app route, server, Storybook replacement, or
-runtime shell.
+for CI/review proof. It is not a directly openable browser artifact unless the
+consuming tool resolves `@sanchika/*` CSS hrefs. It is not an app route, server,
+Storybook replacement, or runtime shell.
 
 ## Status
 
@@ -93,6 +100,7 @@ real ComplyEaze surface consumes Sanchika successfully.
 - [Axal adoption](docs/adoption-axal.md)
 - [Pack adoption](docs/adoption-pack.md)
 - [Tools adoption](docs/adoption-tools.md)
+- [External adoption](docs/adoption-external.md)
 - [Contributing](CONTRIBUTING.md)
 - [Support](SUPPORT.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)

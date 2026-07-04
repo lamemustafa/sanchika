@@ -31,5 +31,12 @@ block from the repository.
 
 Use the conduct report issue template for non-sensitive conduct concerns that can
 be discussed publicly. Do not include sensitive material in public conduct
-reports. If the concern is a vulnerability or sensitive-data exposure, use
-GitHub private vulnerability reporting for `lamemustafa/sanchika`.
+reports.
+
+Send sensitive conduct concerns that are not vulnerabilities to
+`security@complyeaze.com` with the subject `Sanchika conduct report`. Do not put
+PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, private
+messages, local paths, or taxpayer data in public issues.
+
+If the concern is a vulnerability or sensitive-data exposure, use GitHub private
+vulnerability reporting for `lamemustafa/sanchika`.

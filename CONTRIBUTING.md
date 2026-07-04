@@ -9,7 +9,8 @@ should improve the SDK without adding app-specific runtime coupling.
   `docs/primitives.md`, and `docs/patterns.md`.
 - For consumer or adoption changes, also read the relevant adoption docs:
   `docs/adoption-complyeaze.md`, `docs/adoption-axal.md`,
-  `docs/adoption-pack.md`, and `docs/adoption-tools.md`.
+  `docs/adoption-pack.md`, `docs/adoption-tools.md`, and
+  `docs/adoption-external.md`.
 - For public repository, release, or maintenance changes, also read
   `docs/github-repository-setup.md`, `docs/repository-settings.md`,
   `SUPPORT.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md`.

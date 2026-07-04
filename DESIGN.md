@@ -13,6 +13,9 @@ gradient AI startup.
 - `pack/local-utility`: local-first, inspectable, permission-explicit.
 - `tools/local-artifact`: browser-local utilities, source-backed outputs, no
   account or upload assumptions.
+- `external/operational-saas`: neutral mode for independent teams adopting
+  evidence, trust-boundary, and accessibility contracts without ComplyEaze app
+  runtime assumptions.
 
 ## Token Rule
 

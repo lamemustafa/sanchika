@@ -58,6 +58,12 @@ still active.
   tokens.
 - Add repository topics such as `design-system`, `accessibility`, `typescript`,
   `compliance`, and `tokens` after the first push.
+- Apply the managed issue labels before inviting public issue intake:
+
+```bash
+pnpm github:labels -- --apply
+pnpm github:labels -- --verify
+```
 
 ## Branch Ruleset
 
@@ -93,7 +99,8 @@ workflow file name.
 After the ruleset is applied, verify the public repository state:
 
 ```bash
-pnpm github:verify --required-check "<github-check-context>"
+pnpm github:verify --required-check "<github-check-context>" \
+  --owner-bypass-id "$(gh api user --jq .id)"
 ```
 
 ## References

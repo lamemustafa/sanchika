@@ -8,6 +8,10 @@ or extracting reusable UI.
 
 Each pattern declares:
 
+- `consumerModes`: product or external adopter modes where the pattern is
+  expected to apply. Current modes are `complyeaze/core`, `axal/workspace`,
+  `pack/local-utility`, `tools/local-artifact`, and
+  `external/operational-saas`.
 - `requiredSlots`: named content regions a consumer must provide.
 - `requiredStates`: visible states the pattern must support, with state-specific
   purpose, `requiredVisibleSignals`, optional state-scoped slots, and

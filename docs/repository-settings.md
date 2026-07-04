@@ -13,6 +13,8 @@ These settings apply to the public `lamemustafa/sanchika` GitHub repository.
   reports.
 - Add topics after the first push: `design-system`, `accessibility`,
   `typescript`, `compliance`, and `tokens`.
+- Apply the issue-template labels so GitHub forms add them reliably: `bug`,
+  `enhancement`, `conduct`, and `question`.
 - Keep `CODEOWNERS` active so pull requests request `@lamemustafa`.
 - Keep Dependabot enabled for monthly npm and GitHub Actions update pull
   requests.
@@ -40,10 +42,18 @@ pnpm github:ruleset --required-check "<github-check-context>" \
 Apply it only after `master` exists and GitHub has recorded the first CI check
 context.
 
+Apply and verify labels with:
+
+```bash
+pnpm github:labels -- --apply
+pnpm github:labels -- --verify
+```
+
 Verify repository settings, topics, refs, and the applied ruleset with:
 
 ```bash
-pnpm github:verify --required-check "<github-check-context>"
+pnpm github:verify --required-check "<github-check-context>" \
+  --owner-bypass-id "$(gh api user --jq .id)"
 ```
 
 ## Pull Request Policy

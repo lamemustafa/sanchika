@@ -8,7 +8,8 @@
       `docs/primitives.md`, and `docs/patterns.md`.
 - [ ] For consumer/adoption changes, I read the relevant adoption docs:
       `docs/adoption-complyeaze.md`, `docs/adoption-axal.md`,
-      `docs/adoption-pack.md`, and `docs/adoption-tools.md`.
+      `docs/adoption-pack.md`, `docs/adoption-tools.md`, and
+      `docs/adoption-external.md`.
 - [ ] This change stays within tokens, primitives, patterns, gallery, or docs.
 - [ ] This change does not add ComplyEaze, Axal, Pack, or Tools app/runtime code.
 - [ ] This change does not add backend, auth, database, queue, scraping, telemetry,

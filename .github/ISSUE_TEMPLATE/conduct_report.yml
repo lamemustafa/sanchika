@@ -8,6 +8,7 @@ body:
       value: |
         This conduct report issue template is only for non-sensitive conduct concerns that can be discussed publicly.
         Do not include PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, private messages, or real taxpayer data.
+        Email security@complyeaze.com with the subject `Sanchika conduct report` for sensitive conduct concerns that are not vulnerabilities.
         Use private vulnerability reporting for security issues or sensitive-data exposure.
   - type: textarea
     id: summary
@@ -29,6 +30,8 @@ body:
       label: Safety check
       options:
         - label: I removed PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, private messages, and real taxpayer data.
+          required: true
+        - label: This is not a sensitive conduct concern that belongs in private email.
           required: true
         - label: This is not a vulnerability or sensitive-data exposure that belongs in private vulnerability reporting.
           required: true

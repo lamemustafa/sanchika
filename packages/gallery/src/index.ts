@@ -165,12 +165,12 @@ function statusSlotCopy(
         return `${secondarySignal}: The consumer must name any upload destination and reason before artifact selection.`;
       }
       if (patternName === "TrustBoundary" && stateName === "local-only") {
-        return `${secondarySignal}: The proof artifact stays local until the user exports a generated artifact.`;
+        return `${secondarySignal}: The proof artifact stays local; any later export is a user-controlled file save, not a network upload.`;
       }
       return `${secondarySignal}: The selected artifact leaves the device only after explicit user action.`;
     case "boundarySummary":
       if (patternName === "TrustBoundary" && stateName === "local-only") {
-        return `${secondarySignal}: Runs locally with No upload before the user chooses export.`;
+        return `${secondarySignal}: Runs locally with No upload; export means saving a generated artifact locally.`;
       }
       return `${secondarySignal}: The local or upload boundary is stated before the action.`;
     case "sourceVisibility":

@@ -9,6 +9,7 @@ import {
   parseOklch,
 } from "./validation/contrast.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
+import { expectedGithubLabels } from "./validation/github-labels.mjs";
 import { validatePackageManifest } from "./validation/package-manifests.mjs";
 import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
 import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
@@ -86,6 +87,10 @@ if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-mast
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
 
+if (rootPackage.scripts?.["github:labels"] !== "node scripts/sync-github-labels.mjs") {
+  fail("root package must expose github:labels for deterministic issue template labels");
+}
+
 if (rootPackage.scripts?.["github:verify"] !== "node scripts/check-github-repo-state.mjs") {
   fail("root package must expose github:verify for post-push repository state checks");
 }
@@ -96,6 +101,10 @@ if (!existsSync(join(root, "scripts/check-workflow-preflight.mjs"))) {
 
 if (!existsSync(join(root, "scripts/render-github-master-ruleset.mjs"))) {
   fail("github:ruleset script file must exist");
+}
+
+if (!existsSync(join(root, "scripts/sync-github-labels.mjs"))) {
+  fail("github:labels script file must exist");
 }
 
 if (!existsSync(join(root, "scripts/check-github-repo-state.mjs"))) {
@@ -232,6 +241,36 @@ for (const requiredPublishReadyFragment of [
   }
 }
 
+const expectedGithubLabelNames = new Set(expectedGithubLabels.map((label) => label.name));
+const issueTemplateDir = ".github/ISSUE_TEMPLATE";
+const referencedIssueLabels = new Set();
+for (const template of readdirSync(join(root, issueTemplateDir)).filter((entry) => entry.endsWith(".yml"))) {
+  const templateSource = requireText(`${issueTemplateDir}/${template}`);
+  const labelsMatch = templateSource.match(/^labels:\s*(\[.*\])$/m);
+  if (!labelsMatch) continue;
+
+  let labels = [];
+  try {
+    labels = JSON.parse(labelsMatch[1]);
+  } catch {
+    fail(`${issueTemplateDir}/${template} must declare labels as a JSON-compatible array`);
+    continue;
+  }
+
+  for (const label of labels) {
+    referencedIssueLabels.add(label);
+    if (!expectedGithubLabelNames.has(label)) {
+      fail(`${issueTemplateDir}/${template} references unmanaged GitHub label ${label}`);
+    }
+  }
+}
+
+for (const label of expectedGithubLabelNames) {
+  if (!referencedIssueLabels.has(label)) {
+    fail(`GitHub label ${label} must be referenced by an issue template`);
+  }
+}
+
 const productText = requireText("PRODUCT.md");
 if (productText && !productText.includes("## Register\n\nproduct")) {
   fail("PRODUCT.md must declare product register");
@@ -283,6 +322,7 @@ const releasePolicy = readText("docs/release-policy.md");
 const githubSetupDocs = requireText("docs/github-repository-setup.md");
 const repositorySettingsDocs = requireText("docs/repository-settings.md");
 const packageManifestValidationSource = readText("scripts/validation/package-manifests.mjs");
+const galleryReadme = readText("packages/gallery/README.md");
 const workflowPreflightSource = readText("scripts/check-workflow-preflight.mjs");
 const githubRulesetSource = readText("scripts/render-github-master-ruleset.mjs");
 const githubStateCheckSource = readText("scripts/check-github-repo-state.mjs");
@@ -296,6 +336,7 @@ const adoptionDocs = {
   Axal: readText("docs/adoption-axal.md"),
   Pack: readText("docs/adoption-pack.md"),
   Tools: readText("docs/adoption-tools.md"),
+  External: readText("docs/adoption-external.md"),
 };
 
 if (tokenSource.includes("oklch(")) {
@@ -378,6 +419,17 @@ if (tokenManifest.exports?.["./theme.css"] !== "./dist/theme.css") {
 }
 
 validatePatternContracts({ patternSource, patternDocs, fail });
+
+for (const requiredConsumerModeFragment of [
+  "external/operational-saas",
+  'consumerModes: ["axal/workspace", "tools/local-artifact", "external/operational-saas"]',
+  'consumerModes: ["pack/local-utility", "tools/local-artifact", "external/operational-saas"]',
+  'consumerModes: ["complyeaze/core", "external/operational-saas"]',
+]) {
+  if (!patternSource.includes(requiredConsumerModeFragment)) {
+    fail(`pattern package must include ${requiredConsumerModeFragment}`);
+  }
+}
 
 for (const patternTypeExport of [
   "PatternA11yCheck",
@@ -465,7 +517,13 @@ if (pullRequestTemplate && !pullRequestTemplate.includes("PRODUCT.md")) {
   fail("Sanchika PR template must reference PRODUCT.md");
 }
 
-for (const adoptionChecklistPath of ["docs/adoption-complyeaze.md", "docs/adoption-axal.md", "docs/adoption-pack.md", "docs/adoption-tools.md"]) {
+for (const adoptionChecklistPath of [
+  "docs/adoption-complyeaze.md",
+  "docs/adoption-axal.md",
+  "docs/adoption-pack.md",
+  "docs/adoption-tools.md",
+  "docs/adoption-external.md",
+]) {
   if (!readText("CONTRIBUTING.md").includes(adoptionChecklistPath)) {
     fail(`CONTRIBUTING.md must reference ${adoptionChecklistPath}`);
   }
@@ -502,6 +560,16 @@ if (!readText("README.md").includes("tools.complyeaze.com")) {
   fail("README must document Tools as the fourth consumer");
 }
 
+for (const requiredExternalAdoptionFragment of [
+  "External operational SaaS adopters",
+  "docs/adoption-external.md",
+  "private and unpublished in V0",
+]) {
+  if (!readText("README.md").includes(requiredExternalAdoptionFragment)) {
+    fail(`README must document external adoption with ${requiredExternalAdoptionFragment}`);
+  }
+}
+
 for (const requiredReadmeCommand of ["pnpm artifact:check", "pnpm workflow:preflight", "pnpm publish:tarball-check"]) {
   if (!readText("README.md").includes(requiredReadmeCommand)) {
     fail(`README must list ${requiredReadmeCommand}`);
@@ -535,6 +603,19 @@ for (const packageName of expectedPackages) {
     if (packageReadme && !packageReadme.includes(requiredPackageReadmeFragment)) {
       fail(`packages/${packageName}/README.md must include ${requiredPackageReadmeFragment}`);
     }
+  }
+}
+
+for (const requiredGalleryDocumentFragment of [
+  "package-specifier HTML review document",
+  "not a directly openable browser artifact",
+  "resolves `@sanchika/*` CSS hrefs",
+]) {
+  if (!galleryReadme.includes(requiredGalleryDocumentFragment)) {
+    fail(`packages/gallery/README.md must clarify ${requiredGalleryDocumentFragment}`);
+  }
+  if (!readText("README.md").includes(requiredGalleryDocumentFragment)) {
+    fail(`README.md must clarify ${requiredGalleryDocumentFragment}`);
   }
 }
 
@@ -599,6 +680,18 @@ for (const [consumerName, requiredFragment] of [
 ]) {
   if (!adoptionDocs[consumerName].includes(requiredFragment)) {
     fail(`${consumerName} adoption docs must require ${requiredFragment}`);
+  }
+}
+
+for (const requiredExternalFragment of [
+  "independent operational SaaS teams",
+  "public source, not a published npm release",
+  "local package-directory link",
+  "approved packed artifact",
+  "direct imports from `packages/*/src` are not allowed",
+]) {
+  if (!adoptionDocs.External.includes(requiredExternalFragment)) {
+    fail(`External adoption docs must include ${requiredExternalFragment}`);
   }
 }
 
@@ -738,6 +831,9 @@ for (const requiredRulesetFragment of [
 for (const requiredGithubStateCheckFragment of [
   "lamemustafa/sanchika",
   "github:verify",
+  "owner-bypass-id",
+  "bypass_actors",
+  "bypass_mode",
   "git ls-remote",
   "gh repo view",
   "deleteBranchOnMerge",
@@ -804,6 +900,28 @@ for (const requiredConductRouteFragment of ["conduct report issue template", "no
   }
   if (!conductIssueTemplate.includes(requiredConductRouteFragment)) {
     fail(`.github/ISSUE_TEMPLATE/conduct_report.yml must include ${requiredConductRouteFragment}`);
+  }
+}
+
+for (const requiredSensitiveConductFragment of [
+  "security@complyeaze.com",
+  "Sanchika conduct report",
+  "sensitive conduct concerns",
+]) {
+  if (!codeOfConduct.includes(requiredSensitiveConductFragment)) {
+    fail(`CODE_OF_CONDUCT.md must include ${requiredSensitiveConductFragment}`);
+  }
+  if (!supportDocs.includes(requiredSensitiveConductFragment)) {
+    fail(`SUPPORT.md must include ${requiredSensitiveConductFragment}`);
+  }
+  if (!conductIssueTemplate.includes(requiredSensitiveConductFragment)) {
+    fail(`.github/ISSUE_TEMPLATE/conduct_report.yml must include ${requiredSensitiveConductFragment}`);
+  }
+}
+
+for (const requiredConductConfigFragment of ["Sensitive conduct report", "security@complyeaze.com"]) {
+  if (!issueTemplateConfig.includes(requiredConductConfigFragment)) {
+    fail(`.github/ISSUE_TEMPLATE/config.yml must include ${requiredConductConfigFragment}`);
   }
 }
 

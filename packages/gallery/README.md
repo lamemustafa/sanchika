@@ -12,8 +12,8 @@ compatibility pass against built artifacts and consumer checks.
 ## Exports
 
 - `renderPrimitiveGalleryMarkup()` - returns a framework-agnostic HTML fragment.
-- `renderPrimitiveGalleryDocument()` - returns a standalone HTML document for
-  CI/review proof.
+- `renderPrimitiveGalleryDocument()` - returns a package-specifier HTML review document for CI/review proof. It is not a directly openable browser artifact
+  unless the consuming tool resolves `@sanchika/*` CSS hrefs.
 - `primitiveGalleryCssImports` - token-before-primitive CSS import order.
 
 ## Boundary

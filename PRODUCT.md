@@ -7,10 +7,11 @@ product
 ## Users
 
 Sanchika serves engineers, designers, and AI coding agents building
-compliance-grade interfaces across ComplyEaze, Axal, Pack, and future Tools
-surfaces at `tools.complyeaze.com`. They use it while shaping regulated
-workflows where source evidence, human review, local trust boundaries, and
-accessible operational UI matter more than decorative novelty.
+compliance-grade interfaces across ComplyEaze, Axal, Pack, future Tools surfaces
+at `tools.complyeaze.com`, and external operational SaaS products. They use it
+while shaping regulated workflows where source evidence, human review, local
+trust boundaries, and accessible operational UI matter more than decorative
+novelty.
 
 Primary consumers are product teams adopting shared tokens, primitive contracts,
 and compliance patterns without importing app-specific runtime behavior.
@@ -19,8 +20,8 @@ and compliance patterns without importing app-specific runtime behavior.
 
 Sanchika is an independent design-system SDK for Indian compliance workflows. It
 exists to make reusable interface decisions portable across ComplyEaze first,
-then Axal, Pack, and Tools, while keeping each product's runtime, auth, data, and
-release boundaries separate.
+then Axal, Pack, Tools, and external operational SaaS adopters, while keeping
+each product's runtime, auth, data, and release boundaries separate.
 
 Success means a real ComplyEaze surface can consume Sanchika tokens and
 primitives with visible accessibility, state, and review evidence before broader
@@ -57,7 +58,8 @@ product template.
    keyboard-operable, and resilient to long company names, identifiers, dates,
    amounts, and document titles.
 4. Prefer extraction over invention: reusable patterns should come from real
-   ComplyEaze, Axal, Pack, or Tools needs instead of generic SaaS sections.
+   ComplyEaze, Axal, Pack, Tools, or external operational SaaS needs instead of
+   generic decorative sections.
 5. Keep claims evidence-backed: production, accessibility, compliance, and
    official-source claims require verifier, review, or adoption evidence.
 

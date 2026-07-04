@@ -2,6 +2,7 @@ import { colorTokens, motionTokens, radiusTokens, spacingTokens } from "@sanchik
 import { primitiveClassName } from "@sanchika/primitives";
 import type { PrimitiveSizeFor, PrimitiveToneFor } from "@sanchika/primitives";
 import type {
+  ConsumerMode,
   PatternA11yCheckFor,
   PatternA11yCriterion,
   PatternProgrammaticStatusFor,
@@ -20,6 +21,7 @@ const buttonTone: PrimitiveToneFor<"Button"> = "brand";
 const fieldSize: PrimitiveSizeFor<"Field"> = "lg";
 const evidenceSlot: PatternSlotNameFor<"EvidencePanel"> = "sourceList";
 const trustState: PatternStateNameFor<"TrustBoundary"> = "local-only";
+const externalConsumerMode: ConsumerMode = "external/operational-saas";
 const emptyEvidenceSlot: PatternStateRequiredSlotNameFor<"EvidencePanel", "empty"> = "actionSlot";
 const targetSizeCriterion: PatternA11yCriterion = "WCAG22:2.5.8";
 const blockedPatternCheck: PatternA11yCheckFor<"EvidencePanel", "blocked"> = {
@@ -49,6 +51,7 @@ void radiusRole;
 void motionRole;
 void evidenceSlot;
 void trustState;
+void externalConsumerMode;
 void emptyEvidenceSlot;
 void targetSizeCriterion;
 void blockedPatternCheck;

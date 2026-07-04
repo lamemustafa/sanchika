@@ -23,6 +23,7 @@
     "check": "pnpm typecheck",
     "workflow:preflight": "node scripts/check-workflow-preflight.mjs",
     "github:ruleset": "node scripts/render-github-master-ruleset.mjs",
+    "github:labels": "node scripts/sync-github-labels.mjs",
     "github:verify": "node scripts/check-github-repo-state.mjs",
     "validate": "node scripts/validate-repo.mjs",
     "artifact:check": "node scripts/check-package-artifacts.mjs",

@@ -25,6 +25,8 @@ incidents, credentials, or downloaded portal artifacts.
   changes.
 - Use the conduct report template only for non-sensitive Code of Conduct
   concerns that can be discussed publicly.
+- Send sensitive conduct concerns that are not vulnerabilities to
+  `security@complyeaze.com` with the subject `Sanchika conduct report`.
 
 ## Sensitive Material
 

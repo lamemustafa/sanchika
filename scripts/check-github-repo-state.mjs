@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { expectedGithubLabels, validateGithubLabels } from "./validation/github-labels.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const repo = "lamemustafa/sanchika";
@@ -10,6 +11,7 @@ const expectedRemoteUrl = "https://github.com/lamemustafa/sanchika.git";
 const expectedTopics = ["accessibility", "compliance", "design-system", "tokens", "typescript"];
 const args = parseArgs(process.argv.slice(2));
 const requiredCheck = args.get("required-check");
+const ownerBypassId = args.get("owner-bypass-id");
 const taskBranch = args.get("task-branch") ?? "tapish-codex/sanchika-sdk-hardening";
 
 if (args.has("self-test")) {
@@ -22,10 +24,15 @@ if (!requiredCheck) {
   fail("missing --required-check <github-check-context>");
 }
 
+if (!ownerBypassId || !/^[1-9]\d*$/.test(ownerBypassId)) {
+  fail("missing --owner-bypass-id <numeric-github-user-id>");
+}
+
 checkRemote();
 checkRefs();
 checkRepositorySettings(JSON.parse(run("gh", ["repo", "view", repo, "--json", repoViewFields().join(",")])));
-checkRuleset(JSON.parse(run("gh", ["api", `repos/${repo}/rulesets`])), requiredCheck);
+checkLabels(JSON.parse(run("gh", ["api", `repos/${repo}/labels?per_page=100`])));
+checkRuleset(JSON.parse(run("gh", ["api", `repos/${repo}/rulesets`])), requiredCheck, ownerBypassId);
 
 console.log("Sanchika GitHub repository state check passed.");
 
@@ -80,21 +87,34 @@ function checkRepositorySettings(state) {
   }
 }
 
-function checkRuleset(summaries, checkContext) {
+function checkLabels(labels) {
+  validateGithubLabels(labels, fail);
+}
+
+function checkRuleset(summaries, checkContext, expectedOwnerBypassId) {
   const summary = summaries.find((ruleset) => ruleset.name === "Protect master");
   if (!summary) {
     fail("Protect master ruleset must exist");
   }
 
   const ruleset = JSON.parse(run("gh", ["api", `repos/${repo}/rulesets/${summary.id}`]));
-  validateRuleset(ruleset, checkContext);
+  validateRuleset(ruleset, checkContext, expectedOwnerBypassId);
 }
 
-function validateRuleset(ruleset, checkContext) {
+function validateRuleset(ruleset, checkContext, expectedOwnerBypassId) {
   const enforcement = ruleset.enforcement;
   if (ruleset.name !== "Protect master") fail("ruleset name must be Protect master");
   if (ruleset.target !== "branch") fail("ruleset target must be branch");
   if (enforcement !== "active" && enforcement !== "enabled") fail("ruleset enforcement must be active");
+
+  const bypassActors = ruleset.bypass_actors ?? [];
+  if (bypassActors.length !== 1) fail("ruleset must have exactly one bypass actor");
+  const ownerBypass = bypassActors[0] ?? {};
+  if (String(ownerBypass.actor_id) !== String(expectedOwnerBypassId)) {
+    fail(`ruleset bypass actor must be owner id ${expectedOwnerBypassId}`);
+  }
+  if (ownerBypass.actor_type !== "User") fail("ruleset bypass actor must be a User");
+  if (ownerBypass.bypass_mode !== "pull_request") fail("ruleset bypass actor must use pull_request mode");
 
   const includedRefs = ruleset.conditions?.ref_name?.include ?? [];
   if (!includedRefs.includes("refs/heads/master") && !includedRefs.includes("~DEFAULT_BRANCH")) {
@@ -139,11 +159,17 @@ function runSelfTest() {
     repositoryTopics: expectedTopics.map((name) => ({ name })),
   });
 
+  validateGithubLabels(
+    expectedGithubLabels.map((label) => ({ ...label })),
+    fail,
+  );
+
   validateRuleset(
     {
       name: "Protect master",
       target: "branch",
       enforcement: "active",
+      bypass_actors: [{ actor_id: 12345, actor_type: "User", bypass_mode: "pull_request" }],
       conditions: { ref_name: { include: ["refs/heads/master"], exclude: [] } },
       rules: [
         { type: "deletion" },
@@ -168,6 +194,7 @@ function runSelfTest() {
       ],
     },
     "verify",
+    "12345",
   );
 }
 

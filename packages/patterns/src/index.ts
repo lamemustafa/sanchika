@@ -1,4 +1,9 @@
-export type ConsumerMode = "complyeaze/core" | "axal/workspace" | "pack/local-utility" | "tools/local-artifact";
+export type ConsumerMode =
+  | "complyeaze/core"
+  | "axal/workspace"
+  | "pack/local-utility"
+  | "tools/local-artifact"
+  | "external/operational-saas";
 
 export type PatternSlot = {
   name: string;
@@ -94,7 +99,7 @@ export type PatternSpec = {
 export const patternSpecs = [
   {
     name: "EvidencePanel",
-    consumerModes: ["axal/workspace", "tools/local-artifact"],
+    consumerModes: ["axal/workspace", "tools/local-artifact", "external/operational-saas"],
     purpose: "Shows sources, review state, and confidence/uncertainty without implying automation is final.",
     requiredSlots: [
       { name: "sourceList", purpose: "Visible source documents, links, or citations used for the claim." },
@@ -207,7 +212,7 @@ export const patternSpecs = [
   },
   {
     name: "TrustBoundary",
-    consumerModes: ["pack/local-utility", "tools/local-artifact"],
+    consumerModes: ["pack/local-utility", "tools/local-artifact", "external/operational-saas"],
     purpose: "Explains local processing, upload boundaries, permissions, and source visibility.",
     requiredSlots: [
       { name: "boundarySummary", purpose: "One-line local, upload, account, or network boundary statement." },
@@ -338,7 +343,7 @@ export const patternSpecs = [
   },
   {
     name: "ServiceSection",
-    consumerModes: ["complyeaze/core"],
+    consumerModes: ["complyeaze/core", "external/operational-saas"],
     purpose: "Presents service categories with clear human guidance and restrained calls to action.",
     requiredSlots: [
       { name: "serviceName", purpose: "Specific service category or compliance workflow name." },
