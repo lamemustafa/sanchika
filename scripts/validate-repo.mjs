@@ -791,6 +791,15 @@ for (const requiredReviewGateWorkflowFragment of [
   }
 }
 
+for (const [path, requiredReviewGateScriptFragment] of [
+  ["scripts/sync-review-gate-status.mjs", "Skipping Review gate success"],
+  ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
+]) {
+  if (!readText(path).includes(requiredReviewGateScriptFragment)) {
+    fail(`${path} must include ${requiredReviewGateScriptFragment}`);
+  }
+}
+
 const securityText = readText("SECURITY.md").toLowerCase().replace(/\s+/g, " ");
 if (!securityText.includes("private vulnerability reporting")) {
   fail("SECURITY.md must reference GitHub private vulnerability reporting");
