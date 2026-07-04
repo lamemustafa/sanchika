@@ -4,6 +4,7 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
   validateTrustBoundarySignals({ markup, fail });
+  validateSyntheticGalleryBoundary({ markup, fail });
   validatePatternStateExemplars({ markup, patternSpecs, fail });
 
   for (const primitive of primitiveSpecs) {
@@ -97,7 +98,7 @@ function validateTrustBoundarySignals({ markup, fail }) {
   if (uploadRequired) {
     requireBodyFragments(
       uploadRequired.body,
-      ["Destination or processor", "ComplyEaze workspace", "Reason for upload", "human review"],
+      ["consumer must name any upload destination", "Synthetic destination", "Synthetic reason for upload"],
       fail,
       "TrustBoundary upload-required exemplar",
     );
@@ -150,14 +151,22 @@ function validatePatternStateExemplars({ markup, patternSpecs, fail }) {
 
       if (state.programmaticStatus) {
         const { role, ariaLive, slotRefs = [] } = state.programmaticStatus;
-        if (getAttribute(attrs, "role") !== role) {
-          fail(`${label} must declare role="${role}"`);
+        if (getAttribute(attrs, "role") || getAttribute(attrs, "aria-live") || getAttribute(attrs, "aria-atomic")) {
+          fail(`${label} must keep the article outside the live region`);
         }
-        if (getAttribute(attrs, "aria-live") !== ariaLive) {
-          fail(`${label} must declare aria-live="${ariaLive}"`);
+        const liveRegion = body.match(/<(?<tag>[a-z][\w-]*)\b(?<attrs>[^>]*\bdata-sk-programmatic-status\b[^>]*)>/)?.groups;
+        if (!liveRegion) {
+          fail(`${label} must render a dedicated programmatic status element`);
+          continue;
         }
-        if (getAttribute(attrs, "aria-atomic") !== "true") {
-          fail(`${label} must declare aria-atomic="true"`);
+        if (getAttribute(liveRegion.attrs, "role") !== role) {
+          fail(`${label} status element must declare role="${role}"`);
+        }
+        if (getAttribute(liveRegion.attrs, "aria-live") !== ariaLive) {
+          fail(`${label} status element must declare aria-live="${ariaLive}"`);
+        }
+        if (getAttribute(liveRegion.attrs, "aria-atomic") !== "true") {
+          fail(`${label} status element must declare aria-atomic="true"`);
         }
 
         const describedIds = new Set(
@@ -178,6 +187,26 @@ function validatePatternStateExemplars({ markup, patternSpecs, fail }) {
       } else if (getAttribute(attrs, "role") || getAttribute(attrs, "aria-live")) {
         fail(`${label} must not declare live-region attributes without programmaticStatus`);
       }
+    }
+  }
+}
+
+function validateSyntheticGalleryBoundary({ markup, fail }) {
+  for (const requiredFragment of [
+    'data-sanchika-example="synthetic"',
+    "All gallery examples are synthetic",
+    "illustrative source summary",
+    "Synthetic timestamp",
+    "Example advisory review",
+  ]) {
+    if (!markup.includes(requiredFragment)) {
+      fail(`PrimitiveGallery synthetic boundary must include ${requiredFragment}`);
+    }
+  }
+
+  for (const bannedFragment of ["GST portal notice summary", "GST advisory review", "Last checked 03-07-2026"]) {
+    if (markup.includes(bannedFragment)) {
+      fail(`PrimitiveGallery synthetic boundary must not include ${bannedFragment}`);
     }
   }
 }

@@ -69,10 +69,11 @@ components or framework adapters.
 
 PrimitiveGallery must include Pattern state exemplars for every required pattern
 state. Each exemplar must render all visible signals and required slots. Every
-required state that declares `programmaticStatus` must also include concrete
-`role` markup, `aria-live` markup, and `aria-atomic` markup. The gallery must
-cover visible state copy and slot IDs instead of only displaying the
-`programmaticStatus` requirement prose.
+required state that declares `programmaticStatus` must also include a dedicated
+status element with concrete `role` markup, `aria-live` markup, and
+`aria-atomic` markup. Do not put live-region attributes on the whole exemplar
+article. The gallery must cover visible state copy and slot IDs instead of only
+displaying the `programmaticStatus` requirement prose.
 
 ## Current Direction
 

@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packages = ["tokens", "primitives", "patterns", "gallery"];
+const dependencyFields = ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"];
 const failures = [];
 
 for (const packageName of packages) {
@@ -114,9 +115,11 @@ function expectedPackageFiles(manifest) {
 }
 
 function validatePublishableManifest(manifest, packedFiles, label) {
-  for (const [dependencyName, version] of Object.entries(manifest.dependencies ?? {})) {
-    if (typeof version === "string" && version.startsWith("workspace:")) {
-      failures.push(`${label} publishable dependency ${dependencyName} must not use ${version}`);
+  for (const dependencyField of dependencyFields) {
+    for (const [dependencyName, version] of Object.entries(manifest[dependencyField] ?? {})) {
+      if (typeof version === "string" && version.startsWith("workspace:")) {
+        failures.push(`${label} publishable ${dependencyField} ${dependencyName} must not use ${version}`);
+      }
     }
   }
 

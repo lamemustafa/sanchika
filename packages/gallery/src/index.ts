@@ -43,10 +43,10 @@ export function renderPrimitiveGalleryMarkup(): string {
     .join("");
 
   const fields = [
-    `<div data-sk-primitive="Field" data-sk-state="default" class="${primitiveClassName("Field", "neutral", "md")}"><label for="review-period">Review period</label><input id="review-period" name="review-period" value="Q4 FY26" aria-describedby="review-period-hint" /><p id="review-period-hint" data-sk-hint>Use the period shown on the source notice.</p></div>`,
+    `<div data-sk-primitive="Field" data-sk-state="default" class="${primitiveClassName("Field", "neutral", "md")}"><label for="review-period">Review period</label><input id="review-period" name="review-period" value="Synthetic period" aria-describedby="review-period-hint" /><p id="review-period-hint" data-sk-hint>Use the period shown on the synthetic source.</p></div>`,
     `<div data-sk-primitive="Field" data-sk-state="focus-visible" class="${primitiveClassName("Field", "neutral", "md")}"><label for="focus-period">Focus target</label><input id="focus-period" name="focus-period" value="FY26" /></div>`,
     `<div data-sk-primitive="Field" data-sk-state="disabled" class="${primitiveClassName("Field", "neutral", "md")}" data-disabled="true"><label for="locked-period">Locked period</label><input id="locked-period" name="locked-period" value="FY25" aria-describedby="locked-period-hint" disabled /><p id="locked-period-hint" data-sk-hint>Locked because the source review is closed.</p></div>`,
-    `<div data-sk-primitive="Field" data-sk-state="error" class="${primitiveClassName("Field", "danger", "md")}" data-invalid="true"><label for="filing-period">Filing period</label><input id="filing-period" name="filing-period" value="Q4 FY26" aria-invalid="true" aria-describedby="filing-period-hint filing-period-error" /><p id="filing-period-hint" data-sk-hint>Use the period shown on the source notice.</p><p id="filing-period-error" data-sk-error>Evidence required before this can be marked reviewed.</p></div>`,
+    `<div data-sk-primitive="Field" data-sk-state="error" class="${primitiveClassName("Field", "danger", "md")}" data-invalid="true"><label for="filing-period">Filing period</label><input id="filing-period" name="filing-period" value="Synthetic period" aria-invalid="true" aria-describedby="filing-period-hint filing-period-error" /><p id="filing-period-hint" data-sk-hint>Use the period shown on the synthetic source.</p><p id="filing-period-error" data-sk-error>Evidence required before this can be marked reviewed.</p></div>`,
   ].join("");
 
   const cards = [
@@ -80,7 +80,7 @@ export function renderPrimitiveGalleryMarkup(): string {
 
   const patternStateExemplars = renderPatternStateExemplars();
 
-  return `<main data-sanchika-gallery="primitive"><h1>Sanchika Primitive Gallery</h1><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern state exemplars</h3>${patternStateExemplars}</section></main>`;
+  return `<main data-sanchika-gallery="primitive" data-sanchika-example="synthetic"><h1>Sanchika Primitive Gallery</h1><p data-sk-synthetic-disclaimer>All gallery examples are synthetic and must not be treated as taxpayer, portal, filing, or client data.</p><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern state exemplars</h3>${patternStateExemplars}</section></main>`;
 }
 
 export function renderPrimitiveGalleryDocument(): string {
@@ -119,21 +119,18 @@ function renderPatternStateExemplars(): string {
           )
           .join("");
         const describedByAttribute = slotIds.length ? ` aria-describedby="${slotIds.join(" ")}"` : "";
+        const programmaticStatus = "programmaticStatus" in state && state.programmaticStatus ? state.programmaticStatus : null;
+        const liveRegion = programmaticStatus
+          ? `<p data-sk-programmatic-status role="${escapeHtml(programmaticStatus.role)}" aria-live="${escapeHtml(programmaticStatus.ariaLive)}" aria-atomic="${programmaticStatus.ariaAtomic ? "true" : "false"}">${escapeHtml(programmaticStatus.requirement)}</p>`
+          : "";
         const rootAttributes = [
           `data-sk-pattern="${escapeHtml(pattern.name)}"`,
           `data-sk-state="${escapeHtml(state.name)}"`,
           `aria-labelledby="${headingId}"${describedByAttribute}`,
-          ...("programmaticStatus" in state && state.programmaticStatus
-            ? [
-                `role="${escapeHtml(state.programmaticStatus.role)}"`,
-                `aria-live="${escapeHtml(state.programmaticStatus.ariaLive)}"`,
-                `aria-atomic="${state.programmaticStatus.ariaAtomic ? "true" : "false"}"`,
-              ]
-            : []),
         ].join(" ");
 
         return [
-          `<article ${rootAttributes}><h3 id="${headingId}">${escapeHtml(pattern.name)} ${escapeHtml(state.name)} state</h3><ul>${visibleSignals}</ul>${slots}</article>`,
+          `<article ${rootAttributes}><h3 id="${headingId}">${escapeHtml(pattern.name)} ${escapeHtml(state.name)} state</h3><ul>${visibleSignals}</ul>${slots}${liveRegion}</article>`,
         ];
       }),
     )
@@ -157,15 +154,15 @@ function statusSlotCopy(
 
   switch (slotName) {
     case "sourceList":
-      return `${secondarySignal}: 1 synthetic source attached; GST portal notice summary attached.`;
+      return `${secondarySignal}: 1 synthetic source attached; illustrative source summary attached.`;
     case "provenanceTimestamp":
-      return `${finalSignal}: Last checked 03-07-2026 21:45 IST.`;
+      return `${finalSignal}: Synthetic timestamp for gallery review only.`;
     case "actionSlot":
     case "ctaSlot":
       return `${finalSignal}: Review source evidence before continuing.`;
     case "dataFlow":
       if (patternName === "TrustBoundary" && stateName === "upload-required") {
-        return `${secondarySignal}: Destination or processor is the ComplyEaze workspace; Reason for upload is human review of the selected proof artifact.`;
+        return `${secondarySignal}: The consumer must name any upload destination and reason before artifact selection.`;
       }
       if (patternName === "TrustBoundary" && stateName === "local-only") {
         return `${secondarySignal}: The proof artifact stays local until the user exports a generated artifact.`;
@@ -181,6 +178,10 @@ function statusSlotCopy(
         return `${finalSignal}: Users can inspect source, proof artifact, and generated artifact before continuing.`;
       }
       return `${finalSignal}: ${slotName} is visible before the next action.`;
+    case "uploadDestination":
+      return `${secondarySignal}: Synthetic destination selected by the consuming product, not hardcoded by Sanchika.`;
+    case "uploadReason":
+      return `${finalSignal}: Synthetic reason for upload is shown before file selection.`;
     case "humanSupport":
       return `${finalSignal}: Human consultation is available before a filing or review action.`;
     default:
@@ -189,6 +190,9 @@ function statusSlotCopy(
 }
 
 function statusPrimaryDetail(patternName: string, stateName: string, slotName: string): string {
+  if (patternName === "EvidencePanel" && slotName === "sourceList") {
+    return "1 synthetic source attached; illustrative source summary attached.";
+  }
   if (patternName === "EvidencePanel" && slotName === "reviewState") {
     return stateName === "reviewed" ? "Synthetic evidence has been reviewed." : "Synthetic evidence needs review.";
   }
@@ -202,7 +206,7 @@ function statusPrimaryDetail(patternName: string, stateName: string, slotName: s
     return "File read permission is needed to inspect the selected local artifact.";
   }
   if (patternName === "ServiceSection" && slotName === "serviceName") {
-    return stateName === "selected" ? "GST advisory review is selected." : "GST advisory review is unavailable.";
+    return stateName === "selected" ? "Example advisory review is selected." : "Example advisory review is unavailable.";
   }
   return `${slotName} is present and referenced by the live region.`;
 }

@@ -22,6 +22,7 @@
     "typecheck:api": "node scripts/check-package-api-types.mjs",
     "check": "pnpm typecheck",
     "workflow:preflight": "node scripts/check-workflow-preflight.mjs",
+    "github:ruleset": "node scripts/render-github-master-ruleset.mjs",
     "validate": "node scripts/validate-repo.mjs",
     "artifact:check": "node scripts/check-package-artifacts.mjs",
     "consumer:check": "node scripts/check-local-link-consumer.mjs",

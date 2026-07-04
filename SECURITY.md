@@ -18,11 +18,10 @@ Use synthetic fixtures and clearly mark them as synthetic.
 
 ## Reporting
 
-After the GitHub repository is created, enable GitHub private vulnerability
-reporting and use that channel for suspected vulnerabilities or sensitive-data
-exposure. Until that setting is enabled, report privately to the repository
-owner `lamemustafa` through the private channel used to grant repository access
-instead of opening a public issue.
+GitHub private vulnerability reporting for `lamemustafa/sanchika` must be
+enabled before the repository is opened to public issue intake. Use that channel
+for suspected vulnerabilities or sensitive-data exposure. Do not open a public
+issue or pull request containing sensitive material.
 
 ## Post-Create Checklist
 

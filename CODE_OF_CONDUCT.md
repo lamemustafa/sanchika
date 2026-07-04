@@ -16,7 +16,7 @@ working around sensitive compliance domains.
 
 ## Unacceptable Behavior
 
-- Harassment, threats, insults, sustained disruption, or other harassment.
+- Threats, insults, sustained disruption, harassment, or other abusive conduct.
 - Publishing private or sensitive data, including PAN, GSTIN, Aadhaar,
   credentials, cookies, OTPs, notices, screenshots, local paths, or taxpayer
   names.
@@ -29,6 +29,6 @@ Maintainers may edit, hide, or remove comments and close issues or pull requests
 that violate this Code of Conduct. Repeated or severe violations may lead to a
 block from the repository.
 
-To report conduct concerns, contact the repository owner privately. If the
-concern is also a vulnerability or sensitive-data exposure, use GitHub private
-vulnerability reporting once it is enabled for `lamemustafa/sanchika`.
+Do not include sensitive material in public conduct reports. If the concern is a
+vulnerability or sensitive-data exposure, use GitHub private vulnerability
+reporting for `lamemustafa/sanchika`.

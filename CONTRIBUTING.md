@@ -42,3 +42,8 @@ semantics, responsive behavior, and any remaining accessibility gaps.
 For adoption-facing changes, record the Sanchika commit, package link or artifact
 method, changed files, and rollback files in the consumer PR. If an approved
 tarball artifact is used, record the tarball version and checksum.
+
+## Contribution License
+
+Unless you explicitly mark a submission as "Not a Contribution", contributions
+are accepted under the Apache-2.0 license that covers this repository.

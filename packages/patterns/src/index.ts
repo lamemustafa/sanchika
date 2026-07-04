@@ -213,6 +213,8 @@ export const patternSpecs = [
       { name: "boundarySummary", purpose: "One-line local, upload, account, or network boundary statement." },
       { name: "permissionList", purpose: "Permissions or capabilities requested by the surface." },
       { name: "dataFlow", purpose: "What stays local, what leaves the device, and why." },
+      { name: "uploadDestination", purpose: "Consumer-specific destination or processor for any artifact leaving the device." },
+      { name: "uploadReason", purpose: "Consumer-specific reason the artifact must leave the device." },
       { name: "sourceVisibility", purpose: "How a user can inspect source, proof, or generated artifacts." },
       { name: "actionSlot", purpose: "Fallback, permission, upload, or inspect action tied to the trust boundary." },
     ],
@@ -236,13 +238,13 @@ export const patternSpecs = [
       {
         name: "upload-required",
         purpose: "The workflow requires a file or artifact to leave the device.",
-        requiredVisibleSignals: ["Upload required", "Destination: ComplyEaze workspace", "Reason: human review of proof artifact"],
-        requiredSlots: ["boundarySummary", "dataFlow"],
+        requiredVisibleSignals: ["Upload required", "Destination must be named", "Reason for upload must be named"],
+        requiredSlots: ["boundarySummary", "dataFlow", "uploadDestination", "uploadReason"],
         programmaticStatus: {
           role: "alert",
           ariaLive: "assertive",
           ariaAtomic: true,
-          slotRefs: ["boundarySummary", "dataFlow"],
+          slotRefs: ["boundarySummary", "uploadDestination", "uploadReason"],
           requirement: "Upload-required state must announce the upload boundary before file selection or submission.",
         },
         a11yChecks: [
@@ -251,7 +253,7 @@ export const patternSpecs = [
             criterion: "WCAG22:3.3.2",
             sourceUrl: "https://www.w3.org/TR/WCAG22/#labels-or-instructions",
             requirement: "Upload destination and reason must be instructions for the upload control.",
-            slotRefs: ["boundarySummary", "dataFlow"],
+            slotRefs: ["boundarySummary", "uploadDestination", "uploadReason"],
             manualTest: "Confirm the upload control is described by the destination and reason for upload.",
           },
           {
@@ -259,7 +261,7 @@ export const patternSpecs = [
             criterion: "WCAG22:4.1.3",
             sourceUrl: "https://www.w3.org/TR/WCAG22/#status-messages",
             requirement: "Upload-required state must announce the upload boundary as a status message before file selection.",
-            slotRefs: ["boundarySummary", "dataFlow"],
+            slotRefs: ["boundarySummary", "uploadDestination", "uploadReason"],
             manualTest: "Trigger upload-required state and confirm role=alert announces the upload destination and reason.",
           },
         ],

@@ -1,6 +1,6 @@
 const requiredSignalsByState = {
   "local-only": ["Runs locally", "No upload", "Inspect source", "proof artifact", "generated artifact"],
-  "upload-required": ["Upload required", "ComplyEaze workspace", "human review", "proof artifact"],
+  "upload-required": ["Upload required", "Destination must be named", "Reason for upload must be named"],
   "permission-required": ["Permission required", "File read permission", "inspect selected local artifact"],
   unavailable: ["Unavailable", "boundary cannot be completed safely", "manual review path"],
 };

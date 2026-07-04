@@ -82,8 +82,16 @@ if (rootPackage.scripts?.["workflow:preflight"] !== "node scripts/check-workflow
   fail("root package must expose workflow:preflight for nested repo branch and cleanliness checks");
 }
 
+if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
+  fail("root package must expose github:ruleset for reproducible branch ruleset setup");
+}
+
 if (!existsSync(join(root, "scripts/check-workflow-preflight.mjs"))) {
   fail("workflow:preflight script file must exist");
+}
+
+if (!existsSync(join(root, "scripts/render-github-master-ruleset.mjs"))) {
+  fail("github:ruleset script file must exist");
 }
 
 if (!existsSync(join(root, "scripts/check-local-link-consumer.mjs"))) {
@@ -255,6 +263,8 @@ const releasePolicy = readText("docs/release-policy.md");
 const githubSetupDocs = requireText("docs/github-repository-setup.md");
 const repositorySettingsDocs = requireText("docs/repository-settings.md");
 const workflowPreflightSource = readText("scripts/check-workflow-preflight.mjs");
+const githubRulesetSource = readText("scripts/render-github-master-ruleset.mjs");
+const packageArtifactCheckSource = readText("scripts/check-package-artifacts.mjs");
 const packedTarballCheckSource = readText("scripts/check-packed-tarball-consumer.mjs");
 const tarballContentsSource = readText("scripts/validation/tarball-contents.mjs");
 const architectureDocs = readText("docs/architecture.md");
@@ -644,6 +654,9 @@ for (const requiredGithubSetupFragment of [
   "pnpm verify",
   "pnpm publish:tarball-check",
   "git push -u origin HEAD:master",
+  "pnpm github:ruleset",
+  "--required-check",
+  "--owner-bypass-id",
   "private vulnerability reporting",
   "branch ruleset",
   "required status checks",
@@ -667,9 +680,34 @@ for (const requiredRepositorySettingsFragment of [
   "blank issues disabled",
   "CODEOWNERS",
   "Dependabot",
+  "pnpm github:ruleset",
+  "--required-check",
+  "--owner-bypass-id",
 ]) {
   if (!repositorySettingsDocs.includes(requiredRepositorySettingsFragment)) {
     fail(`docs/repository-settings.md must include ${requiredRepositorySettingsFragment}`);
+  }
+}
+
+for (const requiredRulesetFragment of [
+  "Protect master",
+  "refs/heads/master",
+  "pull_request",
+  "required_status_checks",
+  "non_fast_forward",
+  "deletion",
+  "required_review_thread_resolution",
+  "require_code_owner_review",
+  "dismiss_stale_reviews_on_push",
+  "strict_required_status_checks_policy",
+  "do_not_enforce_on_create",
+  "allowed_merge_methods",
+  "squash",
+  "owner-bypass-id",
+  "required-check",
+]) {
+  if (!githubRulesetSource.includes(requiredRulesetFragment)) {
+    fail(`github:ruleset script must include ${requiredRulesetFragment}`);
   }
 }
 
@@ -735,9 +773,25 @@ for (const requiredPreflightFragment of [
   }
 }
 
+for (const requiredPackageArtifactFragment of [
+  "dependencyFields",
+  "dependencies",
+  "peerDependencies",
+  "optionalDependencies",
+  "devDependencies",
+  "publishable ${dependencyField}",
+]) {
+  if (!packageArtifactCheckSource.includes(requiredPackageArtifactFragment)) {
+    fail(`scripts/check-package-artifacts.mjs must include ${requiredPackageArtifactFragment}`);
+  }
+}
+
 for (const requiredTarballCheckFragment of [
   "assertPackedFileList",
   "./validation/tarball-contents.mjs",
+  "package/package.json",
+  "tarballPath",
+  "strict publish manifest check must match package/package.json inside the tarball",
 ]) {
   if (!packedTarballCheckSource.includes(requiredTarballCheckFragment)) {
     fail(`scripts/check-packed-tarball-consumer.mjs must include ${requiredTarballCheckFragment}`);

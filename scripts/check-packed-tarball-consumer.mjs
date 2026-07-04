@@ -94,11 +94,11 @@ function packPackage(packageName) {
   const output = run("npm", ["pack", "--json", "--pack-destination", tarballRoot], join(packageRoot, packageName));
   const packed = JSON.parse(output)[0];
   assertPackedFileList({ packageName, packed });
-  if (strictPublishManifests) assertPackedManifestMatchesSource({ packageName, packed });
   const tarballPath = join(tarballRoot, basename(packed.filename));
   if (!existsSync(tarballPath)) {
     throw new Error(`@sanchika/${packageName} tarball was not created at ${tarballPath}`);
   }
+  if (strictPublishManifests) assertPackedManifestMatchesSource({ packageName, packed, tarballPath });
   return {
     packageName: `@sanchika/${packageName}`,
     version: simulatedVersion,
@@ -108,7 +108,7 @@ function packPackage(packageName) {
   };
 }
 
-function assertPackedManifestMatchesSource({ packageName, packed }) {
+function assertPackedManifestMatchesSource({ packageName, packed, tarballPath }) {
   const sourceManifest = JSON.parse(readFileSync(join(root, "packages", packageName, "package.json"), "utf8"));
   const packedManifest = packed.files.find((file) => file.path === "package.json");
   if (!packedManifest) {
@@ -118,6 +118,11 @@ function assertPackedManifestMatchesSource({ packageName, packed }) {
   const packageCopyManifest = JSON.parse(readFileSync(join(packageRoot, packageName, "package.json"), "utf8"));
   if (JSON.stringify(packageCopyManifest) !== JSON.stringify(sourceManifest)) {
     throw new Error(`@sanchika/${packageName} strict publish manifest check must pack the unmodified source manifest`);
+  }
+
+  const packedTarManifest = JSON.parse(run("tar", ["-xOf", tarballPath, "package/package.json"], tarballRoot));
+  if (JSON.stringify(packedTarManifest) !== JSON.stringify(sourceManifest)) {
+    throw new Error(`@sanchika/${packageName} strict publish manifest check must match package/package.json inside the tarball`);
   }
 }
 

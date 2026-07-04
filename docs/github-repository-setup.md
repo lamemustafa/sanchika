@@ -75,6 +75,21 @@ Create a branch ruleset for `master` before accepting external contribution:
 If GitHub's check name changes after the first CI run, update the branch ruleset
 to the exact required status checks reported by GitHub.
 
+Render the ruleset payload from the verified local repo so the post-push
+configuration stays reproducible:
+
+```bash
+pnpm github:ruleset --required-check "<github-check-context>" \
+  --owner-bypass-id "$(gh api user --jq .id)" \
+  > /tmp/sanchika-master-ruleset.json
+gh api repos/lamemustafa/sanchika/rulesets \
+  --method POST \
+  --input /tmp/sanchika-master-ruleset.json
+```
+
+Use the exact check context from GitHub's first CI run. Do not guess it from the
+workflow file name.
+
 ## References
 
 - GitHub repository creation:

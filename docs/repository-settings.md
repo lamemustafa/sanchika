@@ -30,6 +30,16 @@ Create a branch ruleset for `master` before accepting external contribution:
 - Block branch deletion.
 - Restrict bypass actors to the repository owner until maintainers are added.
 
+Generate the API payload with:
+
+```bash
+pnpm github:ruleset --required-check "<github-check-context>" \
+  --owner-bypass-id "$(gh api user --jq .id)"
+```
+
+Apply it only after `master` exists and GitHub has recorded the first CI check
+context.
+
 ## Pull Request Policy
 
 - Require at least one approving review.
