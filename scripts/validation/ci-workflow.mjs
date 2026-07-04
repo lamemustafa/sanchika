@@ -41,7 +41,7 @@ export function validateCiWorkflow({ ciWorkflow, fail }) {
     "timeout-minutes: 10",
     "version: 10.28.2",
     "node-version: 24",
-    "run: pnpm install --frozen-lockfile",
+    "run: pnpm install --frozen-lockfile --ignore-scripts",
     "run: pnpm run verify",
     "run: pnpm publish:tarball-check",
   ]) {

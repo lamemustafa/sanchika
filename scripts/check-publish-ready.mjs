@@ -141,7 +141,10 @@ function validatePublishWorkflow(workflow) {
     ],
     [/^\s*package-manager-cache:\s*false\s*$/m, "publish workflow must set package-manager-cache: false"],
     [/\bnpm\s+publish\b/, "publish workflow must use npm publish"],
-    [/\bpnpm\s+install\s+--frozen-lockfile\b/, "publish workflow must install with pnpm install --frozen-lockfile"],
+    [
+      /\bpnpm\s+install\s+--frozen-lockfile\s+--ignore-scripts\b/,
+      "publish workflow must install with pnpm install --frozen-lockfile --ignore-scripts",
+    ],
     [/\bpnpm\s+run\s+verify\b/, "publish workflow must run pnpm run verify before publish"],
     [/\bpnpm\s+publish:check\b/, "publish workflow must run pnpm publish:check before publish"],
     [/\bpnpm\s+publish:tarball-check\b/, "publish workflow must run pnpm publish:tarball-check before publish"],
@@ -198,7 +201,7 @@ function validatePublishWorkflow(workflow) {
   }
 
   validateCommandOrder(workflow, [
-    "pnpm install --frozen-lockfile",
+    "pnpm install --frozen-lockfile --ignore-scripts",
     "pnpm run verify",
     "pnpm publish:check",
     "pnpm publish:tarball-check",

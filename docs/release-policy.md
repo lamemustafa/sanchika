@@ -48,7 +48,7 @@ decision is confirmed. The intended publisher contract is:
 - The publish workflow must set `registry-url` to
   `https://registry.npmjs.org`, set `package-manager-cache: false`, and avoid
   `NPM_TOKEN`, `NODE_AUTH_TOKEN`, or other long-lived npm token secrets.
-- The publish workflow must run `pnpm install --frozen-lockfile`,
+- The publish workflow must run `pnpm install --frozen-lockfile --ignore-scripts`,
   `pnpm run verify`, `pnpm publish:check`, and
   `pnpm publish:tarball-check` before any package publish.
 - Package publishing must target package directories in dependency order:

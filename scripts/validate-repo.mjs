@@ -198,7 +198,7 @@ for (const requiredPublishReadyFragment of [
   "workflow_dispatch",
   "branches:",
   "tags:",
-  "pnpm install --frozen-lockfile",
+  "pnpm install --frozen-lockfile --ignore-scripts",
   "pnpm run verify",
   "pnpm publish:check",
   "pnpm publish:tarball-check",
@@ -240,6 +240,15 @@ for (const packageName of expectedPackages) {
   validatePackageManifest(packageName, manifest, fail);
 }
 
+const syntheticPublishablePatternManifest = {
+  ...readJson("packages/patterns/package.json"),
+  private: false,
+  version: "0.1.0",
+  publishConfig: { registry: "https://registry.npmjs.org/", access: "public" },
+  dependencies: { "@sanchika/primitives": "0.1.0" },
+};
+validatePackageManifest("patterns", syntheticPublishablePatternManifest, fail);
+
 const tokenSource = readText("packages/tokens/src/index.ts");
 const tokenCss = readText("packages/tokens/src/theme.css");
 const primitiveSource = readText("packages/primitives/src/index.ts");
@@ -263,6 +272,7 @@ const codeOfConduct = requireText("CODE_OF_CONDUCT.md");
 const releasePolicy = readText("docs/release-policy.md");
 const githubSetupDocs = requireText("docs/github-repository-setup.md");
 const repositorySettingsDocs = requireText("docs/repository-settings.md");
+const packageManifestValidationSource = readText("scripts/validation/package-manifests.mjs");
 const workflowPreflightSource = readText("scripts/check-workflow-preflight.mjs");
 const githubRulesetSource = readText("scripts/render-github-master-ruleset.mjs");
 const packageArtifactCheckSource = readText("scripts/check-package-artifacts.mjs");
@@ -631,7 +641,7 @@ for (const requiredReleaseFragment of [
   "scheduled workflows",
   "workflow-run chaining",
   "--provenance",
-  "pnpm install --frozen-lockfile",
+  "pnpm install --frozen-lockfile --ignore-scripts",
   "pnpm run verify",
   "pnpm publish:check",
   "pnpm publish:tarball-check",
@@ -794,6 +804,21 @@ for (const requiredPackageArtifactFragment of [
 ]) {
   if (!packageArtifactCheckSource.includes(requiredPackageArtifactFragment)) {
     fail(`scripts/check-package-artifacts.mjs must include ${requiredPackageArtifactFragment}`);
+  }
+}
+
+for (const requiredPackageManifestValidationFragment of [
+  "validatePackagePhase",
+  "manifest.private === true",
+  "publishable manifest",
+  "publishConfig.registry",
+  "publishConfig.access",
+  "dependencyFields",
+  "workspace:",
+  "isRealSemver",
+]) {
+  if (!packageManifestValidationSource.includes(requiredPackageManifestValidationFragment)) {
+    fail(`scripts/validation/package-manifests.mjs must include ${requiredPackageManifestValidationFragment}`);
   }
 }
 

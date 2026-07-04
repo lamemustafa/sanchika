@@ -1,4 +1,5 @@
 export const expectedPackageFiles = ["dist"];
+const dependencyFields = ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"];
 const cssSideEffectExports = new Map([
   ["tokens", "./dist/theme.css"],
   ["primitives", "./dist/styles.css"],
@@ -11,9 +12,7 @@ export function validatePackageManifest(packageName, manifest, fail) {
     fail(`packages/${packageName}/package.json has unexpected package name ${manifest.name}`);
   }
 
-  if (manifest.private !== true) {
-    fail(`${displayName} must remain private until publish gates pass`);
-  }
+  validatePackagePhase({ displayName, manifest, fail });
 
   if (manifest.license !== "Apache-2.0") {
     fail(`${displayName} must declare Apache-2.0`);
@@ -89,4 +88,38 @@ export function validatePackageManifest(packageName, manifest, fail) {
   if (JSON.stringify(manifest.files) !== JSON.stringify(expectedPackageFiles)) {
     fail(`${displayName} files must explicitly allowlist ${expectedPackageFiles.join(", ")}`);
   }
+}
+
+function validatePackagePhase({ displayName, manifest, fail }) {
+  if (manifest.private === true) {
+    return;
+  }
+
+  if (!isRealSemver(manifest.version)) {
+    fail(`${displayName} publishable manifest must declare a real semver version`);
+  }
+
+  if (manifest.publishConfig?.registry !== "https://registry.npmjs.org/") {
+    fail(`${displayName} publishable manifest must declare publishConfig.registry for npm`);
+  }
+
+  if (manifest.publishConfig?.access !== "public") {
+    fail(`${displayName} publishable manifest must declare publishConfig.access public`);
+  }
+
+  for (const dependencyField of dependencyFields) {
+    for (const [dependencyName, version] of Object.entries(manifest[dependencyField] ?? {})) {
+      if (typeof version === "string" && version.startsWith("workspace:")) {
+        fail(`${displayName} publishable ${dependencyField} ${dependencyName} must not use ${version}`);
+      }
+    }
+  }
+}
+
+function isRealSemver(version) {
+  return (
+    typeof version === "string" &&
+    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/.test(version) &&
+    version !== "0.0.0"
+  );
 }
