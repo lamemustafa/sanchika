@@ -32,3 +32,11 @@ that artifact path.
 V0 is internal and experimental. Public production claims require at least one
 real ComplyEaze surface to consume Sanchika successfully, with accessibility and
 visual review evidence.
+
+## AI-Native Tooling
+
+AI-native tooling is advisory until a real consumer adoption proves the review
+signal is stable. Keep Impeccable, Codex, Claude, and similar assistants outside
+the runtime dependency graph; use them to review rendered consumer surfaces and
+repository contracts, not to add model execution or generated app scaffolds to
+Sanchika. See `docs/ai-native-tooling.md`.

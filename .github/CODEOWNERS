@@ -1,1 +1,6 @@
+# Single-maintainer bootstrap owner.
+#
+# Until a second trusted maintainer is added, owner-authored PRs use the
+# documented owner-bypass path plus required status checks and conversation
+# resolution. Do not add placeholder reviewers or teams that cannot approve.
 * @lamemustafa

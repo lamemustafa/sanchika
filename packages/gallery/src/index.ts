@@ -185,7 +185,7 @@ function statusSlotCopy(
     case "humanSupport":
       return `${finalSignal}: Human consultation is available before a filing or review action.`;
     default:
-      return `${secondarySignal}: ${slotName} is present and referenced by the live region.`;
+      return `${secondarySignal}: ${slotName} is visible in the ${stateName} state exemplar.`;
   }
 }
 
@@ -206,9 +206,15 @@ function statusPrimaryDetail(patternName: string, stateName: string, slotName: s
     return "File read permission is needed to inspect the selected local artifact.";
   }
   if (patternName === "ServiceSection" && slotName === "serviceName") {
-    return stateName === "selected" ? "Example advisory review is selected." : "Example advisory review is unavailable.";
+    if (stateName === "selected") {
+      return "Example advisory review is selected.";
+    }
+    if (stateName === "unavailable") {
+      return "Example advisory review is unavailable; consultation path is shown.";
+    }
+    return "Example advisory review is available for consideration.";
   }
-  return `${slotName} is present and referenced by the live region.`;
+  return `${slotName} is visible in the ${stateName} state exemplar.`;
 }
 
 function kebabCase(value: string): string {
