@@ -34,6 +34,6 @@
     "verify": "pnpm validate && pnpm typecheck && pnpm build && pnpm typecheck:api && pnpm artifact:check && pnpm consumer:check && pnpm smoke"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   }
 }
