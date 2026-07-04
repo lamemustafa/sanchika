@@ -777,6 +777,7 @@ for (const requiredReviewGateWorkflowFragment of [
   "name: Review findings gate",
   "pull_request_target:",
   "workflow_dispatch:",
+  "required: true",
   "schedule:",
   "statuses: write",
   "pull-requests: read",
@@ -791,9 +792,19 @@ for (const requiredReviewGateWorkflowFragment of [
   }
 }
 
+for (const forbiddenReviewGateWorkflowFragment of [
+  "pull_request_review:",
+  "pull_request_review_comment:",
+]) {
+  if (reviewGateWorkflow.includes(forbiddenReviewGateWorkflowFragment)) {
+    fail(`.github/workflows/review-gate.yml must not include ${forbiddenReviewGateWorkflowFragment}`);
+  }
+}
+
 for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/sync-review-gate-status.mjs", "Skipping Review gate success"],
   ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
+  ["scripts/check-pr-review-gate.mjs", "isCurrentHeadReview ? null : previous.blockingReview"],
 ]) {
   if (!readText(path).includes(requiredReviewGateScriptFragment)) {
     fail(`${path} must include ${requiredReviewGateScriptFragment}`);
