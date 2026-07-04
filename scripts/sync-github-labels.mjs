@@ -77,7 +77,7 @@ function run(command, commandArgs) {
 
 function optionalRun(command, commandArgs) {
   try {
-    return run(command, commandArgs);
+    return execFileSync(command, commandArgs, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
   } catch {
     return "";
   }
