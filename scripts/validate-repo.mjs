@@ -273,10 +273,12 @@ const issueTemplateConfig = requireText(".github/ISSUE_TEMPLATE/config.yml");
 const bugIssueTemplate = requireText(".github/ISSUE_TEMPLATE/bug_report.yml");
 const featureIssueTemplate = requireText(".github/ISSUE_TEMPLATE/feature_request.yml");
 const conductIssueTemplate = requireText(".github/ISSUE_TEMPLATE/conduct_report.yml");
+const questionIssueTemplate = requireText(".github/ISSUE_TEMPLATE/question.yml");
 const dependabotConfig = requireText(".github/dependabot.yml");
 const agentGuide = readText("AGENTS.md");
 const contributingDocs = readText("CONTRIBUTING.md");
 const codeOfConduct = requireText("CODE_OF_CONDUCT.md");
+const supportDocs = requireText("SUPPORT.md");
 const releasePolicy = readText("docs/release-policy.md");
 const githubSetupDocs = requireText("docs/github-repository-setup.md");
 const repositorySettingsDocs = requireText("docs/repository-settings.md");
@@ -766,6 +768,7 @@ for (const [path, text] of [
   [".github/ISSUE_TEMPLATE/bug_report.yml", bugIssueTemplate],
   [".github/ISSUE_TEMPLATE/feature_request.yml", featureIssueTemplate],
   [".github/ISSUE_TEMPLATE/conduct_report.yml", conductIssueTemplate],
+  [".github/ISSUE_TEMPLATE/question.yml", questionIssueTemplate],
 ]) {
   for (const requiredFragment of ["PAN", "GSTIN", "Aadhaar", "credentials", "private vulnerability reporting"]) {
     if (!text.includes(requiredFragment)) {
@@ -804,8 +807,40 @@ for (const requiredConductRouteFragment of ["conduct report issue template", "no
   }
 }
 
+for (const requiredSupportFragment of [
+  "Support",
+  "question issue template",
+  "tokens, primitives, patterns, gallery",
+  "ComplyEaze app support",
+  "Pack portal debugging",
+  "tax or legal advice",
+  "private vulnerability reporting",
+]) {
+  if (!supportDocs.includes(requiredSupportFragment)) {
+    fail(`SUPPORT.md must include ${requiredSupportFragment}`);
+  }
+}
+
+for (const requiredQuestionTemplateFragment of [
+  "Question",
+  "tokens",
+  "primitives",
+  "patterns",
+  "gallery",
+  "adoption guidance",
+  "tax, legal, filing",
+  "ComplyEaze app",
+  "Pack portal",
+  "private vulnerability reporting",
+]) {
+  if (!questionIssueTemplate.includes(requiredQuestionTemplateFragment)) {
+    fail(`.github/ISSUE_TEMPLATE/question.yml must include ${requiredQuestionTemplateFragment}`);
+  }
+}
+
 for (const requiredGovernanceLink of [
   "CODE_OF_CONDUCT.md",
+  "SUPPORT.md",
   "docs/github-repository-setup.md",
   "docs/repository-settings.md",
 ]) {

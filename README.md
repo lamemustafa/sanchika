@@ -94,6 +94,7 @@ real ComplyEaze surface consumes Sanchika successfully.
 - [Pack adoption](docs/adoption-pack.md)
 - [Tools adoption](docs/adoption-tools.md)
 - [Contributing](CONTRIBUTING.md)
+- [Support](SUPPORT.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security policy](SECURITY.md)
 - [Release policy](docs/release-policy.md)

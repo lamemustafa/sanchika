@@ -1,0 +1,43 @@
+name: Question
+description: Ask a public, non-sensitive Sanchika SDK question.
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template only for public SDK questions about tokens, primitives, patterns, gallery artifacts, or adoption guidance.
+        Do not include PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, private messages, taxpayer names, or real taxpayer data.
+        This repository does not provide tax, legal, filing, ComplyEaze app, Pack portal, or taxpayer-specific support.
+        Use private vulnerability reporting for security issues or sensitive-data exposure.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - tokens
+        - primitives
+        - patterns
+        - gallery
+        - adoption guidance
+        - repository workflow
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Ask the SDK question with synthetic examples only.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety-check
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, private messages, taxpayer names, and real taxpayer data.
+          required: true
+        - label: This is not a security issue or sensitive-data exposure that belongs in private vulnerability reporting.
+          required: true
+        - label: This is not tax, legal, filing, ComplyEaze app, Pack portal, or taxpayer-specific support.
+          required: true

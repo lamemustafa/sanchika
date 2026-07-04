@@ -12,7 +12,7 @@ should improve the SDK without adding app-specific runtime coupling.
   `docs/adoption-pack.md`, and `docs/adoption-tools.md`.
 - For public repository, release, or maintenance changes, also read
   `docs/github-repository-setup.md`, `docs/repository-settings.md`,
-  `SECURITY.md`, and `CODE_OF_CONDUCT.md`.
+  `SUPPORT.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md`.
 - Keep changes scoped to one package or one documented cross-package contract.
 - Do not add ComplyEaze, Axal, Pack, or Tools application code.
 - Do not add backend, database, auth, queue, scraping, telemetry, or route
