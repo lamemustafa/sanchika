@@ -55,6 +55,7 @@ pnpm artifact:check
 pnpm smoke
 pnpm consumer:check
 pnpm workflow:preflight
+pnpm review:gate
 pnpm publish:tarball-check
 pnpm verify
 ```
@@ -62,3 +63,12 @@ pnpm verify
 Use the installed `pnpm` binary directly. If `corepack pnpm` fails because the
 sandbox cannot write to the user-level Corepack cache, report that environment
 gap separately instead of treating it as a Sanchika package failure.
+
+## PR Review Gate
+
+Use `pnpm review:gate -- --repo lamemustafa/sanchika --pr <number>
+--strict-head-review --required-review-author chatgpt-codex-connector` for a
+thread-aware current-head review check. The protected `master` ruleset should
+require the `Review gate` status and conversation resolution so unresolved
+Codex/bot review threads block merges even when the repository has only one
+primary active contributor.

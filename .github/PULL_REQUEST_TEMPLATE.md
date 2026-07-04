@@ -41,5 +41,6 @@
 - [ ] `pnpm consumer:check`
 - [ ] `pnpm smoke`
 - [ ] `pnpm workflow:preflight`
+- [ ] `pnpm review:gate -- --repo lamemustafa/sanchika --pr <number> --strict-head-review --required-review-author chatgpt-codex-connector`, or reason not run:
 - [ ] `pnpm publish:tarball-check`
 - [ ] `pnpm verify`

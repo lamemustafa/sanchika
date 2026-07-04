@@ -45,7 +45,7 @@ const ruleset = {
       type: "required_status_checks",
       parameters: {
         do_not_enforce_on_create: true,
-        required_status_checks: [{ context: requiredCheck }],
+        required_status_checks: [{ context: requiredCheck }, { context: "Review gate" }],
         strict_required_status_checks_policy: true,
       },
     },

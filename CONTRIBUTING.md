@@ -33,6 +33,7 @@ pnpm artifact:check
 pnpm consumer:check
 pnpm smoke
 pnpm workflow:preflight
+pnpm review:gate
 pnpm publish:tarball-check
 pnpm verify
 ```
