@@ -255,6 +255,7 @@ const codeowners = requireText(".github/CODEOWNERS");
 const issueTemplateConfig = requireText(".github/ISSUE_TEMPLATE/config.yml");
 const bugIssueTemplate = requireText(".github/ISSUE_TEMPLATE/bug_report.yml");
 const featureIssueTemplate = requireText(".github/ISSUE_TEMPLATE/feature_request.yml");
+const conductIssueTemplate = requireText(".github/ISSUE_TEMPLATE/conduct_report.yml");
 const dependabotConfig = requireText(".github/dependabot.yml");
 const agentGuide = readText("AGENTS.md");
 const contributingDocs = readText("CONTRIBUTING.md");
@@ -719,6 +720,7 @@ for (const [path, text] of [
   [".github/ISSUE_TEMPLATE/config.yml", issueTemplateConfig],
   [".github/ISSUE_TEMPLATE/bug_report.yml", bugIssueTemplate],
   [".github/ISSUE_TEMPLATE/feature_request.yml", featureIssueTemplate],
+  [".github/ISSUE_TEMPLATE/conduct_report.yml", conductIssueTemplate],
 ]) {
   for (const requiredFragment of ["PAN", "GSTIN", "Aadhaar", "credentials", "private vulnerability reporting"]) {
     if (!text.includes(requiredFragment)) {
@@ -745,6 +747,15 @@ for (const requiredDependabotFragment of [
 for (const requiredConductFragment of ["Code of Conduct", "private", "harassment", "sensitive data"]) {
   if (!codeOfConduct.includes(requiredConductFragment)) {
     fail(`CODE_OF_CONDUCT.md must include ${requiredConductFragment}`);
+  }
+}
+
+for (const requiredConductRouteFragment of ["conduct report issue template", "non-sensitive conduct concerns"]) {
+  if (!codeOfConduct.includes(requiredConductRouteFragment)) {
+    fail(`CODE_OF_CONDUCT.md must include ${requiredConductRouteFragment}`);
+  }
+  if (!conductIssueTemplate.includes(requiredConductRouteFragment)) {
+    fail(`.github/ISSUE_TEMPLATE/conduct_report.yml must include ${requiredConductRouteFragment}`);
   }
 }
 

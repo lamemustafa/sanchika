@@ -1,0 +1,34 @@
+name: Conduct report
+description: Report a non-sensitive Code of Conduct concern.
+title: "[Conduct]: "
+labels: ["conduct"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This conduct report issue template is only for non-sensitive conduct concerns that can be discussed publicly.
+        Do not include PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, private messages, or real taxpayer data.
+        Use private vulnerability reporting for security issues or sensitive-data exposure.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What conduct concern should maintainers review? Keep details non-sensitive and public-safe.
+    validations:
+      required: true
+  - type: textarea
+    id: location
+    attributes:
+      label: Public location
+      description: Link to the public issue, pull request, or discussion where the concern appears.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety-check
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices, screenshots, local file paths, private messages, and real taxpayer data.
+          required: true
+        - label: This is not a vulnerability or sensitive-data exposure that belongs in private vulnerability reporting.
+          required: true

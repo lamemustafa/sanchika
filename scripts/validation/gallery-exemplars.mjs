@@ -204,7 +204,7 @@ function validateSyntheticGalleryBoundary({ markup, fail }) {
     }
   }
 
-  for (const bannedFragment of ["GST portal notice summary", "GST advisory review", "Last checked 03-07-2026"]) {
+  for (const bannedFragment of ["GST portal notice summary", "GST advisory review", "Last checked 03-07-2026", "FY25", "FY26", "Q4 FY26"]) {
     if (markup.includes(bannedFragment)) {
       fail(`PrimitiveGallery synthetic boundary must not include ${bannedFragment}`);
     }

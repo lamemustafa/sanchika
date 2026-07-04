@@ -29,6 +29,7 @@ Maintainers may edit, hide, or remove comments and close issues or pull requests
 that violate this Code of Conduct. Repeated or severe violations may lead to a
 block from the repository.
 
-Do not include sensitive material in public conduct reports. If the concern is a
-vulnerability or sensitive-data exposure, use GitHub private vulnerability
-reporting for `lamemustafa/sanchika`.
+Use the conduct report issue template for non-sensitive conduct concerns that can
+be discussed publicly. Do not include sensitive material in public conduct
+reports. If the concern is a vulnerability or sensitive-data exposure, use
+GitHub private vulnerability reporting for `lamemustafa/sanchika`.
