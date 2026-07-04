@@ -7,7 +7,7 @@
 - [ ] I read `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, `docs/architecture.md`,
       `docs/primitives.md`, and `docs/patterns.md`.
 - [ ] For consumer/adoption changes, I read the relevant adoption docs:
-      `docs/adoption-complyeaze.md`, `docs/adoption-axal.md`,
+      `docs/adoption-evidence.md`, `docs/adoption-complyeaze.md`, `docs/adoption-axal.md`,
       `docs/adoption-pack.md`, `docs/adoption-tools.md`, and
       `docs/adoption-external.md`.
 - [ ] This change stays within tokens, primitives, patterns, gallery, or docs.
@@ -18,7 +18,8 @@
       taxpayer names, credentials, cookies, OTPs, notices, screenshots, or local
       file paths.
 - [ ] If this affects consumer adoption, the consumer PR records the Sanchika commit,
-      package link or artifact method, changed files, and rollback files.
+      package link or artifact method, changed files, and rollback files using
+      `docs/adoption-evidence.md`.
 - [ ] If this uses an approved tarball artifact, the consumer PR records the
       tarball version and checksum.
 

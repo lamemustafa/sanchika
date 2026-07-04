@@ -8,7 +8,7 @@ should improve the SDK without adding app-specific runtime coupling.
 - Read `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, `docs/architecture.md`,
   `docs/primitives.md`, and `docs/patterns.md`.
 - For consumer or adoption changes, also read the relevant adoption docs:
-  `docs/adoption-complyeaze.md`, `docs/adoption-axal.md`,
+  `docs/adoption-evidence.md`, `docs/adoption-complyeaze.md`, `docs/adoption-axal.md`,
   `docs/adoption-pack.md`, `docs/adoption-tools.md`, and
   `docs/adoption-external.md`.
 - For public repository, release, or maintenance changes, also read
@@ -41,8 +41,9 @@ For design-facing changes, include notes on keyboard behavior, screen-reader
 semantics, responsive behavior, and any remaining accessibility gaps.
 
 For adoption-facing changes, record the Sanchika commit, package link or artifact
-method, changed files, and rollback files in the consumer PR. If an approved
-tarball artifact is used, record the tarball version and checksum.
+method, changed files, and rollback files in the consumer PR using
+`docs/adoption-evidence.md`. If an approved tarball artifact is used, record the
+tarball version and checksum.
 
 ## Contribution License
 

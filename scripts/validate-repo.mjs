@@ -518,6 +518,7 @@ if (pullRequestTemplate && !pullRequestTemplate.includes("PRODUCT.md")) {
 }
 
 for (const adoptionChecklistPath of [
+  "docs/adoption-evidence.md",
   "docs/adoption-complyeaze.md",
   "docs/adoption-axal.md",
   "docs/adoption-pack.md",
@@ -573,6 +574,23 @@ for (const requiredExternalAdoptionFragment of [
 for (const requiredReadmeCommand of ["pnpm artifact:check", "pnpm workflow:preflight", "pnpm publish:tarball-check"]) {
   if (!readText("README.md").includes(requiredReadmeCommand)) {
     fail(`README must list ${requiredReadmeCommand}`);
+  }
+}
+
+if (!readText("README.md").includes("docs/adoption-evidence.md")) {
+  fail("README must link adoption evidence template");
+}
+
+for (const requiredAdoptionEvidenceFragment of [
+  "Sanchika commit",
+  "Package link or artifact method",
+  "Desktop browser review",
+  "Mobile browser review",
+  "Rollback files",
+  "No production-readiness claim",
+]) {
+  if (!readText("docs/adoption-evidence.md").includes(requiredAdoptionEvidenceFragment)) {
+    fail(`docs/adoption-evidence.md must include ${requiredAdoptionEvidenceFragment}`);
   }
 }
 
@@ -804,6 +822,8 @@ for (const requiredRepositorySettingsFragment of [
   "private vulnerability reporting",
   "branch ruleset",
   "required status checks",
+  "Single-Maintainer Bootstrap",
+  "owner-bypass path",
   "Require pull requests before merging",
   "Require conversation resolution",
   "Block force pushes",
@@ -875,6 +895,16 @@ if (!codeowners.includes("* @lamemustafa")) {
   fail(".github/CODEOWNERS must assign repository ownership to @lamemustafa");
 }
 
+for (const requiredCodeownersFragment of [
+  "Single-maintainer bootstrap owner",
+  "owner-authored PRs",
+  "owner-bypass path",
+]) {
+  if (!codeowners.includes(requiredCodeownersFragment)) {
+    fail(`.github/CODEOWNERS must document ${requiredCodeownersFragment}`);
+  }
+}
+
 for (const [path, text] of [
   [".github/ISSUE_TEMPLATE/config.yml", issueTemplateConfig],
   [".github/ISSUE_TEMPLATE/bug_report.yml", bugIssueTemplate],
@@ -898,6 +928,9 @@ for (const requiredDependabotFragment of [
   "package-ecosystem: github-actions",
   "directory: /",
   "interval: monthly",
+  "groups:",
+  "sanchika-npm-dependencies",
+  "sanchika-github-actions",
 ]) {
   if (!dependabotConfig.includes(requiredDependabotFragment)) {
     fail(`.github/dependabot.yml must include ${requiredDependabotFragment}`);

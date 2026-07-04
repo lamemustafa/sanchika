@@ -5,6 +5,7 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
   validateCardFocusSemantics({ markup, fail });
   validateTrustBoundarySignals({ markup, fail });
   validateSyntheticGalleryBoundary({ markup, fail });
+  validateStateSpecificPatternCopy({ markup, fail });
   validatePatternStateExemplars({ markup, patternSpecs, fail });
 
   for (const primitive of primitiveSpecs) {
@@ -44,6 +45,30 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
     fail,
     "Field disabled exemplar",
   );
+}
+
+function validateStateSpecificPatternCopy({ markup, fail }) {
+  const serviceDefault = findPatternStateExemplar(markup, "ServiceSection", "default");
+  if (!serviceDefault) {
+    fail("ServiceSection default state exemplar must exist");
+  } else {
+    requireBodyFragments(
+      serviceDefault.body,
+      ["Example advisory review is available for consideration."],
+      fail,
+      "ServiceSection default exemplar",
+    );
+    if (serviceDefault.body.includes("Example advisory review is unavailable")) {
+      fail("ServiceSection default exemplar must not describe the service as unavailable");
+    }
+  }
+
+  const evidenceEmpty = findPatternStateExemplar(markup, "EvidencePanel", "empty");
+  if (!evidenceEmpty) {
+    fail("EvidencePanel empty state exemplar must exist");
+  } else if (evidenceEmpty.body.includes("live region")) {
+    fail("EvidencePanel empty exemplar must not claim live-region behavior without programmaticStatus");
+  }
 }
 
 function validateButtonExemplars({ markup, primitiveSpecs, fail }) {

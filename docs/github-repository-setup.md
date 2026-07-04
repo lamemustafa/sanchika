@@ -21,7 +21,9 @@ gh repo create lamemustafa/sanchika --public \
 
 ## Initial Push Gate
 
-Before exporting local history to the public remote, run:
+The public repository already exists. Keep this section as the historical
+bootstrap contract for any future re-created remote or organization transfer.
+Before exporting local history to a new public remote, run:
 
 ```bash
 pnpm verify
@@ -33,16 +35,16 @@ The working tree must be clean, and the maintainer must explicitly approve the
 public-history push because it publishes all local commits and repository
 contents.
 
-After approval, push the verified local history:
+For the initial repository creation only, after approval for a new remote, push
+the verified local history:
 
 ```bash
 git push -u origin HEAD:master
-git push -u origin tapish-codex/sanchika-sdk-hardening
 ```
 
-The first command creates the public `master` branch from the currently verified
-local history. The second command keeps the task branch traceable while setup is
-still active.
+The command creates the public `master` branch from the currently verified local
+history. Do not use it for routine work after `origin/master` exists. Task
+branches should be pushed only when they are still active and needed for review.
 
 ## Repository Settings
 
@@ -76,7 +78,19 @@ Create a branch ruleset for `master` before accepting external contribution:
 - Block force pushes.
 - Block branch deletion.
 - Require conversation resolution.
+- Do not enable required code-owner approval while `CODEOWNERS` only names the
+  repository owner.
 - Limit bypass actors to the repository owner until maintainers are added.
+
+### Single-Maintainer Bootstrap
+
+`CODEOWNERS` currently routes all paths to `@lamemustafa`. While Sanchika has
+only one trusted maintainer, owner-authored PRs cannot receive an independent
+code-owner approval. The intended bootstrap path is owner bypass with all
+required status checks, automated review checks, and conversation resolution
+still enforced, while required code-owner approval stays disabled. Add a second
+real maintainer or team before enabling required code-owner approval or removing
+the owner-bypass path; do not add placeholder reviewers that cannot approve.
 
 If GitHub's check name changes after the first CI run, update the branch ruleset
 to the exact required status checks reported by GitHub.
