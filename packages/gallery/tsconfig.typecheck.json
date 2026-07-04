@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "rootDir": "../..",
+    "paths": {
+      "@sanchika/patterns": ["packages/patterns/src/index.ts"],
+      "@sanchika/primitives": ["packages/primitives/src/index.ts"],
+      "@sanchika/tokens": ["packages/tokens/src/index.ts"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "../patterns/src/**/*.ts",
+    "../primitives/src/**/*.ts",
+    "../tokens/src/**/*.ts"
+  ]
+}

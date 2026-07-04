@@ -606,6 +606,22 @@ for (const packageName of expectedPackages) {
   }
 }
 
+const galleryManifest = readJson("packages/gallery/package.json");
+const galleryTypecheckConfig = readText("packages/gallery/tsconfig.typecheck.json");
+if (galleryManifest.scripts?.typecheck !== "tsc -p tsconfig.typecheck.json --noEmit") {
+  fail("@sanchika/gallery typecheck must use tsconfig.typecheck.json");
+}
+
+for (const requiredGalleryTypecheckFragment of [
+  '"@sanchika/tokens": ["packages/tokens/src/index.ts"]',
+  '"@sanchika/primitives": ["packages/primitives/src/index.ts"]',
+  '"@sanchika/patterns": ["packages/patterns/src/index.ts"]',
+]) {
+  if (!galleryTypecheckConfig.includes(requiredGalleryTypecheckFragment)) {
+    fail(`packages/gallery/tsconfig.typecheck.json must include ${requiredGalleryTypecheckFragment}`);
+  }
+}
+
 for (const requiredGalleryDocumentFragment of [
   "package-specifier HTML review document",
   "not a directly openable browser artifact",
