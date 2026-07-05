@@ -851,6 +851,9 @@ for (const requiredRulesetFragment of [
   "deletion",
   "required_review_thread_resolution",
   "require_code_owner_review",
+  "required_approving_review_count",
+  "required_approving_review_count: 0",
+  "require_code_owner_review: false",
   "dismiss_stale_reviews_on_push",
   "strict_required_status_checks_policy",
   "do_not_enforce_on_create",
@@ -883,6 +886,8 @@ for (const requiredGithubStateCheckFragment of [
   "Protect master",
   "required_status_checks",
   "required_review_thread_resolution",
+  "single-maintainer bootstrap ruleset must not require approving reviews",
+  "single-maintainer bootstrap ruleset must not require CODEOWNERS review",
   "non_fast_forward",
   "self-test",
 ]) {
@@ -924,13 +929,13 @@ if (!issueTemplateConfig.includes("blank_issues_enabled: false")) {
 }
 
 for (const requiredDependabotFragment of [
+  "multi-ecosystem-groups:",
+  "sanchika-dependency-hygiene",
+  "multi-ecosystem-group: sanchika-dependency-hygiene",
   "package-ecosystem: npm",
   "package-ecosystem: github-actions",
   "directory: /",
   "interval: monthly",
-  "groups:",
-  "sanchika-npm-dependencies",
-  "sanchika-github-actions",
 ]) {
   if (!dependabotConfig.includes(requiredDependabotFragment)) {
     fail(`.github/dependabot.yml must include ${requiredDependabotFragment}`);

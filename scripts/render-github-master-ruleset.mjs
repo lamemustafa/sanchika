@@ -35,9 +35,9 @@ const ruleset = {
       parameters: {
         allowed_merge_methods: ["squash"],
         dismiss_stale_reviews_on_push: true,
-        require_code_owner_review: true,
+        require_code_owner_review: false,
         require_last_push_approval: false,
-        required_approving_review_count: 1,
+        required_approving_review_count: 0,
         required_review_thread_resolution: true,
       },
     },

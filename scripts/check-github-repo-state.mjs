@@ -126,8 +126,12 @@ function validateRuleset(ruleset, checkContext, expectedOwnerBypassId) {
 
   const pullRequest = requireRule(ruleset, "pull_request").parameters ?? {};
   if (!pullRequest.allowed_merge_methods?.includes("squash")) fail("ruleset must allow squash merges");
-  if (pullRequest.required_approving_review_count !== 1) fail("ruleset must require one approving review");
-  if (pullRequest.require_code_owner_review !== true) fail("ruleset must require CODEOWNERS review");
+  if (pullRequest.required_approving_review_count !== 0) {
+    fail("single-maintainer bootstrap ruleset must not require approving reviews");
+  }
+  if (pullRequest.require_code_owner_review !== false) {
+    fail("single-maintainer bootstrap ruleset must not require CODEOWNERS review");
+  }
   if (pullRequest.dismiss_stale_reviews_on_push !== true) fail("ruleset must dismiss stale approvals");
   if (pullRequest.required_review_thread_resolution !== true) fail("ruleset must require conversation resolution");
 
@@ -179,8 +183,8 @@ function runSelfTest() {
           parameters: {
             allowed_merge_methods: ["squash"],
             dismiss_stale_reviews_on_push: true,
-            require_code_owner_review: true,
-            required_approving_review_count: 1,
+            require_code_owner_review: false,
+            required_approving_review_count: 0,
             required_review_thread_resolution: true,
           },
         },
