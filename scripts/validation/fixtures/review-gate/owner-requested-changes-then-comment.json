@@ -1,0 +1,42 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "headRefOid": "head-sha",
+        "reviewThreads": {
+          "pageInfo": { "hasNextPage": false, "endCursor": null },
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": { "hasNextPage": false, "endCursor": null },
+          "nodes": [
+            {
+              "state": "COMMENTED",
+              "submittedAt": "2026-01-01T00:00:00Z",
+              "url": "https://example.test/reviews/codex-current",
+              "author": { "login": "chatgpt-codex-connector" },
+              "authorAssociation": "NONE",
+              "commit": { "oid": "head-sha" }
+            },
+            {
+              "state": "CHANGES_REQUESTED",
+              "submittedAt": "2026-01-01T00:01:00Z",
+              "url": "https://example.test/reviews/owner-requested",
+              "author": { "login": "maintainer" },
+              "authorAssociation": "OWNER",
+              "commit": { "oid": "old-sha" }
+            },
+            {
+              "state": "COMMENTED",
+              "submittedAt": "2026-01-01T00:02:00Z",
+              "url": "https://example.test/reviews/owner-commented",
+              "author": { "login": "maintainer" },
+              "authorAssociation": "OWNER",
+              "commit": { "oid": "head-sha" }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

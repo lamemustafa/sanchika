@@ -131,10 +131,7 @@ function reduceSubmittedCurrentHeadReviewsByAuthor(reviews, headRefOid) {
       authorStates.set(author, {
         latestSubmittedReview: review,
         latestCurrentHeadReview,
-        blockingReview:
-          previous.blockingReview?.commit?.oid === headRefOid && !isCurrentHeadReview
-            ? previous.blockingReview
-            : null,
+        blockingReview: null,
       });
       continue;
     }
@@ -143,10 +140,7 @@ function reduceSubmittedCurrentHeadReviewsByAuthor(reviews, headRefOid) {
       authorStates.set(author, {
         latestSubmittedReview: review,
         latestCurrentHeadReview,
-        blockingReview:
-          isCurrentHeadReview && previous.blockingReview?.commit?.oid !== headRefOid
-            ? null
-            : previous.blockingReview,
+        blockingReview: previous.blockingReview,
       });
     }
   }

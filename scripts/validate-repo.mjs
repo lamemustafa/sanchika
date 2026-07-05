@@ -87,6 +87,10 @@ if (rootPackage.scripts?.["review:gate"] !== "node scripts/check-pr-review-gate.
   fail("root package must expose review:gate for current-head review-thread checks");
 }
 
+if (rootPackage.scripts?.["review:gate:fixtures"] !== "node scripts/validation/review-gate-fixtures.mjs") {
+  fail("root package must expose review:gate:fixtures for review-gate reducer regression checks");
+}
+
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
@@ -105,6 +109,10 @@ if (!existsSync(join(root, "scripts/check-workflow-preflight.mjs"))) {
 
 if (!existsSync(join(root, "scripts/check-pr-review-gate.mjs"))) {
   fail("review:gate script file must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/review-gate-fixtures.mjs"))) {
+  fail("review gate fixture validator must exist");
 }
 
 if (!existsSync(join(root, "scripts/sync-review-gate-status.mjs"))) {
@@ -141,6 +149,10 @@ if (!existsSync(join(root, "scripts/validation/tarball-contents.mjs"))) {
 
 if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
   fail("root verify script must run consumer:check");
+}
+
+if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:fixtures")) {
+  fail("root verify script must run review:gate:fixtures");
 }
 
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
@@ -806,7 +818,9 @@ for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
   ["scripts/check-pr-review-gate.mjs", "authorAssociation"],
   ["scripts/check-pr-review-gate.mjs", "REVIEW_BLOCKING_AUTHOR_ASSOCIATIONS"],
-  ["scripts/check-pr-review-gate.mjs", "previous.blockingReview?.commit?.oid === headRefOid"],
+  ["scripts/check-pr-review-gate.mjs", "blockingReview: previous.blockingReview"],
+  ["scripts/validation/review-gate-fixtures.mjs", "owner-requested-changes-then-comment.json"],
+  ["scripts/validation/review-gate-fixtures.mjs", "owner-requested-changes-then-approval.json"],
 ]) {
   if (!readText(path).includes(requiredReviewGateScriptFragment)) {
     fail(`${path} must include ${requiredReviewGateScriptFragment}`);
