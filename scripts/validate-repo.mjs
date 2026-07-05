@@ -815,6 +815,7 @@ for (const forbiddenReviewGateWorkflowFragment of [
 
 for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/sync-review-gate-status.mjs", "No active review blockers; current-head Codex review missing."],
+  ["scripts/sync-review-gate-status.mjs", "runReviewGate(target)"],
   ["scripts/sync-review-gate-status.mjs", "--expected-head"],
   ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
   ["scripts/check-pr-review-gate.mjs", "Expected head"],

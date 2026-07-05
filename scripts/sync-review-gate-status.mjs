@@ -35,7 +35,7 @@ for (const target of targets) {
   if (!skipPendingStatus) {
     setReviewGateStatus(target, "pending", "Review gate is evaluating review state.");
   }
-  const result = runReviewGate(target.number);
+  const result = runReviewGate(target);
 
   if (result.ok) {
     if (result.allowedMissingHeadReview) {
@@ -101,13 +101,13 @@ function listOpenPullRequests() {
   }
 }
 
-function runReviewGate(prNumber) {
+function runReviewGate(target) {
   const gateArgs = [
     fileURLToPath(new URL("./check-pr-review-gate.mjs", import.meta.url)),
     "--repo",
     repo,
     "--pr",
-    String(prNumber),
+    String(target.number),
     "--expected-head",
     target.headRefOid,
     "--wait-head-review-ms",
