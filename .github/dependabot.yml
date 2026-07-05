@@ -3,16 +3,15 @@ multi-ecosystem-groups:
   sanchika-dependency-hygiene:
     schedule:
       interval: monthly
+    open-pull-requests-limit: 5
 updates:
   - package-ecosystem: npm
     directory: /
     patterns:
       - "*"
     multi-ecosystem-group: sanchika-dependency-hygiene
-    open-pull-requests-limit: 5
   - package-ecosystem: github-actions
     directory: /
     patterns:
       - "*"
     multi-ecosystem-group: sanchika-dependency-hygiene
-    open-pull-requests-limit: 5
