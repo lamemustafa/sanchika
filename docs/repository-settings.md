@@ -17,8 +17,8 @@ These settings apply to the public `lamemustafa/sanchika` GitHub repository.
   `enhancement`, `conduct`, and `question`.
 - Keep `CODEOWNERS` active so pull requests request `@lamemustafa`.
 - Keep Dependabot enabled for monthly npm and GitHub Actions update pull
-  requests, grouped by ecosystem so dependency hygiene arrives as one verified
-  npm bundle and one verified GitHub Actions bundle.
+  requests, grouped into one multi-ecosystem dependency hygiene bundle when
+  GitHub can combine the updates safely.
 
 ## Branch Ruleset
 
