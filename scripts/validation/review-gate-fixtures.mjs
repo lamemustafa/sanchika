@@ -32,6 +32,20 @@ const cases = [
     ok: true,
     outputIncludes: "PR review gate passed",
   },
+  {
+    name: "missing current-head Codex review is audited",
+    fixture: "missing-current-head-codex-review.json",
+    ok: true,
+    extraArgs: ["--allow-missing-head-review"],
+    outputIncludes: "review-gate:allowed-missing-head-review",
+  },
+  {
+    name: "expected head mismatch",
+    fixture: "driveby-requested-changes.json",
+    ok: false,
+    extraArgs: ["--expected-head", "other-sha"],
+    outputIncludes: "Expected head other-sha",
+  },
 ];
 
 const failures = [];
@@ -50,6 +64,7 @@ for (const testCase of cases) {
       "--strict-head-review",
       "--required-review-author",
       "chatgpt-codex-connector",
+      ...(testCase.extraArgs ?? []),
     ],
     { cwd: root, encoding: "utf8" },
   );

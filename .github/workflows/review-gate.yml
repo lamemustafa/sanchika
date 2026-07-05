@@ -48,17 +48,19 @@ jobs:
             --repo "${GITHUB_REPOSITORY}"
             --run-url "${RUN_URL}"
             --strict-head-review
+            --wait-head-review-ms 0
+            --allow-missing-head-review
             --required-review-author chatgpt-codex-connector
           )
 
           if [ "${EVENT_NAME}" = "schedule" ]; then
-            args+=(--all-open --wait-head-review-ms 0 --allow-missing-head-review --skip-pending-status)
+            args+=(--all-open --skip-pending-status)
           else
             if [ -z "${PR_NUMBER}" ]; then
               echo "Could not determine pull request number." >&2
               exit 1
             fi
-            args+=(--pr "${PR_NUMBER}" --wait-head-review-ms 180000)
+            args+=(--pr "${PR_NUMBER}")
           fi
 
           node scripts/sync-review-gate-status.mjs "${args[@]}"

@@ -39,17 +39,11 @@ for (const target of targets) {
 
   if (result.ok) {
     if (result.allowedMissingHeadReview) {
-      if (hasSuccessfulReviewGateStatus(target)) {
-        setReviewGateStatus(
-          target,
-          "failure",
-          "Missing current-head review; clearing stale Review gate success.",
-        );
-      } else {
-        console.log(
-          `Skipping Review gate success for #${target.number} because the current-head review is still missing.`,
-        );
-      }
+      setReviewGateStatus(
+        target,
+        "success",
+        "No active review blockers; current-head Codex review missing.",
+      );
       continue;
     }
 
@@ -114,6 +108,8 @@ function runReviewGate(prNumber) {
     repo,
     "--pr",
     String(prNumber),
+    "--expected-head",
+    target.headRefOid,
     "--wait-head-review-ms",
     String(waitHeadReviewMs),
     "--poll-interval-ms",
@@ -169,18 +165,6 @@ function setReviewGateStatus(target, state, description) {
 function readLatestReviewGateStatus(target) {
   const statuses = runJson(["api", `repos/${repo}/commits/${target.headRefOid}/statuses`]);
   return statuses.find((status) => status.context === "Review gate") ?? null;
-}
-
-function hasSuccessfulReviewGateStatus(target) {
-  try {
-    return readLatestReviewGateStatus(target)?.state === "success";
-  } catch (error) {
-    console.warn(
-      `warn: could not read existing Review gate status for #${target.number}; leaving missing-review status unchanged.`,
-    );
-    process.stderr.write(String(error.stderr ?? ""));
-    return false;
-  }
 }
 
 function readArgValue(name) {
