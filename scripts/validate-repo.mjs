@@ -776,8 +776,6 @@ validateCiWorkflow({ ciWorkflow, fail });
 for (const requiredReviewGateWorkflowFragment of [
   "name: Review findings gate",
   "pull_request_target:",
-  "workflow_dispatch:",
-  "required: true",
   "schedule:",
   "statuses: write",
   "pull-requests: read",
@@ -793,6 +791,7 @@ for (const requiredReviewGateWorkflowFragment of [
 }
 
 for (const forbiddenReviewGateWorkflowFragment of [
+  "workflow_dispatch:",
   "pull_request_review:",
   "pull_request_review_comment:",
 ]) {
@@ -803,8 +802,9 @@ for (const forbiddenReviewGateWorkflowFragment of [
 
 for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/sync-review-gate-status.mjs", "Skipping Review gate success"],
+  ["scripts/sync-review-gate-status.mjs", "clearing stale Review gate success"],
   ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
-  ["scripts/check-pr-review-gate.mjs", "isCurrentHeadReview ? null : previous.blockingReview"],
+  ["scripts/check-pr-review-gate.mjs", "previous.blockingReview?.commit?.oid === headRefOid"],
 ]) {
   if (!readText(path).includes(requiredReviewGateScriptFragment)) {
     fail(`${path} must include ${requiredReviewGateScriptFragment}`);
