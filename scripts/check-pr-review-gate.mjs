@@ -16,6 +16,11 @@ const fixturePaths = readFixturePaths();
 let fixtureIndex = 0;
 const ALLOWED_MISSING_HEAD_REVIEW_MARKER =
   "review-gate:allowed-missing-head-review";
+const REVIEW_BLOCKING_AUTHOR_ASSOCIATIONS = new Set([
+  "COLLABORATOR",
+  "MEMBER",
+  "OWNER",
+]);
 
 const repo =
   explicitRepo ?? runText(["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"]);
@@ -113,7 +118,7 @@ function reduceSubmittedCurrentHeadReviewsByAuthor(reviews, headRefOid) {
     const latestCurrentHeadReview =
       isCurrentHeadReview ? review : previous.latestCurrentHeadReview;
 
-    if (review.state === "CHANGES_REQUESTED") {
+    if (review.state === "CHANGES_REQUESTED" && canReviewBlockMerge(review)) {
       authorStates.set(author, {
         latestSubmittedReview: review,
         latestCurrentHeadReview,
@@ -154,6 +159,11 @@ function compareReviewSubmittedAt(left, right) {
   const rightTime = Date.parse(right.submittedAt ?? "");
   if (Number.isFinite(leftTime) && Number.isFinite(rightTime)) return leftTime - rightTime;
   return 0;
+}
+
+function canReviewBlockMerge(review) {
+  if (!("authorAssociation" in review)) return true;
+  return REVIEW_BLOCKING_AUTHOR_ASSOCIATIONS.has(review.authorAssociation);
 }
 
 function reportBlockingState({ unresolvedThreads, blockingReviews }) {
@@ -222,7 +232,7 @@ function fetchReviewGraphPage() {
     "-F",
     `number=${prNumber}`,
     "-f",
-    "query=query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){headRefOid reviewThreads(first:100){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:1){nodes{url author{login}}}}} reviews(first:100){pageInfo{hasNextPage endCursor} nodes{state submittedAt url author{login} commit{oid}}}}}}",
+    "query=query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){headRefOid reviewThreads(first:100){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:1){nodes{url author{login}}}}} reviews(first:100){pageInfo{hasNextPage endCursor} nodes{state submittedAt url author{login} authorAssociation commit{oid}}}}}}",
   ]);
 }
 
@@ -258,7 +268,7 @@ function fetchReviewsGraphPage(after) {
     "-F",
     `after=${after}`,
     "-f",
-    "query=query($owner:String!,$name:String!,$number:Int!,$after:String!){repository(owner:$owner,name:$name){pullRequest(number:$number){reviews(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{state submittedAt url author{login} commit{oid}}}}}}",
+    "query=query($owner:String!,$name:String!,$number:Int!,$after:String!){repository(owner:$owner,name:$name){pullRequest(number:$number){reviews(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{state submittedAt url author{login} authorAssociation commit{oid}}}}}}",
   ]);
 }
 

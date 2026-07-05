@@ -804,6 +804,8 @@ for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/sync-review-gate-status.mjs", "Skipping Review gate success"],
   ["scripts/sync-review-gate-status.mjs", "clearing stale Review gate success"],
   ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
+  ["scripts/check-pr-review-gate.mjs", "authorAssociation"],
+  ["scripts/check-pr-review-gate.mjs", "REVIEW_BLOCKING_AUTHOR_ASSOCIATIONS"],
   ["scripts/check-pr-review-gate.mjs", "previous.blockingReview?.commit?.oid === headRefOid"],
 ]) {
   if (!readText(path).includes(requiredReviewGateScriptFragment)) {
