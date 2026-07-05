@@ -91,6 +91,10 @@ if (rootPackage.scripts?.["review:gate:fixtures"] !== "node scripts/validation/r
   fail("root package must expose review:gate:fixtures for review-gate reducer regression checks");
 }
 
+if (rootPackage.scripts?.["review:gate:sync-fixtures"] !== "node scripts/validation/review-gate-sync-fixtures.mjs") {
+  fail("root package must expose review:gate:sync-fixtures for review-gate status sync regression checks");
+}
+
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
@@ -113,6 +117,10 @@ if (!existsSync(join(root, "scripts/check-pr-review-gate.mjs"))) {
 
 if (!existsSync(join(root, "scripts/validation/review-gate-fixtures.mjs"))) {
   fail("review gate fixture validator must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/review-gate-sync-fixtures.mjs"))) {
+  fail("review gate sync fixture validator must exist");
 }
 
 if (!existsSync(join(root, "scripts/sync-review-gate-status.mjs"))) {
@@ -153,6 +161,10 @@ if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
 
 if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:fixtures")) {
   fail("root verify script must run review:gate:fixtures");
+}
+
+if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:sync-fixtures")) {
+  fail("root verify script must run review:gate:sync-fixtures");
 }
 
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
@@ -827,6 +839,8 @@ for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/validation/review-gate-fixtures.mjs", "owner-requested-changes-then-approval.json"],
   ["scripts/validation/review-gate-fixtures.mjs", "current-head-requested-changes-then-stale-approval.json"],
   ["scripts/validation/review-gate-fixtures.mjs", "missing-current-head-codex-review.json"],
+  ["scripts/validation/review-gate-sync-fixtures.mjs", "write success for missing Codex review"],
+  ["scripts/validation/review-gate-sync-fixtures.mjs", "Expected head head-sha"],
 ]) {
   if (!readText(path).includes(requiredReviewGateScriptFragment)) {
     fail(`${path} must include ${requiredReviewGateScriptFragment}`);
@@ -951,6 +965,8 @@ for (const requiredRulesetFragment of [
   "squash",
   "owner-bypass-id",
   "required-check",
+  "review-gate-integration-id",
+  "integration_id",
 ]) {
   if (!githubRulesetSource.includes(requiredRulesetFragment)) {
     fail(`github:ruleset script must include ${requiredRulesetFragment}`);
@@ -976,6 +992,8 @@ for (const requiredGithubStateCheckFragment of [
   "Protect master",
   "required_status_checks",
   "Review gate",
+  "review-gate-integration-id",
+  "integration_id",
   "required_review_thread_resolution",
   "single-maintainer bootstrap ruleset must not require approving reviews",
   "single-maintainer bootstrap ruleset must not require CODEOWNERS review",

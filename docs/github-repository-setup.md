@@ -76,6 +76,9 @@ Create a branch ruleset for `master` before accepting external contribution:
 - Required status checks should include the CI `verify` job once GitHub records
   its check name and the `Review gate` status from
   `.github/workflows/review-gate.yml`.
+- Pin the `Review gate` required status to the GitHub Actions integration ID
+  after the default-branch workflow emits the context; rulesets support
+  `integration_id` per required status check.
 - Block force pushes.
 - Block branch deletion.
 - Require conversation resolution.
@@ -104,6 +107,7 @@ configuration stays reproducible:
 ```bash
 pnpm github:ruleset --required-check "<github-check-context>" \
   --owner-bypass-id "$(gh api user --jq .id)" \
+  --review-gate-integration-id 15368 \
   > /tmp/sanchika-master-ruleset.json
 gh api repos/lamemustafa/sanchika/rulesets \
   --method POST \
@@ -117,7 +121,8 @@ After the ruleset is applied, verify the public repository state:
 
 ```bash
 pnpm github:verify --required-check "<github-check-context>" \
-  --owner-bypass-id "$(gh api user --jq .id)"
+  --owner-bypass-id "$(gh api user --jq .id)" \
+  --review-gate-integration-id 15368
 ```
 
 ## References
