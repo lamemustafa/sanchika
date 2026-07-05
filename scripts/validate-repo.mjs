@@ -936,6 +936,8 @@ for (const requiredDependabotFragment of [
   "package-ecosystem: github-actions",
   "directory: /",
   "interval: monthly",
+  "patterns:",
+  '- "*"',
 ]) {
   if (!dependabotConfig.includes(requiredDependabotFragment)) {
     fail(`.github/dependabot.yml must include ${requiredDependabotFragment}`);
