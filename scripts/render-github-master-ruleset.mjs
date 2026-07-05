@@ -1,6 +1,7 @@
 const args = parseArgs(process.argv.slice(2));
 const requiredCheck = args.get("required-check");
 const ownerBypassId = args.get("owner-bypass-id");
+const reviewGateIntegrationId = args.get("review-gate-integration-id");
 
 if (!requiredCheck) {
   fail("missing --required-check <github-check-context>");
@@ -8,6 +9,15 @@ if (!requiredCheck) {
 
 if (!ownerBypassId || !/^[1-9]\d*$/.test(ownerBypassId)) {
   fail("missing --owner-bypass-id <numeric-github-user-id>");
+}
+
+if (reviewGateIntegrationId && !/^[1-9]\d*$/.test(reviewGateIntegrationId)) {
+  fail("--review-gate-integration-id must be a numeric GitHub integration id");
+}
+
+const reviewGateCheck = { context: "Review gate" };
+if (reviewGateIntegrationId) {
+  reviewGateCheck.integration_id = Number(reviewGateIntegrationId);
 }
 
 const ruleset = {
@@ -45,7 +55,7 @@ const ruleset = {
       type: "required_status_checks",
       parameters: {
         do_not_enforce_on_create: true,
-        required_status_checks: [{ context: requiredCheck }, { context: "Review gate" }],
+        required_status_checks: [{ context: requiredCheck }, reviewGateCheck],
         strict_required_status_checks_policy: true,
       },
     },

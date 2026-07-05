@@ -12,6 +12,7 @@ const expectedTopics = ["accessibility", "compliance", "design-system", "tokens"
 const args = parseArgs(process.argv.slice(2));
 const requiredCheck = args.get("required-check");
 const ownerBypassId = args.get("owner-bypass-id");
+const reviewGateIntegrationId = args.get("review-gate-integration-id");
 const taskBranch = args.get("task-branch") ?? "tapish-codex/sanchika-sdk-hardening";
 
 if (args.has("self-test")) {
@@ -28,11 +29,20 @@ if (!ownerBypassId || !/^[1-9]\d*$/.test(ownerBypassId)) {
   fail("missing --owner-bypass-id <numeric-github-user-id>");
 }
 
+if (reviewGateIntegrationId && !/^[1-9]\d*$/.test(reviewGateIntegrationId)) {
+  fail("--review-gate-integration-id must be a numeric GitHub integration id");
+}
+
 checkRemote();
 checkRefs();
 checkRepositorySettings(JSON.parse(run("gh", ["repo", "view", repo, "--json", repoViewFields().join(",")])));
 checkLabels(JSON.parse(run("gh", ["api", `repos/${repo}/labels?per_page=100`])));
-checkRuleset(JSON.parse(run("gh", ["api", `repos/${repo}/rulesets`])), requiredCheck, ownerBypassId);
+checkRuleset(
+  JSON.parse(run("gh", ["api", `repos/${repo}/rulesets`])),
+  requiredCheck,
+  ownerBypassId,
+  reviewGateIntegrationId,
+);
 
 console.log("Sanchika GitHub repository state check passed.");
 
@@ -91,17 +101,17 @@ function checkLabels(labels) {
   validateGithubLabels(labels, fail);
 }
 
-function checkRuleset(summaries, checkContext, expectedOwnerBypassId) {
+function checkRuleset(summaries, checkContext, expectedOwnerBypassId, expectedReviewGateIntegrationId) {
   const summary = summaries.find((ruleset) => ruleset.name === "Protect master");
   if (!summary) {
     fail("Protect master ruleset must exist");
   }
 
   const ruleset = JSON.parse(run("gh", ["api", `repos/${repo}/rulesets/${summary.id}`]));
-  validateRuleset(ruleset, checkContext, expectedOwnerBypassId);
+  validateRuleset(ruleset, checkContext, expectedOwnerBypassId, expectedReviewGateIntegrationId);
 }
 
-function validateRuleset(ruleset, checkContext, expectedOwnerBypassId) {
+function validateRuleset(ruleset, checkContext, expectedOwnerBypassId, expectedReviewGateIntegrationId) {
   const enforcement = ruleset.enforcement;
   if (ruleset.name !== "Protect master") fail("ruleset name must be Protect master");
   if (ruleset.target !== "branch") fail("ruleset target must be branch");
@@ -136,9 +146,17 @@ function validateRuleset(ruleset, checkContext, expectedOwnerBypassId) {
   if (pullRequest.required_review_thread_resolution !== true) fail("ruleset must require conversation resolution");
 
   const statusChecks = requireRule(ruleset, "required_status_checks").parameters ?? {};
-  const contexts = (statusChecks.required_status_checks ?? []).map((check) => check.context);
+  const requiredStatusChecks = statusChecks.required_status_checks ?? [];
+  const contexts = requiredStatusChecks.map((check) => check.context);
   if (!contexts.includes(checkContext)) fail(`ruleset must require status check ${checkContext}`);
-  if (!contexts.includes("Review gate")) fail("ruleset must require status check Review gate");
+  const reviewGateCheck = requiredStatusChecks.find((check) => check.context === "Review gate");
+  if (!reviewGateCheck) fail("ruleset must require status check Review gate");
+  if (
+    expectedReviewGateIntegrationId &&
+    String(reviewGateCheck.integration_id) !== String(expectedReviewGateIntegrationId)
+  ) {
+    fail(`ruleset Review gate status must require integration_id ${expectedReviewGateIntegrationId}`);
+  }
   if (statusChecks.strict_required_status_checks_policy !== true) {
     fail("ruleset must require branches to be up to date before merge");
   }
@@ -200,6 +218,40 @@ function runSelfTest() {
     },
     "verify",
     "12345",
+  );
+
+  validateRuleset(
+    {
+      name: "Protect master",
+      target: "branch",
+      enforcement: "active",
+      bypass_actors: [{ actor_id: 12345, actor_type: "User", bypass_mode: "pull_request" }],
+      conditions: { ref_name: { include: ["refs/heads/master"], exclude: [] } },
+      rules: [
+        { type: "deletion" },
+        { type: "non_fast_forward" },
+        {
+          type: "pull_request",
+          parameters: {
+            allowed_merge_methods: ["squash"],
+            dismiss_stale_reviews_on_push: true,
+            require_code_owner_review: false,
+            required_approving_review_count: 0,
+            required_review_thread_resolution: true,
+          },
+        },
+        {
+          type: "required_status_checks",
+          parameters: {
+            required_status_checks: [{ context: "verify" }, { context: "Review gate", integration_id: 15368 }],
+            strict_required_status_checks_policy: true,
+          },
+        },
+      ],
+    },
+    "verify",
+    "12345",
+    "15368",
   );
 }
 

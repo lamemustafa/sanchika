@@ -29,6 +29,9 @@ Create a branch ruleset for `master` before accepting external contribution:
 - required status checks: use the exact GitHub check name for CI `verify` after
   the first run records it, plus the `Review gate` status from
   `.github/workflows/review-gate.yml`.
+- Pin the `Review gate` status to the GitHub Actions integration ID after the
+  default-branch workflow has emitted the context. The repository rulesets API
+  accepts `integration_id` on each required status check.
 - Require conversation resolution.
 - Block force pushes.
 - Block branch deletion.
@@ -49,7 +52,8 @@ Generate the API payload with:
 
 ```bash
 pnpm github:ruleset --required-check "<github-check-context>" \
-  --owner-bypass-id "$(gh api user --jq .id)"
+  --owner-bypass-id "$(gh api user --jq .id)" \
+  --review-gate-integration-id 15368
 ```
 
 Apply it only after `master` exists and GitHub has recorded the first CI check
@@ -66,7 +70,8 @@ Verify repository settings, topics, refs, and the applied ruleset with:
 
 ```bash
 pnpm github:verify --required-check "<github-check-context>" \
-  --owner-bypass-id "$(gh api user --jq .id)"
+  --owner-bypass-id "$(gh api user --jq .id)" \
+  --review-gate-integration-id 15368
 ```
 
 ## Pull Request Policy
