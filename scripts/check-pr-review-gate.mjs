@@ -131,7 +131,10 @@ function reduceSubmittedCurrentHeadReviewsByAuthor(reviews, headRefOid) {
       authorStates.set(author, {
         latestSubmittedReview: review,
         latestCurrentHeadReview,
-        blockingReview: null,
+        blockingReview:
+          previous.blockingReview?.commit?.oid === headRefOid && !isCurrentHeadReview
+            ? previous.blockingReview
+            : null,
       });
       continue;
     }

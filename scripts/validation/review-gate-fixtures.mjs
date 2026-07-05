@@ -21,6 +21,12 @@ const cases = [
     outputIncludes: "PR review gate passed",
   },
   {
+    name: "current-head requested changes then stale approval",
+    fixture: "current-head-requested-changes-then-stale-approval.json",
+    ok: false,
+    outputIncludes: "Requested-changes reviews",
+  },
+  {
     name: "drive-by requested changes",
     fixture: "driveby-requested-changes.json",
     ok: true,

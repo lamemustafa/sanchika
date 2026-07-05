@@ -819,8 +819,10 @@ for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/check-pr-review-gate.mjs", "authorAssociation"],
   ["scripts/check-pr-review-gate.mjs", "REVIEW_BLOCKING_AUTHOR_ASSOCIATIONS"],
   ["scripts/check-pr-review-gate.mjs", "blockingReview: previous.blockingReview"],
+  ["scripts/check-pr-review-gate.mjs", "previous.blockingReview?.commit?.oid === headRefOid"],
   ["scripts/validation/review-gate-fixtures.mjs", "owner-requested-changes-then-comment.json"],
   ["scripts/validation/review-gate-fixtures.mjs", "owner-requested-changes-then-approval.json"],
+  ["scripts/validation/review-gate-fixtures.mjs", "current-head-requested-changes-then-stale-approval.json"],
 ]) {
   if (!readText(path).includes(requiredReviewGateScriptFragment)) {
     fail(`${path} must include ${requiredReviewGateScriptFragment}`);
