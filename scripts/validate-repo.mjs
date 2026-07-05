@@ -83,6 +83,10 @@ if (rootPackage.scripts?.["workflow:preflight"] !== "node scripts/check-workflow
   fail("root package must expose workflow:preflight for nested repo branch and cleanliness checks");
 }
 
+if (rootPackage.scripts?.["review:gate"] !== "node scripts/check-pr-review-gate.mjs") {
+  fail("root package must expose review:gate for current-head review-thread checks");
+}
+
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
@@ -97,6 +101,14 @@ if (rootPackage.scripts?.["github:verify"] !== "node scripts/check-github-repo-s
 
 if (!existsSync(join(root, "scripts/check-workflow-preflight.mjs"))) {
   fail("workflow:preflight script file must exist");
+}
+
+if (!existsSync(join(root, "scripts/check-pr-review-gate.mjs"))) {
+  fail("review:gate script file must exist");
+}
+
+if (!existsSync(join(root, "scripts/sync-review-gate-status.mjs"))) {
+  fail("review gate status sync script file must exist");
 }
 
 if (!existsSync(join(root, "scripts/render-github-master-ruleset.mjs"))) {
@@ -307,7 +319,9 @@ const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
 const ciWorkflow = requireText(".github/workflows/ci.yml");
+const reviewGateWorkflow = requireText(".github/workflows/review-gate.yml");
 const codeowners = requireText(".github/CODEOWNERS");
+const claudeGuide = requireText("CLAUDE.md");
 const issueTemplateConfig = requireText(".github/ISSUE_TEMPLATE/config.yml");
 const bugIssueTemplate = requireText(".github/ISSUE_TEMPLATE/bug_report.yml");
 const featureIssueTemplate = requireText(".github/ISSUE_TEMPLATE/feature_request.yml");
@@ -517,6 +531,18 @@ if (pullRequestTemplate && !pullRequestTemplate.includes("PRODUCT.md")) {
   fail("Sanchika PR template must reference PRODUCT.md");
 }
 
+for (const requiredClaudeFragment of [
+  "@AGENTS.md",
+  "independent public design-system SDK repository",
+  "pnpm review:gate",
+  "Review gate",
+  "GraphQL `reviewThreads`",
+]) {
+  if (!claudeGuide.includes(requiredClaudeFragment)) {
+    fail(`CLAUDE.md must include ${requiredClaudeFragment}`);
+  }
+}
+
 for (const adoptionChecklistPath of [
   "docs/adoption-evidence.md",
   "docs/adoption-complyeaze.md",
@@ -542,6 +568,7 @@ const requiredVerificationCommands = [
   "pnpm consumer:check",
   "pnpm smoke",
   "pnpm workflow:preflight",
+  "pnpm review:gate",
   "pnpm publish:tarball-check",
   "pnpm verify",
 ];
@@ -746,6 +773,46 @@ for (const [consumerName, docs] of Object.entries(adoptionDocs)) {
 
 validateCiWorkflow({ ciWorkflow, fail });
 
+for (const requiredReviewGateWorkflowFragment of [
+  "name: Review findings gate",
+  "pull_request_target:",
+  "schedule:",
+  "statuses: write",
+  "pull-requests: read",
+  "node scripts/sync-review-gate-status.mjs",
+  "--strict-head-review",
+  "--required-review-author chatgpt-codex-connector",
+  "--skip-pending-status",
+  "--allow-missing-head-review",
+]) {
+  if (!reviewGateWorkflow.includes(requiredReviewGateWorkflowFragment)) {
+    fail(`.github/workflows/review-gate.yml must include ${requiredReviewGateWorkflowFragment}`);
+  }
+}
+
+for (const forbiddenReviewGateWorkflowFragment of [
+  "workflow_dispatch:",
+  "pull_request_review:",
+  "pull_request_review_comment:",
+]) {
+  if (reviewGateWorkflow.includes(forbiddenReviewGateWorkflowFragment)) {
+    fail(`.github/workflows/review-gate.yml must not include ${forbiddenReviewGateWorkflowFragment}`);
+  }
+}
+
+for (const [path, requiredReviewGateScriptFragment] of [
+  ["scripts/sync-review-gate-status.mjs", "Skipping Review gate success"],
+  ["scripts/sync-review-gate-status.mjs", "clearing stale Review gate success"],
+  ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
+  ["scripts/check-pr-review-gate.mjs", "authorAssociation"],
+  ["scripts/check-pr-review-gate.mjs", "REVIEW_BLOCKING_AUTHOR_ASSOCIATIONS"],
+  ["scripts/check-pr-review-gate.mjs", "previous.blockingReview?.commit?.oid === headRefOid"],
+]) {
+  if (!readText(path).includes(requiredReviewGateScriptFragment)) {
+    fail(`${path} must include ${requiredReviewGateScriptFragment}`);
+  }
+}
+
 const securityText = readText("SECURITY.md").toLowerCase().replace(/\s+/g, " ");
 if (!securityText.includes("private vulnerability reporting")) {
   fail("SECURITY.md must reference GitHub private vulnerability reporting");
@@ -807,6 +874,7 @@ for (const requiredGithubSetupFragment of [
   "pnpm github:verify",
   "--required-check",
   "--owner-bypass-id",
+  "Review gate",
   "private vulnerability reporting",
   "branch ruleset",
   "required status checks",
@@ -824,6 +892,7 @@ for (const requiredRepositorySettingsFragment of [
   "required status checks",
   "Single-Maintainer Bootstrap",
   "owner-bypass path",
+  "Review gate",
   "Require pull requests before merging",
   "Require conversation resolution",
   "Block force pushes",
@@ -847,6 +916,7 @@ for (const requiredRulesetFragment of [
   "refs/heads/master",
   "pull_request",
   "required_status_checks",
+  "Review gate",
   "non_fast_forward",
   "deletion",
   "required_review_thread_resolution",
@@ -885,6 +955,7 @@ for (const requiredGithubStateCheckFragment of [
   "repositoryTopics",
   "Protect master",
   "required_status_checks",
+  "Review gate",
   "required_review_thread_resolution",
   "single-maintainer bootstrap ruleset must not require approving reviews",
   "single-maintainer bootstrap ruleset must not require CODEOWNERS review",

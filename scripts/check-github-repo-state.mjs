@@ -138,6 +138,7 @@ function validateRuleset(ruleset, checkContext, expectedOwnerBypassId) {
   const statusChecks = requireRule(ruleset, "required_status_checks").parameters ?? {};
   const contexts = (statusChecks.required_status_checks ?? []).map((check) => check.context);
   if (!contexts.includes(checkContext)) fail(`ruleset must require status check ${checkContext}`);
+  if (!contexts.includes("Review gate")) fail("ruleset must require status check Review gate");
   if (statusChecks.strict_required_status_checks_policy !== true) {
     fail("ruleset must require branches to be up to date before merge");
   }
@@ -191,7 +192,7 @@ function runSelfTest() {
         {
           type: "required_status_checks",
           parameters: {
-            required_status_checks: [{ context: "verify" }],
+            required_status_checks: [{ context: "verify" }, { context: "Review gate" }],
             strict_required_status_checks_policy: true,
           },
         },

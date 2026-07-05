@@ -74,7 +74,8 @@ Create a branch ruleset for `master` before accepting external contribution:
 - Require pull requests before merging.
 - Require status checks to pass before merging.
 - Required status checks should include the CI `verify` job once GitHub records
-  its check name.
+  its check name and the `Review gate` status from
+  `.github/workflows/review-gate.yml`.
 - Block force pushes.
 - Block branch deletion.
 - Require conversation resolution.
@@ -93,7 +94,9 @@ real maintainer or team before enabling required code-owner approval or removing
 the owner-bypass path; do not add placeholder reviewers that cannot approve.
 
 If GitHub's check name changes after the first CI run, update the branch ruleset
-to the exact required status checks reported by GitHub.
+to the exact required status checks reported by GitHub. Keep `Review gate`
+required so current-head unresolved review threads and requested-changes reviews
+block merges.
 
 Render the ruleset payload from the verified local repo so the post-push
 configuration stays reproducible:

@@ -27,7 +27,8 @@ Create a branch ruleset for `master` before accepting external contribution:
 - Require pull requests before merging.
 - Require status checks to pass before merging.
 - required status checks: use the exact GitHub check name for CI `verify` after
-  the first run records it.
+  the first run records it, plus the `Review gate` status from
+  `.github/workflows/review-gate.yml`.
 - Require conversation resolution.
 - Block force pushes.
 - Block branch deletion.
@@ -74,6 +75,8 @@ pnpm github:verify --required-check "<github-check-context>" \
   team exists.
 - Require review from CODEOWNERS only after `CODEOWNERS` can name a real
   maintainer other than the PR author.
+- Require the `Review gate` status so current-head unresolved review threads and
+  requested-changes reviews block merges independently of approval count.
 - Dismiss stale approvals after changes.
 - Allow squash merges for normal contribution history.
 - Do not allow direct pushes to `master` after bootstrap.
