@@ -1,0 +1,26 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "headRefOid": "head-sha",
+        "reviewThreads": {
+          "pageInfo": { "hasNextPage": false, "endCursor": null },
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": { "hasNextPage": false, "endCursor": null },
+          "nodes": [
+            {
+              "state": "COMMENTED",
+              "submittedAt": "2026-01-01T00:00:00Z",
+              "url": "https://example.test/reviews/maintainer-comment",
+              "author": { "login": "maintainer" },
+              "authorAssociation": "OWNER",
+              "commit": { "oid": "head-sha" }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

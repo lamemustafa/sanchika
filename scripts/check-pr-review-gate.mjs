@@ -10,6 +10,7 @@ const allowMissingHeadReview = args.has("--allow-missing-head-review");
 const waitHeadReviewMs = readNonNegativeIntegerArg("--wait-head-review-ms", 0);
 const pollIntervalMs = readNonNegativeIntegerArg("--poll-interval-ms", 10_000);
 const requiredReviewAuthor = readArgValue("--required-review-author");
+const expectedHead = readArgValue("--expected-head");
 const explicitRepo = readArgValue("--repo");
 const explicitPr = readArgValue("--pr");
 const fixturePaths = readFixturePaths();
@@ -65,6 +66,9 @@ async function fetchEvaluatedPr() {
     const result = fetchReviewGraph();
     const pr = result.data?.repository?.pullRequest;
     if (!pr) fail(`Could not fetch PR #${prNumber} from ${repo}.`);
+    if (expectedHead && pr.headRefOid !== expectedHead) {
+      fail(`Expected head ${expectedHead}, but ${repo}#${prNumber} is at ${pr.headRefOid}.`);
+    }
 
     const evaluated = evaluatePullRequestReviewState(pr);
     if (
@@ -143,10 +147,7 @@ function reduceSubmittedCurrentHeadReviewsByAuthor(reviews, headRefOid) {
       authorStates.set(author, {
         latestSubmittedReview: review,
         latestCurrentHeadReview,
-        blockingReview:
-          isCurrentHeadReview && previous.blockingReview?.commit?.oid !== headRefOid
-            ? null
-            : previous.blockingReview,
+        blockingReview: previous.blockingReview,
       });
     }
   }
