@@ -891,18 +891,19 @@ validatePagesSmokeWorkflow({ pagesSmokeWorkflow, fail });
 
 for (const requiredHostingFragment of [
   "sanchika.complyeaze.com",
+  "The authoritative public host is `sanchika.complyeaze.com`",
   "GitHub Pages",
   "pnpm gallery:build",
   "pnpm gallery:check",
   ".github/workflows/pages-smoke.yml",
   "node scripts/check-pages-smoke.mjs",
   "pnpm pages:smoke",
-  "https://sanchika.complyeaze.com/",
   "Do not add a `CNAME` file",
   "existing `CNAME` file is ignored",
-  "Verify the `complyeaze.com` domain in GitHub",
   "pnpm hosting:domain:check",
   "sanchika.complyeaze.com. CNAME lamemustafa.github.io.",
+  "Ongoing live-host checks",
+  "https://sanchika.complyeaze.com/",
   "tools.complyeaze.com/sanchika/",
 ]) {
   if (!normalizeProse(hostingDocs).includes(requiredHostingFragment)) {
