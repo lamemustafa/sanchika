@@ -89,8 +89,10 @@ pnpm github:verify --required-check "<github-check-context>" \
 ## Security And Publishing
 
 - CI stays read-only with `contents: read`.
-- Publish permissions such as `id-token: write` belong only in the future
-  tag-only publish workflow.
+- `id-token: write` stays out of CI and belongs only in the future tag-only
+  publish workflow or the GitHub Pages deployment workflow.
+- GitHub Pages uses GitHub Actions as the source and deploys only the static
+  `dist/gallery` artifact.
 - npm releases use Trusted Publishing and no long-lived npm publish tokens.
 - Security reports, PAN, GSTIN, Aadhaar, credentials, cookies, OTPs, notices,
   screenshots, local file paths, and real taxpayer data must not be posted in

@@ -121,6 +121,7 @@ real ComplyEaze surface consumes Sanchika successfully.
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security policy](SECURITY.md)
 - [Release policy](docs/release-policy.md)
+- [Hosting](docs/hosting.md)
 - [GitHub repository setup](docs/github-repository-setup.md)
 - [Repository settings](docs/repository-settings.md)
 - [Brand and trademark notice](LICENSE.brand.md)
