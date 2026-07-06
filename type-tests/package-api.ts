@@ -18,7 +18,10 @@ import type {
   PatternSlotNameFor,
   PatternStateNameFor,
   PatternStateRequiredSlotNameFor,
+  TrustBrief,
+  TrustBriefValidationIssue,
 } from "@sanchika/patterns";
+import { validateTrustBrief } from "@sanchika/patterns";
 import {
   primitiveGalleryCssImports,
   renderOpenablePrimitiveGalleryDocument,
@@ -56,6 +59,22 @@ const blockedPatternStatus: PatternProgrammaticStatusFor<"EvidencePanel", "block
   slotRefs: ["uncertaintyCopy", "actionSlot"],
   requirement: "Blocked evidence updates must announce the blocking reason and next safe action.",
 };
+const packTrustBrief: TrustBrief = {
+  id: "pack-local-download-proof",
+  consumerMode: "pack/local-utility",
+  register: "product",
+  surface: "Pack local download proof",
+  userJob: "Confirm what stays local before generating a proof artifact.",
+  primaryDecision: "Can the user continue without uploading documents or handing off credentials?",
+  dataSensitivity: ["credential-boundary", "document-or-file", "local-artifact"],
+  trustBoundaries: ["No upload", "No credential handoff", "No telemetry"],
+  evidenceRequirements: ["Source visibility", "Local artifact proof", "User-controlled export"],
+  selectedPatterns: [{ name: "TrustBoundary", states: ["local-only"] }],
+  claims: [{ claim: "Runs locally", evidence: "Boundary copy and source visibility are present before the action" }],
+  nonGoals: ["No portal automation", "No backend upload"],
+  verificationGates: ["token-only-styling", "wcag-22-aa", "keyboard-focus", "non-color-state", "mobile-render", "package-artifact"],
+};
+const packTrustBriefIssues: readonly TrustBriefValidationIssue[] = validateTrustBrief(packTrustBrief);
 const galleryCssImport: "@sanchika/tokens/theme.css" = primitiveGalleryCssImports[0];
 const galleryDocument: string = renderPrimitiveGalleryDocument();
 const openableGalleryDocument: string = renderOpenablePrimitiveGalleryDocument();
@@ -78,6 +97,8 @@ void emptyEvidenceSlot;
 void targetSizeCriterion;
 void blockedPatternCheck;
 void blockedPatternStatus;
+void packTrustBrief;
+void packTrustBriefIssues;
 void galleryCssImport;
 void galleryDocument;
 void openableGalleryDocument;

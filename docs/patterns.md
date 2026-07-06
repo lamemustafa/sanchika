@@ -69,6 +69,28 @@ known pattern contract without stringly typed slots or states:
 These types are generated from `patternSpecs`. They do not introduce runtime
 components or framework adapters.
 
+## Trust Brief Contract
+
+`TrustBrief` is the first AI-native harness contract. It captures the brief an
+agent or engineer must satisfy before a surface is Sanchika-contract-reviewed.
+
+Required fields include consumer mode, register, surface, user job, primary
+decision, data sensitivity, trust boundaries, evidence requirements, selected
+patterns, visible claims, non-goals, and verification gates.
+
+Use `validateTrustBrief` before implementation or extraction. It returns
+`TrustBriefValidationIssue` entries when the brief is too vague or misses a
+mode-specific safety requirement. Pack trust briefs must state no upload, no
+credential handoff, and no telemetry. Axal workspace briefs must require source,
+review, and human evidence. ComplyEaze core briefs must stay public-copy scoped
+and exclude auth, tenant, document, and workspace scope. Tools local-artifact briefs
+must require source, provenance, export evidence, and a product-spec guard before
+generic route or tool scaffolds. Product-register briefs must include keyboard
+focus verification.
+
+The trust brief does not generate UI, route files, product APIs, or compliance
+judgment. It is a contract for shaping, review, and verification.
+
 ## Pattern State Exemplars
 
 PrimitiveGallery must include Pattern state exemplars for every required pattern

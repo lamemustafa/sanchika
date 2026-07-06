@@ -96,6 +96,196 @@ export type PatternSpec = {
   nonGoals: readonly string[];
 };
 
+export type TrustBriefRegister = "brand" | "product";
+
+export type TrustBriefDataSensitivity =
+  | "public-copy"
+  | "tenant-data"
+  | "credential-boundary"
+  | "document-or-file"
+  | "statutory-claim"
+  | "local-artifact";
+
+export type TrustBriefVerificationGate =
+  | "token-only-styling"
+  | "wcag-22-aa"
+  | "keyboard-focus"
+  | "non-color-state"
+  | "desktop-render"
+  | "mobile-render"
+  | "reduced-motion"
+  | "package-artifact"
+  | "rollback-path";
+
+export type TrustBriefPatternSelection = {
+  [Name in PatternName]: {
+    name: Name;
+    states?: readonly PatternStateNameFor<Name>[];
+  };
+}[PatternName];
+
+export type TrustBriefClaim = {
+  claim: string;
+  evidence: string;
+};
+
+export type TrustBrief = {
+  id: string;
+  consumerMode: ConsumerMode;
+  register: TrustBriefRegister;
+  surface: string;
+  userJob: string;
+  primaryDecision: string;
+  dataSensitivity: readonly TrustBriefDataSensitivity[];
+  trustBoundaries: readonly string[];
+  evidenceRequirements: readonly string[];
+  selectedPatterns: readonly TrustBriefPatternSelection[];
+  claims: readonly TrustBriefClaim[];
+  nonGoals: readonly string[];
+  verificationGates: readonly TrustBriefVerificationGate[];
+};
+
+export type TrustBriefValidationIssue = {
+  field: keyof TrustBrief | "selectedPatterns.states";
+  reason: string;
+};
+
+export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValidationIssue[] {
+  const issues: TrustBriefValidationIssue[] = [];
+
+  requireText(brief.id, "id", issues);
+  requireText(brief.surface, "surface", issues);
+  requireText(brief.userJob, "userJob", issues);
+  requireText(brief.primaryDecision, "primaryDecision", issues);
+  requireList(brief.dataSensitivity, "dataSensitivity", issues);
+  requireList(brief.trustBoundaries, "trustBoundaries", issues);
+  requireList(brief.evidenceRequirements, "evidenceRequirements", issues);
+  requireList(brief.selectedPatterns, "selectedPatterns", issues);
+  requireList(brief.claims, "claims", issues);
+  requireList(brief.nonGoals, "nonGoals", issues);
+  requireList(brief.verificationGates, "verificationGates", issues);
+
+  for (const claim of brief.claims) {
+    if (!claim.claim.trim() || !claim.evidence.trim()) {
+      issues.push({
+        field: "claims",
+        reason: "Claims must include both visible copy and evidence.",
+      });
+    }
+  }
+
+  for (const selection of brief.selectedPatterns) {
+    const spec = patternSpecs.find((pattern) => pattern.name === selection.name);
+    if (!spec) {
+      issues.push({
+        field: "selectedPatterns",
+        reason: `Unknown pattern ${selection.name}.`,
+      });
+      continue;
+    }
+
+    for (const state of selection.states ?? []) {
+      if (!spec.requiredStates.some((requiredState) => requiredState.name === state)) {
+        issues.push({
+          field: "selectedPatterns.states",
+          reason: `${selection.name} does not define state ${state}.`,
+        });
+      }
+    }
+  }
+
+  if (brief.register === "product" && !brief.verificationGates.includes("keyboard-focus")) {
+    issues.push({
+      field: "verificationGates",
+      reason: "Product surfaces must verify keyboard focus.",
+    });
+  }
+
+  if (brief.consumerMode === "pack/local-utility") {
+    const boundaryText = brief.trustBoundaries.join(" ").toLowerCase();
+    for (const requiredBoundary of ["no upload", "no credential", "no telemetry"]) {
+      if (!boundaryText.includes(requiredBoundary)) {
+        issues.push({
+          field: "trustBoundaries",
+          reason: `Pack trust briefs must state ${requiredBoundary}.`,
+        });
+      }
+    }
+  }
+
+  if (brief.consumerMode === "complyeaze/core") {
+    const boundaryText = brief.trustBoundaries.join(" ").toLowerCase();
+    const nonGoalText = brief.nonGoals.join(" ").toLowerCase();
+    const exclusionText = `${boundaryText} ${nonGoalText}`;
+    if (!brief.dataSensitivity.includes("public-copy")) {
+      issues.push({
+        field: "dataSensitivity",
+        reason: "ComplyEaze core briefs must be public-copy scoped.",
+      });
+    }
+    for (const excludedScope of ["auth", "tenant", "document", "workspace"]) {
+      if (!exclusionText.includes(excludedScope)) {
+        issues.push({
+          field: "nonGoals",
+          reason: `ComplyEaze core briefs must exclude ${excludedScope} scope.`,
+        });
+      }
+    }
+  }
+
+  if (brief.consumerMode === "axal/workspace") {
+    const evidenceText = brief.evidenceRequirements.join(" ").toLowerCase();
+    for (const requiredEvidence of ["source", "review", "human"]) {
+      if (!evidenceText.includes(requiredEvidence)) {
+        issues.push({
+          field: "evidenceRequirements",
+          reason: `Axal workspace briefs must require ${requiredEvidence} evidence.`,
+        });
+      }
+    }
+  }
+
+  if (brief.consumerMode === "tools/local-artifact") {
+    const evidenceText = brief.evidenceRequirements.join(" ").toLowerCase();
+    for (const requiredEvidence of ["source", "provenance", "export"]) {
+      if (!evidenceText.includes(requiredEvidence)) {
+        issues.push({
+          field: "evidenceRequirements",
+          reason: `Tools local-artifact briefs must require ${requiredEvidence} evidence.`,
+        });
+      }
+    }
+    if (!brief.nonGoals.join(" ").toLowerCase().includes("product spec")) {
+      issues.push({
+        field: "nonGoals",
+        reason: "Tools local-artifact briefs must require a product spec before generic route or tool scaffolds.",
+      });
+    }
+  }
+
+  return issues;
+}
+
+function requireText(
+  value: string,
+  field: keyof TrustBrief,
+  issues: TrustBriefValidationIssue[],
+) {
+  if (!value.trim()) {
+    issues.push({ field, reason: `${field} must be specific.` });
+  }
+}
+
+function requireList(
+  value: readonly unknown[],
+  field: keyof TrustBrief,
+  issues: TrustBriefValidationIssue[],
+) {
+  if (value.length === 0) {
+    issues.push({ field, reason: `${field} must not be empty.` });
+  }
+}
+
 export const patternSpecs = [
   {
     name: "EvidencePanel",
