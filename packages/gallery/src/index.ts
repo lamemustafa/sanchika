@@ -91,6 +91,14 @@ export function renderPrimitiveGalleryDocument(): string {
   return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
 }
 
+export function renderOpenablePrimitiveGalleryDocument(): string {
+  const cssImports = ["assets/theme.css", "assets/primitives.css"]
+    .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
+    .join("");
+
+  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
+}
+
 function titleCase(value: string): string {
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
@@ -184,6 +192,31 @@ function statusSlotCopy(
       return `${finalSignal}: Synthetic reason for upload is shown before file selection.`;
     case "humanSupport":
       return `${finalSignal}: Human consultation is available before a filing or review action.`;
+    case "eyebrow":
+      return `${secondarySignal}: ComplyEaze product family routing context is visible.`;
+    case "title":
+      return `${primarySignal}: Choose the right compliance product surface.`;
+    case "summary":
+      return `${secondarySignal}: Compare workspace, local utility, browser-local tool, and external operational SaaS options.`;
+    case "products":
+      return `${primarySignal}: Axal workspace, Pack local utility, Tools browser-local drafts, and ComplyEaze support are listed with mode, audience, status, trust boundary, and destination.`;
+    case "trustCopy":
+      if (patternName === "ProductFamilyRouter" && stateName === "workspace-product") {
+        return `${secondarySignal}: Workspace products may save client data and need role-aware review workflows.`;
+      }
+      if (patternName === "ProductFamilyRouter" && stateName === "local-first-product") {
+        return `${secondarySignal}: Local-first products avoid account requirements and keep artifacts user-controlled.`;
+      }
+      if (patternName === "ProductFamilyRouter" && stateName === "browser-local-tool") {
+        return `${secondarySignal}: Browser-local tools produce draft outputs without upload assumptions.`;
+      }
+      return `${secondarySignal}: Product mode and trust boundary are visible before navigation.`;
+    case "policyLinks":
+      return `${finalSignal}: Privacy, support, source, or review-policy links are available before external navigation.`;
+    case "primaryCta":
+      return `${finalSignal}: Open the named product destination after reviewing its trust boundary.`;
+    case "secondaryCta":
+      return `${finalSignal}: Use the fallback, inspect, compare, or support path instead of a hidden disabled control.`;
     default:
       return `${secondarySignal}: ${slotName} is visible in the ${stateName} state exemplar.`;
   }
@@ -213,6 +246,24 @@ function statusPrimaryDetail(patternName: string, stateName: string, slotName: s
       return "Example advisory review is unavailable; consultation path is shown.";
     }
     return "Example advisory review is available for consideration.";
+  }
+  if (patternName === "ProductFamilyRouter" && slotName === "products") {
+    if (stateName === "product-unavailable") {
+      return "Unavailable product is named with a reason and fallback path.";
+    }
+    if (stateName === "external-link") {
+      return "External link destination is named before navigation.";
+    }
+    if (stateName === "local-first-product") {
+      return "Local-first product keeps artifacts user-controlled.";
+    }
+    if (stateName === "workspace-product") {
+      return "Workspace product requires an account and saved operational context.";
+    }
+    if (stateName === "browser-local-tool") {
+      return "Browser-local tool creates draft output without upload assumptions.";
+    }
+    return "Product cards name mode, audience, status, trust boundary, and destination.";
   }
   return `${slotName} is visible in the ${stateName} state exemplar.`;
 }

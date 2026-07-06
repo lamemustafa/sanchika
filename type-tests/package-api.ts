@@ -1,4 +1,13 @@
-import { colorTokens, motionTokens, radiusTokens, spacingTokens } from "@sanchika/tokens";
+import {
+  colorTokens,
+  elevationTokens,
+  focusTokens,
+  motionTokens,
+  radiusTokens,
+  sizeTokens,
+  spacingTokens,
+  typographyTokens,
+} from "@sanchika/tokens";
 import { primitiveClassName } from "@sanchika/primitives";
 import type { PrimitiveSizeFor, PrimitiveToneFor } from "@sanchika/primitives";
 import type {
@@ -10,12 +19,20 @@ import type {
   PatternStateNameFor,
   PatternStateRequiredSlotNameFor,
 } from "@sanchika/patterns";
-import { primitiveGalleryCssImports, renderPrimitiveGalleryDocument } from "@sanchika/gallery";
+import {
+  primitiveGalleryCssImports,
+  renderOpenablePrimitiveGalleryDocument,
+  renderPrimitiveGalleryDocument,
+} from "@sanchika/gallery";
 
 const brandRole: "brandPrimary" = colorTokens.brandPrimary.role;
 const spacingStep: "4" = spacingTokens["4"].step;
 const radiusRole: "control" = radiusTokens.control.role;
 const motionRole: "durationStandard" = motionTokens.durationStandard.role;
+const typographyRole: "fontSizeMd" = typographyTokens.fontSizeMd.role;
+const sizeRole: "controlMd" = sizeTokens.controlMd.role;
+const elevationRole: "card" = elevationTokens.card.role;
+const focusRole: "outlineWidth" = focusTokens.outlineWidth.role;
 
 const buttonTone: PrimitiveToneFor<"Button"> = "brand";
 const fieldSize: PrimitiveSizeFor<"Field"> = "lg";
@@ -41,6 +58,7 @@ const blockedPatternStatus: PatternProgrammaticStatusFor<"EvidencePanel", "block
 };
 const galleryCssImport: "@sanchika/tokens/theme.css" = primitiveGalleryCssImports[0];
 const galleryDocument: string = renderPrimitiveGalleryDocument();
+const openableGalleryDocument: string = renderOpenablePrimitiveGalleryDocument();
 
 primitiveClassName("Button", buttonTone, "md");
 primitiveClassName("Field", "danger", fieldSize);
@@ -49,6 +67,10 @@ void brandRole;
 void spacingStep;
 void radiusRole;
 void motionRole;
+void typographyRole;
+void sizeRole;
+void elevationRole;
+void focusRole;
 void evidenceSlot;
 void trustState;
 void externalConsumerMode;
@@ -58,6 +80,7 @@ void blockedPatternCheck;
 void blockedPatternStatus;
 void galleryCssImport;
 void galleryDocument;
+void openableGalleryDocument;
 
 // @ts-expect-error Token roles must stay tied to their record keys.
 const wrongTokenRole: "danger" = colorTokens.success.role;

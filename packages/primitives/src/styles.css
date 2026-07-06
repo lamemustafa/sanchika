@@ -5,10 +5,10 @@
     --sk-primitive-on-tone: var(--sk-color-bg-surface);
     --sk-primitive-border: var(--sk-color-border-control);
     --sk-primitive-tint: color-mix(in oklch, var(--sk-primitive-tone) 10%, var(--sk-color-bg-surface));
-    --sk-primitive-control-block: 2.5rem;
+    --sk-primitive-control-block: var(--sk-size-control-md);
     --sk-primitive-control-pad-inline: var(--sk-space-4);
     --sk-primitive-control-pad-block: var(--sk-space-2);
-    --sk-primitive-font-size: 0.9375rem;
+    --sk-primitive-font-size: var(--sk-font-size-md);
     --sk-primitive-card-pad: var(--sk-space-4);
     --sk-primitive-badge-pad-inline: var(--sk-space-2);
     --sk-primitive-badge-pad-block: var(--sk-space-1);
@@ -45,19 +45,19 @@
   }
 
   :where(.sk-size-sm) {
-    --sk-primitive-control-block: 2rem;
+    --sk-primitive-control-block: var(--sk-size-control-sm);
     --sk-primitive-control-pad-inline: var(--sk-space-3);
     --sk-primitive-control-pad-block: var(--sk-space-1);
-    --sk-primitive-font-size: 0.875rem;
+    --sk-primitive-font-size: var(--sk-font-size-sm);
     --sk-primitive-card-pad: var(--sk-space-3);
     --sk-primitive-badge-pad-inline: var(--sk-space-2);
   }
 
   :where(.sk-size-lg) {
-    --sk-primitive-control-block: 2.875rem;
+    --sk-primitive-control-block: var(--sk-size-control-lg);
     --sk-primitive-control-pad-inline: var(--sk-space-6);
     --sk-primitive-control-pad-block: var(--sk-space-3);
-    --sk-primitive-font-size: 1rem;
+    --sk-primitive-font-size: var(--sk-font-size-lg);
     --sk-primitive-card-pad: var(--sk-space-6);
     --sk-primitive-badge-pad-inline: var(--sk-space-3);
   }
@@ -72,10 +72,10 @@
     cursor: pointer;
     display: inline-flex;
     font-size: var(--sk-primitive-font-size);
-    font-weight: 650;
+    font-weight: var(--sk-font-weight-semibold);
     gap: var(--sk-space-2);
     justify-content: center;
-    line-height: 1.2;
+    line-height: var(--sk-line-height-control);
     max-inline-size: 100%;
     min-block-size: var(--sk-primitive-control-block);
     min-inline-size: var(--sk-primitive-control-block);
@@ -115,8 +115,8 @@
   }
 
   :where(.sk-button:focus-visible, .sk-card:focus-visible, .sk-field :is(input, textarea, select, [data-sk-control]):focus-visible) {
-    outline: 2px solid var(--sk-color-info);
-    outline-offset: 2px;
+    outline: var(--sk-focus-outline-width) solid var(--sk-color-info);
+    outline-offset: var(--sk-focus-outline-offset);
   }
 
   :where(.sk-button:disabled, .sk-button[aria-disabled="true"], .sk-button[data-disabled="true"]) {
@@ -143,7 +143,7 @@
     background: var(--sk-color-bg-surface);
     border: 1px solid var(--sk-primitive-border);
     border-radius: var(--sk-radius-card);
-    box-shadow: 0 1px 2px color-mix(in oklch, var(--sk-color-ink-muted) 14%, transparent);
+    box-shadow: var(--sk-elevation-card);
     display: grid;
     gap: var(--sk-space-2);
     max-inline-size: 100%;
@@ -151,7 +151,7 @@
   }
 
   :where(.sk-card.sk-tone-neutral) {
-    box-shadow: 0 1px 2px color-mix(in oklch, var(--sk-color-ink-muted) 14%, transparent);
+    box-shadow: var(--sk-elevation-card);
   }
 
   :where(a.sk-card) {
@@ -166,7 +166,7 @@
 
   :where(.sk-card :is(p, li)) {
     color: var(--sk-color-ink-muted);
-    line-height: 1.5;
+    line-height: var(--sk-line-height-body);
   }
 
   :where(.sk-badge) {
@@ -177,11 +177,11 @@
     color: var(--sk-primitive-fg);
     display: inline-flex;
     font-size: var(--sk-primitive-font-size);
-    font-weight: 700;
+    font-weight: var(--sk-font-weight-bold);
     gap: var(--sk-space-1);
-    line-height: 1.15;
+    line-height: var(--sk-line-height-tight);
     max-inline-size: 100%;
-    min-block-size: 1.5rem;
+    min-block-size: var(--sk-size-badge-min);
     overflow-wrap: anywhere;
     padding: var(--sk-primitive-badge-pad-block) var(--sk-primitive-badge-pad-inline);
     vertical-align: middle;
@@ -196,8 +196,8 @@
   :where(.sk-field :is(label, [data-sk-label])) {
     color: var(--sk-color-ink-primary);
     font-size: var(--sk-primitive-font-size);
-    font-weight: 650;
-    line-height: 1.3;
+    font-weight: var(--sk-font-weight-semibold);
+    line-height: var(--sk-line-height-label);
   }
 
   :where(.sk-field :is(input, textarea, select, [data-sk-control])) {
@@ -208,7 +208,7 @@
     color: var(--sk-color-ink-primary);
     font: inherit;
     inline-size: 100%;
-    line-height: 1.4;
+    line-height: var(--sk-line-height-body);
     min-block-size: var(--sk-primitive-control-block);
     min-inline-size: 0;
     padding: var(--sk-primitive-control-pad-block) var(--sk-primitive-control-pad-inline);
@@ -239,15 +239,15 @@
 
   :where(.sk-field :is([data-sk-hint], [data-sk-error])) {
     color: var(--sk-color-ink-muted);
-    font-size: 0.875rem;
-    line-height: 1.4;
+    font-size: var(--sk-font-size-sm);
+    line-height: var(--sk-line-height-body);
     margin-block: 0;
     overflow-wrap: anywhere;
   }
 
   :where(.sk-field :is([data-sk-error])) {
     color: var(--sk-color-danger);
-    font-weight: 650;
+    font-weight: var(--sk-font-weight-semibold);
   }
 
   @keyframes sk-primitive-spin {

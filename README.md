@@ -53,6 +53,8 @@ pnpm typecheck
 pnpm build
 pnpm typecheck:api
 pnpm artifact:check
+pnpm gallery:build
+pnpm gallery:check
 pnpm smoke
 pnpm consumer:check
 pnpm workflow:preflight
@@ -80,10 +82,21 @@ Use `primitiveClassName(...)` or equivalent class composition to apply
 
 `@sanchika/gallery` exports `renderPrimitiveGalleryMarkup()` for fragment-level
 checks and `renderPrimitiveGalleryDocument()` for a package-specifier HTML review document.
-The document renderer includes token CSS before primitive CSS and is intended
-for CI/review proof. It is not a directly openable browser artifact unless the
-consuming tool resolves `@sanchika/*` CSS hrefs. It is not an app route, server,
-Storybook replacement, or runtime shell.
+The document renderer includes token CSS before primitive CSS and is
+intended for CI/review proof. It is not a directly openable browser artifact
+unless the consuming tool resolves `@sanchika/*` CSS hrefs.
+
+Run `pnpm gallery:build` after `pnpm build` to write the openable proof artifact:
+
+```text
+dist/gallery/index.html
+dist/gallery/assets/theme.css
+dist/gallery/assets/primitives.css
+```
+
+Run `pnpm gallery:check` to fail unresolved `@sanchika/*` CSS hrefs and confirm
+token CSS loads before primitive CSS. The gallery artifact is not an app route,
+server, Storybook replacement, or runtime shell.
 
 ## Status
 

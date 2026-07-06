@@ -40,6 +40,25 @@ Do not combine duration and easing into one variable. Transitions and loading
 animations need different timing semantics, and shorthand variables are easy to
 misuse.
 
+## Typography, Size, Elevation, And Focus Tokens
+
+Primitive CSS must not invent typography, control heights, elevations, or focus
+outline values. Use semantic variables such as:
+
+```css
+--sk-font-size-md: 0.9375rem;
+--sk-font-weight-semibold: 650;
+--sk-line-height-body: 1.5;
+--sk-size-control-md: 2.5rem;
+--sk-elevation-card: 0 1px 2px color-mix(in oklch, var(--sk-color-ink-muted) 14%, transparent);
+--sk-focus-outline-width: 2px;
+--sk-focus-outline-offset: 2px;
+```
+
+These values remain token CSS, not component-local constants. Product surfaces
+may override them at a theme boundary when a reviewed adoption plan needs a
+different density or focus treatment.
+
 ## Primitive Consumption
 
 Import token variables before primitive styles:
