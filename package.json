@@ -26,6 +26,7 @@
     "review:gate:fixtures": "node scripts/validation/review-gate-fixtures.mjs",
     "review:gate:sync-fixtures": "node scripts/validation/review-gate-sync-fixtures.mjs",
     "trust:brief:fixtures": "node scripts/validation/trust-brief-fixtures.mjs",
+    "design:brief:fixtures": "node scripts/validation/design-brief-fixtures.mjs",
     "github:ruleset": "node scripts/render-github-master-ruleset.mjs",
     "github:labels": "node scripts/sync-github-labels.mjs",
     "github:verify": "node scripts/check-github-repo-state.mjs",
@@ -42,7 +43,7 @@
     "publish:check": "node scripts/check-publish-ready.mjs",
     "publish:tarball-check": "node scripts/check-packed-tarball-consumer.mjs",
     "smoke": "pnpm gallery:build && pnpm gallery:check && pnpm check:tokens && pnpm check:gallery && pnpm check:content && node scripts/smoke-gallery.mjs",
-    "verify": "pnpm validate && pnpm review:gate:fixtures && pnpm review:gate:sync-fixtures && pnpm typecheck && pnpm build && pnpm trust:brief:fixtures && pnpm typecheck:api && pnpm artifact:check && pnpm consumer:check && pnpm smoke",
+    "verify": "pnpm validate && pnpm review:gate:fixtures && pnpm review:gate:sync-fixtures && pnpm typecheck && pnpm build && pnpm trust:brief:fixtures && pnpm design:brief:fixtures && pnpm typecheck:api && pnpm artifact:check && pnpm consumer:check && pnpm smoke",
     "release:tarballs": "pnpm build && node scripts/check-packed-tarball-consumer.mjs --emit-dir dist/release",
     "release:stable-tarballs": "pnpm build && node scripts/check-packed-tarball-consumer.mjs --version 0.0.1 --emit-dir dist/release"
   },

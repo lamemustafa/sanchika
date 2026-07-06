@@ -8,10 +8,12 @@ import type {
   PatternStateName,
   PatternStateNameFor,
   PatternStateRequiredSlotNameFor,
+  DesignBrief,
+  DesignBriefValidationIssue,
   TrustBrief,
   TrustBriefValidationIssue,
 } from "../src/index";
-import { validateTrustBrief } from "../src/index";
+import { validateDesignBrief, validateTrustBrief } from "../src/index";
 
 const patternName: PatternName = "EvidencePanel";
 const anyPatternSlot: PatternSlotName = "boundarySummary";
@@ -52,6 +54,22 @@ const axalTrustBrief: TrustBrief = {
   verificationGates: ["token-only-styling", "wcag-22-aa", "keyboard-focus", "non-color-state", "desktop-render", "mobile-render"],
 };
 const trustBriefIssues: readonly TrustBriefValidationIssue[] = validateTrustBrief(axalTrustBrief);
+const axalDesignBrief: DesignBrief = {
+  id: "axal-review-workbench-design",
+  trustBrief: axalTrustBrief,
+  register: "product",
+  surface: "Professional Review Workbench",
+  firstViewportSignal: "Professional Review Workbench with source, owner, review state, and safe next action visible",
+  emotionalIntent: "Control under compliance pressure, not decorative delight.",
+  narrativeArc: ["Show what needs review", "Expose evidence and uncertainty", "Make approval or block action safe"],
+  informationPriority: ["Review state", "Source evidence", "Owner and due context", "Safe next action"],
+  responsiveConstraints: ["Mobile must keep review state before actions", "Desktop must support dense scanning without overflow"],
+  interactionStates: ["loading", "empty", "error", "disabled", "focus", "hover", "selected", "blocked"],
+  visualQualityGates: ["not-generic-saas", "first-viewport-product-signal", "source-visible", "human-review-visible", "responsive-fit", "keyboardable", "reduced-motion"],
+  verificationEvidence: ["Desktop render screenshot", "Mobile render screenshot", "Keyboard focus walkthrough"],
+  nonGoals: ["No filing submission", "No compliance judgment"],
+};
+const designBriefIssues: readonly DesignBriefValidationIssue[] = validateDesignBrief(axalDesignBrief);
 
 void patternName;
 void anyPatternSlot;
@@ -65,6 +83,8 @@ void blockedCheck;
 void blockedStatus;
 void axalTrustBrief;
 void trustBriefIssues;
+void axalDesignBrief;
+void designBriefIssues;
 
 // @ts-expect-error Unknown patterns must not be accepted.
 const unknownPattern: PatternName = "GenericCard";
@@ -98,6 +118,12 @@ const wrongBriefPatternState: TrustBrief = {
   selectedPatterns: [{ name: "TrustBoundary", states: ["reviewed"] }],
 };
 
+const wrongDesignBriefGate: DesignBrief = {
+  ...axalDesignBrief,
+  // @ts-expect-error Unknown visual quality gates must not be accepted.
+  visualQualityGates: ["not-generic-saas", "first-viewport-product-signal", "invented"],
+};
+
 void unknownPattern;
 void wrongSlot;
 void wrongState;
@@ -106,3 +132,4 @@ void unknownCriterion;
 void wrongEmptyStatus;
 void wrongBriefMode;
 void wrongBriefPatternState;
+void wrongDesignBriefGate;

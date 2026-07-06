@@ -91,6 +91,33 @@ focus verification.
 The trust brief does not generate UI, route files, product APIs, or compliance
 judgment. It is a contract for shaping, review, and verification.
 
+## Design Brief Contract
+
+`DesignBrief` is the second AI-native harness contract. It embeds a valid
+`TrustBrief` and records the surface-specific design direction an agent or
+engineer must preserve while producing UI.
+
+Required fields include register, surface, first viewport signal, emotional
+intent, narrative arc, information priority, responsive constraints,
+interaction states, visual quality gates, verification evidence, and non-goals.
+
+Use `validateDesignBrief` after `validateTrustBrief` and before implementation.
+It returns `DesignBriefValidationIssue` entries when a design brief is too vague,
+does not match the embedded trust brief, misses mobile or desktop constraints,
+skips render evidence, omits focus coverage on product surfaces, or lacks
+quality gates for `not-generic-saas` and `first-viewport-product-signal`.
+
+Current visual quality gates include `not-generic-saas`,
+`first-viewport-product-signal`, `source-visible`, `human-review-visible`,
+`responsive-fit`, `keyboardable`, `reduced-motion`, and `performance-budget`.
+Current interaction states include `loading`, `empty`, `error`, `disabled`,
+`focus`, `hover`, `selected`, and `blocked`.
+
+Pack design briefs must keep no upload, no credential handoff, and no telemetry
+out of scope. ComplyEaze core design briefs must name ComplyEaze in the first
+viewport signal. The design brief does not generate components, routes, product
+APIs, or app-specific implementations.
+
 ## Pattern State Exemplars
 
 PrimitiveGallery must include Pattern state exemplars for every required pattern

@@ -102,6 +102,10 @@ if (rootPackage.scripts?.["trust:brief:fixtures"] !== "node scripts/validation/t
   fail("root package must expose trust:brief:fixtures for trust-brief runtime regression checks");
 }
 
+if (rootPackage.scripts?.["design:brief:fixtures"] !== "node scripts/validation/design-brief-fixtures.mjs") {
+  fail("root package must expose design:brief:fixtures for design-brief runtime regression checks");
+}
+
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
@@ -132,6 +136,10 @@ if (!existsSync(join(root, "scripts/validation/review-gate-sync-fixtures.mjs")))
 
 if (!existsSync(join(root, "scripts/validation/trust-brief-fixtures.mjs"))) {
   fail("trust brief fixture validator must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/design-brief-fixtures.mjs"))) {
+  fail("design brief fixture validator must exist");
 }
 
 if (!existsSync(join(root, "scripts/sync-review-gate-status.mjs"))) {
@@ -206,6 +214,10 @@ if (!rootPackage.scripts?.verify?.includes("pnpm trust:brief:fixtures")) {
   fail("root verify script must run trust:brief:fixtures");
 }
 
+if (!rootPackage.scripts?.verify?.includes("pnpm design:brief:fixtures")) {
+  fail("root verify script must run design:brief:fixtures");
+}
+
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
   fail("root package must expose typecheck:api for package API declaration proof");
 }
@@ -224,6 +236,11 @@ if (buildIndex === -1 || buildIndex > packageApiTypecheckIndex) {
 const trustBriefFixturesIndex = verifyScript.indexOf("pnpm trust:brief:fixtures");
 if (buildIndex === -1 || buildIndex > trustBriefFixturesIndex) {
   fail("root verify script must run trust:brief:fixtures after build");
+}
+
+const designBriefFixturesIndex = verifyScript.indexOf("pnpm design:brief:fixtures");
+if (buildIndex === -1 || buildIndex > designBriefFixturesIndex) {
+  fail("root verify script must run design:brief:fixtures after build");
 }
 
 if (!existsSync(join(root, "scripts/check-package-api-types.mjs")) || !existsSync(join(root, "type-tests/package-api.ts"))) {
@@ -554,6 +571,9 @@ for (const patternTypeExport of [
   "TrustBrief",
   "TrustBriefValidationIssue",
   "validateTrustBrief",
+  "DesignBrief",
+  "DesignBriefValidationIssue",
+  "validateDesignBrief",
 ]) {
   if (!patternSource.includes(patternTypeExport)) {
     fail(`pattern package must export ${patternTypeExport}`);

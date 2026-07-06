@@ -18,10 +18,12 @@ import type {
   PatternSlotNameFor,
   PatternStateNameFor,
   PatternStateRequiredSlotNameFor,
+  DesignBrief,
+  DesignBriefValidationIssue,
   TrustBrief,
   TrustBriefValidationIssue,
 } from "@sanchika/patterns";
-import { validateTrustBrief } from "@sanchika/patterns";
+import { validateDesignBrief, validateTrustBrief } from "@sanchika/patterns";
 import {
   primitiveGalleryCssImports,
   renderOpenablePrimitiveGalleryDocument,
@@ -75,6 +77,22 @@ const packTrustBrief: TrustBrief = {
   verificationGates: ["token-only-styling", "wcag-22-aa", "keyboard-focus", "non-color-state", "mobile-render", "package-artifact"],
 };
 const packTrustBriefIssues: readonly TrustBriefValidationIssue[] = validateTrustBrief(packTrustBrief);
+const packDesignBrief: DesignBrief = {
+  id: "pack-local-download-proof-design",
+  trustBrief: packTrustBrief,
+  register: "product",
+  surface: "Pack local download proof",
+  firstViewportSignal: "Pack local proof with browser-local boundary and export artifact visible before action",
+  emotionalIntent: "Inspectable confidence that nothing private leaves the browser.",
+  narrativeArc: ["State the local boundary", "Show the artifact proof", "Let the user export deliberately"],
+  informationPriority: ["Local-only boundary", "Permission posture", "Artifact contents", "Export action"],
+  responsiveConstraints: ["Mobile must show local-only and no-upload copy before export", "Desktop must show source and artifact proof together"],
+  interactionStates: ["loading", "empty", "error", "disabled", "focus", "hover"],
+  visualQualityGates: ["not-generic-saas", "first-viewport-product-signal", "source-visible", "responsive-fit", "keyboardable", "performance-budget"],
+  verificationEvidence: ["Desktop render screenshot", "Mobile render screenshot", "Permission copy review"],
+  nonGoals: ["No upload", "No credential handoff", "No telemetry", "No portal automation", "No backend upload"],
+};
+const packDesignBriefIssues: readonly DesignBriefValidationIssue[] = validateDesignBrief(packDesignBrief);
 const galleryCssImport: "@sanchika/tokens/theme.css" = primitiveGalleryCssImports[0];
 const galleryDocument: string = renderPrimitiveGalleryDocument();
 const openableGalleryDocument: string = renderOpenablePrimitiveGalleryDocument();
@@ -99,6 +117,8 @@ void blockedPatternCheck;
 void blockedPatternStatus;
 void packTrustBrief;
 void packTrustBriefIssues;
+void packDesignBrief;
+void packDesignBriefIssues;
 void galleryCssImport;
 void galleryDocument;
 void openableGalleryDocument;
