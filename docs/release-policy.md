@@ -23,12 +23,27 @@ Before the first package publish:
    for publishing. It is expected to fail in V0 while packages are private.
 5. Run `pnpm publish:tarball-check` after `pnpm build` to prove packed tarballs
    install into a scratch consumer without publishing.
-6. Review accessibility claims against actual primitive behavior.
-7. Verify no real compliance data exists in docs, examples, tests, or fixtures.
-8. Prefer npm Trusted Publishing with GitHub Actions OIDC over long-lived npm
+6. Run `pnpm release:tarballs` to write the verified tarball bundle under
+   `dist/release/` for GitHub release assets or CI-resolvable local testing.
+7. Review accessibility claims against actual primitive behavior.
+8. Verify no real compliance data exists in docs, examples, tests, or fixtures.
+9. Prefer npm Trusted Publishing with GitHub Actions OIDC over long-lived npm
    publish tokens.
-9. Keep publish-only permissions, including `id-token: write`, out of CI and in
+10. Keep publish-only permissions, including `id-token: write`, out of CI and in
    a future publish workflow that runs only after repository and npm scope setup.
+
+## Packed Tarball Release Bundle
+
+`pnpm release:tarballs` is the V0 release-artifact path before npm publishing.
+It builds all packages, creates simulated public package tarballs, rewrites
+internal `workspace:*` dependencies to the simulated tarball version, installs
+the tarballs into a scratch consumer, runs the consumer probe and typecheck, and
+then writes the same verified assets to `dist/release/`.
+
+The ignored `dist/release/manifest.json` records the source commit, simulated
+version, package filenames, and SHA-256 hashes. Upload every file in
+`dist/release/tarballs/` plus `manifest.json` to a GitHub release when a
+consumer needs a CI-installable artifact but the npm scope is still private.
 
 ## Future Trusted Publishing Contract
 

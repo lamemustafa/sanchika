@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename, isAbsolute, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
 import { assertPackedFileList } from "./validation/tarball-contents.mjs";
@@ -19,6 +19,7 @@ import { assertPackedFileList } from "./validation/tarball-contents.mjs";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const args = new Set(process.argv.slice(2));
 const strictPublishManifests = args.has("--strict-publish-manifests");
+const emitDir = valueAfter("--emit-dir");
 const packages = ["tokens", "primitives", "patterns", "gallery"];
 const packageNames = new Set(packages.map((packageName) => `@sanchika/${packageName}`));
 const simulatedVersion = "0.0.1-tarball-check.0";
@@ -43,6 +44,7 @@ try {
   run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs.map((tarball) => tarball.path)], consumerRoot);
   runConsumerProbe();
   runConsumerTypecheck();
+  if (emitDir) writeReleaseArtifacts(tarballs);
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
 }
@@ -133,6 +135,36 @@ function printTarballEvidence(tarballs) {
   }
 }
 
+function writeReleaseArtifacts(tarballs) {
+  assertCleanGitTree();
+  const releaseRoot = releaseRootFrom(emitDir);
+  const releaseTarballRoot = join(releaseRoot, "tarballs");
+  rmSync(releaseRoot, { recursive: true, force: true });
+  mkdirSync(releaseTarballRoot, { recursive: true });
+
+  const manifest = {
+    version: simulatedVersion,
+    source: {
+      repository: "https://github.com/lamemustafa/sanchika",
+      commit: gitCommit(),
+    },
+    generatedAt: new Date().toISOString(),
+    packages: tarballs.map((tarball) => {
+      const targetPath = join(releaseTarballRoot, tarball.filename);
+      copyFileSync(tarball.path, targetPath);
+      return {
+        name: tarball.packageName,
+        version: tarball.version,
+        file: `tarballs/${tarball.filename}`,
+        sha256: tarball.sha256,
+      };
+    }),
+  };
+
+  writeFileSync(join(releaseRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  console.log(`Release artifact bundle written to ${emitDir}`);
+}
+
 function sha256File(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
@@ -219,5 +251,38 @@ function run(command, args, cwd) {
     if (error.stdout) process.stdout.write(error.stdout);
     if (error.stderr) process.stderr.write(error.stderr);
     throw new Error(`Command failed: ${command} ${args.join(" ")}`);
+  }
+}
+
+function valueAfter(flag) {
+  const argv = process.argv.slice(2);
+  const index = argv.indexOf(flag);
+  if (index === -1) return undefined;
+  const value = argv[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new Error(`${flag} requires a value`);
+  }
+  return value;
+}
+
+function releaseRootFrom(value) {
+  const normalized = normalize(value);
+  if (isAbsolute(normalized) || normalized === "." || normalized === ".." || normalized.startsWith(`..${"/"}`)) {
+    throw new Error("--emit-dir must be a relative path inside this repository");
+  }
+  if (!normalized.startsWith(`dist${"/"}`)) {
+    throw new Error("--emit-dir must write under dist/");
+  }
+  return join(root, normalized);
+}
+
+function gitCommit() {
+  return run("git", ["rev-parse", "HEAD"], root).trim();
+}
+
+function assertCleanGitTree() {
+  const status = run("git", ["status", "--porcelain"], root).trim();
+  if (status) {
+    throw new Error("Refusing to emit release artifacts from a dirty working tree");
   }
 }

@@ -202,6 +202,10 @@ if (!existsSync(join(root, "scripts/check-packed-tarball-consumer.mjs"))) {
   fail("publish:tarball-check script file must exist");
 }
 
+if (rootPackage.scripts?.["release:tarballs"] !== "pnpm build && node scripts/check-packed-tarball-consumer.mjs --emit-dir dist/release") {
+  fail("root package must expose release:tarballs for durable packed-tarball release artifacts");
+}
+
 for (const [scriptPath, commandName] of [
   ["scripts/smoke-gallery.mjs", "pnpm smoke"],
   ["scripts/check-package-api-types.mjs", "pnpm typecheck:api"],
@@ -223,6 +227,9 @@ for (const requiredTarballEvidenceFragment of [
   "sha256",
   "Tarball evidence:",
   "simulatedVersion",
+  "--emit-dir",
+  "manifest.json",
+  "Release artifact bundle written to",
 ]) {
   if (!packedTarballScript.includes(requiredTarballEvidenceFragment)) {
     fail(`scripts/check-packed-tarball-consumer.mjs must emit tarball evidence with ${requiredTarballEvidenceFragment}`);
