@@ -20,9 +20,10 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const args = new Set(process.argv.slice(2));
 const strictPublishManifests = args.has("--strict-publish-manifests");
 const emitDir = valueAfter("--emit-dir");
+const simulatedVersion = valueAfter("--version") ?? "0.0.1-tarball-check.0";
+assertValidSimulatedVersion(simulatedVersion);
 const packages = ["tokens", "primitives", "patterns", "gallery"];
 const packageNames = new Set(packages.map((packageName) => `@sanchika/${packageName}`));
-const simulatedVersion = "0.0.1-tarball-check.0";
 assertBuiltPackageArtifacts({ root, commandName: "pnpm publish:tarball-check", packageNames: packages });
 const tempRoot = mkdtempSync(join(tmpdir(), "sanchika-tarball-consumer-"));
 const packageRoot = join(tempRoot, "packages");
@@ -263,6 +264,12 @@ function valueAfter(flag) {
     throw new Error(`${flag} requires a value`);
   }
   return value;
+}
+
+function assertValidSimulatedVersion(version) {
+  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
+    throw new Error("--version must be a semver version such as 0.0.1 or 0.0.1-tarball-check.0");
+  }
 }
 
 function releaseRootFrom(value) {
