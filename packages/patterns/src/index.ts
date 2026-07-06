@@ -150,23 +150,83 @@ export type TrustBriefValidationIssue = {
   reason: string;
 };
 
+const consumerModes = [
+  "complyeaze/core",
+  "axal/workspace",
+  "pack/local-utility",
+  "tools/local-artifact",
+  "external/operational-saas",
+] as const satisfies readonly ConsumerMode[];
+
+const trustBriefRegisters = ["brand", "product"] as const satisfies readonly TrustBriefRegister[];
+
+const trustBriefDataSensitivities = [
+  "public-copy",
+  "tenant-data",
+  "credential-boundary",
+  "document-or-file",
+  "statutory-claim",
+  "local-artifact",
+] as const satisfies readonly TrustBriefDataSensitivity[];
+
+const trustBriefVerificationGates = [
+  "token-only-styling",
+  "wcag-22-aa",
+  "keyboard-focus",
+  "non-color-state",
+  "desktop-render",
+  "mobile-render",
+  "reduced-motion",
+  "package-artifact",
+  "rollback-path",
+] as const satisfies readonly TrustBriefVerificationGate[];
+
 export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValidationIssue[] {
   const issues: TrustBriefValidationIssue[] = [];
+  const candidate = (brief ?? {}) as Partial<Record<keyof TrustBrief, unknown>>;
+  const consumerMode = stringValue(candidate.consumerMode);
+  const register = stringValue(candidate.register);
+  const dataSensitivity = stringList(candidate.dataSensitivity);
+  const trustBoundaries = stringList(candidate.trustBoundaries);
+  const evidenceRequirements = stringList(candidate.evidenceRequirements);
+  const selectedPatterns = arrayValue(candidate.selectedPatterns);
+  const claims = arrayValue(candidate.claims);
+  const nonGoals = stringList(candidate.nonGoals);
+  const verificationGates = stringList(candidate.verificationGates);
 
-  requireText(brief.id, "id", issues);
-  requireText(brief.surface, "surface", issues);
-  requireText(brief.userJob, "userJob", issues);
-  requireText(brief.primaryDecision, "primaryDecision", issues);
-  requireList(brief.dataSensitivity, "dataSensitivity", issues);
-  requireList(brief.trustBoundaries, "trustBoundaries", issues);
-  requireList(brief.evidenceRequirements, "evidenceRequirements", issues);
-  requireList(brief.selectedPatterns, "selectedPatterns", issues);
-  requireList(brief.claims, "claims", issues);
-  requireList(brief.nonGoals, "nonGoals", issues);
-  requireList(brief.verificationGates, "verificationGates", issues);
+  requireText(candidate.id, "id", issues);
+  requireText(candidate.surface, "surface", issues);
+  requireText(candidate.userJob, "userJob", issues);
+  requireText(candidate.primaryDecision, "primaryDecision", issues);
+  requireList(candidate.dataSensitivity, "dataSensitivity", issues);
+  requireList(candidate.trustBoundaries, "trustBoundaries", issues);
+  requireList(candidate.evidenceRequirements, "evidenceRequirements", issues);
+  requireList(candidate.selectedPatterns, "selectedPatterns", issues);
+  requireList(candidate.claims, "claims", issues);
+  requireList(candidate.nonGoals, "nonGoals", issues);
+  requireList(candidate.verificationGates, "verificationGates", issues);
 
-  for (const claim of brief.claims) {
-    if (!claim.claim.trim() || !claim.evidence.trim()) {
+  if (!isOneOf(consumerMode, consumerModes)) {
+    issues.push({ field: "consumerMode", reason: `Unknown consumer mode ${consumerMode || "(missing)"}.` });
+  }
+  if (!isOneOf(register, trustBriefRegisters)) {
+    issues.push({ field: "register", reason: `Unknown register ${register || "(missing)"}.` });
+  }
+  for (const sensitivity of dataSensitivity) {
+    if (!isOneOf(sensitivity, trustBriefDataSensitivities)) {
+      issues.push({ field: "dataSensitivity", reason: `Unknown data sensitivity ${sensitivity}.` });
+    }
+  }
+  for (const gate of verificationGates) {
+    if (!isOneOf(gate, trustBriefVerificationGates)) {
+      issues.push({ field: "verificationGates", reason: `Unknown verification gate ${gate}.` });
+    }
+  }
+
+  for (const claim of claims) {
+    const claimCopy = recordString(claim, "claim");
+    const evidenceCopy = recordString(claim, "evidence");
+    if (!claimCopy.trim() || !evidenceCopy.trim()) {
       issues.push({
         field: "claims",
         reason: "Claims must include both visible copy and evidence.",
@@ -174,35 +234,44 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
     }
   }
 
-  for (const selection of brief.selectedPatterns) {
-    const spec = patternSpecs.find((pattern) => pattern.name === selection.name);
+  for (const selection of selectedPatterns) {
+    const patternName = recordString(selection, "name");
+    const spec = patternSpecs.find((pattern) => pattern.name === patternName);
     if (!spec) {
       issues.push({
         field: "selectedPatterns",
-        reason: `Unknown pattern ${selection.name}.`,
+        reason: `Unknown pattern ${patternName || "(missing)"}.`,
       });
       continue;
     }
 
-    for (const state of selection.states ?? []) {
+    const supportedConsumerModes: readonly string[] = spec.consumerModes;
+    if (isOneOf(consumerMode, consumerModes) && !supportedConsumerModes.includes(consumerMode)) {
+      issues.push({
+        field: "selectedPatterns",
+        reason: `${patternName} does not support ${consumerMode}.`,
+      });
+    }
+
+    for (const state of stringList(recordValue(selection, "states"))) {
       if (!spec.requiredStates.some((requiredState) => requiredState.name === state)) {
         issues.push({
           field: "selectedPatterns.states",
-          reason: `${selection.name} does not define state ${state}.`,
+          reason: `${patternName} does not define state ${state}.`,
         });
       }
     }
   }
 
-  if (brief.register === "product" && !brief.verificationGates.includes("keyboard-focus")) {
+  if (register === "product" && !verificationGates.includes("keyboard-focus")) {
     issues.push({
       field: "verificationGates",
       reason: "Product surfaces must verify keyboard focus.",
     });
   }
 
-  if (brief.consumerMode === "pack/local-utility") {
-    const boundaryText = brief.trustBoundaries.join(" ").toLowerCase();
+  if (consumerMode === "pack/local-utility") {
+    const boundaryText = trustBoundaries.join(" ").toLowerCase();
     for (const requiredBoundary of ["no upload", "no credential", "no telemetry"]) {
       if (!boundaryText.includes(requiredBoundary)) {
         issues.push({
@@ -213,18 +282,18 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
     }
   }
 
-  if (brief.consumerMode === "complyeaze/core") {
-    const boundaryText = brief.trustBoundaries.join(" ").toLowerCase();
-    const nonGoalText = brief.nonGoals.join(" ").toLowerCase();
+  if (consumerMode === "complyeaze/core") {
+    const boundaryText = trustBoundaries.join(" ").toLowerCase();
+    const nonGoalText = nonGoals.join(" ").toLowerCase();
     const exclusionText = `${boundaryText} ${nonGoalText}`;
-    if (!brief.dataSensitivity.includes("public-copy")) {
+    if (dataSensitivity.length !== 1 || dataSensitivity[0] !== "public-copy") {
       issues.push({
         field: "dataSensitivity",
         reason: "ComplyEaze core briefs must be public-copy scoped.",
       });
     }
     for (const excludedScope of ["auth", "tenant", "document", "workspace"]) {
-      if (!exclusionText.includes(excludedScope)) {
+      if (!exclusionText.includes(`no ${excludedScope}`)) {
         issues.push({
           field: "nonGoals",
           reason: `ComplyEaze core briefs must exclude ${excludedScope} scope.`,
@@ -233,8 +302,8 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
     }
   }
 
-  if (brief.consumerMode === "axal/workspace") {
-    const evidenceText = brief.evidenceRequirements.join(" ").toLowerCase();
+  if (consumerMode === "axal/workspace") {
+    const evidenceText = evidenceRequirements.join(" ").toLowerCase();
     for (const requiredEvidence of ["source", "review", "human"]) {
       if (!evidenceText.includes(requiredEvidence)) {
         issues.push({
@@ -245,8 +314,8 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
     }
   }
 
-  if (brief.consumerMode === "tools/local-artifact") {
-    const evidenceText = brief.evidenceRequirements.join(" ").toLowerCase();
+  if (consumerMode === "tools/local-artifact") {
+    const evidenceText = evidenceRequirements.join(" ").toLowerCase();
     for (const requiredEvidence of ["source", "provenance", "export"]) {
       if (!evidenceText.includes(requiredEvidence)) {
         issues.push({
@@ -255,7 +324,7 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
         });
       }
     }
-    if (!brief.nonGoals.join(" ").toLowerCase().includes("product spec")) {
+    if (!nonGoals.join(" ").toLowerCase().includes("product spec")) {
       issues.push({
         field: "nonGoals",
         reason: "Tools local-artifact briefs must require a product spec before generic route or tool scaffolds.",
@@ -267,23 +336,55 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
 }
 
 function requireText(
-  value: string,
+  value: unknown,
   field: keyof TrustBrief,
   issues: TrustBriefValidationIssue[],
 ) {
-  if (!value.trim()) {
+  if (typeof value !== "string" || !value.trim()) {
     issues.push({ field, reason: `${field} must be specific.` });
   }
 }
 
 function requireList(
-  value: readonly unknown[],
+  value: unknown,
   field: keyof TrustBrief,
   issues: TrustBriefValidationIssue[],
 ) {
-  if (value.length === 0) {
+  if (!Array.isArray(value) || value.length === 0) {
     issues.push({ field, reason: `${field} must not be empty.` });
+    return;
   }
+  if (value.some((item) => typeof item === "string" && !item.trim())) {
+    issues.push({ field, reason: `${field} entries must be specific.` });
+  }
+}
+
+function arrayValue(value: unknown): readonly unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function stringList(value: unknown): readonly string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function recordValue(value: unknown, key: string): unknown {
+  return typeof value === "object" && value !== null && key in value
+    ? (value as Record<string, unknown>)[key]
+    : undefined;
+}
+
+function recordString(value: unknown, key: string): string {
+  return stringValue(recordValue(value, key));
+}
+
+function isOneOf<const Values extends readonly string[]>(value: string, values: Values): value is Values[number] {
+  return values.includes(value);
 }
 
 export const patternSpecs = [

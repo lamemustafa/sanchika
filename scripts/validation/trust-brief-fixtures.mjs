@@ -110,6 +110,64 @@ const invalidCases = [
     expectedReason: "ComplyEaze core briefs must exclude document scope.",
   },
   {
+    name: "ComplyEaze core mixed sensitivity",
+    patch: {
+      consumerMode: "complyeaze/core",
+      dataSensitivity: ["public-copy", "tenant-data"],
+      trustBoundaries: ["Public copy only", "No auth, tenant, document, or workspace behavior"],
+      nonGoals: ["No auth flow", "No tenant data", "No document handling", "No workspace behavior"],
+    },
+    expectedReason: "ComplyEaze core briefs must be public-copy scoped.",
+  },
+  {
+    name: "ComplyEaze core positive scope mention",
+    patch: {
+      consumerMode: "complyeaze/core",
+      dataSensitivity: ["public-copy"],
+      trustBoundaries: ["Auth, tenant, document, and workspace behavior included"],
+      nonGoals: ["Public story scope"],
+    },
+    expectedReason: "ComplyEaze core briefs must exclude auth scope.",
+  },
+  {
+    name: "Pattern outside consumer mode",
+    patch: {
+      consumerMode: "pack/local-utility",
+      trustBoundaries: ["No upload", "No credential handoff", "No telemetry"],
+      selectedPatterns: [{ name: "ServiceSection", states: ["default"] }],
+    },
+    expectedReason: "ServiceSection does not support pack/local-utility.",
+  },
+  {
+    name: "Unknown runtime consumer mode",
+    patch: {
+      consumerMode: "not/a-mode",
+    },
+    expectedReason: "Unknown consumer mode not/a-mode.",
+  },
+  {
+    name: "Unknown runtime verification gate",
+    patch: {
+      verificationGates: ["token-only-styling", "wcag-22-aa", "keyboard-focus", "invented-gate"],
+    },
+    expectedReason: "Unknown verification gate invented-gate.",
+  },
+  {
+    name: "Blank list entry",
+    patch: {
+      consumerMode: "external/operational-saas",
+      trustBoundaries: [""],
+    },
+    expectedReason: "trustBoundaries entries must be specific.",
+  },
+  {
+    name: "Missing text field returns issue",
+    patch: {
+      id: undefined,
+    },
+    expectedReason: "id must be specific.",
+  },
+  {
     name: "Tools missing provenance evidence",
     patch: {
       consumerMode: "tools/local-artifact",
