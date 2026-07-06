@@ -23,27 +23,39 @@ Before the first package publish:
    for publishing. It is expected to fail in V0 while packages are private.
 5. Run `pnpm publish:tarball-check` after `pnpm build` to prove packed tarballs
    install into a scratch consumer without publishing.
-6. Run `pnpm release:tarballs` to write the verified tarball bundle under
-   `dist/release/` for GitHub release assets or CI-resolvable local testing.
-7. Review accessibility claims against actual primitive behavior.
-8. Verify no real compliance data exists in docs, examples, tests, or fixtures.
-9. Prefer npm Trusted Publishing with GitHub Actions OIDC over long-lived npm
+6. Run `pnpm release:tarballs` to write the verified prerelease tarball bundle
+   under `dist/release/` for GitHub release assets or CI-resolvable local
+   testing.
+7. For an approval-gated stable GitHub release that still avoids npm
+   publishing, run `pnpm release:stable-tarballs`. This uses the same pack,
+   scratch-consumer, probe, typecheck, manifest, and SHA-256 path as
+   `release:tarballs`, but emits package tarballs with version `0.0.1`.
+8. Review accessibility claims against actual primitive behavior.
+9. Verify no real compliance data exists in docs, examples, tests, or fixtures.
+10. Prefer npm Trusted Publishing with GitHub Actions OIDC over long-lived npm
    publish tokens.
-10. Keep publish-only permissions, including `id-token: write`, out of CI and in
+11. Keep publish-only permissions, including `id-token: write`, out of CI and in
    a future publish workflow that runs only after repository and npm scope setup.
 
 ## Packed Tarball Release Bundle
 
-`pnpm release:tarballs` is the V0 release-artifact path before npm publishing.
-It builds all packages, creates simulated public package tarballs, rewrites
-internal `workspace:*` dependencies to the simulated tarball version, installs
-the tarballs into a scratch consumer, runs the consumer probe and typecheck, and
-then writes the same verified assets to `dist/release/`.
+`pnpm release:tarballs` is the V0 prerelease-artifact path before npm
+publishing. It builds all packages, creates simulated public package tarballs,
+rewrites internal `workspace:*` dependencies to the simulated tarball version,
+installs the tarballs into a scratch consumer, runs the consumer probe and
+typecheck, and then writes the same verified assets to `dist/release/`.
 
 The ignored `dist/release/manifest.json` records the source commit, simulated
 version, package filenames, and SHA-256 hashes. Upload every file in
 `dist/release/tarballs/` plus `manifest.json` to a GitHub release when a
 consumer needs a CI-installable artifact but the npm scope is still private.
+
+`pnpm release:stable-tarballs` is the stable GitHub-release promotion path for
+the same V0 package shape. It does not publish to npm and does not create a Git
+tag or GitHub release by itself. It only generates locally verified `0.0.1`
+assets under `dist/release/` so a maintainer can review the manifest, create
+`v0.0.1`, upload the generated tarballs and manifest, and then update consumers
+from the prerelease tarball URLs to the stable release asset URLs.
 
 ## Future Trusted Publishing Contract
 

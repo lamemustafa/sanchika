@@ -211,6 +211,13 @@ if (rootPackage.scripts?.["release:tarballs"] !== "pnpm build && node scripts/ch
   fail("root package must expose release:tarballs for durable packed-tarball release artifacts");
 }
 
+if (
+  rootPackage.scripts?.["release:stable-tarballs"] !==
+  "pnpm build && node scripts/check-packed-tarball-consumer.mjs --version 0.0.1 --emit-dir dist/release"
+) {
+  fail("root package must expose release:stable-tarballs for approval-gated stable GitHub release assets");
+}
+
 for (const [scriptPath, commandName] of [
   ["scripts/smoke-gallery.mjs", "pnpm smoke"],
   ["scripts/check-package-api-types.mjs", "pnpm typecheck:api"],
@@ -232,6 +239,9 @@ for (const requiredTarballEvidenceFragment of [
   "sha256",
   "Tarball evidence:",
   "simulatedVersion",
+  "--version",
+  "assertValidSimulatedVersion",
+  "0.0.1-tarball-check.0",
   "--emit-dir",
   "manifest.json",
   "Release artifact bundle written to",
