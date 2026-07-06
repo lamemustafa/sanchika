@@ -10,6 +10,7 @@ import {
 } from "./validation/contrast.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
 import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
+import { validatePagesSmokeWorkflow } from "./validation/pages-smoke-workflow.mjs";
 import { expectedGithubLabels } from "./validation/github-labels.mjs";
 import { validatePackageManifest } from "./validation/package-manifests.mjs";
 import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
@@ -160,6 +161,14 @@ if (!existsSync(join(root, "scripts/validation/pages-workflow.mjs"))) {
   fail("Pages workflow validator must exist");
 }
 
+if (!existsSync(join(root, "scripts/check-pages-smoke.mjs"))) {
+  fail("Pages smoke check script file must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/pages-smoke-workflow.mjs"))) {
+  fail("Pages smoke workflow validator must exist");
+}
+
 if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
   fail("root verify script must run consumer:check");
 }
@@ -170,6 +179,10 @@ if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:fixtures")) {
 
 if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:sync-fixtures")) {
   fail("root verify script must run review:gate:sync-fixtures");
+}
+
+if (rootPackage.scripts?.["pages:smoke"] !== "node scripts/check-pages-smoke.mjs") {
+  fail("root package must expose pages:smoke for live Pages availability checks");
 }
 
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
@@ -366,6 +379,7 @@ const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
 const ciWorkflow = requireText(".github/workflows/ci.yml");
 const pagesWorkflow = requireText(".github/workflows/pages.yml");
+const pagesSmokeWorkflow = requireText(".github/workflows/pages-smoke.yml");
 const reviewGateWorkflow = requireText(".github/workflows/review-gate.yml");
 const codeowners = requireText(".github/CODEOWNERS");
 const claudeGuide = requireText("CLAUDE.md");
@@ -821,12 +835,17 @@ for (const [consumerName, docs] of Object.entries(adoptionDocs)) {
 
 validateCiWorkflow({ ciWorkflow, fail });
 validatePagesWorkflow({ pagesWorkflow, fail });
+validatePagesSmokeWorkflow({ pagesSmokeWorkflow, fail });
 
 for (const requiredHostingFragment of [
   "sanchika.complyeaze.com",
   "GitHub Pages",
   "pnpm gallery:build",
   "pnpm gallery:check",
+  ".github/workflows/pages-smoke.yml",
+  "node scripts/check-pages-smoke.mjs",
+  "pnpm pages:smoke",
+  "https://lamemustafa.github.io/sanchika/",
   "Do not add a `CNAME` file until the domain and DNS are configured",
   "tools.complyeaze.com/sanchika/",
 ]) {

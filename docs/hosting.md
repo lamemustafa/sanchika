@@ -25,6 +25,16 @@ the permissions needed for Pages deployment: `contents: read`, `pages: write`,
 and `id-token: write`. It is manual-only, deploys only from `master`, does not
 run on pull requests, and does not publish npm packages.
 
+## Pages Smoke Check
+
+`.github/workflows/pages-smoke.yml` runs on a daily schedule and by
+`workflow_dispatch`. It is read-only, runs only from `master`, and executes
+`node scripts/check-pages-smoke.mjs` to confirm
+`https://lamemustafa.github.io/sanchika/` returns the expected Sanchika
+Primitive Gallery HTML. The same check is available locally as
+`pnpm pages:smoke`. It does not build, deploy, upload artifacts, or publish
+packages.
+
 ## Custom Domain
 
 The preferred long-term public host is `sanchika.complyeaze.com`. Do not add a
