@@ -1,0 +1,35 @@
+name: Pages smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Smoke live gallery
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24
+
+      - name: Smoke live gallery
+        run: node scripts/check-pages-smoke.mjs
+        env:
+          SANCHIKA_PAGES_URL: https://lamemustafa.github.io/sanchika/
