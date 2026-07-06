@@ -150,6 +150,49 @@ export type TrustBriefValidationIssue = {
   reason: string;
 };
 
+export type DesignBriefRegister = TrustBriefRegister;
+
+export type DesignBriefQualityGate =
+  | "not-generic-saas"
+  | "first-viewport-product-signal"
+  | "source-visible"
+  | "human-review-visible"
+  | "responsive-fit"
+  | "keyboardable"
+  | "reduced-motion"
+  | "performance-budget";
+
+export type DesignBriefInteractionState =
+  | "loading"
+  | "empty"
+  | "error"
+  | "disabled"
+  | "focus"
+  | "hover"
+  | "selected"
+  | "blocked";
+
+export type DesignBrief = {
+  id: string;
+  trustBrief: TrustBrief;
+  register: DesignBriefRegister;
+  surface: string;
+  firstViewportSignal: string;
+  emotionalIntent: string;
+  narrativeArc: readonly string[];
+  informationPriority: readonly string[];
+  responsiveConstraints: readonly string[];
+  interactionStates: readonly DesignBriefInteractionState[];
+  visualQualityGates: readonly DesignBriefQualityGate[];
+  verificationEvidence: readonly string[];
+  nonGoals: readonly string[];
+};
+
+export type DesignBriefValidationIssue = {
+  field: keyof DesignBrief;
+  reason: string;
+};
+
 const consumerModes = [
   "complyeaze/core",
   "axal/workspace",
@@ -180,6 +223,30 @@ const trustBriefVerificationGates = [
   "package-artifact",
   "rollback-path",
 ] as const satisfies readonly TrustBriefVerificationGate[];
+
+const designBriefRegisters = ["brand", "product"] as const satisfies readonly DesignBriefRegister[];
+
+const designBriefQualityGates = [
+  "not-generic-saas",
+  "first-viewport-product-signal",
+  "source-visible",
+  "human-review-visible",
+  "responsive-fit",
+  "keyboardable",
+  "reduced-motion",
+  "performance-budget",
+] as const satisfies readonly DesignBriefQualityGate[];
+
+const designBriefInteractionStates = [
+  "loading",
+  "empty",
+  "error",
+  "disabled",
+  "focus",
+  "hover",
+  "selected",
+  "blocked",
+] as const satisfies readonly DesignBriefInteractionState[];
 
 export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValidationIssue[] {
   const issues: TrustBriefValidationIssue[] = [];
@@ -347,6 +414,120 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
   return issues;
 }
 
+export function validateDesignBrief(brief: DesignBrief): readonly DesignBriefValidationIssue[] {
+  const issues: DesignBriefValidationIssue[] = [];
+  const candidate = (brief ?? {}) as Partial<Record<keyof DesignBrief, unknown>>;
+  const trustBrief = candidate.trustBrief;
+  const register = stringValue(candidate.register);
+  const firstViewportSignal = stringValue(candidate.firstViewportSignal);
+  const narrativeArc = stringList(candidate.narrativeArc);
+  const informationPriority = stringList(candidate.informationPriority);
+  const responsiveConstraints = stringList(candidate.responsiveConstraints);
+  const interactionStates = stringList(candidate.interactionStates);
+  const visualQualityGates = stringList(candidate.visualQualityGates);
+  const verificationEvidence = stringList(candidate.verificationEvidence);
+  const nonGoals = stringList(candidate.nonGoals);
+  const trustConsumerMode = recordString(trustBrief, "consumerMode");
+  const trustRegister = recordString(trustBrief, "register");
+  const trustSurface = recordString(trustBrief, "surface");
+
+  requireDesignText(candidate.id, "id", issues);
+  requireDesignText(candidate.surface, "surface", issues);
+  requireDesignText(candidate.firstViewportSignal, "firstViewportSignal", issues);
+  requireDesignText(candidate.emotionalIntent, "emotionalIntent", issues);
+  requireDesignList(candidate.narrativeArc, "narrativeArc", issues);
+  requireDesignList(candidate.informationPriority, "informationPriority", issues);
+  requireDesignList(candidate.responsiveConstraints, "responsiveConstraints", issues);
+  requireDesignList(candidate.interactionStates, "interactionStates", issues);
+  requireDesignList(candidate.visualQualityGates, "visualQualityGates", issues);
+  requireDesignList(candidate.verificationEvidence, "verificationEvidence", issues);
+  requireDesignList(candidate.nonGoals, "nonGoals", issues);
+  requireDesignStringEntries(candidate.narrativeArc, "narrativeArc", issues);
+  requireDesignStringEntries(candidate.informationPriority, "informationPriority", issues);
+  requireDesignStringEntries(candidate.responsiveConstraints, "responsiveConstraints", issues);
+  requireDesignStringEntries(candidate.interactionStates, "interactionStates", issues);
+  requireDesignStringEntries(candidate.visualQualityGates, "visualQualityGates", issues);
+  requireDesignStringEntries(candidate.verificationEvidence, "verificationEvidence", issues);
+  requireDesignStringEntries(candidate.nonGoals, "nonGoals", issues);
+
+  if (!isOneOf(register, designBriefRegisters)) {
+    issues.push({ field: "register", reason: `Unknown design brief register ${register || "(missing)"}.` });
+  }
+
+  if (!isRecord(trustBrief)) {
+    issues.push({ field: "trustBrief", reason: "Design briefs must embed a TrustBrief." });
+  } else {
+    for (const trustIssue of validateTrustBrief(trustBrief as TrustBrief)) {
+      issues.push({ field: "trustBrief", reason: `TrustBrief ${trustIssue.field}: ${trustIssue.reason}` });
+    }
+  }
+
+  if (trustRegister && register && trustRegister !== register) {
+    issues.push({ field: "register", reason: "Design brief register must match the embedded TrustBrief register." });
+  }
+
+  if (trustSurface && stringValue(candidate.surface) !== trustSurface) {
+    issues.push({ field: "surface", reason: "Design brief surface must match the embedded TrustBrief surface." });
+  }
+
+  if (narrativeArc.length < 3) {
+    issues.push({ field: "narrativeArc", reason: "Design briefs must define at least three narrative beats." });
+  }
+
+  if (!visualQualityGates.includes("not-generic-saas")) {
+    issues.push({ field: "visualQualityGates", reason: "Design briefs must include not-generic-saas quality review." });
+  }
+
+  if (!visualQualityGates.includes("first-viewport-product-signal")) {
+    issues.push({ field: "visualQualityGates", reason: "Design briefs must include first-viewport-product-signal review." });
+  }
+
+  for (const gate of visualQualityGates) {
+    if (!isOneOf(gate, designBriefQualityGates)) {
+      issues.push({ field: "visualQualityGates", reason: `Unknown visual quality gate ${gate}.` });
+    }
+  }
+
+  for (const state of interactionStates) {
+    if (!isOneOf(state, designBriefInteractionStates)) {
+      issues.push({ field: "interactionStates", reason: `Unknown interaction state ${state}.` });
+    }
+  }
+
+  const responsiveText = responsiveConstraints.join(" ").toLowerCase();
+  for (const viewport of ["mobile", "desktop"]) {
+    if (!responsiveText.includes(viewport)) {
+      issues.push({ field: "responsiveConstraints", reason: `Design briefs must define ${viewport} constraints.` });
+    }
+  }
+
+  const evidenceText = verificationEvidence.join(" ").toLowerCase();
+  for (const requiredEvidence of ["desktop", "mobile"]) {
+    if (!evidenceText.includes(requiredEvidence)) {
+      issues.push({ field: "verificationEvidence", reason: `Design briefs must require ${requiredEvidence} render evidence.` });
+    }
+  }
+
+  if (register === "product" && !interactionStates.includes("focus")) {
+    issues.push({ field: "interactionStates", reason: "Product design briefs must include focus state coverage." });
+  }
+
+  const nonGoalText = nonGoals.join(" ").toLowerCase();
+  if (trustConsumerMode === "pack/local-utility") {
+    for (const requiredBoundary of ["no upload", "no credential handoff", "no telemetry"]) {
+      if (!nonGoalText.includes(requiredBoundary)) {
+        issues.push({ field: "nonGoals", reason: `Pack design briefs must keep ${requiredBoundary} out of scope.` });
+      }
+    }
+  }
+
+  if (trustConsumerMode === "complyeaze/core" && !firstViewportSignal.toLowerCase().includes("complyeaze")) {
+    issues.push({ field: "firstViewportSignal", reason: "ComplyEaze core design briefs must name ComplyEaze in the first viewport signal." });
+  }
+
+  return issues;
+}
+
 function requireText(
   value: unknown,
   field: keyof TrustBrief,
@@ -408,6 +589,45 @@ function recordString(value: unknown, key: string): string {
 
 function isOneOf<const Values extends readonly string[]>(value: string, values: Values): value is Values[number] {
   return values.includes(value);
+}
+
+function requireDesignText(
+  value: unknown,
+  field: keyof DesignBrief,
+  issues: DesignBriefValidationIssue[],
+) {
+  if (typeof value !== "string" || !value.trim()) {
+    issues.push({ field, reason: `${field} must be specific.` });
+  }
+}
+
+function requireDesignList(
+  value: unknown,
+  field: keyof DesignBrief,
+  issues: DesignBriefValidationIssue[],
+) {
+  if (!Array.isArray(value) || value.length === 0) {
+    issues.push({ field, reason: `${field} must not be empty.` });
+    return;
+  }
+  if (value.some((item) => typeof item === "string" && !item.trim())) {
+    issues.push({ field, reason: `${field} entries must be specific.` });
+  }
+}
+
+function requireDesignStringEntries(
+  value: unknown,
+  field: keyof DesignBrief,
+  issues: DesignBriefValidationIssue[],
+) {
+  if (!Array.isArray(value)) return;
+  if (value.some((item) => typeof item !== "string" || !item.trim())) {
+    issues.push({ field, reason: `${field} entries must be strings.` });
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 export const patternSpecs = [
