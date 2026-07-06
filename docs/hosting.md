@@ -30,8 +30,8 @@ run on pull requests, and does not publish npm packages.
 `.github/workflows/pages-smoke.yml` runs on a daily schedule and by
 `workflow_dispatch`. It is read-only, runs only from `master`, and executes
 `node scripts/check-pages-smoke.mjs` to confirm
-`https://lamemustafa.github.io/sanchika/` returns the expected Sanchika
-Primitive Gallery HTML. The same check is available locally as
+`https://sanchika.complyeaze.com/` returns the expected Sanchika Primitive
+Gallery HTML. The same check is available locally as
 `pnpm pages:smoke`. It does not build, deploy, upload artifacts, or publish
 packages.
 
@@ -54,10 +54,10 @@ Before enabling the custom domain:
 6. Run `pnpm hosting:domain:check` and confirm it passes.
 7. Keep HTTPS enforced after GitHub provisions the certificate.
 8. Run the Pages workflow manually and confirm the custom-domain URL.
-9. Update `SANCHIKA_PAGES_URL` in `.github/workflows/pages-smoke.yml` only after
-   the custom-domain URL is live and the `github.io` URL remains a working
-   fallback.
+9. Keep `SANCHIKA_PAGES_URL` in `.github/workflows/pages-smoke.yml` pointed at
+   the custom-domain URL after HTTPS is enforced. The `github.io` URL remains a
+   useful fallback for debugging direct GitHub Pages hosting.
 
-Until that domain is active, parent-hosted references such as
-`tools.complyeaze.com/sanchika/` remain mirrors, not the authoritative Sanchika
-host.
+The custom domain is the authoritative Sanchika host. Parent-hosted references
+such as `tools.complyeaze.com/sanchika/` remain mirrors, not the authoritative
+Sanchika host.

@@ -32,4 +32,4 @@ jobs:
       - name: Smoke live gallery
         run: node scripts/check-pages-smoke.mjs
         env:
-          SANCHIKA_PAGES_URL: https://lamemustafa.github.io/sanchika/
+          SANCHIKA_PAGES_URL: https://sanchika.complyeaze.com/

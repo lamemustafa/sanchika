@@ -1,4 +1,4 @@
-const defaultUrl = "https://lamemustafa.github.io/sanchika/";
+const defaultUrl = "https://sanchika.complyeaze.com/";
 const targetUrl = process.env.SANCHIKA_PAGES_URL || defaultUrl;
 const timeoutMs = Number.parseInt(process.env.SANCHIKA_PAGES_TIMEOUT_MS || "15000", 10);
 
