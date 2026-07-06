@@ -59,11 +59,11 @@ branches should be pushed only when they are still active and needed for review.
   workflow and the Pages deployment workflow.
 - Enable GitHub Pages with GitHub Actions as the source before manually running
   `.github/workflows/pages.yml`.
-- Do not add the `sanchika.complyeaze.com` custom domain until DNS and GitHub
-  Pages domain verification are ready. For GitHub Actions Pages publishing, do
-  not add a repository `CNAME` file. Verify the `complyeaze.com` domain in
-  GitHub first, save `sanchika.complyeaze.com` in repository Pages settings,
-  then configure DNS and validate it with `pnpm hosting:domain:check`.
+- Keep `sanchika.complyeaze.com` configured as the GitHub Pages custom domain
+  after DNS and HTTPS verification are ready. For GitHub Actions Pages
+  publishing, do not add a repository `CNAME` file. Keep the DNS CNAME pointed
+  at `lamemustafa.github.io`, validate it with `pnpm hosting:domain:check`, and
+  keep HTTPS enforcement enabled in repository Pages settings.
 - Use npm Trusted Publishing for package releases and no long-lived npm publish
   tokens.
 - Add repository topics such as `design-system`, `accessibility`, `typescript`,

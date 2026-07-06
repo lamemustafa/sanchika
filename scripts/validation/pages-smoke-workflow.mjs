@@ -15,7 +15,7 @@ export function validatePagesSmokeWorkflow({ pagesSmokeWorkflow, fail }) {
     "persist-credentials: false",
     "node-version: 24",
     "run: node scripts/check-pages-smoke.mjs",
-    "SANCHIKA_PAGES_URL: https://lamemustafa.github.io/sanchika/",
+    "SANCHIKA_PAGES_URL: https://sanchika.complyeaze.com/",
   ]) {
     if (!pagesSmokeWorkflow.includes(requiredFragment)) {
       fail(`Pages smoke workflow must include ${requiredFragment}`);

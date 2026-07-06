@@ -897,7 +897,7 @@ for (const requiredHostingFragment of [
   ".github/workflows/pages-smoke.yml",
   "node scripts/check-pages-smoke.mjs",
   "pnpm pages:smoke",
-  "https://lamemustafa.github.io/sanchika/",
+  "https://sanchika.complyeaze.com/",
   "Do not add a `CNAME` file",
   "existing `CNAME` file is ignored",
   "Verify the `complyeaze.com` domain in GitHub",
