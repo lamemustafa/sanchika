@@ -1,6 +1,8 @@
 import { colorTokens } from "@sanchika/tokens";
 import { primitiveClassName, primitiveSpecs } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
+import { renderGalleryHero, renderHarnessLoop, renderPrimitiveMatrix } from "./page-sections.js";
+import { renderGalleryPageStyles } from "./page-styles.js";
 
 export const primitiveGalleryCssImports = ["@sanchika/tokens/theme.css", "@sanchika/primitives/styles.css"] as const;
 
@@ -24,7 +26,7 @@ export function renderPrimitiveGalleryMarkup(): string {
         })
         .join("");
       const standardsSection = standards ? `<h3>Standards</h3><ul>${standards}</ul>` : "";
-      return `<section class="${primitiveClassName(primitive.name)}"><h2>${escapeHtml(primitive.name)}</h2><p>${escapeHtml(primitive.role)}</p><h3>Required states</h3><ul>${states}</ul><h3>State evidence</h3><ul>${evidence}</ul>${standardsSection}</section>`;
+      return `<details class="sk-gallery-contract ${primitiveClassName(primitive.name)}"><summary><span>${escapeHtml(primitive.name)}</span><strong>${escapeHtml(primitive.role)}</strong></summary><div class="sk-gallery-contract-body"><h3>Required states</h3><ul>${states}</ul><h3>State evidence</h3><ul>${evidence}</ul>${standardsSection}</div></details>`;
     })
     .join("");
 
@@ -74,13 +76,29 @@ export function renderPrimitiveGalleryMarkup(): string {
         })
         .join("");
       const obligations = pattern.semanticObligations.map((obligation) => `<li>${escapeHtml(obligation)}</li>`).join("");
-      return `<section class="sk-pattern-contract" data-pattern="${escapeHtml(pattern.name)}"><h3>${escapeHtml(pattern.name)}</h3><p>${escapeHtml(pattern.purpose)}</p><h4>Required slots</h4><ul>${slots}</ul><h4>Required states</h4><ul>${states}</ul><h4>Semantic obligations</h4><ul>${obligations}</ul></section>`;
+      return `<details class="sk-pattern-contract sk-gallery-contract" data-pattern="${escapeHtml(pattern.name)}"><summary><span>${escapeHtml(pattern.name)}</span><strong>${escapeHtml(pattern.purpose)}</strong></summary><div class="sk-gallery-contract-body"><h4>Required slots</h4><ul>${slots}</ul><h4>Required states</h4><ul>${states}</ul><h4>Semantic obligations</h4><ul>${obligations}</ul></div></details>`;
     })
     .join("");
 
   const patternStateExemplars = renderPatternStateExemplars();
 
-  return `<main data-sanchika-gallery="primitive" data-sanchika-example="synthetic"><h1>Sanchika Primitive Gallery</h1><p data-sk-synthetic-disclaimer>All gallery examples are synthetic and must not be treated as taxpayer, portal, filing, or client data.</p><p>${Object.keys(colorTokens).length} color roles loaded.</p><section aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section><section aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2>${buttons}</section><section aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2>${badges}</section><section aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2>${fields}</section><section aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2>${cards}</section><section aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern state exemplars</h3>${patternStateExemplars}</section></main>`;
+  const colorRoleCount = Object.keys(colorTokens).length;
+
+  return `<main class="sk-gallery-page" data-sanchika-gallery="primitive" data-sanchika-example="synthetic">
+    ${renderGalleryHero({
+      colorRoleCount,
+      primaryButtonClass: primitiveClassName("Button", "brand", "md"),
+      secondaryButtonClass: primitiveClassName("Button", "neutral", "md"),
+    })}
+    ${renderHarnessLoop()}
+    ${renderPrimitiveMatrix()}
+    <section class="sk-gallery-section" aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section>
+    <section class="sk-gallery-section" aria-labelledby="button-states"><h2 id="button-states">Button state matrix</h2><div class="sk-gallery-control-row">${buttons}</div></section>
+    <section class="sk-gallery-section" aria-labelledby="badge-tones"><h2 id="badge-tones">Badge tone matrix</h2><div class="sk-gallery-control-row">${badges}</div></section>
+    <section class="sk-gallery-section" aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2><div class="sk-gallery-field-grid">${fields}</div></section>
+    <section class="sk-gallery-section" aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2><div class="sk-gallery-card-grid">${cards}</div></section>
+    <section class="sk-gallery-section" aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern state exemplars</h3>${patternStateExemplars}</section>
+  </main>`;
 }
 
 export function renderPrimitiveGalleryDocument(): string {
@@ -88,7 +106,7 @@ export function renderPrimitiveGalleryDocument(): string {
     .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
     .join("");
 
-  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
+  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}${renderGalleryPageStyles()}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
 }
 
 export function renderOpenablePrimitiveGalleryDocument(): string {
@@ -96,7 +114,7 @@ export function renderOpenablePrimitiveGalleryDocument(): string {
     .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
     .join("");
 
-  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
+  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}${renderGalleryPageStyles()}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
 }
 
 function titleCase(value: string): string {
@@ -138,7 +156,7 @@ function renderPatternStateExemplars(): string {
         ].join(" ");
 
         return [
-          `<article ${rootAttributes}><h3 id="${headingId}">${escapeHtml(pattern.name)} ${escapeHtml(state.name)} state</h3><ul>${visibleSignals}</ul>${slots}${liveRegion}</article>`,
+          `<details class="sk-gallery-exemplar" ${rootAttributes}><summary id="${headingId}">${escapeHtml(pattern.name)} ${escapeHtml(state.name)} state</summary><div class="sk-gallery-contract-body"><ul>${visibleSignals}</ul>${slots}${liveRegion}</div></details>`,
         ];
       }),
     )

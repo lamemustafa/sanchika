@@ -3,6 +3,18 @@ const packageCssAssets = new Map([
   ["primitives", "dist/styles.css"],
 ]);
 
+const packageInternalDistFiles = new Map([
+  [
+    "gallery",
+    [
+      "dist/page-sections.d.ts",
+      "dist/page-sections.js",
+      "dist/page-styles.d.ts",
+      "dist/page-styles.js",
+    ],
+  ],
+]);
+
 const commonAllowedPaths = new Set(["package.json", "README.md", "LICENSE", "dist/index.js", "dist/index.d.ts"]);
 const forbiddenPathPatterns = [
   /^src\//,
@@ -48,6 +60,9 @@ function allowedPathsFor(packageName) {
   const paths = new Set(commonAllowedPaths);
   const cssAsset = packageCssAssets.get(packageName);
   if (cssAsset) paths.add(cssAsset);
+  for (const internalFile of packageInternalDistFiles.get(packageName) ?? []) {
+    paths.add(internalFile);
+  }
   return paths;
 }
 
