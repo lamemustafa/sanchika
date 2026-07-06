@@ -8,7 +8,10 @@ import type {
   PatternStateName,
   PatternStateNameFor,
   PatternStateRequiredSlotNameFor,
+  TrustBrief,
+  TrustBriefValidationIssue,
 } from "../src/index";
+import { validateTrustBrief } from "../src/index";
 
 const patternName: PatternName = "EvidencePanel";
 const anyPatternSlot: PatternSlotName = "boundarySummary";
@@ -33,6 +36,22 @@ const blockedStatus: PatternProgrammaticStatusFor<"EvidencePanel", "blocked"> = 
   slotRefs: ["uncertaintyCopy", "actionSlot"],
   requirement: "Blocked evidence updates must announce the blocking reason and next safe action.",
 };
+const axalTrustBrief: TrustBrief = {
+  id: "axal-review-workbench",
+  consumerMode: "axal/workspace",
+  register: "product",
+  surface: "Professional Review Workbench",
+  userJob: "Review pending compliance evidence before approving a prepared action.",
+  primaryDecision: "Can this action be approved, or is source evidence still missing?",
+  dataSensitivity: ["tenant-data", "document-or-file", "statutory-claim"],
+  trustBoundaries: ["Tenant-scoped workspace data only", "No portal credential handoff in Sanchika"],
+  evidenceRequirements: ["Source evidence", "Human review state", "Review timestamp"],
+  selectedPatterns: [{ name: "EvidencePanel", states: ["reviewed", "blocked"] }],
+  claims: [{ claim: "Evidence is ready for review", evidence: "Synthetic source list and review timestamp are visible" }],
+  nonGoals: ["No filing submission", "No compliance judgment"],
+  verificationGates: ["token-only-styling", "wcag-22-aa", "keyboard-focus", "non-color-state", "desktop-render", "mobile-render"],
+};
+const trustBriefIssues: readonly TrustBriefValidationIssue[] = validateTrustBrief(axalTrustBrief);
 
 void patternName;
 void anyPatternSlot;
@@ -44,6 +63,8 @@ void emptyEvidenceSlot;
 void targetSizeCriterion;
 void blockedCheck;
 void blockedStatus;
+void axalTrustBrief;
+void trustBriefIssues;
 
 // @ts-expect-error Unknown patterns must not be accepted.
 const unknownPattern: PatternName = "GenericCard";
@@ -68,9 +89,20 @@ const wrongEmptyStatus: PatternProgrammaticStatusFor<"EvidencePanel", "empty"> =
   requirement: "Should not exist",
 };
 
+// @ts-expect-error Unknown consumer modes must not be accepted.
+const wrongBriefMode: TrustBrief = { ...axalTrustBrief, consumerMode: "generic/app" };
+
+const wrongBriefPatternState: TrustBrief = {
+  ...axalTrustBrief,
+  // @ts-expect-error TrustBoundary cannot declare EvidencePanel states.
+  selectedPatterns: [{ name: "TrustBoundary", states: ["reviewed"] }],
+};
+
 void unknownPattern;
 void wrongSlot;
 void wrongState;
 void wrongStateSlot;
 void unknownCriterion;
 void wrongEmptyStatus;
+void wrongBriefMode;
+void wrongBriefPatternState;

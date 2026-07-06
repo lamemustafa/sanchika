@@ -16,6 +16,7 @@ import { validatePackageManifest } from "./validation/package-manifests.mjs";
 import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
 import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
+import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const failures = [];
@@ -97,6 +98,10 @@ if (rootPackage.scripts?.["review:gate:sync-fixtures"] !== "node scripts/validat
   fail("root package must expose review:gate:sync-fixtures for review-gate status sync regression checks");
 }
 
+if (rootPackage.scripts?.["trust:brief:fixtures"] !== "node scripts/validation/trust-brief-fixtures.mjs") {
+  fail("root package must expose trust:brief:fixtures for trust-brief runtime regression checks");
+}
+
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
@@ -123,6 +128,10 @@ if (!existsSync(join(root, "scripts/validation/review-gate-fixtures.mjs"))) {
 
 if (!existsSync(join(root, "scripts/validation/review-gate-sync-fixtures.mjs"))) {
   fail("review gate sync fixture validator must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/trust-brief-fixtures.mjs"))) {
+  fail("trust brief fixture validator must exist");
 }
 
 if (!existsSync(join(root, "scripts/sync-review-gate-status.mjs"))) {
@@ -181,16 +190,20 @@ if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:fixtures")) {
   fail("root verify script must run review:gate:fixtures");
 }
 
-if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:sync-fixtures")) {
-  fail("root verify script must run review:gate:sync-fixtures");
-}
-
 if (rootPackage.scripts?.["pages:smoke"] !== "node scripts/check-pages-smoke.mjs") {
   fail("root package must expose pages:smoke for live Pages availability checks");
 }
 
 if (rootPackage.scripts?.["hosting:domain:check"] !== "node scripts/check-custom-domain-readiness.mjs") {
   fail("root package must expose hosting:domain:check for custom-domain readiness checks");
+}
+
+if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:sync-fixtures")) {
+  fail("root verify script must run review:gate:sync-fixtures");
+}
+
+if (!rootPackage.scripts?.verify?.includes("pnpm trust:brief:fixtures")) {
+  fail("root verify script must run trust:brief:fixtures");
 }
 
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
@@ -206,6 +219,11 @@ const buildIndex = verifyScript.indexOf("pnpm build");
 const packageApiTypecheckIndex = verifyScript.indexOf("pnpm typecheck:api");
 if (buildIndex === -1 || buildIndex > packageApiTypecheckIndex) {
   fail("root verify script must run typecheck:api after build");
+}
+
+const trustBriefFixturesIndex = verifyScript.indexOf("pnpm trust:brief:fixtures");
+if (buildIndex === -1 || buildIndex > trustBriefFixturesIndex) {
+  fail("root verify script must run trust:brief:fixtures after build");
 }
 
 if (!existsSync(join(root, "scripts/check-package-api-types.mjs")) || !existsSync(join(root, "type-tests/package-api.ts"))) {
@@ -244,6 +262,7 @@ for (const [scriptPath, commandName] of [
   ["scripts/check-package-api-types.mjs", "pnpm typecheck:api"],
   ["scripts/check-local-link-consumer.mjs", "pnpm consumer:check"],
   ["scripts/check-packed-tarball-consumer.mjs", "pnpm publish:tarball-check"],
+  ["scripts/validation/trust-brief-fixtures.mjs", "pnpm trust:brief:fixtures"],
 ]) {
   const scriptSource = requireText(scriptPath);
   if (!scriptSource.includes("assertBuiltPackageArtifacts")) {
@@ -414,6 +433,7 @@ const packageArtifactCheckSource = readText("scripts/check-package-artifacts.mjs
 const packedTarballCheckSource = readText("scripts/check-packed-tarball-consumer.mjs");
 const tarballContentsSource = readText("scripts/validation/tarball-contents.mjs");
 const architectureDocs = readText("docs/architecture.md");
+const aiNativeToolingDocs = readText("docs/ai-native-tooling.md");
 const complyeazeAdoptionDocs = readText("docs/adoption-complyeaze.md");
 const adoptionDocs = {
   ComplyEaze: complyeazeAdoptionDocs,
@@ -503,6 +523,7 @@ if (tokenManifest.exports?.["./theme.css"] !== "./dist/theme.css") {
 }
 
 validatePatternContracts({ patternSource, patternDocs, fail });
+validateTrustBriefContracts({ patternSource, patternDocs, aiNativeToolingDocs, fail });
 
 for (const requiredConsumerModeFragment of [
   "external/operational-saas",
@@ -530,6 +551,9 @@ for (const patternTypeExport of [
   "PatternStateNameFor",
   "PatternStateFor",
   "PatternStateRequiredSlotNameFor",
+  "TrustBrief",
+  "TrustBriefValidationIssue",
+  "validateTrustBrief",
 ]) {
   if (!patternSource.includes(patternTypeExport)) {
     fail(`pattern package must export ${patternTypeExport}`);
