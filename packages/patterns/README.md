@@ -11,8 +11,8 @@ compatibility pass against built artifacts and consumer checks.
 
 ## Exports
 
-- `@sanchika/patterns` - pattern specs for evidence, trust-boundary, and service
-  presentation contracts.
+- `@sanchika/patterns` - pattern specs for evidence, trust-boundary,
+  product-family routing, and service presentation contracts.
 - Derived contract types:
   - `PatternName`
   - `PatternA11yCheck`

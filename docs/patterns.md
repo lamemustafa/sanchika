@@ -85,6 +85,9 @@ displaying the `programmaticStatus` requirement prose.
   obligations without introducing an AI runtime.
 - `TrustBoundary` makes local, upload, permission, and source visibility
   boundaries explicit for Pack and Tools.
+- `ProductFamilyRouter` routes between ComplyEaze, Axal, Pack, Tools, and
+  external operational SaaS surfaces while making product mode, availability,
+  externality, and trust boundary visible.
 - `ServiceSection` keeps public ComplyEaze service surfaces specific and
   human-led instead of generic SaaS cards.
 
