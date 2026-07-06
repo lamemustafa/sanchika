@@ -205,6 +205,11 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
   requireList(candidate.claims, "claims", issues);
   requireList(candidate.nonGoals, "nonGoals", issues);
   requireList(candidate.verificationGates, "verificationGates", issues);
+  requireStringEntries(candidate.dataSensitivity, "dataSensitivity", issues);
+  requireStringEntries(candidate.trustBoundaries, "trustBoundaries", issues);
+  requireStringEntries(candidate.evidenceRequirements, "evidenceRequirements", issues);
+  requireStringEntries(candidate.nonGoals, "nonGoals", issues);
+  requireStringEntries(candidate.verificationGates, "verificationGates", issues);
 
   if (!isOneOf(consumerMode, consumerModes)) {
     issues.push({ field: "consumerMode", reason: `Unknown consumer mode ${consumerMode || "(missing)"}.` });
@@ -253,7 +258,9 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
       });
     }
 
-    for (const state of stringList(recordValue(selection, "states"))) {
+    const selectedStates = recordValue(selection, "states");
+    requireStringEntries(selectedStates, "selectedPatterns.states", issues);
+    for (const state of stringList(selectedStates)) {
       if (!spec.requiredStates.some((requiredState) => requiredState.name === state)) {
         issues.push({
           field: "selectedPatterns.states",
@@ -272,7 +279,7 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
 
   if (consumerMode === "pack/local-utility") {
     const boundaryText = trustBoundaries.join(" ").toLowerCase();
-    for (const requiredBoundary of ["no upload", "no credential", "no telemetry"]) {
+    for (const requiredBoundary of ["no upload", "no credential handoff", "no telemetry"]) {
       if (!boundaryText.includes(requiredBoundary)) {
         issues.push({
           field: "trustBoundaries",
@@ -316,6 +323,7 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
 
   if (consumerMode === "tools/local-artifact") {
     const evidenceText = evidenceRequirements.join(" ").toLowerCase();
+    const nonGoalText = nonGoals.join(" ").toLowerCase();
     for (const requiredEvidence of ["source", "provenance", "export"]) {
       if (!evidenceText.includes(requiredEvidence)) {
         issues.push({
@@ -324,7 +332,11 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
         });
       }
     }
-    if (!nonGoals.join(" ").toLowerCase().includes("product spec")) {
+    if (
+      !nonGoalText.includes("product spec") ||
+      !nonGoalText.includes("route") ||
+      !nonGoalText.includes("tool scaffold")
+    ) {
       issues.push({
         field: "nonGoals",
         reason: "Tools local-artifact briefs must require a product spec before generic route or tool scaffolds.",
@@ -356,6 +368,17 @@ function requireList(
   }
   if (value.some((item) => typeof item === "string" && !item.trim())) {
     issues.push({ field, reason: `${field} entries must be specific.` });
+  }
+}
+
+function requireStringEntries(
+  value: unknown,
+  field: keyof TrustBrief | "selectedPatterns.states",
+  issues: TrustBriefValidationIssue[],
+) {
+  if (!Array.isArray(value)) return;
+  if (value.some((item) => typeof item !== "string" || !item.trim())) {
+    issues.push({ field, reason: `${field} entries must be strings.` });
   }
 }
 

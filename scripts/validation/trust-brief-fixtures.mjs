@@ -76,7 +76,7 @@ const validCases = [
       evidenceRequirements: ["Source evidence", "Provenance timestamp", "User-controlled export"],
       selectedPatterns: [{ name: "EvidencePanel", states: ["blocked"] }],
       claims: [{ claim: "Export is source-backed", evidence: "Source and provenance fields remain visible before export" }],
-      nonGoals: ["No generic route scaffold without a product spec"],
+      nonGoals: ["No generic route or tool scaffold without a product spec"],
       verificationGates: ["token-only-styling", "wcag-22-aa", "keyboard-focus", "non-color-state"],
     },
   },
@@ -90,6 +90,14 @@ const invalidCases = [
       trustBoundaries: ["No upload", "No credential handoff"],
     },
     expectedReason: "Pack trust briefs must state no telemetry.",
+  },
+  {
+    name: "Pack missing credential handoff boundary",
+    patch: {
+      consumerMode: "pack/local-utility",
+      trustBoundaries: ["No upload", "No credential storage", "No telemetry"],
+    },
+    expectedReason: "Pack trust briefs must state no credential handoff.",
   },
   {
     name: "Axal missing human review evidence",
@@ -153,6 +161,29 @@ const invalidCases = [
     expectedReason: "Unknown verification gate invented-gate.",
   },
   {
+    name: "Non-string data sensitivity entry",
+    patch: {
+      consumerMode: "external/operational-saas",
+      dataSensitivity: [123],
+    },
+    expectedReason: "dataSensitivity entries must be strings.",
+  },
+  {
+    name: "Non-string verification gate entry",
+    patch: {
+      consumerMode: "external/operational-saas",
+      verificationGates: [123],
+    },
+    expectedReason: "verificationGates entries must be strings.",
+  },
+  {
+    name: "Non-string pattern state entry",
+    patch: {
+      selectedPatterns: [{ name: "ProductFamilyRouter", states: [123] }],
+    },
+    expectedReason: "selectedPatterns.states entries must be strings.",
+  },
+  {
     name: "Blank list entry",
     patch: {
       consumerMode: "external/operational-saas",
@@ -172,7 +203,7 @@ const invalidCases = [
     patch: {
       consumerMode: "tools/local-artifact",
       evidenceRequirements: ["Source evidence", "User-controlled export"],
-      nonGoals: ["No generic route scaffold without a product spec"],
+      nonGoals: ["No generic route or tool scaffold without a product spec"],
     },
     expectedReason: "Tools local-artifact briefs must require provenance evidence.",
   },
@@ -182,6 +213,15 @@ const invalidCases = [
       consumerMode: "tools/local-artifact",
       evidenceRequirements: ["Source evidence", "Provenance timestamp", "User-controlled export"],
       nonGoals: ["No backend upload"],
+    },
+    expectedReason: "Tools local-artifact briefs must require a product spec before generic route or tool scaffolds.",
+  },
+  {
+    name: "Tools missing route and tool scaffold guard",
+    patch: {
+      consumerMode: "tools/local-artifact",
+      evidenceRequirements: ["Source evidence", "Provenance timestamp", "User-controlled export"],
+      nonGoals: ["Product spec TBD"],
     },
     expectedReason: "Tools local-artifact briefs must require a product spec before generic route or tool scaffolds.",
   },
