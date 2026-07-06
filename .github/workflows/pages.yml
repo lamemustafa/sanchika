@@ -15,6 +15,7 @@ concurrency:
 jobs:
   deploy-gallery:
     name: Deploy gallery
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

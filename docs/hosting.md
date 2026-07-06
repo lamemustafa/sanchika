@@ -6,7 +6,8 @@ backend, account system, telemetry, database, or consumer app runtime.
 ## GitHub Pages
 
 `.github/workflows/pages.yml` deploys the openable gallery artifact from
-`dist/gallery` to GitHub Pages when a maintainer runs `workflow_dispatch`.
+`dist/gallery` to GitHub Pages when a maintainer runs `workflow_dispatch` from
+`master`. Manual runs from non-`master` refs are ignored by the deploy job.
 Automatic `master` deployment should be added only after GitHub Pages is enabled
 and the first manual deploy succeeds.
 
@@ -21,8 +22,8 @@ The workflow:
 
 All action references are pinned to full commit SHAs. The workflow requests only
 the permissions needed for Pages deployment: `contents: read`, `pages: write`,
-and `id-token: write`. It does not run on pull requests and does not publish npm
-packages.
+and `id-token: write`. It is manual-only, deploys only from `master`, does not
+run on pull requests, and does not publish npm packages.
 
 ## Custom Domain
 

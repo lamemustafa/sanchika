@@ -1,4 +1,10 @@
 export function validatePagesWorkflow({ pagesWorkflow, fail }) {
+  const activeLines = pagesWorkflow
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\s+#.*$/, ""))
+    .filter((line) => line.trim().length > 0);
+  const activeWorkflow = activeLines.join("\n");
+
   for (const requiredFragment of [
     "name: Pages",
     "workflow_dispatch:",
@@ -8,6 +14,7 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
     "environment:",
     "name: github-pages",
     "url: ${{ steps.deployment.outputs.page_url }}",
+    "if: github.ref == 'refs/heads/master'",
     "persist-credentials: false",
     "run: pnpm install --frozen-lockfile --ignore-scripts",
     "run: pnpm build",
@@ -20,19 +27,30 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
     }
   }
 
-  for (const forbiddenFragment of [
+  for (const forbiddenTrigger of [
     "push:",
     "pull_request:",
     "pull_request_target:",
     "schedule:",
     "workflow_run:",
+  ]) {
+    if (activeLines.some((line) => line.trim() === forbiddenTrigger)) {
+      fail(`Pages workflow must not include ${forbiddenTrigger}`);
+    }
+  }
+
+  for (const forbiddenFragment of [
     "NPM_TOKEN",
     "NODE_AUTH_TOKEN",
     "npm publish",
   ]) {
-    if (pagesWorkflow.includes(forbiddenFragment)) {
+    if (activeWorkflow.includes(forbiddenFragment)) {
       fail(`Pages workflow must not include ${forbiddenFragment}`);
     }
+  }
+
+  if (!activeWorkflow.includes("workflow_dispatch:")) {
+    fail("Pages workflow must be manual-only through workflow_dispatch");
   }
 
   const pinnedActions = {
