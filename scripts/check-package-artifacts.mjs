@@ -111,6 +111,17 @@ function expectedPackageFiles(manifest) {
     }
   }
 
+  if (manifest.name === "@sanchika/gallery") {
+    for (const helperFile of [
+      "dist/page-sections.d.ts",
+      "dist/page-sections.js",
+      "dist/page-styles.d.ts",
+      "dist/page-styles.js",
+    ]) {
+      files.add(helperFile);
+    }
+  }
+
   return [...files].sort();
 }
 
