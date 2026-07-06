@@ -1,5 +1,7 @@
 # Sanchika
 
+[![Pages smoke](https://github.com/lamemustafa/sanchika/actions/workflows/pages-smoke.yml/badge.svg?branch=master)](https://github.com/lamemustafa/sanchika/actions/workflows/pages-smoke.yml)
+
 Sanchika is an AI-native design system SDK for compliance-grade interfaces.
 AI-native means typed, documented, agent-consumable design contracts; it does
 not mean Sanchika provides a model runtime or automated compliance judgment.
@@ -55,6 +57,8 @@ pnpm typecheck:api
 pnpm artifact:check
 pnpm gallery:build
 pnpm gallery:check
+pnpm pages:smoke
+pnpm hosting:domain:check
 pnpm smoke
 pnpm consumer:check
 pnpm workflow:preflight

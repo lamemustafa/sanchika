@@ -165,6 +165,10 @@ if (!existsSync(join(root, "scripts/check-pages-smoke.mjs"))) {
   fail("Pages smoke check script file must exist");
 }
 
+if (!existsSync(join(root, "scripts/check-custom-domain-readiness.mjs"))) {
+  fail("custom domain readiness check script file must exist");
+}
+
 if (!existsSync(join(root, "scripts/validation/pages-smoke-workflow.mjs"))) {
   fail("Pages smoke workflow validator must exist");
 }
@@ -183,6 +187,10 @@ if (!rootPackage.scripts?.verify?.includes("pnpm review:gate:sync-fixtures")) {
 
 if (rootPackage.scripts?.["pages:smoke"] !== "node scripts/check-pages-smoke.mjs") {
   fail("root package must expose pages:smoke for live Pages availability checks");
+}
+
+if (rootPackage.scripts?.["hosting:domain:check"] !== "node scripts/check-custom-domain-readiness.mjs") {
+  fail("root package must expose hosting:domain:check for custom-domain readiness checks");
 }
 
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
@@ -846,7 +854,11 @@ for (const requiredHostingFragment of [
   "node scripts/check-pages-smoke.mjs",
   "pnpm pages:smoke",
   "https://lamemustafa.github.io/sanchika/",
-  "Do not add a `CNAME` file until the domain and DNS are configured",
+  "Do not add a `CNAME` file",
+  "existing `CNAME` file is ignored",
+  "Verify the `complyeaze.com` domain in GitHub",
+  "pnpm hosting:domain:check",
+  "sanchika.complyeaze.com. CNAME lamemustafa.github.io.",
   "tools.complyeaze.com/sanchika/",
 ]) {
   if (!normalizeProse(hostingDocs).includes(requiredHostingFragment)) {

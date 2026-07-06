@@ -38,17 +38,25 @@ packages.
 ## Custom Domain
 
 The preferred long-term public host is `sanchika.complyeaze.com`. Do not add a
-`CNAME` file until the domain and DNS are configured in GitHub Pages.
+`CNAME` file for the current GitHub Actions Pages deployment. GitHub Pages
+custom-workflow publishing does not create a repository `CNAME` file, and an
+existing `CNAME` file is ignored for this publishing mode.
 
 Before enabling the custom domain:
 
 1. Merge the Pages workflow.
 2. Enable GitHub Pages with GitHub Actions as the source.
-3. Add the `sanchika.complyeaze.com` custom domain in repository Pages settings.
-4. Configure the required DNS records for GitHub Pages.
-5. Run the Pages workflow manually and confirm the generated Pages URL.
-6. Add `dist/gallery/CNAME` generation or another reviewed CNAME step only after
-   GitHub confirms the custom domain.
+3. Verify the `complyeaze.com` domain in GitHub if that account-level
+   verification is not already complete.
+4. Add the `sanchika.complyeaze.com` custom domain in repository Pages settings.
+5. Configure DNS:
+   `sanchika.complyeaze.com. CNAME lamemustafa.github.io.`
+6. Run `pnpm hosting:domain:check` and confirm it passes.
+7. Keep HTTPS enforced after GitHub provisions the certificate.
+8. Run the Pages workflow manually and confirm the custom-domain URL.
+9. Update `SANCHIKA_PAGES_URL` in `.github/workflows/pages-smoke.yml` only after
+   the custom-domain URL is live and the `github.io` URL remains a working
+   fallback.
 
 Until that domain is active, parent-hosted references such as
 `tools.complyeaze.com/sanchika/` remain mirrors, not the authoritative Sanchika

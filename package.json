@@ -28,6 +28,7 @@
     "github:ruleset": "node scripts/render-github-master-ruleset.mjs",
     "github:labels": "node scripts/sync-github-labels.mjs",
     "github:verify": "node scripts/check-github-repo-state.mjs",
+    "hosting:domain:check": "node scripts/check-custom-domain-readiness.mjs",
     "validate": "node scripts/validate-repo.mjs",
     "artifact:check": "node scripts/check-package-artifacts.mjs",
     "consumer:check": "node scripts/check-local-link-consumer.mjs",
