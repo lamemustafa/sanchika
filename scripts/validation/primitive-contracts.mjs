@@ -98,12 +98,20 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
     }
   }
 
-  if (!/outline:\s*2px\s+solid\s+var\(--sk-color-info\)/.test(primitiveCss)) {
+  if (!/outline:\s*var\(--sk-focus-outline-width\)\s+solid\s+var\(--sk-color-info\)/.test(primitiveCss)) {
     fail("primitive focus-visible styles must use the validated info token outline");
   }
 
-  if (!/outline-offset:\s*2px/.test(primitiveCss)) {
+  if (!/outline-offset:\s*var\(--sk-focus-outline-offset\)/.test(primitiveCss)) {
     fail("primitive focus-visible styles must include an outline offset");
+  }
+
+  if (!tokenCssDeclarations.has("--sk-focus-outline-width") || tokenCssDeclarations.get("--sk-focus-outline-width") !== "2px") {
+    fail("token CSS must keep --sk-focus-outline-width at the validated 2px focus width");
+  }
+
+  if (!tokenCssDeclarations.has("--sk-focus-outline-offset") || tokenCssDeclarations.get("--sk-focus-outline-offset") !== "2px") {
+    fail("token CSS must keep --sk-focus-outline-offset at the validated 2px focus offset");
   }
 
   for (const match of primitiveCss.matchAll(/--sk-primitive-control-block:\s*([0-9.]+)rem/g)) {

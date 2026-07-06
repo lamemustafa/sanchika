@@ -27,6 +27,19 @@ export type ColorTokenDefinitions = {
 
 export type SpacingTokenStep = "1" | "2" | "3" | "4" | "6" | "8" | "12" | "16";
 export type RadiusTokenRole = "control" | "card";
+export type TypographyTokenRole =
+  | "fontSizeSm"
+  | "fontSizeMd"
+  | "fontSizeLg"
+  | "fontWeightSemibold"
+  | "fontWeightBold"
+  | "lineHeightTight"
+  | "lineHeightControl"
+  | "lineHeightLabel"
+  | "lineHeightBody";
+export type SizeTokenRole = "controlSm" | "controlMd" | "controlLg" | "badgeMin";
+export type ElevationTokenRole = "card";
+export type FocusTokenRole = "outlineWidth" | "outlineOffset";
 export type MotionTokenRole = "durationStandard" | "durationLoading" | "easingStandard" | "easingLinear";
 
 export type SpacingTokenDefinition = {
@@ -69,6 +82,62 @@ export type MotionTokenDefinitionFor<Role extends MotionTokenRole> = Omit<Motion
 
 export type MotionTokenDefinitions = {
   [Role in MotionTokenRole]: MotionTokenDefinitionFor<Role>;
+};
+
+export type TypographyTokenDefinition = {
+  cssVariable: `--sk-${string}`;
+  role: TypographyTokenRole;
+  usage: string;
+};
+
+export type TypographyTokenDefinitionFor<Role extends TypographyTokenRole> = Omit<TypographyTokenDefinition, "role"> & {
+  role: Role;
+};
+
+export type TypographyTokenDefinitions = {
+  [Role in TypographyTokenRole]: TypographyTokenDefinitionFor<Role>;
+};
+
+export type SizeTokenDefinition = {
+  cssVariable: `--sk-${string}`;
+  role: SizeTokenRole;
+  usage: string;
+};
+
+export type SizeTokenDefinitionFor<Role extends SizeTokenRole> = Omit<SizeTokenDefinition, "role"> & {
+  role: Role;
+};
+
+export type SizeTokenDefinitions = {
+  [Role in SizeTokenRole]: SizeTokenDefinitionFor<Role>;
+};
+
+export type ElevationTokenDefinition = {
+  cssVariable: `--sk-${string}`;
+  role: ElevationTokenRole;
+  usage: string;
+};
+
+export type ElevationTokenDefinitionFor<Role extends ElevationTokenRole> = Omit<ElevationTokenDefinition, "role"> & {
+  role: Role;
+};
+
+export type ElevationTokenDefinitions = {
+  [Role in ElevationTokenRole]: ElevationTokenDefinitionFor<Role>;
+};
+
+export type FocusTokenDefinition = {
+  cssVariable: `--sk-${string}`;
+  role: FocusTokenRole;
+  usage: string;
+};
+
+export type FocusTokenDefinitionFor<Role extends FocusTokenRole> = Omit<FocusTokenDefinition, "role"> & {
+  role: Role;
+};
+
+export type FocusTokenDefinitions = {
+  [Role in FocusTokenRole]: FocusTokenDefinitionFor<Role>;
 };
 
 export const colorTokens = {
@@ -175,3 +244,35 @@ export const motionTokens = {
     usage: "Looping loading indicator easing",
   },
 } as const satisfies MotionTokenDefinitions;
+
+export const typographyTokens = {
+  fontSizeSm: { cssVariable: "--sk-font-size-sm", role: "fontSizeSm", usage: "Small helper, badge, and hint text" },
+  fontSizeMd: { cssVariable: "--sk-font-size-md", role: "fontSizeMd", usage: "Default control and label text" },
+  fontSizeLg: { cssVariable: "--sk-font-size-lg", role: "fontSizeLg", usage: "Large control text" },
+  fontWeightSemibold: {
+    cssVariable: "--sk-font-weight-semibold",
+    role: "fontWeightSemibold",
+    usage: "Control labels and important field state text",
+  },
+  fontWeightBold: { cssVariable: "--sk-font-weight-bold", role: "fontWeightBold", usage: "Badge and compact status text" },
+  lineHeightTight: { cssVariable: "--sk-line-height-tight", role: "lineHeightTight", usage: "Compact badge text" },
+  lineHeightControl: { cssVariable: "--sk-line-height-control", role: "lineHeightControl", usage: "Button text" },
+  lineHeightLabel: { cssVariable: "--sk-line-height-label", role: "lineHeightLabel", usage: "Field labels" },
+  lineHeightBody: { cssVariable: "--sk-line-height-body", role: "lineHeightBody", usage: "Card and descriptive body text" },
+} as const satisfies TypographyTokenDefinitions;
+
+export const sizeTokens = {
+  controlSm: { cssVariable: "--sk-size-control-sm", role: "controlSm", usage: "Small controls" },
+  controlMd: { cssVariable: "--sk-size-control-md", role: "controlMd", usage: "Default controls" },
+  controlLg: { cssVariable: "--sk-size-control-lg", role: "controlLg", usage: "Large controls" },
+  badgeMin: { cssVariable: "--sk-size-badge-min", role: "badgeMin", usage: "Minimum badge height" },
+} as const satisfies SizeTokenDefinitions;
+
+export const elevationTokens = {
+  card: { cssVariable: "--sk-elevation-card", role: "card", usage: "Subtle grouped-surface elevation" },
+} as const satisfies ElevationTokenDefinitions;
+
+export const focusTokens = {
+  outlineWidth: { cssVariable: "--sk-focus-outline-width", role: "outlineWidth", usage: "Visible focus outline width" },
+  outlineOffset: { cssVariable: "--sk-focus-outline-offset", role: "outlineOffset", usage: "Visible focus outline offset" },
+} as const satisfies FocusTokenDefinitions;
