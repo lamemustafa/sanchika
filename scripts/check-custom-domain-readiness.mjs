@@ -22,11 +22,11 @@ try {
   console.error("Sanchika custom-domain readiness check failed:");
   console.error(error instanceof Error ? error.message : error);
   console.error("");
-  console.error("Expected DNS after saving the GitHub Pages custom domain:");
+  console.error("Expected live GitHub Pages DNS:");
   console.error(`${targetDomain}. CNAME ${expectedCname}.`);
   console.error("");
   console.error(
-    "After DNS is live, rerun this check and keep HTTPS enforced in GitHub Pages settings.",
+    "Rerun this check after DNS or GitHub Pages settings change, and keep HTTPS enforced in GitHub Pages settings.",
   );
   process.exitCode = 1;
 }

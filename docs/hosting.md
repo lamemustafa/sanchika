@@ -37,26 +37,28 @@ packages.
 
 ## Custom Domain
 
-The preferred long-term public host is `sanchika.complyeaze.com`. Do not add a
-`CNAME` file for the current GitHub Actions Pages deployment. GitHub Pages
-custom-workflow publishing does not create a repository `CNAME` file, and an
-existing `CNAME` file is ignored for this publishing mode.
+The authoritative public host is `sanchika.complyeaze.com`. It is served by
+GitHub Pages, and DNS should continue to resolve as:
+`sanchika.complyeaze.com. CNAME lamemustafa.github.io.`
 
-Before enabling the custom domain:
+Do not add a `CNAME` file for the current GitHub Actions Pages deployment.
+GitHub Pages custom-workflow publishing does not create a repository `CNAME`
+file, and an existing `CNAME` file is ignored for this publishing mode.
 
-1. Merge the Pages workflow.
-2. Enable GitHub Pages with GitHub Actions as the source.
-3. Verify the `complyeaze.com` domain in GitHub if that account-level
-   verification is not already complete.
-4. Add the `sanchika.complyeaze.com` custom domain in repository Pages settings.
-5. Configure DNS:
-   `sanchika.complyeaze.com. CNAME lamemustafa.github.io.`
-6. Run `pnpm hosting:domain:check` and confirm it passes.
-7. Keep HTTPS enforced after GitHub provisions the certificate.
-8. Run the Pages workflow manually and confirm the custom-domain URL.
-9. Keep `SANCHIKA_PAGES_URL` in `.github/workflows/pages-smoke.yml` pointed at
-   the custom-domain URL after HTTPS is enforced. The `github.io` URL remains a
-   useful fallback for debugging direct GitHub Pages hosting.
+Ongoing live-host checks:
+
+1. Keep GitHub Pages enabled with GitHub Actions as the source.
+2. Keep the `sanchika.complyeaze.com` custom domain configured in repository
+   Pages settings.
+3. Keep HTTPS enforced after GitHub provisions or renews the certificate.
+4. Run `pnpm hosting:domain:check` to confirm DNS still points to
+   `lamemustafa.github.io`.
+5. Run `pnpm pages:smoke` to confirm the custom-domain URL serves the expected
+   gallery HTML.
+6. Keep `SANCHIKA_PAGES_URL` in `.github/workflows/pages-smoke.yml` pointed at
+   `https://sanchika.complyeaze.com/`. The `github.io` URL remains a useful
+   fallback for debugging direct GitHub Pages hosting, not the canonical public
+   host.
 
 The custom domain is the authoritative Sanchika host. Parent-hosted references
 such as `tools.complyeaze.com/sanchika/` remain mirrors, not the authoritative
