@@ -55,7 +55,12 @@ branches should be pushed only when they are still active and needed for review.
 - Keep `.github/workflows/ci.yml` read-only with `contents: read`.
 - Keep checkout credentials disabled in CI with `persist-credentials: false`.
 - Keep the future publish workflow separate from CI and limited to tag pushes.
-- Do not add `id-token: write` outside the future publish workflow.
+- Keep `id-token: write` out of CI. It is allowed only in the future publish
+  workflow and the Pages deployment workflow.
+- Enable GitHub Pages with GitHub Actions as the source before manually running
+  `.github/workflows/pages.yml`.
+- Do not add the `sanchika.complyeaze.com` custom domain or a `CNAME` file
+  until DNS and GitHub Pages domain verification are ready.
 - Use npm Trusted Publishing for package releases and no long-lived npm publish
   tokens.
 - Add repository topics such as `design-system`, `accessibility`, `typescript`,

@@ -9,6 +9,7 @@ import {
   parseOklch,
 } from "./validation/contrast.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
+import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
 import { expectedGithubLabels } from "./validation/github-labels.mjs";
 import { validatePackageManifest } from "./validation/package-manifests.mjs";
 import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
@@ -153,6 +154,10 @@ if (!existsSync(join(root, "scripts/validation/sensitive-examples.mjs"))) {
 
 if (!existsSync(join(root, "scripts/validation/tarball-contents.mjs"))) {
   fail("tarball contents validator must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/pages-workflow.mjs"))) {
+  fail("Pages workflow validator must exist");
 }
 
 if (!rootPackage.scripts?.verify?.includes("pnpm consumer:check")) {
@@ -360,6 +365,7 @@ const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
 const ciWorkflow = requireText(".github/workflows/ci.yml");
+const pagesWorkflow = requireText(".github/workflows/pages.yml");
 const reviewGateWorkflow = requireText(".github/workflows/review-gate.yml");
 const codeowners = requireText(".github/CODEOWNERS");
 const claudeGuide = requireText("CLAUDE.md");
@@ -374,6 +380,7 @@ const contributingDocs = readText("CONTRIBUTING.md");
 const codeOfConduct = requireText("CODE_OF_CONDUCT.md");
 const supportDocs = requireText("SUPPORT.md");
 const releasePolicy = readText("docs/release-policy.md");
+const hostingDocs = requireText("docs/hosting.md");
 const githubSetupDocs = requireText("docs/github-repository-setup.md");
 const repositorySettingsDocs = requireText("docs/repository-settings.md");
 const packageManifestValidationSource = readText("scripts/validation/package-manifests.mjs");
@@ -813,6 +820,20 @@ for (const [consumerName, docs] of Object.entries(adoptionDocs)) {
 }
 
 validateCiWorkflow({ ciWorkflow, fail });
+validatePagesWorkflow({ pagesWorkflow, fail });
+
+for (const requiredHostingFragment of [
+  "sanchika.complyeaze.com",
+  "GitHub Pages",
+  "pnpm gallery:build",
+  "pnpm gallery:check",
+  "Do not add a `CNAME` file until the domain and DNS are configured",
+  "tools.complyeaze.com/sanchika/",
+]) {
+  if (!normalizeProse(hostingDocs).includes(requiredHostingFragment)) {
+    fail(`docs/hosting.md must include ${requiredHostingFragment}`);
+  }
+}
 
 for (const requiredReviewGateWorkflowFragment of [
   "name: Review findings gate",
@@ -1143,6 +1164,7 @@ for (const requiredGovernanceLink of [
   "SUPPORT.md",
   "docs/github-repository-setup.md",
   "docs/repository-settings.md",
+  "docs/hosting.md",
 ]) {
   if (!readText("README.md").includes(requiredGovernanceLink)) {
     fail(`README.md must link ${requiredGovernanceLink}`);
