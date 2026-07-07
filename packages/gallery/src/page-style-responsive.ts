@@ -2,7 +2,7 @@ export function renderGalleryResponsiveStyles(): string {
   return `
     @media (min-width: 860px) {
       .sk-gallery-hero {
-        grid-template-columns: minmax(0, 0.98fr) minmax(390px, 0.62fr);
+        grid-template-columns: minmax(0, 0.92fr) minmax(420px, 0.68fr);
       }
       .sk-gallery-loop,
       .sk-gallery-matrix,
@@ -38,6 +38,18 @@ export function renderGalleryResponsiveStyles(): string {
         width: min(100% - 24px, 1180px);
         padding-top: var(--sk-space-3);
       }
+      .sk-gallery-masthead {
+        align-items: stretch;
+        flex-direction: column;
+        gap: var(--sk-space-2);
+      }
+      .sk-gallery-nav {
+        justify-content: flex-start;
+      }
+      .sk-gallery-nav a {
+        flex: 1 1 auto;
+        justify-content: center;
+      }
       .sk-gallery-hero {
         min-height: auto;
         gap: var(--sk-space-4);
@@ -62,18 +74,20 @@ export function renderGalleryResponsiveStyles(): string {
       }
       .sk-gallery-proof-strip {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         margin-top: var(--sk-space-3);
       }
-      .sk-gallery-proof-strip li {
-        flex-basis: auto;
-        padding: var(--sk-space-2);
+      .sk-gallery-proof-strip div {
+        border-right: 0;
+        border-bottom: 1px solid oklch(0.16 0.018 230 / 0.12);
+        padding: var(--sk-space-3);
       }
-      .sk-gallery-proof-strip span {
-        font-size: 0.68rem;
+      .sk-gallery-proof-strip div:last-child {
+        border-bottom: 0;
       }
-      .sk-gallery-proof-strip strong {
-        font-size: 0.72rem;
+      .sk-gallery-proof-strip dt,
+      .sk-gallery-proof-strip dd {
+        font-size: var(--sk-font-size-sm);
       }
       .sk-gallery-workbench {
         margin-top: 0;
@@ -83,8 +97,23 @@ export function renderGalleryResponsiveStyles(): string {
       .sk-gallery-disclaimer {
         padding: var(--sk-space-3);
       }
-      .sk-gallery-status-grid {
-        display: none;
+      .sk-gallery-evidence-rail,
+      .sk-gallery-current-evidence {
+        grid-template-columns: 1fr;
+      }
+      .sk-gallery-evidence-rail span,
+      .sk-gallery-current-evidence div,
+      .sk-gallery-current-evidence div:nth-child(2n) {
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid oklch(1 0 0 / 0.1);
+      }
+      .sk-gallery-evidence-rail span:last-child,
+      .sk-gallery-current-evidence div:last-child {
+        border-bottom: 0;
+      }
+      .sk-gallery-current-evidence div:nth-last-child(2) {
+        border-bottom: 1px solid oklch(1 0 0 / 0.1);
       }
       .sk-gallery-claim strong {
         font-size: 1.12rem;

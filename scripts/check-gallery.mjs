@@ -18,10 +18,17 @@ for (const path of [indexPath, themePath, primitivesPath]) {
 const html = existsSync(indexPath) ? readFileSync(indexPath, "utf8") : "";
 for (const required of [
   "<!doctype html>",
+  "<title>Sanchika | Design evidence system</title>",
+  '<meta name="description"',
+  '<link rel="canonical" href="https://sanchika.complyeaze.com/">',
+  '<meta property="og:title" content="Sanchika | Design evidence system">',
   '<link rel="stylesheet" href="assets/theme.css">',
   '<link rel="stylesheet" href="assets/primitives.css">',
   'data-sanchika-gallery-document="primitive"',
   'data-sanchika-gallery="primitive"',
+  "Interfaces that survive compliance review.",
+  "Current public evidence ledger",
+  "Use Sanchika as evidence, not authority.",
   "Pattern state exemplars",
 ]) {
   if (!html.includes(required)) {

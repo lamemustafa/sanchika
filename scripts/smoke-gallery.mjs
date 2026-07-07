@@ -19,10 +19,15 @@ const tokenDocs = readFileSync(new URL("../docs/tokens.md", import.meta.url), "u
 
 const requiredFragments = [
   'data-sanchika-gallery="primitive"',
+  "Interfaces that survive compliance review.",
   "A design system that can defend itself.",
   "From prompt to proof without losing the boundary.",
   "Browser evidence",
   "Adoption decision",
+  "Current public evidence ledger",
+  "Accessibility evidence",
+  "Consumer adoption",
+  "Use Sanchika as evidence, not authority.",
   `${Object.keys(colorTokens).length} color roles`,
   "Button",
   "Field",
@@ -42,7 +47,10 @@ const requiredFragments = [
 
 const requiredDocumentFragments = [
   "<!doctype html>",
-  "<title>Sanchika Primitive Gallery</title>",
+  "<title>Sanchika | Design evidence system</title>",
+  '<meta name="description"',
+  '<link rel="canonical" href="https://sanchika.complyeaze.com/">',
+  "https://sanchika.complyeaze.com/",
   '<link rel="stylesheet" href="@sanchika/tokens/theme.css">',
   '<link rel="stylesheet" href="@sanchika/primitives/styles.css">',
   'data-sanchika-gallery-document="primitive"',

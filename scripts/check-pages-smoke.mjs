@@ -7,13 +7,16 @@ const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
 const requiredFragments = [
   '<html lang="en" data-sanchika-gallery-document="primitive">',
-  "<title>Sanchika Primitive Gallery</title>",
+  "<title>Sanchika | Design evidence system</title>",
+  '<meta name="description"',
+  '<link rel="canonical" href="https://sanchika.complyeaze.com/">',
   "data-sanchika-gallery=\"primitive\"",
   "data-sk-synthetic-disclaimer",
-  "Interfaces are not accepted until the evidence survives.",
-  "Evidence workbench",
-  "Package contracts are visible. Product readiness still requires consumer evidence.",
-  "Static HTML, CSS, and package contracts only",
+  "Interfaces that survive compliance review.",
+  "A design system that can defend itself.",
+  "Current public evidence ledger",
+  "Static HTML, CSS, and package contracts",
+  "Use Sanchika as evidence, not authority.",
   "assets/theme.css",
   "assets/primitives.css",
 ];
@@ -22,6 +25,7 @@ const staleFragments = [
   "<h1 id=\"gallery-title\">Sanchika Primitive Gallery</h1>",
   "<p class=\"sk-gallery-section-kicker\">Harness loop</p>",
   "11 color roles loaded.",
+  "Package contracts are visible. Product readiness still requires consumer evidence.",
 ];
 
 try {
