@@ -7,6 +7,7 @@ import {
   renderGalleryHero,
   renderHarnessLoop,
   renderPrimitiveMatrix,
+  renderProductFamilySignal,
 } from "./page-sections.js";
 import { renderGalleryPageStyles } from "./page-styles.js";
 
@@ -96,6 +97,7 @@ export function renderPrimitiveGalleryMarkup(): string {
       primaryButtonClass: primitiveClassName("Button", "brand", "md"),
       secondaryButtonClass: primitiveClassName("Button", "neutral", "md"),
     })}
+    ${renderProductFamilySignal()}
     ${renderEvidenceJourney()}
     ${renderHarnessLoop()}
     ${renderPrimitiveMatrix()}

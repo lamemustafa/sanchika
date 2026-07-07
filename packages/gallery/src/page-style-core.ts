@@ -341,6 +341,37 @@ export function renderGalleryWorkbenchStyles(): string {
       font-size: var(--sk-font-size-sm);
       line-height: var(--sk-line-height-tight);
     }
+    .sk-gallery-current-evidence code,
+    .sk-gallery-current-evidence small,
+    .sk-gallery-current-evidence p {
+      display: block;
+      margin-top: var(--sk-space-2);
+    }
+    .sk-gallery-current-evidence code {
+      width: fit-content;
+      max-width: 100%;
+      border: 1px solid oklch(1 0 0 / 0.14);
+      border-radius: 6px;
+      padding: 0.18rem var(--sk-space-1);
+      background: oklch(1 0 0 / 0.08);
+      color: oklch(0.91 0.12 86);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      line-height: 1.25;
+      white-space: normal;
+    }
+    .sk-gallery-current-evidence small {
+      color: oklch(0.78 0.1 174);
+      font-size: 0.72rem;
+      font-weight: var(--sk-font-weight-semibold);
+      line-height: 1.3;
+    }
+    .sk-gallery-current-evidence p {
+      margin-bottom: 0;
+      color: oklch(0.78 0.015 220);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
     .sk-gallery-current-evidence [data-sk-evidence-state="pass"] span,
     .sk-gallery-current-evidence [data-sk-evidence-state="recorded"] span {
       background: oklch(0.78 0.12 160 / 0.18);
