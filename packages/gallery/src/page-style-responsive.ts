@@ -2,7 +2,7 @@ export function renderGalleryResponsiveStyles(): string {
   return `
     @media (min-width: 860px) {
       .sk-gallery-hero {
-        grid-template-columns: minmax(0, 0.92fr) minmax(420px, 0.7fr);
+        grid-template-columns: minmax(0, 0.98fr) minmax(390px, 0.62fr);
       }
       .sk-gallery-loop,
       .sk-gallery-matrix,
@@ -40,19 +40,54 @@ export function renderGalleryResponsiveStyles(): string {
       }
       .sk-gallery-hero {
         min-height: auto;
-        padding: var(--sk-space-4);
+        gap: var(--sk-space-4);
+        padding: var(--sk-space-3);
       }
       .sk-gallery-hero h1 {
-        font-size: clamp(2.2rem, 12vw, 3rem);
+        font-size: clamp(2rem, 10.5vw, 2.75rem);
+        line-height: 1;
+      }
+      .sk-gallery-eyebrow {
+        margin-bottom: var(--sk-space-3);
+        font-size: var(--sk-font-size-sm);
+      }
+      .sk-gallery-lede {
+        margin-top: var(--sk-space-3);
+        font-size: var(--sk-font-size-md);
+        line-height: 1.5;
+      }
+      .sk-gallery-actions,
+      .sk-gallery-control-row {
+        margin-top: var(--sk-space-3);
+      }
+      .sk-gallery-proof-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: var(--sk-space-3);
+      }
+      .sk-gallery-proof-strip li {
+        flex-basis: auto;
+        padding: var(--sk-space-2);
+      }
+      .sk-gallery-proof-strip span {
+        font-size: 0.68rem;
+      }
+      .sk-gallery-proof-strip strong {
+        font-size: 0.72rem;
       }
       .sk-gallery-workbench {
-        margin-top: var(--sk-space-4);
+        margin-top: 0;
+      }
+      .sk-gallery-workbench-bar,
+      .sk-gallery-claim,
+      .sk-gallery-disclaimer {
+        padding: var(--sk-space-3);
       }
       .sk-gallery-status-grid {
         display: none;
       }
       .sk-gallery-claim strong {
-        font-size: 1.25rem;
+        font-size: 1.12rem;
       }
       .sk-gallery-disclaimer {
         padding: var(--sk-space-3);
