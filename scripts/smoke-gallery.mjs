@@ -19,8 +19,8 @@ const tokenDocs = readFileSync(new URL("../docs/tokens.md", import.meta.url), "u
 
 const requiredFragments = [
   'data-sanchika-gallery="primitive"',
-  "Sanchika Primitive Gallery",
-  `${Object.keys(colorTokens).length} color roles loaded.`,
+  "Interfaces are not accepted until the evidence survives.",
+  `${Object.keys(colorTokens).length} color roles`,
   "Button",
   "Field",
   'class="sk-button sk-tone-brand sk-size-md"',
