@@ -2,18 +2,31 @@ export function renderGallerySectionStyles(): string {
   return `
     .sk-gallery-loop,
     .sk-gallery-matrix,
+    .sk-gallery-proof,
     .sk-gallery-section {
       margin-top: var(--sk-space-6);
     }
     .sk-gallery-loop,
-    .sk-gallery-matrix {
+    .sk-gallery-matrix,
+    .sk-gallery-proof {
       display: grid;
       gap: var(--sk-space-5);
       border-top: 1px solid oklch(0.18 0.024 230 / 0.2);
       padding-top: var(--sk-space-6);
     }
+    .sk-gallery-kicker {
+      display: inline-flex;
+      margin: 0 0 var(--sk-space-3);
+      border: 1px solid oklch(0.34 0.067 165 / 0.25);
+      border-radius: var(--sk-radius-control);
+      padding: var(--sk-space-1) var(--sk-space-2);
+      color: oklch(0.31 0.066 165);
+      font-size: var(--sk-font-size-sm);
+      font-weight: var(--sk-font-weight-semibold);
+    }
     .sk-gallery-loop h2,
     .sk-gallery-matrix h2,
+    .sk-gallery-proof h2,
     .sk-gallery-section h2 {
       margin: 0;
       color: oklch(0.18 0.024 230);
@@ -23,11 +36,53 @@ export function renderGallerySectionStyles(): string {
       text-wrap: balance;
     }
     .sk-gallery-loop p,
-    .sk-gallery-matrix p {
+    .sk-gallery-matrix p,
+    .sk-gallery-proof-copy p {
       max-width: 720px;
       margin: var(--sk-space-3) 0 0;
       color: oklch(0.38 0.022 230);
       line-height: 1.65;
+    }
+    .sk-gallery-proof-board {
+      display: grid;
+      overflow: hidden;
+      border: 1px solid oklch(0.18 0.024 230 / 0.16);
+      border-radius: 14px;
+      background:
+        linear-gradient(135deg, oklch(0.18 0.03 170), oklch(0.16 0.035 230) 58%, oklch(0.25 0.06 36));
+      color: oklch(0.98 0.012 85);
+    }
+    .sk-gallery-proof-board article {
+      min-height: 190px;
+      border-bottom: 1px solid oklch(0.96 0.018 85 / 0.14);
+      padding: var(--sk-space-4);
+    }
+    .sk-gallery-proof-board article:last-child {
+      border-bottom: 0;
+    }
+    .sk-gallery-proof-board span {
+      display: inline-flex;
+      border-radius: var(--sk-radius-control);
+      background: oklch(0.83 0.16 82 / 0.12);
+      padding: var(--sk-space-1) var(--sk-space-2);
+      color: oklch(0.91 0.11 82);
+      font-size: var(--sk-font-size-sm);
+      font-weight: var(--sk-font-weight-semibold);
+    }
+    .sk-gallery-proof-board strong {
+      display: block;
+      margin-top: var(--sk-space-3);
+      max-width: 22rem;
+      color: white;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+    }
+    .sk-gallery-proof-board p {
+      max-width: 31rem;
+      margin: var(--sk-space-3) 0 0;
+      color: oklch(0.84 0.025 165);
+      line-height: 1.6;
     }
     .sk-gallery-loop ol,
     .sk-gallery-matrix-grid {

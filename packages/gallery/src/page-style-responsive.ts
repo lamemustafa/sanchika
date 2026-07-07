@@ -5,8 +5,18 @@ export function renderGalleryResponsiveStyles(): string {
         grid-template-columns: minmax(0, 0.92fr) minmax(420px, 0.7fr);
       }
       .sk-gallery-loop,
-      .sk-gallery-matrix {
+      .sk-gallery-matrix,
+      .sk-gallery-proof {
         grid-template-columns: minmax(0, 0.75fr) minmax(420px, 1fr);
+      }
+      .sk-gallery-proof-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .sk-gallery-proof-board article:nth-child(odd) {
+        border-right: 1px solid oklch(0.96 0.018 85 / 0.14);
+      }
+      .sk-gallery-proof-board article:nth-last-child(-n + 2) {
+        border-bottom: 0;
       }
       .sk-gallery-loop ol,
       .sk-gallery-matrix-grid,
@@ -49,8 +59,13 @@ export function renderGalleryResponsiveStyles(): string {
       }
       .sk-gallery-section,
       .sk-gallery-loop,
-      .sk-gallery-matrix {
+      .sk-gallery-matrix,
+      .sk-gallery-proof {
         padding-top: var(--sk-space-5);
+      }
+      .sk-gallery-proof-board article {
+        min-height: auto;
+        padding: var(--sk-space-3);
       }
       .sk-gallery-contract-body,
       .sk-gallery-contract summary,

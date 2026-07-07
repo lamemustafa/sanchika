@@ -1,7 +1,7 @@
 import { colorTokens } from "@sanchika/tokens";
 import { primitiveClassName, primitiveSpecs } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
-import { renderGalleryHero, renderHarnessLoop, renderPrimitiveMatrix } from "./page-sections.js";
+import { renderEvidenceJourney, renderGalleryHero, renderHarnessLoop, renderPrimitiveMatrix } from "./page-sections.js";
 import { renderGalleryPageStyles } from "./page-styles.js";
 
 export const primitiveGalleryCssImports = ["@sanchika/tokens/theme.css", "@sanchika/primitives/styles.css"] as const;
@@ -90,6 +90,7 @@ export function renderPrimitiveGalleryMarkup(): string {
       primaryButtonClass: primitiveClassName("Button", "brand", "md"),
       secondaryButtonClass: primitiveClassName("Button", "neutral", "md"),
     })}
+    ${renderEvidenceJourney()}
     ${renderHarnessLoop()}
     ${renderPrimitiveMatrix()}
     <section class="sk-gallery-section" aria-labelledby="primitive-contracts"><h2 id="primitive-contracts">Primitive contracts</h2>${primitiveContracts}</section>

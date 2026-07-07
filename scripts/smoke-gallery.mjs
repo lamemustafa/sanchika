@@ -19,7 +19,10 @@ const tokenDocs = readFileSync(new URL("../docs/tokens.md", import.meta.url), "u
 
 const requiredFragments = [
   'data-sanchika-gallery="primitive"',
-  "Interfaces are not accepted until the evidence survives.",
+  "A design system that can defend itself.",
+  "From prompt to proof without losing the boundary.",
+  "Browser evidence",
+  "Adoption decision",
   `${Object.keys(colorTokens).length} color roles`,
   "Button",
   "Field",

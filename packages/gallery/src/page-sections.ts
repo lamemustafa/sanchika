@@ -10,8 +10,8 @@ export function renderGalleryHero({
   return `<section class="sk-gallery-hero" aria-labelledby="gallery-title">
     <div class="sk-gallery-hero-copy">
       <p class="sk-gallery-eyebrow">Live design harness</p>
-      <h1 id="gallery-title">Interfaces are not accepted until the evidence survives.</h1>
-      <p class="sk-gallery-lede">Sanchika is the source-reviewable proof surface for compliance UI: tokens, primitive states, pattern contracts, and browser-visible trust boundaries in one static artifact.</p>
+      <h1 id="gallery-title">A design system that can defend itself.</h1>
+      <p class="sk-gallery-lede">Sanchika turns an AI-generated interface from a pretty guess into a reviewable artifact: brief, contract, browser evidence, and adoption decision, all visible before a consumer trusts it.</p>
       <div class="sk-gallery-actions" aria-label="Primary gallery actions">
         <a class="${primaryButtonClass}" href="#primitive-contracts">Inspect contracts</a>
         <a class="${secondaryButtonClass}" href="#pattern-contracts">Review patterns</a>
@@ -24,7 +24,7 @@ export function renderGalleryHero({
       </div>
       <div class="sk-gallery-claim">
         <span>Current truth</span>
-        <strong>Package contracts are visible. Product readiness still requires consumer evidence.</strong>
+        <strong>The gallery proves package behavior. Product readiness still requires browser and consumer evidence.</strong>
       </div>
       <dl class="sk-gallery-status-grid">
         <div><dt>Live host</dt><dd>sanchika.complyeaze.com</dd></div>
@@ -33,6 +33,38 @@ export function renderGalleryHero({
       </dl>
       <p class="sk-gallery-disclaimer" data-sk-synthetic-disclaimer>All gallery examples are synthetic and must not be treated as taxpayer, portal, filing, or client data.</p>
     </aside>
+  </section>`;
+}
+
+export function renderEvidenceJourney(): string {
+  return `<section class="sk-gallery-proof" aria-labelledby="gallery-proof-title">
+    <div class="sk-gallery-proof-copy">
+      <p class="sk-gallery-kicker">AI-native loop</p>
+      <h2 id="gallery-proof-title">From prompt to proof without losing the boundary.</h2>
+      <p>Each candidate surface must carry its intent, constraints, rendered state, and rollback path. Sanchika should make generated UI feel crafted without pretending the generator is a compliance authority.</p>
+    </div>
+    <div class="sk-gallery-proof-board" aria-label="Sanchika proof journey">
+      <article>
+        <span>TrustBrief</span>
+        <strong>What may this surface claim?</strong>
+        <p>Names the decision, source boundary, non-goals, selected patterns, and verification gates.</p>
+      </article>
+      <article>
+        <span>DesignBrief</span>
+        <strong>What should the first viewport prove?</strong>
+        <p>Defines emotional intent, narrative arc, responsive constraints, interaction states, and visual gates.</p>
+      </article>
+      <article>
+        <span>Browser evidence</span>
+        <strong>What did the page actually render?</strong>
+        <p>Desktop and mobile captures become acceptance evidence, not a post-hoc screenshot dump.</p>
+      </article>
+      <article>
+        <span>Adoption decision</span>
+        <strong>What changed after review?</strong>
+        <p>Consumer evidence records adopted files, rollback path, residual risks, and a ready-or-blocked decision.</p>
+      </article>
+    </div>
   </section>`;
 }
 
