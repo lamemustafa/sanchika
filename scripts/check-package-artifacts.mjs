@@ -115,6 +115,12 @@ function expectedPackageFiles(manifest) {
     for (const helperFile of [
       "dist/page-sections.d.ts",
       "dist/page-sections.js",
+      "dist/page-style-content.d.ts",
+      "dist/page-style-content.js",
+      "dist/page-style-core.d.ts",
+      "dist/page-style-core.js",
+      "dist/page-style-responsive.d.ts",
+      "dist/page-style-responsive.js",
       "dist/page-styles.d.ts",
       "dist/page-styles.js",
     ]) {
