@@ -106,6 +106,10 @@ if (rootPackage.scripts?.["design:brief:fixtures"] !== "node scripts/validation/
   fail("root package must expose design:brief:fixtures for design-brief runtime regression checks");
 }
 
+if (rootPackage.scripts?.["evidence:loop:fixtures"] !== "node scripts/validation/evidence-loop-fixtures.mjs") {
+  fail("root package must expose evidence:loop:fixtures for evidence-loop runtime regression checks");
+}
+
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
 }
@@ -140,6 +144,10 @@ if (!existsSync(join(root, "scripts/validation/trust-brief-fixtures.mjs"))) {
 
 if (!existsSync(join(root, "scripts/validation/design-brief-fixtures.mjs"))) {
   fail("design brief fixture validator must exist");
+}
+
+if (!existsSync(join(root, "scripts/validation/evidence-loop-fixtures.mjs"))) {
+  fail("evidence loop fixture validator must exist");
 }
 
 if (!existsSync(join(root, "scripts/sync-review-gate-status.mjs"))) {
@@ -218,6 +226,10 @@ if (!rootPackage.scripts?.verify?.includes("pnpm design:brief:fixtures")) {
   fail("root verify script must run design:brief:fixtures");
 }
 
+if (!rootPackage.scripts?.verify?.includes("pnpm evidence:loop:fixtures")) {
+  fail("root verify script must run evidence:loop:fixtures");
+}
+
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
   fail("root package must expose typecheck:api for package API declaration proof");
 }
@@ -241,6 +253,11 @@ if (buildIndex === -1 || buildIndex > trustBriefFixturesIndex) {
 const designBriefFixturesIndex = verifyScript.indexOf("pnpm design:brief:fixtures");
 if (buildIndex === -1 || buildIndex > designBriefFixturesIndex) {
   fail("root verify script must run design:brief:fixtures after build");
+}
+
+const evidenceLoopFixturesIndex = verifyScript.indexOf("pnpm evidence:loop:fixtures");
+if (buildIndex === -1 || buildIndex > evidenceLoopFixturesIndex) {
+  fail("root verify script must run evidence:loop:fixtures after build");
 }
 
 if (!existsSync(join(root, "scripts/check-package-api-types.mjs")) || !existsSync(join(root, "type-tests/package-api.ts"))) {
@@ -280,6 +297,7 @@ for (const [scriptPath, commandName] of [
   ["scripts/check-local-link-consumer.mjs", "pnpm consumer:check"],
   ["scripts/check-packed-tarball-consumer.mjs", "pnpm publish:tarball-check"],
   ["scripts/validation/trust-brief-fixtures.mjs", "pnpm trust:brief:fixtures"],
+  ["scripts/validation/evidence-loop-fixtures.mjs", "pnpm evidence:loop:fixtures"],
 ]) {
   const scriptSource = requireText(scriptPath);
   if (!scriptSource.includes("assertBuiltPackageArtifacts")) {
@@ -574,6 +592,12 @@ for (const patternTypeExport of [
   "DesignBrief",
   "DesignBriefValidationIssue",
   "validateDesignBrief",
+  "EvidenceLoop",
+  "EvidenceLoopAdoptionEvidence",
+  "EvidenceLoopDecision",
+  "EvidenceLoopRenderEvidence",
+  "EvidenceLoopValidationIssue",
+  "validateEvidenceLoop",
 ]) {
   if (!patternSource.includes(patternTypeExport)) {
     fail(`pattern package must export ${patternTypeExport}`);

@@ -20,10 +20,15 @@ import type {
   PatternStateRequiredSlotNameFor,
   DesignBrief,
   DesignBriefValidationIssue,
+  EvidenceLoop,
+  EvidenceLoopAdoptionEvidence,
+  EvidenceLoopDecision,
+  EvidenceLoopRenderEvidence,
+  EvidenceLoopValidationIssue,
   TrustBrief,
   TrustBriefValidationIssue,
 } from "@sanchika/patterns";
-import { validateDesignBrief, validateTrustBrief } from "@sanchika/patterns";
+import { validateDesignBrief, validateEvidenceLoop, validateTrustBrief } from "@sanchika/patterns";
 import {
   primitiveGalleryCssImports,
   renderOpenablePrimitiveGalleryDocument,
@@ -93,6 +98,43 @@ const packDesignBrief: DesignBrief = {
   nonGoals: ["No upload", "No credential handoff", "No telemetry", "No portal automation", "No backend upload"],
 };
 const packDesignBriefIssues: readonly DesignBriefValidationIssue[] = validateDesignBrief(packDesignBrief);
+const packRenderEvidence: EvidenceLoopRenderEvidence = {
+  type: "desktop-screenshot",
+  artifact: "artifacts/pack-local-download-proof-desktop.png",
+  finding: "Desktop render keeps local-only proof visible before export.",
+};
+const packAdoptionEvidence: EvidenceLoopAdoptionEvidence = {
+  consumerRepo: "lamemustafa/complyeaze-pack",
+  consumerSurface: "Pack local download proof",
+  status: "verified",
+  changedFiles: ["src/popup/proof-panel.tsx"],
+  verificationRun: "pnpm verify",
+  rollbackPlan: "Revert the proof-panel consumer PR.",
+};
+const packEvidenceLoopDecision: EvidenceLoopDecision = "ready-for-consumer-pr";
+const packEvidenceLoop: EvidenceLoop = {
+  id: "pack-local-download-proof-loop",
+  trustBrief: packTrustBrief,
+  designBrief: packDesignBrief,
+  renderEvidence: [
+    packRenderEvidence,
+    {
+      type: "mobile-screenshot",
+      artifact: "artifacts/pack-local-download-proof-mobile.png",
+      finding: "Mobile render keeps no-upload and no-credential-handoff copy before export.",
+    },
+    {
+      type: "accessibility-note",
+      artifact: "artifacts/pack-local-download-proof-a11y.md",
+      finding: "Accessibility review covered focus order, accessible names, and non-color-only status.",
+    },
+  ],
+  adoptionEvidence: packAdoptionEvidence,
+  decision: packEvidenceLoopDecision,
+  residualRisks: ["Browser extension screenshots should be repeated when the Chrome Web Store package changes."],
+  nextActions: ["Open the Pack consumer PR with this evidence loop."],
+};
+const packEvidenceLoopIssues: readonly EvidenceLoopValidationIssue[] = validateEvidenceLoop(packEvidenceLoop);
 const galleryCssImport: "@sanchika/tokens/theme.css" = primitiveGalleryCssImports[0];
 const galleryDocument: string = renderPrimitiveGalleryDocument();
 const openableGalleryDocument: string = renderOpenablePrimitiveGalleryDocument();
@@ -119,6 +161,11 @@ void packTrustBrief;
 void packTrustBriefIssues;
 void packDesignBrief;
 void packDesignBriefIssues;
+void packRenderEvidence;
+void packAdoptionEvidence;
+void packEvidenceLoopDecision;
+void packEvidenceLoop;
+void packEvidenceLoopIssues;
 void galleryCssImport;
 void galleryDocument;
 void openableGalleryDocument;

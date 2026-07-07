@@ -1,3 +1,13 @@
+import { validateEvidenceLoopWithValidators } from "./evidence-loop.js";
+import type { EvidenceLoop, EvidenceLoopValidationIssue } from "./evidence-loop.js";
+export type {
+  EvidenceLoop,
+  EvidenceLoopAdoptionEvidence,
+  EvidenceLoopDecision,
+  EvidenceLoopRenderEvidence,
+  EvidenceLoopValidationIssue,
+} from "./evidence-loop.js";
+
 export type ConsumerMode =
   | "complyeaze/core"
   | "axal/workspace"
@@ -526,6 +536,10 @@ export function validateDesignBrief(brief: DesignBrief): readonly DesignBriefVal
   }
 
   return issues;
+}
+
+export function validateEvidenceLoop(loop: EvidenceLoop): readonly EvidenceLoopValidationIssue[] {
+  return validateEvidenceLoopWithValidators(loop, validateTrustBrief, validateDesignBrief);
 }
 
 function requireText(
