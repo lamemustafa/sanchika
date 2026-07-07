@@ -6,10 +6,10 @@ backend, account system, telemetry, database, or consumer app runtime.
 ## GitHub Pages
 
 `.github/workflows/pages.yml` deploys the openable gallery artifact from
-`dist/gallery` to GitHub Pages when a maintainer runs `workflow_dispatch` from
-`master`. Manual runs from non-`master` refs are ignored by the deploy job.
-Automatic `master` deployment should be added only after GitHub Pages is enabled
-and the first manual deploy succeeds.
+`dist/gallery` to GitHub Pages from `master`. It runs automatically on scoped
+`master` pushes that can affect the gallery artifact, and it can still be run
+manually with `workflow_dispatch`. Manual runs from non-`master` refs are
+ignored by the deploy job.
 
 The workflow:
 
@@ -22,8 +22,8 @@ The workflow:
 
 All action references are pinned to full commit SHAs. The workflow requests only
 the permissions needed for Pages deployment: `contents: read`, `pages: write`,
-and `id-token: write`. It is manual-only, deploys only from `master`, does not
-run on pull requests, and does not publish npm packages.
+and `id-token: write`. It deploys only from `master`, does not run on pull
+requests, and does not publish npm packages.
 
 ## Pages Smoke Check
 
@@ -31,9 +31,9 @@ run on pull requests, and does not publish npm packages.
 `workflow_dispatch`. It is read-only, runs only from `master`, and executes
 `node scripts/check-pages-smoke.mjs` to confirm
 `https://sanchika.complyeaze.com/` returns the expected Sanchika Primitive
-Gallery HTML. The same check is available locally as
-`pnpm pages:smoke`. It does not build, deploy, upload artifacts, or publish
-packages.
+Gallery HTML, including the current evidence-workbench hero. The same check is
+available locally as `pnpm pages:smoke`. It does not build, deploy, upload
+artifacts, or publish packages.
 
 ## Custom Domain
 
