@@ -10,8 +10,18 @@ const requiredFragments = [
   "<title>Sanchika Primitive Gallery</title>",
   "data-sanchika-gallery=\"primitive\"",
   "data-sk-synthetic-disclaimer",
+  "Interfaces are not accepted until the evidence survives.",
+  "Evidence workbench",
+  "Package contracts are visible. Product readiness still requires consumer evidence.",
+  "Static HTML, CSS, and package contracts only",
   "assets/theme.css",
   "assets/primitives.css",
+];
+
+const staleFragments = [
+  "<h1 id=\"gallery-title\">Sanchika Primitive Gallery</h1>",
+  "<p class=\"sk-gallery-section-kicker\">Harness loop</p>",
+  "11 color roles loaded.",
 ];
 
 try {
@@ -35,6 +45,11 @@ try {
   const missingFragments = requiredFragments.filter((fragment) => !body.includes(fragment));
   if (missingFragments.length > 0) {
     throw new Error(`Sanchika Pages response is missing fragments: ${missingFragments.join(", ")}`);
+  }
+
+  const staleMatches = staleFragments.filter((fragment) => body.includes(fragment));
+  if (staleMatches.length > 0) {
+    throw new Error(`Sanchika Pages response still contains stale fragments: ${staleMatches.join(", ")}`);
   }
 
   console.log(`Sanchika Pages smoke check passed for ${targetUrl}`);

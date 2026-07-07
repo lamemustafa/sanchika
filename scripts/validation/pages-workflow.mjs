@@ -8,6 +8,13 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
   for (const requiredFragment of [
     "name: Pages",
     "workflow_dispatch:",
+    "push:",
+    "branches:",
+    "- master",
+    "paths:",
+    "- \".github/workflows/pages.yml\"",
+    "- \"packages/**\"",
+    "- \"scripts/**\"",
     "contents: read",
     "pages: write",
     "id-token: write",
@@ -28,7 +35,6 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
   }
 
   for (const forbiddenTrigger of [
-    "push:",
     "pull_request:",
     "pull_request_target:",
     "schedule:",
@@ -49,8 +55,8 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
     }
   }
 
-  if (!activeWorkflow.includes("workflow_dispatch:")) {
-    fail("Pages workflow must be manual-only through workflow_dispatch");
+  if (!activeWorkflow.includes("workflow_dispatch:") || !activeWorkflow.includes("push:")) {
+    fail("Pages workflow must support manual dispatch and scoped master push deployment");
   }
 
   const pinnedActions = {
