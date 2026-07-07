@@ -7,12 +7,69 @@ export function renderGalleryHero({
   primaryButtonClass: string;
   secondaryButtonClass: string;
 }): string {
+  const evidenceLedger = [
+    {
+      state: "pass",
+      label: "Package build",
+      command: "pnpm build",
+      source: "packages/*/dist",
+      detail: "Compiled package artifacts are required before the gallery can render.",
+    },
+    {
+      state: "pass",
+      label: "Artifact check",
+      command: "pnpm gallery:check",
+      source: "dist/gallery/index.html",
+      detail: "The openable static artifact must include token CSS, primitive CSS, and public metadata.",
+    },
+    {
+      state: "pass",
+      label: "Pages smoke",
+      command: "pnpm pages:smoke",
+      source: "sanchika.complyeaze.com",
+      detail: "The deployed page must expose the current evidence, adoption map, and synthetic-data boundary.",
+    },
+    {
+      state: "limited",
+      label: "Accessibility evidence",
+      command: "manual browser pass",
+      source: "docs/accessibility.md",
+      detail: "WCAG/APG contracts exist; automated browser accessibility evidence is still limited.",
+    },
+    {
+      state: "limited",
+      label: "Consumer adoption",
+      command: "pnpm consumer:check",
+      source: "docs/adoption-complyeaze.md",
+      detail: "ComplyEaze adoption remains the proof gate before broad rollout claims.",
+    },
+    {
+      state: "recorded",
+      label: "Rollback path",
+      command: "docs/release-policy.md",
+      source: "GitHub Pages artifact",
+      detail: "Rollback remains a static artifact and repository release decision, not runtime migration.",
+    },
+  ];
+  const evidenceCards = evidenceLedger
+    .map(
+      (item) => `<div data-sk-evidence-state="${escapeHtml(item.state)}">
+        <span>${escapeHtml(titleCase(item.state))}</span>
+        <strong>${escapeHtml(item.label)}</strong>
+        <code>${escapeHtml(item.command)}</code>
+        <small>${escapeHtml(item.source)}</small>
+        <p>${escapeHtml(item.detail)}</p>
+      </div>`,
+    )
+    .join("");
+
   return `<header class="sk-gallery-masthead" aria-label="Sanchika site navigation">
     <a class="sk-gallery-wordmark" href="#gallery-title" aria-label="Sanchika home">
       <span class="sk-gallery-mark" aria-hidden="true">S</span>
       <span><strong>Sanchika</strong><small>Design evidence system</small></span>
     </a>
     <nav class="sk-gallery-nav" aria-label="Gallery sections">
+      <a href="#gallery-family-title">Adoption map</a>
       <a href="#evidence-loop">Evidence loop</a>
       <a href="#primitive-contracts">Primitives</a>
       <a href="#pattern-contracts">Patterns</a>
@@ -55,12 +112,7 @@ export function renderGalleryHero({
         <div><dt>Consumer path</dt><dd>Adopt only after real product evidence</dd></div>
       </dl>
       <div class="sk-gallery-current-evidence" aria-label="Current public evidence ledger">
-        <div data-sk-evidence-state="pass"><span>Pass</span><strong>Package build</strong></div>
-        <div data-sk-evidence-state="pass"><span>Pass</span><strong>Artifact check</strong></div>
-        <div data-sk-evidence-state="pass"><span>Pass</span><strong>Pages smoke</strong></div>
-        <div data-sk-evidence-state="limited"><span>Limited</span><strong>Accessibility evidence</strong></div>
-        <div data-sk-evidence-state="limited"><span>Limited</span><strong>Consumer adoption</strong></div>
-        <div data-sk-evidence-state="recorded"><span>Recorded</span><strong>Rollback path</strong></div>
+        ${evidenceCards}
       </div>
       <p class="sk-gallery-disclaimer" data-sk-synthetic-disclaimer>All gallery examples are synthetic and must not be treated as taxpayer, portal, filing, or client data.</p>
     </aside>
@@ -94,6 +146,66 @@ export function renderEvidenceJourney(): string {
         <strong>What changed after review?</strong>
         <p>Consumer evidence records adopted files, rollback path, residual risks, and a ready-or-blocked decision.</p>
       </article>
+    </div>
+  </section>`;
+}
+
+export function renderProductFamilySignal(): string {
+  const products = [
+    {
+      name: "ComplyEaze",
+      mode: "Core advisory surface",
+      status: "First consumer",
+      boundary: "Service-led pages and product proof before broad rollout.",
+      action: "Read adoption proof plan",
+      href: "https://github.com/lamemustafa/sanchika/blob/master/docs/adoption-complyeaze.md",
+    },
+    {
+      name: "Axal",
+      mode: "Workspace operations",
+      status: "Next consumer",
+      boundary: "Role-aware evidence desks, saved client context, audit trail.",
+      action: "Inspect Axal adoption path",
+      href: "https://github.com/lamemustafa/sanchika/blob/master/docs/adoption-axal.md",
+    },
+    {
+      name: "Pack",
+      mode: "Local utility",
+      status: "Planned consumer",
+      boundary: "Browser-extension UI without taxpayer upload or account assumptions.",
+      action: "Inspect Pack boundary",
+      href: "https://github.com/lamemustafa/sanchika/blob/master/docs/adoption-pack.md",
+    },
+    {
+      name: "Tools",
+      mode: "Browser-local drafts",
+      status: "Later consumer",
+      boundary: "Fast utilities with source-backed outputs and no backend promise.",
+      action: "Inspect Tools boundary",
+      href: "https://github.com/lamemustafa/sanchika/blob/master/docs/adoption-tools.md",
+    },
+  ];
+
+  const productCards = products
+    .map(
+      (product) => `<article>
+        <span>${escapeHtml(product.status)}</span>
+        <strong>${escapeHtml(product.name)}</strong>
+        <p>${escapeHtml(product.mode)}</p>
+        <small>${escapeHtml(product.boundary)}</small>
+        <a href="${escapeHtml(product.href)}">${escapeHtml(product.action)}</a>
+      </article>`,
+    )
+    .join("");
+
+  return `<section class="sk-gallery-family" aria-labelledby="gallery-family-title">
+    <div class="sk-gallery-family-copy">
+      <p class="sk-gallery-kicker">Adoption map</p>
+      <h2 id="gallery-family-title">One design language, different trust boundaries.</h2>
+      <p>Sanchika should not flatten every ComplyEaze product into the same look. It gives each surface a shared evidence spine while preserving its own identity, data boundary, and readiness state.</p>
+    </div>
+    <div class="sk-gallery-family-board" aria-label="Sanchika product adoption map">
+      ${productCards}
     </div>
   </section>`;
 }
@@ -141,4 +253,16 @@ export function renderGalleryFooter(): string {
       <a href="https://github.com/lamemustafa/sanchika/blob/master/LICENSE.brand.md">Brand notice</a>
     </nav>
   </footer>`;
+}
+
+function titleCase(value: string): string {
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
