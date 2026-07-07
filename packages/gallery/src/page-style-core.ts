@@ -31,15 +31,24 @@ export function renderGalleryHeroStyles(): string {
       border-radius: 18px;
       padding: clamp(1.25rem, 4vw, 3rem);
       background:
-        radial-gradient(circle at 18% 18%, oklch(0.78 0.15 80 / 0.24), transparent 28%),
-        radial-gradient(circle at 82% 12%, oklch(0.65 0.12 168 / 0.22), transparent 24%),
-        linear-gradient(135deg, oklch(0.18 0.03 170), oklch(0.16 0.035 230) 54%, oklch(0.23 0.06 20));
+        linear-gradient(90deg, oklch(0.83 0.16 82 / 0.16) 1px, transparent 1px),
+        linear-gradient(0deg, oklch(0.83 0.16 82 / 0.11) 1px, transparent 1px),
+        linear-gradient(135deg, oklch(0.17 0.034 170), oklch(0.15 0.038 230) 54%, oklch(0.22 0.055 20));
+      background-size: 42px 42px, 42px 42px, auto;
       color: oklch(0.98 0.012 85);
+    }
+    .sk-gallery-hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 180px;
+      background: linear-gradient(to top, oklch(0.17 0.034 170), transparent);
+      pointer-events: none;
     }
     .sk-gallery-hero-copy {
       position: relative;
       z-index: 1;
-      align-self: end;
+      align-self: center;
     }
     .sk-gallery-eyebrow {
       display: inline-flex;
@@ -75,6 +84,16 @@ export function renderGalleryHeroStyles(): string {
       flex-wrap: wrap;
       gap: var(--sk-space-2);
       margin-top: var(--sk-space-4);
+    }
+    .sk-gallery-hero .sk-button.sk-tone-neutral {
+      background: oklch(0.98 0.012 85);
+      border-color: oklch(0.86 0.025 85);
+      color: oklch(0.18 0.024 230);
+    }
+    .sk-gallery-hero .sk-button.sk-tone-neutral:hover {
+      background: oklch(0.91 0.035 85);
+      border-color: oklch(0.83 0.16 82);
+      color: oklch(0.18 0.024 230);
     }
   `;
 }
