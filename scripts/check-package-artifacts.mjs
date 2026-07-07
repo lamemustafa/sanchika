@@ -122,6 +122,11 @@ function expectedPackageFiles(manifest) {
     }
   }
 
+  if (manifest.name === "@sanchika/patterns") {
+    files.add("dist/evidence-loop.d.ts");
+    files.add("dist/evidence-loop.js");
+  }
+
   return [...files].sort();
 }
 

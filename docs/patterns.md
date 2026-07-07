@@ -65,6 +65,18 @@ known pattern contract without stringly typed slots or states:
 - `PatternStateNameFor<Name>`
 - `PatternStateFor<Name, StateName>`
 - `PatternStateRequiredSlotNameFor<Name, StateName>`
+- `TrustBrief`
+- `TrustBriefValidationIssue`
+- `validateTrustBrief`
+- `DesignBrief`
+- `DesignBriefValidationIssue`
+- `validateDesignBrief`
+- `EvidenceLoop`
+- `EvidenceLoopAdoptionEvidence`
+- `EvidenceLoopDecision`
+- `EvidenceLoopRenderEvidence`
+- `EvidenceLoopValidationIssue`
+- `validateEvidenceLoop`
 
 These types are generated from `patternSpecs`. They do not introduce runtime
 components or framework adapters.
@@ -117,6 +129,35 @@ Pack design briefs must keep no upload, no credential handoff, and no telemetry
 out of scope. ComplyEaze core design briefs must name ComplyEaze in the first
 viewport signal. The design brief does not generate components, routes, product
 APIs, or app-specific implementations.
+
+## Evidence Loop Contract
+
+`EvidenceLoop` is the third AI-native harness contract. It connects a valid
+`TrustBrief`, a matching valid `DesignBrief`, rendered browser evidence,
+consumer adoption evidence, a decision, residual risks, and next actions into
+one reviewable object.
+
+Use `validateEvidenceLoop` after a surface has been implemented or prototyped
+enough to inspect. It returns `EvidenceLoopValidationIssue` entries when the
+loop is missing desktop render evidence, mobile render evidence, accessibility
+review evidence, adoption evidence, changed files, rollback plan, or a valid
+decision.
+
+Current render evidence types are `desktop-screenshot`, `mobile-screenshot`,
+`html-snapshot`, `accessibility-note`, and `manual-review-note`. Current adoption
+statuses are `proposed`, `implemented`, `verified`, `blocked`, and `deferred`.
+Current decisions are `ready-for-consumer-pr`, `needs-design-revision`,
+`needs-verification`, and `blocked-by-boundary`.
+
+An evidence loop can choose `ready-for-consumer-pr` only when adoption evidence
+is `verified`. Ready loops cannot carry blocked, unknown, or missing residual
+risks. Non-ready loops must name the next actions that would move the surface
+toward verified adoption.
+
+The evidence loop does not run a browser, generate screenshots, merge a consumer
+PR, create routes, or publish packages. It is the typed handoff that forces
+agents and engineers to record what the browser showed, what changed in the
+consumer, how to roll back, and why the next decision is safe.
 
 ## Pattern State Exemplars
 

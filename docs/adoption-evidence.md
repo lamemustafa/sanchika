@@ -4,6 +4,10 @@ Use this template in the consumer PR that adopts Sanchika. Copy it into the PR
 body or into a consumer-owned evidence note; do not mark Sanchika production-ready
 until a real ComplyEaze adoption has this evidence.
 
+For AI-native redesign work, pair this template with an `EvidenceLoop` object
+validated by `validateEvidenceLoop`. The loop is the compact decision record;
+this template is the human-readable PR evidence.
+
 ## Consumer
 
 - Consumer repo:
@@ -32,6 +36,15 @@ until a real ComplyEaze adoption has this evidence.
 - Accessibility checks:
 - Impeccable or detector findings, if used:
 - Manual review notes:
+
+## Evidence Loop
+
+- TrustBrief ID:
+- DesignBrief ID:
+- EvidenceLoop ID:
+- EvidenceLoop decision:
+- Residual risks:
+- Next actions:
 
 ## Rollback
 

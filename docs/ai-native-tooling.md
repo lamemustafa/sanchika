@@ -28,15 +28,21 @@ real rendered surface exists:
    first viewport signal, emotional intent, narrative arc, information priority,
    responsive constraints, interaction states, visual quality gates,
    verification evidence, and explicit non-goals before implementation starts.
-3. Run Sanchika's package gates first: `pnpm validate`, `pnpm typecheck`,
+3. After implementation or prototype rendering, write an `EvidenceLoop` and run
+   `validateEvidenceLoop` so the handoff records desktop render evidence, mobile
+   render evidence, accessibility review evidence, consumer changed files,
+   verification run, rollback plan, residual risks, next actions, and the
+   current decision.
+4. Run Sanchika's package gates first: `pnpm validate`, `pnpm typecheck`,
    `pnpm build`, `pnpm typecheck:api`, `pnpm artifact:check`,
    `pnpm trust:brief:fixtures`, `pnpm design:brief:fixtures`,
-   `pnpm consumer:check`, `pnpm smoke`, and `pnpm publish:tarball-check`.
-4. Review the chosen ComplyEaze, Axal, Pack, or Tools surface with the product
+   `pnpm evidence:loop:fixtures`, `pnpm consumer:check`, `pnpm smoke`, and
+   `pnpm publish:tarball-check`.
+5. Review the chosen ComplyEaze, Axal, Pack, or Tools surface with the product
    register and the relevant adoption doc.
-5. Record the Sanchika commit, package link or artifact method, changed files,
+6. Record the Sanchika commit, package link or artifact method, changed files,
    rollback files, and any detector/browser findings in the consumer PR.
-6. Promote a detector to CI only after it has low-noise evidence on at least one
+7. Promote a detector to CI only after it has low-noise evidence on at least one
    real ComplyEaze adoption and its failure modes are documented.
 
 ## Non-Goals
