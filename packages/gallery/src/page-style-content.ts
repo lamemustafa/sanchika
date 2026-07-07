@@ -4,15 +4,15 @@ export function renderGallerySectionStyles(): string {
     .sk-gallery-matrix,
     .sk-gallery-proof,
     .sk-gallery-section {
-      margin-top: clamp(3rem, 7vw, 5.5rem);
+      margin-top: clamp(3rem, 7vw, 5.75rem);
     }
     .sk-gallery-loop,
     .sk-gallery-matrix,
     .sk-gallery-proof {
       display: grid;
       gap: clamp(1.75rem, 4vw, 3.5rem);
-      border-top: 1px solid oklch(0.18 0.024 230 / 0.18);
-      padding-top: clamp(2.75rem, 6vw, 4.75rem);
+      border-top: 1px solid oklch(0.16 0.018 230 / 0.18);
+      padding-top: clamp(2.75rem, 6vw, 4.85rem);
     }
     .sk-gallery-kicker {
       display: inline-flex;
@@ -29,7 +29,7 @@ export function renderGallerySectionStyles(): string {
     .sk-gallery-proof h2,
     .sk-gallery-section h2 {
       margin: 0;
-      color: oklch(0.18 0.024 230);
+      color: oklch(0.145 0.018 230);
       font-size: clamp(1.9rem, 4vw, 3.25rem);
       line-height: 1.04;
       letter-spacing: -0.026em;
@@ -40,21 +40,20 @@ export function renderGallerySectionStyles(): string {
     .sk-gallery-proof-copy p {
       max-width: 720px;
       margin: var(--sk-space-3) 0 0;
-      color: oklch(0.38 0.022 230);
+      color: oklch(0.34 0.022 230);
       line-height: 1.65;
     }
     .sk-gallery-proof-board {
       display: grid;
       overflow: hidden;
-      border: 1px solid oklch(0.18 0.024 230 / 0.22);
-      border-radius: 10px;
-      background:
-        linear-gradient(115deg, oklch(0.12 0.028 185), oklch(0.14 0.032 225) 62%, oklch(0.24 0.065 32));
+      border: 1px solid oklch(0.16 0.018 230 / 0.22);
+      border-radius: 14px;
+      background: oklch(0.155 0.018 230);
       color: oklch(0.98 0.012 85);
     }
     .sk-gallery-proof-board article {
       min-height: 210px;
-      border-bottom: 1px solid oklch(0.96 0.018 170 / 0.14);
+      border-bottom: 1px solid oklch(1 0 0 / 0.12);
       padding: clamp(1.25rem, 3vw, 2rem);
     }
     .sk-gallery-proof-board article:last-child {
@@ -63,9 +62,9 @@ export function renderGallerySectionStyles(): string {
     .sk-gallery-proof-board span {
       display: inline-flex;
       border-radius: var(--sk-radius-control);
-      background: oklch(0.91 0.08 82 / 0.12);
+      background: oklch(0.91 0.12 86 / 0.14);
       padding: var(--sk-space-1) var(--sk-space-2);
-      color: oklch(0.91 0.08 82);
+      color: oklch(0.91 0.12 86);
       font-size: var(--sk-font-size-sm);
       font-weight: var(--sk-font-weight-semibold);
     }
@@ -81,7 +80,7 @@ export function renderGallerySectionStyles(): string {
     .sk-gallery-proof-board p {
       max-width: 31rem;
       margin: var(--sk-space-3) 0 0;
-      color: oklch(0.84 0.025 165);
+      color: oklch(0.82 0.015 220);
       line-height: 1.6;
     }
     .sk-gallery-loop ol,
@@ -90,19 +89,19 @@ export function renderGallerySectionStyles(): string {
       gap: 0;
       overflow: hidden;
       margin: 0;
-      border: 1px solid oklch(0.18 0.024 230 / 0.16);
-      border-radius: 10px;
+      border: 1px solid oklch(0.16 0.018 230 / 0.16);
+      border-radius: 14px;
       padding: 0;
-      background: oklch(0.985 0.006 170);
+      background: oklch(1 0 0);
     }
     .sk-gallery-loop li,
     .sk-gallery-matrix-grid article {
       display: grid;
       gap: var(--sk-space-2);
       min-height: 150px;
-      border-bottom: 1px solid oklch(0.18 0.024 230 / 0.12);
+      border-bottom: 1px solid oklch(0.16 0.018 230 / 0.12);
       padding: var(--sk-space-4);
-      background: oklch(0.995 0.003 170);
+      background: oklch(1 0 0);
     }
     .sk-gallery-loop li:last-child,
     .sk-gallery-matrix-grid article:last-child {
@@ -110,7 +109,7 @@ export function renderGallerySectionStyles(): string {
     }
     .sk-gallery-loop strong,
     .sk-gallery-matrix-grid strong {
-      color: oklch(0.18 0.024 230);
+      color: oklch(0.145 0.018 230);
       font-size: var(--sk-font-size-lg);
       line-height: var(--sk-line-height-tight);
     }
@@ -119,7 +118,7 @@ export function renderGallerySectionStyles(): string {
       color: oklch(0.44 0.025 230);
     }
     .sk-gallery-section {
-      border-top: 1px solid oklch(0.18 0.024 230 / 0.2);
+      border-top: 1px solid oklch(0.16 0.018 230 / 0.2);
       padding-top: clamp(2.75rem, 6vw, 4.75rem);
     }
     .sk-gallery-section > h2 {
@@ -135,9 +134,9 @@ export function renderGalleryContractStyles(): string {
     .sk-gallery-contract {
       overflow: hidden;
       margin-top: var(--sk-space-3);
-      border: 1px solid oklch(0.18 0.024 230 / 0.16);
-      border-radius: 10px;
-      background: oklch(0.995 0.003 170);
+      border: 1px solid oklch(0.16 0.018 230 / 0.16);
+      border-radius: 12px;
+      background: oklch(1 0 0);
     }
     .sk-gallery-contract summary,
     .sk-gallery-exemplar summary {
@@ -145,7 +144,7 @@ export function renderGalleryContractStyles(): string {
       display: grid;
       gap: var(--sk-space-1);
       padding: var(--sk-space-4);
-      background: oklch(0.975 0.008 170);
+      background: oklch(0.96 0.008 185);
       list-style-position: inside;
     }
     .sk-gallery-contract summary span,
@@ -153,13 +152,13 @@ export function renderGalleryContractStyles(): string {
       font-weight: var(--sk-font-weight-bold);
     }
     .sk-gallery-contract summary strong {
-      color: oklch(0.43 0.025 230);
+      color: oklch(0.34 0.025 230);
       font-weight: var(--sk-font-weight-semibold);
     }
     .sk-gallery-contract-body {
-      border-top: 1px solid oklch(0.18 0.024 230 / 0.12);
+      border-top: 1px solid oklch(0.16 0.018 230 / 0.12);
       padding: var(--sk-space-4);
-      background: white;
+      background: oklch(1 0 0);
     }
     .sk-gallery-section h3,
     .sk-gallery-section h4,

@@ -1,7 +1,13 @@
 import { colorTokens } from "@sanchika/tokens";
 import { primitiveClassName, primitiveSpecs } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
-import { renderEvidenceJourney, renderGalleryHero, renderHarnessLoop, renderPrimitiveMatrix } from "./page-sections.js";
+import {
+  renderEvidenceJourney,
+  renderGalleryFooter,
+  renderGalleryHero,
+  renderHarnessLoop,
+  renderPrimitiveMatrix,
+} from "./page-sections.js";
 import { renderGalleryPageStyles } from "./page-styles.js";
 
 export const primitiveGalleryCssImports = ["@sanchika/tokens/theme.css", "@sanchika/primitives/styles.css"] as const;
@@ -99,7 +105,17 @@ export function renderPrimitiveGalleryMarkup(): string {
     <section class="sk-gallery-section" aria-labelledby="field-states"><h2 id="field-states">Field state matrix</h2><div class="sk-gallery-field-grid">${fields}</div></section>
     <section class="sk-gallery-section" aria-labelledby="card-states"><h2 id="card-states">Card state matrix</h2><div class="sk-gallery-card-grid">${cards}</div></section>
     <section class="sk-gallery-section" aria-labelledby="pattern-contracts"><h2 id="pattern-contracts">Pattern contracts</h2>${patterns}<h3>Pattern state exemplars</h3>${patternStateExemplars}</section>
+    ${renderGalleryFooter()}
   </main>`;
+}
+
+const galleryTitle = "Sanchika | Design evidence system";
+const galleryDescription =
+  "Sanchika is an AI-native design-system SDK for compliance-grade interfaces, with synthetic proof artifacts, primitive contracts, pattern states, and clear adoption boundaries.";
+const galleryCanonicalUrl = "https://sanchika.complyeaze.com/";
+
+function renderGalleryHead(cssImports: string): string {
+  return `<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${galleryTitle}</title><meta name="description" content="${escapeHtml(galleryDescription)}"><link rel="canonical" href="${galleryCanonicalUrl}"><meta property="og:type" content="website"><meta property="og:title" content="${galleryTitle}"><meta property="og:description" content="${escapeHtml(galleryDescription)}"><meta property="og:url" content="${galleryCanonicalUrl}"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${galleryTitle}"><meta name="twitter:description" content="${escapeHtml(galleryDescription)}">${cssImports}${renderGalleryPageStyles()}</head>`;
 }
 
 export function renderPrimitiveGalleryDocument(): string {
@@ -107,7 +123,7 @@ export function renderPrimitiveGalleryDocument(): string {
     .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
     .join("");
 
-  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}${renderGalleryPageStyles()}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
+  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive">${renderGalleryHead(cssImports)}<body>${renderPrimitiveGalleryMarkup()}</body></html>`;
 }
 
 export function renderOpenablePrimitiveGalleryDocument(): string {
@@ -115,7 +131,7 @@ export function renderOpenablePrimitiveGalleryDocument(): string {
     .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
     .join("");
 
-  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sanchika Primitive Gallery</title>${cssImports}${renderGalleryPageStyles()}</head><body>${renderPrimitiveGalleryMarkup()}</body></html>`;
+  return `<!doctype html><html lang="en" data-sanchika-gallery-document="primitive">${renderGalleryHead(cssImports)}<body>${renderPrimitiveGalleryMarkup()}</body></html>`;
 }
 
 function titleCase(value: string): string {
