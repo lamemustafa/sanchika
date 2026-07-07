@@ -9,13 +9,18 @@ export function renderGalleryHero({
 }): string {
   return `<section class="sk-gallery-hero" aria-labelledby="gallery-title">
     <div class="sk-gallery-hero-copy">
-      <p class="sk-gallery-eyebrow">Live design harness</p>
+      <p class="sk-gallery-eyebrow">Live proof surface for generated compliance UI</p>
       <h1 id="gallery-title">A design system that can defend itself.</h1>
       <p class="sk-gallery-lede">Sanchika turns an AI-generated interface from a pretty guess into a reviewable artifact: brief, contract, browser evidence, and adoption decision, all visible before a consumer trusts it.</p>
       <div class="sk-gallery-actions" aria-label="Primary gallery actions">
         <a class="${primaryButtonClass}" href="#primitive-contracts">Inspect contracts</a>
         <a class="${secondaryButtonClass}" href="#pattern-contracts">Review patterns</a>
       </div>
+      <ul class="sk-gallery-proof-strip" aria-label="Current gallery proof signals">
+        <li><span>Host</span><strong>Static artifact</strong></li>
+        <li><span>Tokens</span><strong>${colorRoleCount} color roles loaded</strong></li>
+        <li><span>Boundary</span><strong>No taxpayer data</strong></li>
+      </ul>
     </div>
     <aside class="sk-gallery-workbench" aria-labelledby="gallery-status-title">
       <div class="sk-gallery-workbench-bar">
@@ -39,7 +44,6 @@ export function renderGalleryHero({
 export function renderEvidenceJourney(): string {
   return `<section class="sk-gallery-proof" aria-labelledby="gallery-proof-title">
     <div class="sk-gallery-proof-copy">
-      <p class="sk-gallery-kicker">AI-native loop</p>
       <h2 id="gallery-proof-title">From prompt to proof without losing the boundary.</h2>
       <p>Each candidate surface must carry its intent, constraints, rendered state, and rollback path. Sanchika should make generated UI feel crafted without pretending the generator is a compliance authority.</p>
     </div>
