@@ -84,6 +84,23 @@ export function renderGalleryHero({
         <a class="${primaryButtonClass}" href="#evidence-loop">Follow the evidence loop</a>
         <a class="${secondaryButtonClass}" href="#primitive-contracts">Inspect contracts</a>
       </div>
+      <div class="sk-gallery-proof-lattice" aria-label="Sanchika proof loop summary">
+        <div>
+          <span>01</span>
+          <strong>Claim named</strong>
+          <p>TrustBrief locks the allowed claim before a surface becomes reusable.</p>
+        </div>
+        <div>
+          <span>02</span>
+          <strong>State rendered</strong>
+          <p>DesignBrief and browser evidence prove the UI actually carries that state.</p>
+        </div>
+        <div>
+          <span>03</span>
+          <strong>Adoption gated</strong>
+          <p>Consumer proof decides whether the contract can travel to product code.</p>
+        </div>
+      </div>
       <dl class="sk-gallery-proof-strip" aria-label="Current gallery proof signals">
         <div><dt>Live host</dt><dd>sanchika.complyeaze.com</dd></div>
         <div><dt>Tokens</dt><dd>${colorRoleCount} color roles loaded</dd></div>
@@ -99,6 +116,24 @@ export function renderGalleryHero({
         <span id="gallery-status-title">Current truth</span>
         <strong>A design system that can defend itself.</strong>
         <p>The gallery proves package behavior. Product readiness still requires browser, accessibility, consumer, and rollback evidence.</p>
+      </div>
+      <div class="sk-gallery-workbench-map" aria-label="Current proof boundary map">
+        <div>
+          <span>contract</span>
+          <strong>framework-agnostic</strong>
+        </div>
+        <div>
+          <span>adapter</span>
+          <strong>React-ready proof</strong>
+        </div>
+        <div>
+          <span>boundary</span>
+          <strong>static artifact</strong>
+        </div>
+        <div>
+          <span>adoption</span>
+          <strong>ComplyEaze first</strong>
+        </div>
       </div>
       <div class="sk-gallery-evidence-rail" aria-label="Sanchika evidence flow">
         <span>TrustBrief</span>
