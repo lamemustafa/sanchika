@@ -98,17 +98,19 @@ export function renderGalleryHeroStyles(): string {
     .sk-gallery-hero {
       position: relative;
       display: grid;
+      align-items: start;
       gap: clamp(1.5rem, 4vw, 4.5rem);
       overflow: hidden;
-      min-height: min(780px, calc(100vh - 5rem));
+      min-height: min(720px, calc(100vh - 5rem));
       border: 1px solid oklch(0.16 0.018 230 / 0.18);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: clamp(1.35rem, 5vw, 4.5rem);
       background:
-        linear-gradient(90deg, oklch(0.88 0.018 195 / 0.22) 1px, transparent 1px),
-        linear-gradient(0deg, oklch(0.88 0.018 195 / 0.16) 1px, transparent 1px),
-        linear-gradient(124deg, oklch(0.99 0 0), oklch(0.955 0.012 185) 50%, oklch(0.925 0.035 78));
-      background-size: 44px 44px, 44px 44px, auto;
+        linear-gradient(90deg, oklch(0.84 0.019 185 / 0.28) 1px, transparent 1px),
+        linear-gradient(0deg, oklch(0.84 0.019 185 / 0.2) 1px, transparent 1px),
+        radial-gradient(circle at 10% 82%, oklch(0.86 0.11 78 / 0.34), transparent 30%),
+        linear-gradient(128deg, oklch(0.99 0 0) 0.01%, oklch(0.948 0.012 185) 48%, oklch(0.885 0.035 196) 100%);
+      background-size: 44px 44px, 44px 44px, auto, auto;
       color: oklch(0.16 0.018 230);
     }
     .sk-gallery-hero::before {
@@ -116,14 +118,31 @@ export function renderGalleryHeroStyles(): string {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 78% 16%, oklch(0.66 0.14 42 / 0.18), transparent 26%),
-        linear-gradient(90deg, transparent 0 61%, oklch(0.16 0.018 230 / 0.06) 61% 61.3%, transparent 61.3%);
+        linear-gradient(90deg, transparent 0.01% 59%, oklch(0.16 0.018 230 / 0.08) 59% 59.25%, transparent 59.25%),
+        linear-gradient(180deg, transparent 0.01% 24%, oklch(0.16 0.018 230 / 0.08) 24% 24.18%, transparent 24.18%),
+        radial-gradient(circle at 78% 14%, oklch(0.7 0.13 42 / 0.16), transparent 24%);
+      pointer-events: none;
+    }
+    .sk-gallery-hero::after {
+      content: "";
+      position: absolute;
+      right: clamp(1rem, 5vw, 4rem);
+      bottom: clamp(1rem, 5vw, 4rem);
+      width: min(34vw, 25rem);
+      aspect-ratio: 1;
+      border: 1px solid oklch(0.2 0.04 230 / 0.12);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, transparent 0.01% 34%, oklch(0.2 0.04 230 / 0.08) 34.4% 34.7%, transparent 35% 55%, oklch(0.2 0.04 230 / 0.08) 55.4% 55.7%, transparent 56%),
+        conic-gradient(from -24deg, transparent 0.01% 10%, oklch(0.66 0.14 42 / 0.16) 10% 17%, transparent 17% 52%, oklch(0.22 0.07 175 / 0.15) 52% 60%, transparent 60%);
       pointer-events: none;
     }
     .sk-gallery-hero-copy {
       position: relative;
       z-index: 1;
-      align-self: center;
+      display: grid;
+      align-self: start;
+      max-width: 760px;
     }
     .sk-gallery-eyebrow {
       display: inline-flex;
@@ -142,7 +161,7 @@ export function renderGalleryHeroStyles(): string {
       max-width: 900px;
       margin: 0;
       color: oklch(0.145 0.018 230);
-      font-size: clamp(3rem, 7.2vw, 5.8rem);
+      font-size: clamp(3.1rem, 6.4vw, 5.8rem);
       line-height: 0.98;
       letter-spacing: -0.03em;
       text-wrap: balance;
@@ -181,6 +200,45 @@ export function renderGalleryHeroStyles(): string {
       background: oklch(0.94 0.018 185);
       border-color: oklch(0.22 0.07 175);
       color: oklch(0.16 0.018 230);
+    }
+    .sk-gallery-proof-lattice {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      overflow: hidden;
+      max-width: 760px;
+      margin-top: var(--sk-space-5);
+      border: 1px solid oklch(0.16 0.018 230 / 0.18);
+      border-radius: 12px;
+      background: oklch(1 0 0 / 0.74);
+    }
+    .sk-gallery-proof-lattice div {
+      min-width: 0;
+      border-right: 1px solid oklch(0.16 0.018 230 / 0.12);
+      padding: var(--sk-space-3);
+    }
+    .sk-gallery-proof-lattice div:last-child {
+      border-right: 0;
+    }
+    .sk-gallery-proof-lattice span {
+      color: oklch(0.52 0.12 40);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      font-weight: var(--sk-font-weight-bold);
+      letter-spacing: 0.04em;
+    }
+    .sk-gallery-proof-lattice strong {
+      display: block;
+      margin-top: var(--sk-space-2);
+      color: oklch(0.145 0.018 230);
+      font-size: var(--sk-font-size-md);
+      line-height: var(--sk-line-height-tight);
+    }
+    .sk-gallery-proof-lattice p {
+      margin: var(--sk-space-2) 0 0;
+      color: oklch(0.38 0.024 230);
+      font-size: var(--sk-font-size-sm);
+      line-height: 1.5;
     }
     .sk-gallery-proof-strip {
       display: grid;
@@ -224,11 +282,15 @@ export function renderGalleryWorkbenchStyles(): string {
     .sk-gallery-workbench {
       position: relative;
       z-index: 1;
-      align-self: center;
+      align-self: start;
       overflow: hidden;
       border: 1px solid oklch(0.16 0.018 230 / 0.22);
       border-radius: 14px;
-      background: oklch(0.155 0.018 230);
+      background:
+        linear-gradient(90deg, oklch(1 0 0 / 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, oklch(1 0 0 / 0.04) 1px, transparent 1px),
+        oklch(0.155 0.018 230);
+      background-size: 36px 36px;
       color: oklch(0.98 0 0);
     }
     .sk-gallery-workbench-bar,
@@ -262,7 +324,9 @@ export function renderGalleryWorkbenchStyles(): string {
       display: grid;
       gap: var(--sk-space-2);
       border-bottom: 1px solid oklch(1 0 0 / 0.14);
-      background: oklch(0.13 0.016 230);
+      background:
+        radial-gradient(circle at 84% 12%, oklch(0.91 0.12 86 / 0.14), transparent 28%),
+        oklch(0.13 0.016 230);
     }
     .sk-gallery-claim span,
     .sk-gallery-status-grid dt {
@@ -280,6 +344,36 @@ export function renderGalleryWorkbenchStyles(): string {
       margin: 0;
       color: oklch(0.82 0.015 220);
       line-height: 1.6;
+    }
+    .sk-gallery-workbench-map {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-bottom: 1px solid oklch(1 0 0 / 0.14);
+      background: oklch(0.17 0.022 230 / 0.88);
+    }
+    .sk-gallery-workbench-map div {
+      min-height: 116px;
+      border-right: 1px solid oklch(1 0 0 / 0.1);
+      border-bottom: 1px solid oklch(1 0 0 / 0.1);
+      padding: var(--sk-space-3);
+    }
+    .sk-gallery-workbench-map div:nth-child(2n) {
+      border-right: 0;
+    }
+    .sk-gallery-workbench-map div:nth-last-child(-n + 2) {
+      border-bottom: 0;
+    }
+    .sk-gallery-workbench-map span {
+      color: oklch(0.91 0.12 86);
+      font-size: var(--sk-font-size-sm);
+      font-weight: var(--sk-font-weight-semibold);
+    }
+    .sk-gallery-workbench-map strong {
+      display: block;
+      margin-top: var(--sk-space-2);
+      color: oklch(0.98 0 0);
+      font-size: clamp(1.05rem, 2vw, 1.28rem);
+      line-height: var(--sk-line-height-tight);
     }
     .sk-gallery-evidence-rail {
       display: grid;
