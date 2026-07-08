@@ -124,7 +124,7 @@ export function renderGalleryHero({
         </div>
         <div>
           <span>adapter</span>
-          <strong>React-ready proof</strong>
+          <strong>Primitive contract</strong>
         </div>
         <div>
           <span>boundary</span>
