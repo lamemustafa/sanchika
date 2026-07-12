@@ -173,7 +173,7 @@ export function renderGalleryResponsiveStyles(): string {
       .sk-gallery-matrix,
       .sk-gallery-family,
       .sk-gallery-proof {
-        padding-top: var(--sk-space-5);
+        padding-top: var(--sk-space-6);
       }
       .sk-gallery-proof-board article {
         min-height: auto;

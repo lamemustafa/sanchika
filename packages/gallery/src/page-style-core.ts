@@ -207,7 +207,7 @@ export function renderGalleryHeroStyles(): string {
       gap: 0;
       overflow: hidden;
       max-width: 760px;
-      margin-top: var(--sk-space-5);
+      margin-top: var(--sk-space-6);
       border: 1px solid oklch(0.16 0.018 230 / 0.18);
       border-radius: 12px;
       background: oklch(1 0 0 / 0.74);
@@ -246,7 +246,7 @@ export function renderGalleryHeroStyles(): string {
       gap: 0;
       overflow: hidden;
       max-width: 780px;
-      margin: var(--sk-space-5) 0 0;
+      margin: var(--sk-space-6) 0 0;
       border: 1px solid oklch(0.16 0.018 230 / 0.18);
       border-radius: 10px;
       padding: 0;
@@ -503,7 +503,7 @@ export function renderGalleryWorkbenchStyles(): string {
     }
     .sk-gallery-footer {
       display: grid;
-      gap: var(--sk-space-5);
+      gap: var(--sk-space-6);
       margin-top: clamp(3rem, 7vw, 5.75rem);
       border-top: 1px solid oklch(0.16 0.018 230 / 0.22);
       padding: clamp(2rem, 5vw, 4rem) 0 0;
