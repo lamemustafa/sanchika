@@ -29,6 +29,14 @@ SDK. It is not part of the parent ComplyEaze app workspace.
 - Keep framework claims honest: framework-agnostic design contract,
   React-ready primitive contracts, platform-portable tokens.
 
+## Governance Freeze
+
+During programme Phases 0-4, do not add new recurring review crons, scorecard
+dimensions, repository-settings audits, general-purpose gate frameworks,
+governance-only packages, or general check scripts. Prefer consolidating
+existing checks; only narrowly scoped adoption/boundary checks or replacements
+for objectively broken checks are allowed.
+
 ## Design Rules
 
 - Read `PRODUCT.md` and `DESIGN.md` before making token, primitive, pattern, or

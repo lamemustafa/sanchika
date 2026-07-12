@@ -913,6 +913,53 @@ validateCiWorkflow({ ciWorkflow, fail });
 validatePagesWorkflow({ pagesWorkflow, fail });
 validatePagesSmokeWorkflow({ pagesSmokeWorkflow, fail });
 
+const retentionFailureMessage =
+  "Pages workflow ordinary build evidence retention-days must be a literal integer from 1 to 7";
+const pagesArtifactPath = "          path: dist/gallery";
+for (const [name, retentionYaml, shouldFail] of [
+  ["unquoted lower bound", "          retention-days: 1", false],
+  ["unquoted upper bound", "          retention-days: 7", false],
+  ["double-quoted value", '          retention-days: "7"', false],
+  ["single-quoted value", "          retention-days: '1'", false],
+  ["commented value", "          # retention-days: 99", false],
+  ["expression value", "          retention-days: ${{ inputs.retention-days }}", true],
+  ["malformed value", "          retention-days: seven", true],
+  ["empty value", "          retention-days:", true],
+  ["zero", "          retention-days: 0", true],
+  ["negative value", "          retention-days: -1", true],
+  ["above upper bound", "          retention-days: 8", true],
+  [
+    "unrelated safe field cannot mask unsafe retention",
+    "          retention-days: 8\n          unrelated-retention-days: 7",
+    true,
+  ],
+  [
+    "duplicate retention cannot mask unsafe retention",
+    "          retention-days: 7\n          retention-days: 8",
+    true,
+  ],
+]) {
+  const fixtureFailures = [];
+  validatePagesWorkflow({
+    pagesWorkflow: pagesWorkflow.replace(
+      pagesArtifactPath,
+      `${pagesArtifactPath}\n${retentionYaml}`,
+    ),
+    fail: (message) => fixtureFailures.push(message),
+  });
+  const retentionFailed = fixtureFailures.includes(retentionFailureMessage);
+  if (retentionFailed !== shouldFail) {
+    fail(
+      `Pages retention fixture ${name} must ${shouldFail ? "fail" : "pass"} validation`,
+    );
+  }
+  for (const unexpectedFailure of fixtureFailures.filter(
+    (message) => message !== retentionFailureMessage,
+  )) {
+    fail(`Pages retention fixture ${name} failed unexpectedly: ${unexpectedFailure}`);
+  }
+}
+
 for (const requiredHostingFragment of [
   "sanchika.complyeaze.com",
   "The authoritative public host is `sanchika.complyeaze.com`",
@@ -935,38 +982,363 @@ for (const requiredHostingFragment of [
   }
 }
 
-for (const requiredReviewGateWorkflowFragment of [
-  "name: Review findings gate",
-  "pull_request_target:",
-  "schedule:",
-  "statuses: write",
-  "pull-requests: read",
-  "node scripts/sync-review-gate-status.mjs",
-  "--strict-head-review",
-  "--wait-head-review-ms 0",
-  "--required-review-author chatgpt-codex-connector",
-  "--skip-pending-status",
-  "--allow-missing-head-review",
-]) {
-  if (!reviewGateWorkflow.includes(requiredReviewGateWorkflowFragment)) {
-    fail(`.github/workflows/review-gate.yml must include ${requiredReviewGateWorkflowFragment}`);
+function activeWorkflowLines(source) {
+  return source
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\s+#.*$/, ""))
+    .filter((line) => line.trim().length > 0);
+}
+
+function leadingSpaces(line) {
+  return line.match(/^ */)[0].length;
+}
+
+function activeWorkflowBlock(lines, headerPattern) {
+  const start = lines.findIndex((line) => headerPattern.test(line));
+  if (start < 0) return [];
+  const indent = leadingSpaces(lines[start]);
+  let end = start + 1;
+  while (end < lines.length && leadingSpaces(lines[end]) > indent) end += 1;
+  return lines.slice(start, end);
+}
+
+function normalizeYamlScalar(value) {
+  const trimmed = value.trim();
+  if (
+    trimmed.length >= 2 &&
+    ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+      (trimmed.startsWith("'") && trimmed.endsWith("'")))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function validateReviewGateWorkflow(source, reportFailure) {
+  const lines = activeWorkflowLines(source);
+  const activeSource = lines.join("\n");
+
+  function requireEventTypes(event, expectedTypes) {
+    const block = activeWorkflowBlock(lines, new RegExp(`^  ${event}:\\s*$`));
+    const typesLine = block.find((line) => /^    types:\s*/.test(line));
+    const actualTypes = typesLine
+      ?.replace(/^    types:\s*\[/, "")
+      .replace(/\]\s*$/, "")
+      .split(",")
+      .map((value) => normalizeYamlScalar(value))
+      .sort();
+    if (JSON.stringify(actualTypes) !== JSON.stringify([...expectedTypes].sort())) {
+      reportFailure(`Review gate ${event} must use exactly ${expectedTypes.join(", ")}`);
+    }
+  }
+
+  requireEventTypes("pull_request_target", [
+    "opened",
+    "reopened",
+    "synchronize",
+    "ready_for_review",
+    "edited",
+  ]);
+  requireEventTypes("pull_request_review", ["submitted", "edited", "dismissed"]);
+  requireEventTypes("pull_request_review_comment", ["created", "edited", "deleted"]);
+
+  const scheduleBlock = activeWorkflowBlock(lines, /^  schedule:\s*$/);
+  const reviewGateCrons = scheduleBlock
+    .map((line) => line.match(/^\s*-\s+cron:\s+(.+?)\s*$/)?.[1])
+    .filter(Boolean)
+    .map(normalizeYamlScalar);
+  if (reviewGateCrons.length !== 1 || reviewGateCrons[0] !== "23 4 * * *") {
+    reportFailure("Review gate must use one daily reconciliation cron and no frequent polling");
+  }
+
+  if (!lines.some((line) => /^permissions:\s*\{\}\s*$/.test(line))) {
+    reportFailure("Review gate must disable permissions by default");
+  }
+
+  const selectionJob = activeWorkflowBlock(lines, /^  select-pull-requests:\s*$/);
+  const selectionPermissions = activeWorkflowBlock(selectionJob, /^    permissions:\s*$/)
+    .slice(1)
+    .map((line) => line.trim())
+    .sort();
+  if (JSON.stringify(selectionPermissions) !== JSON.stringify(["pull-requests: read"])) {
+    reportFailure("Review gate pull-request selection must have only pull-requests: read");
+  }
+  const selectionCondition = activeWorkflowBlock(selectionJob, /^    if:\s*>-\s*$/)
+    .slice(1)
+    .map((line) => line.trim())
+    .join(" ");
+  const expectedSelectionCondition =
+    "github.event_name == 'schedule' || github.event_name == 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository";
+  if (selectionCondition !== expectedSelectionCondition) {
+    reportFailure("Review gate pull-request selection must use the trusted event and fork guard");
+  }
+
+  const selectionStep = activeWorkflowBlock(
+    selectionJob,
+    /^      - name:\s+Select current pull requests\s*$/,
+  );
+  const selectionEnv = activeWorkflowBlock(selectionStep, /^        env:\s*$/)
+    .slice(1)
+    .map((line) => line.trim())
+    .sort();
+  const expectedSelectionEnv = [
+    "EVENT_NAME: ${{ github.event_name }}",
+    "GH_TOKEN: ${{ github.token }}",
+    "PR_NUMBER: ${{ github.event.pull_request.number }}",
+  ].sort();
+  if (JSON.stringify(selectionEnv) !== JSON.stringify(expectedSelectionEnv)) {
+    reportFailure("Review gate pull-request selection must use only trusted event inputs");
+  }
+  const selectionRun = activeWorkflowBlock(selectionStep, /^        run:\s*\|[-+]?\s*$/)
+    .slice(1)
+    .join("\n");
+  for (const requiredSelectionRunFragment of [
+    'if [ "${EVENT_NAME}" = "schedule" ]; then',
+    'gh pr list --repo "${GITHUB_REPOSITORY}" --state open --limit 1000 --json number',
+    '[[ ! "${PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]',
+    'pull_requests="[${PR_NUMBER}]"',
+  ]) {
+    if (!selectionRun.includes(requiredSelectionRunFragment)) {
+      reportFailure(
+        `Review gate pull-request selection run block must include ${requiredSelectionRunFragment}`,
+      );
+    }
+  }
+
+  const syncJob = activeWorkflowBlock(lines, /^  review-gate:\s*$/);
+  const syncPermissions = activeWorkflowBlock(syncJob, /^    permissions:\s*$/)
+    .slice(1)
+    .map((line) => line.trim())
+    .sort();
+  const expectedSyncPermissions = [
+    "contents: read",
+    "pull-requests: read",
+    "statuses: write",
+  ].sort();
+  if (JSON.stringify(syncPermissions) !== JSON.stringify(expectedSyncPermissions)) {
+    reportFailure(
+      "Review gate status sync must use only contents: read, pull-requests: read, and statuses: write",
+    );
+  }
+  if (!syncJob.some((line) => line === "    needs: select-pull-requests")) {
+    reportFailure("Review gate status sync must depend on pull-request selection");
+  }
+  if (
+    !syncJob.some(
+      (line) => line === "    if: needs.select-pull-requests.outputs.has_targets == 'true'",
+    )
+  ) {
+    reportFailure("Review gate status sync must skip an empty pull-request matrix");
+  }
+  const matrixBlock = activeWorkflowBlock(syncJob, /^      matrix:\s*$/);
+  if (
+    !matrixBlock.some(
+      (line) =>
+        line.trim() ===
+        "pr: ${{ fromJSON(needs.select-pull-requests.outputs.pull_requests) }}",
+    )
+  ) {
+    reportFailure("Review gate status sync matrix must contain the selected pull requests");
+  }
+  const concurrencyBlock = activeWorkflowBlock(syncJob, /^    concurrency:\s*$/)
+    .slice(1)
+    .map((line) => line.trim())
+    .sort();
+  const expectedConcurrency = [
+    "cancel-in-progress: true",
+    "group: review-gate-${{ github.workflow }}-${{ matrix.pr }}",
+  ].sort();
+  if (JSON.stringify(concurrencyBlock) !== JSON.stringify(expectedConcurrency)) {
+    reportFailure("Review gate status sync must use cancellable PR-specific concurrency");
+  }
+
+  const syncStep = activeWorkflowBlock(
+    syncJob,
+    /^      - name:\s+Sync current-head review status\s*$/,
+  );
+  const syncRun = activeWorkflowBlock(syncStep, /^        run:\s*\|[-+]?\s*$/)
+    .slice(1)
+    .join("\n");
+  for (const requiredSyncRunFragment of [
+    'args+=(--pr "${PR_NUMBER}")',
+    "node scripts/sync-review-gate-status.mjs",
+    "--strict-head-review",
+    "--wait-head-review-ms 0",
+    "--required-review-author chatgpt-codex-connector",
+    "--allow-missing-head-review",
+  ]) {
+    if (!syncRun.includes(requiredSyncRunFragment)) {
+      reportFailure(`Review gate status sync run block must include ${requiredSyncRunFragment}`);
+    }
+  }
+  const scheduledSkipPendingBlock =
+    'if [ "${EVENT_NAME}" = "schedule" ]; then\n            args+=(--skip-pending-status)\n          fi';
+  if (
+    !syncRun.includes(scheduledSkipPendingBlock) ||
+    syncRun.match(/--skip-pending-status/g)?.length !== 1
+  ) {
+    reportFailure(
+      "Review gate status sync must skip pending writes only during scheduled repair",
+    );
+  }
+  const syncEnv = activeWorkflowBlock(syncStep, /^        env:\s*$/)
+    .slice(1)
+    .map((line) => line.trim())
+    .sort();
+  const expectedSyncEnv = [
+    "EVENT_NAME: ${{ github.event_name }}",
+    "GH_TOKEN: ${{ github.token }}",
+    "PR_NUMBER: ${{ matrix.pr }}",
+    "RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+  ].sort();
+  if (JSON.stringify(syncEnv) !== JSON.stringify(expectedSyncEnv)) {
+    reportFailure("Review gate status sync must use only trusted matrix and run inputs");
+  }
+
+  const checkoutIndexes = lines
+    .map((line, index) => (/^\s+uses:\s+actions\/checkout@/.test(line) ? index : -1))
+    .filter((index) => index >= 0);
+  if (checkoutIndexes.length !== 1) {
+    reportFailure("Review gate must contain exactly one active checkout step");
+  } else {
+    const checkoutIndex = checkoutIndexes[0];
+    if (
+      lines[checkoutIndex].trim() !==
+      "uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"
+    ) {
+      reportFailure("Review gate checkout action must remain pinned to the approved commit");
+    }
+    let stepStart = checkoutIndex;
+    while (stepStart > 0 && !/^\s*-\s+(?:name|uses):/.test(lines[stepStart])) stepStart -= 1;
+    const stepIndent = leadingSpaces(lines[stepStart]);
+    let stepEnd = checkoutIndex + 1;
+    while (stepEnd < lines.length && leadingSpaces(lines[stepEnd]) > stepIndent) stepEnd += 1;
+    const checkoutStep = lines.slice(stepStart, stepEnd);
+    const withIndex = checkoutStep.findIndex((line) => line.trim() === "with:");
+    const withIndent = withIndex >= 0 ? leadingSpaces(checkoutStep[withIndex]) : -1;
+    let withEnd = withIndex + 1;
+    while (
+      withIndex >= 0 &&
+      withEnd < checkoutStep.length &&
+      leadingSpaces(checkoutStep[withEnd]) > withIndent
+    ) {
+      withEnd += 1;
+    }
+    const withLines = withIndex < 0 ? [] : checkoutStep.slice(withIndex + 1, withEnd);
+
+    for (const [key, expectedValue] of [
+      ["repository", "${{ github.repository }}"],
+      ["ref", "${{ github.event.repository.default_branch }}"],
+      ["persist-credentials", "false"],
+    ]) {
+      const values = withLines
+        .map((line) => line.trim().match(new RegExp(`^${key}:\\s*(.+)$`))?.[1])
+        .filter(Boolean)
+        .map(normalizeYamlScalar);
+      if (values.length !== 1 || values[0] !== expectedValue) {
+        reportFailure(`Review gate checkout with.${key} must be exactly ${expectedValue}`);
+      }
+    }
+  }
+
+  for (const forbiddenFragment of [
+    "workflow_dispatch:",
+    "ref: ${{ github.event.pull_request.head",
+    "github.head_ref",
+    "github.event.review.commit_id",
+    "github.event.review.body",
+    "github.event.comment.body",
+    "--all-open",
+    "sleep ",
+  ]) {
+    if (activeSource.includes(forbiddenFragment)) {
+      reportFailure(`Review gate active workflow must not include ${forbiddenFragment}`);
+    }
   }
 }
 
-for (const forbiddenReviewGateWorkflowFragment of [
-  "workflow_dispatch:",
-  "pull_request_review:",
-  "pull_request_review_comment:",
+validateReviewGateWorkflow(reviewGateWorkflow, fail);
+
+for (const [name, source] of [
+  [
+    "fork guard replaced by active env decoy",
+    reviewGateWorkflow.replace(
+      "      github.event.pull_request.head.repo.full_name == github.repository\n    permissions:",
+      "      true\n    env:\n      DECOY: github.event.pull_request.head.repo.full_name == github.repository\n    permissions:",
+    ),
+  ],
+  [
+    "untrusted ref with trusted comment decoy",
+    reviewGateWorkflow
+      .replace(
+        "ref: ${{ github.event.repository.default_branch }}",
+        "ref: ${{ github.event.review.commit_id }}",
+      )
+      .concat("\n# ref: ${{ github.event.repository.default_branch }}\n"),
+  ],
+  [
+    "persisted credentials with trusted comment decoy",
+    reviewGateWorkflow
+      .replace("persist-credentials: false", "persist-credentials: true")
+      .concat("\n# persist-credentials: false\n"),
+  ],
+  [
+    "duplicate active checkout ref",
+    reviewGateWorkflow.replace(
+      "ref: ${{ github.event.repository.default_branch }}",
+      "ref: ${{ github.event.repository.default_branch }}\n          ref: ${{ github.event.repository.default_branch }}",
+    ),
+  ],
+  [
+    "trusted checkout values present only under env",
+    reviewGateWorkflow.replace(
+      "        with:\n          repository: ${{ github.repository }}\n          ref: ${{ github.event.repository.default_branch }}\n          persist-credentials: false",
+      "        with:\n          repository: ${{ github.repository }}\n        env:\n          ref: ${{ github.event.repository.default_branch }}\n          persist-credentials: false",
+    ),
+  ],
+  [
+    "review trigger present only in comments",
+    reviewGateWorkflow.replace(
+      "  pull_request_review:\n    types: [submitted, edited, dismissed]",
+      "  # pull_request_review:\n  #   types: [submitted, edited, dismissed]",
+    ),
+  ],
+  [
+    "skip-pending applied outside scheduled repair",
+    reviewGateWorkflow.replace(
+      '          if [ "${EVENT_NAME}" = "schedule" ]; then\n            args+=(--skip-pending-status)\n          fi',
+      "          args+=(--skip-pending-status)",
+    ),
+  ],
 ]) {
-  if (reviewGateWorkflow.includes(forbiddenReviewGateWorkflowFragment)) {
-    fail(`.github/workflows/review-gate.yml must not include ${forbiddenReviewGateWorkflowFragment}`);
+  const fixtureFailures = [];
+  validateReviewGateWorkflow(source, (message) => fixtureFailures.push(message));
+  if (fixtureFailures.length === 0) {
+    fail(`Review gate workflow fixture ${name} must fail validation`);
   }
+}
+
+const harmlessReviewGateFormattingFailures = [];
+validateReviewGateWorkflow(
+  reviewGateWorkflow
+    .replace("persist-credentials: false", 'persist-credentials: "false"')
+    .replace(
+      "ref: ${{ github.event.repository.default_branch }}",
+      'ref: "${{ github.event.repository.default_branch }}"',
+    ),
+  (message) => harmlessReviewGateFormattingFailures.push(message),
+);
+if (harmlessReviewGateFormattingFailures.length > 0) {
+  fail(
+    `Review gate workflow harmless quoted scalars must pass validation: ${harmlessReviewGateFormattingFailures.join("; ")}`,
+  );
 }
 
 for (const [path, requiredReviewGateScriptFragment] of [
   ["scripts/sync-review-gate-status.mjs", "No active review blockers; current-head Codex review missing."],
   ["scripts/sync-review-gate-status.mjs", "runReviewGate(target)"],
   ["scripts/sync-review-gate-status.mjs", "--expected-head"],
+  ["scripts/sync-review-gate-status.mjs", "context=Review gate"],
   ["scripts/check-pr-review-gate.mjs", "review-gate:allowed-missing-head-review"],
   ["scripts/check-pr-review-gate.mjs", "Expected head"],
   ["scripts/check-pr-review-gate.mjs", "authorAssociation"],
@@ -1085,6 +1457,7 @@ for (const requiredRepositorySettingsFragment of [
 
 for (const requiredRulesetFragment of [
   "Protect master",
+  'const reviewGateCheck = { context: "Review gate" };',
   "refs/heads/master",
   "pull_request",
   "required_status_checks",
