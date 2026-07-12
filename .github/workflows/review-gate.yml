@@ -3,21 +3,74 @@ name: Review findings gate
 on:
   pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review, edited]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "23 4 * * *"
 
-permissions:
-  contents: read
-  pull-requests: read
-  statuses: write
-
-concurrency:
-  group: review-gate-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+permissions: {}
 
 jobs:
+  select-pull-requests:
+    name: Select pull requests
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'pull_request_target' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      pull-requests: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      pull_requests: ${{ steps.targets.outputs.pull_requests }}
+      has_targets: ${{ steps.targets.outputs.has_targets }}
+
+    steps:
+      - name: Select current pull requests
+        id: targets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          if [ "${EVENT_NAME}" = "schedule" ]; then
+            pull_requests="$(gh pr list --repo "${GITHUB_REPOSITORY}" --state open --limit 1000 --json number --jq '[.[].number]')"
+          else
+            if [[ ! "${PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+              echo "Could not determine pull request number." >&2
+              exit 1
+            fi
+            pull_requests="[${PR_NUMBER}]"
+          fi
+
+          echo "pull_requests=${pull_requests}" >> "${GITHUB_OUTPUT}"
+          if [ "${pull_requests}" = "[]" ]; then
+            echo "has_targets=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "has_targets=true" >> "${GITHUB_OUTPUT}"
+          fi
+
   review-gate:
     name: Review gate status sync
+    needs: select-pull-requests
+    if: needs.select-pull-requests.outputs.has_targets == 'true'
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        pr: ${{ fromJSON(needs.select-pull-requests.outputs.pull_requests) }}
+    concurrency:
+      group: review-gate-${{ github.workflow }}-${{ matrix.pr }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 8
 
@@ -32,9 +85,9 @@ jobs:
       - name: Sync current-head review status
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ matrix.pr }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
@@ -53,14 +106,9 @@ jobs:
             --required-review-author chatgpt-codex-connector
           )
 
+          args+=(--pr "${PR_NUMBER}")
           if [ "${EVENT_NAME}" = "schedule" ]; then
-            args+=(--all-open --skip-pending-status)
-          else
-            if [ -z "${PR_NUMBER}" ]; then
-              echo "Could not determine pull request number." >&2
-              exit 1
-            fi
-            args+=(--pr "${PR_NUMBER}")
+            args+=(--skip-pending-status)
           fi
 
           node scripts/sync-review-gate-status.mjs "${args[@]}"

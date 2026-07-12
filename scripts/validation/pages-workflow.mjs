@@ -29,8 +29,24 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
     "run: pnpm gallery:check",
     "path: dist/gallery",
   ]) {
-    if (!pagesWorkflow.includes(requiredFragment)) {
+    if (!activeWorkflow.includes(requiredFragment)) {
       fail(`Pages workflow must include ${requiredFragment}`);
+    }
+  }
+
+  for (const line of activeLines) {
+    const match = line.match(/^\s*retention-days:\s*(.*?)\s*$/);
+    if (!match) continue;
+
+    const rawValue = match[1];
+    const value = rawValue
+      .match(/^(?:"(\d+)"|'(\d+)'|(\d+))$/)
+      ?.slice(1)
+      .find(Boolean);
+    if (!value || Number(value) < 1 || Number(value) > 7) {
+      fail(
+        "Pages workflow ordinary build evidence retention-days must be a literal integer from 1 to 7",
+      );
     }
   }
 
@@ -69,12 +85,12 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
   };
 
   for (const [action, sha] of Object.entries(pinnedActions)) {
-    if (!pagesWorkflow.includes(`uses: ${action}@${sha}`)) {
+    if (!activeWorkflow.includes(`uses: ${action}@${sha}`)) {
       fail(`Pages workflow must pin ${action} to ${sha}`);
     }
   }
 
-  for (const [, actionRef] of pagesWorkflow.matchAll(/uses:\s+([^\s#]+)/g)) {
+  for (const [, actionRef] of activeWorkflow.matchAll(/uses:\s+([^\s#]+)/g)) {
     if (!/@[0-9a-f]{40}$/.test(actionRef)) {
       fail(`Pages workflow action ${actionRef} must use a full-length commit SHA`);
     }
