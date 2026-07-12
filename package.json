@@ -46,7 +46,7 @@
     "smoke": "pnpm gallery:build && pnpm gallery:check && pnpm check:tokens && pnpm check:gallery && pnpm check:content && node scripts/smoke-gallery.mjs",
     "verify": "pnpm validate && pnpm review:gate:fixtures && pnpm review:gate:sync-fixtures && pnpm typecheck && pnpm build && pnpm trust:brief:fixtures && pnpm design:brief:fixtures && pnpm evidence:loop:fixtures && pnpm typecheck:api && pnpm artifact:check && pnpm consumer:check && pnpm smoke",
     "release:tarballs": "pnpm build && node scripts/check-packed-tarball-consumer.mjs --emit-dir dist/release",
-    "release:stable-tarballs": "pnpm build && node scripts/check-packed-tarball-consumer.mjs --version 0.0.1 --emit-dir dist/release"
+    "release:stable-tarballs": "pnpm build && node scripts/check-packed-tarball-consumer.mjs --stable-release --emit-dir dist/release"
   },
   "devDependencies": {
     "typescript": "6.0.3"

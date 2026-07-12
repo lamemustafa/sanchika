@@ -1,5 +1,4 @@
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import {
   copyFileSync,
   cpSync,
@@ -7,6 +6,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -14,15 +14,31 @@ import { tmpdir } from "node:os";
 import { basename, isAbsolute, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
+import {
+  createReleaseArtifactManifest,
+  loadReleaseManifest,
+  resolveReleaseVersion,
+  sha256File,
+} from "./validation/release-manifest.mjs";
 import { assertPackedFileList } from "./validation/tarball-contents.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const args = new Set(process.argv.slice(2));
+if (args.has("--release-manifest")) {
+  throw new Error("--release-manifest is not supported; stable releases always use root release.json");
+}
 const strictPublishManifests = args.has("--strict-publish-manifests");
+const stableRelease = args.has("--stable-release");
 const emitDir = valueAfter("--emit-dir");
-const simulatedVersion = valueAfter("--version") ?? "0.0.1-tarball-check.0";
-assertValidSimulatedVersion(simulatedVersion);
-const packages = ["tokens", "primitives", "patterns", "gallery"];
+const versionOverride = valueAfter("--version");
+const releaseManifest = stableRelease ? loadReleaseManifest(join(root, "release.json")) : null;
+const artifactVersion = releaseManifest
+  ? resolveReleaseVersion({ manifest: releaseManifest, override: versionOverride })
+  : versionOverride ?? "0.0.0-tarball-check.0";
+assertValidSimulatedVersion(artifactVersion);
+const packages = releaseManifest
+  ? releaseManifest.packages.map((packageName) => packageName.replace("@sanchika/", ""))
+  : ["tokens", "primitives", "patterns", "gallery"];
 const packageNames = new Set(packages.map((packageName) => `@sanchika/${packageName}`));
 assertBuiltPackageArtifacts({ root, commandName: "pnpm publish:tarball-check", packageNames: packages });
 const tempRoot = mkdtempSync(join(tmpdir(), "sanchika-tarball-consumer-"));
@@ -71,7 +87,7 @@ function preparePackageCopy(packageName) {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   if (!strictPublishManifests) {
     manifest.private = false;
-    manifest.version = simulatedVersion;
+    manifest.version = artifactVersion;
     manifest.publishConfig = {
       registry: "https://registry.npmjs.org/",
       access: "public",
@@ -87,7 +103,7 @@ function rewriteInternalDependencySections(manifest) {
     manifest[dependencyField] = Object.fromEntries(
       Object.entries(manifest[dependencyField]).map(([dependencyName, version]) => [
         dependencyName,
-        packageNames.has(dependencyName) && version === "workspace:*" ? simulatedVersion : version,
+        packageNames.has(dependencyName) && version === "workspace:*" ? artifactVersion : version,
       ]),
     );
   }
@@ -101,14 +117,35 @@ function packPackage(packageName) {
   if (!existsSync(tarballPath)) {
     throw new Error(`@sanchika/${packageName} tarball was not created at ${tarballPath}`);
   }
+  if (!strictPublishManifests) assertPackedArtifactVersion({ packageName, packed, tarballPath });
   if (strictPublishManifests) assertPackedManifestMatchesSource({ packageName, packed, tarballPath });
   return {
     packageName: `@sanchika/${packageName}`,
-    version: simulatedVersion,
+    version: artifactVersion,
     filename: basename(tarballPath),
     path: tarballPath,
     sha256: sha256File(tarballPath),
   };
+}
+
+function assertPackedArtifactVersion({ packageName, packed, tarballPath }) {
+  if (packed.version !== artifactVersion) {
+    throw new Error(`@sanchika/${packageName} npm pack metadata version ${packed.version} must equal ${artifactVersion}`);
+  }
+  const packedTarManifest = JSON.parse(run("tar", ["-xOf", tarballPath, "package/package.json"], tarballRoot));
+  if (packedTarManifest.version !== artifactVersion) {
+    throw new Error(`@sanchika/${packageName} packed package.json version must equal ${artifactVersion}`);
+  }
+  if (!basename(tarballPath).endsWith(`-${artifactVersion}.tgz`)) {
+    throw new Error(`@sanchika/${packageName} tarball filename must include version ${artifactVersion}`);
+  }
+  for (const dependencyField of ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"]) {
+    for (const [dependencyName, version] of Object.entries(packedTarManifest[dependencyField] ?? {})) {
+      if (packageNames.has(dependencyName) && version !== artifactVersion) {
+        throw new Error(`@sanchika/${packageName} packed ${dependencyField} ${dependencyName} must use ${artifactVersion}`);
+      }
+    }
+  }
 }
 
 function assertPackedManifestMatchesSource({ packageName, packed, tarballPath }) {
@@ -139,35 +176,36 @@ function printTarballEvidence(tarballs) {
 function writeReleaseArtifacts(tarballs) {
   assertCleanGitTree();
   const releaseRoot = releaseRootFrom(emitDir);
-  const releaseTarballRoot = join(releaseRoot, "tarballs");
-  rmSync(releaseRoot, { recursive: true, force: true });
-  mkdirSync(releaseTarballRoot, { recursive: true });
+  const stagingRoot = `${releaseRoot}.tmp-${process.pid}`;
+  const stagingTarballRoot = join(stagingRoot, "tarballs");
+  rmSync(stagingRoot, { recursive: true, force: true });
 
-  const manifest = {
-    version: simulatedVersion,
-    source: {
-      repository: "https://github.com/lamemustafa/sanchika",
-      commit: gitCommit(),
-    },
-    generatedAt: new Date().toISOString(),
-    packages: tarballs.map((tarball) => {
-      const targetPath = join(releaseTarballRoot, tarball.filename);
+  try {
+    mkdirSync(stagingTarballRoot, { recursive: true });
+    const emittedTarballs = tarballs.map((tarball) => {
+      const targetPath = join(stagingTarballRoot, tarball.filename);
       copyFileSync(tarball.path, targetPath);
-      return {
-        name: tarball.packageName,
-        version: tarball.version,
-        file: `tarballs/${tarball.filename}`,
-        sha256: tarball.sha256,
-      };
-    }),
-  };
+      return { ...tarball, path: targetPath, sha256: sha256File(targetPath) };
+    });
+    const manifest = createReleaseArtifactManifest({
+      version: artifactVersion,
+      channel: releaseManifest?.channel ?? "prerelease-check",
+      source: {
+        repository: "https://github.com/lamemustafa/sanchika",
+        commit: gitCommit(),
+      },
+      generatedAt: new Date().toISOString(),
+      tarballs: emittedTarballs,
+    });
 
-  writeFileSync(join(releaseRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+    writeFileSync(join(stagingRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+    rmSync(releaseRoot, { recursive: true, force: true });
+    renameSync(stagingRoot, releaseRoot);
+  } catch (error) {
+    rmSync(stagingRoot, { recursive: true, force: true });
+    throw error;
+  }
   console.log(`Release artifact bundle written to ${emitDir}`);
-}
-
-function sha256File(path) {
-  return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
 
 function writeConsumerPackage() {
@@ -186,21 +224,29 @@ function writeConsumerPackage() {
 
 function runConsumerProbe() {
   const probePath = join(consumerRoot, "probe.mjs");
+  const galleryImport = packages.includes("gallery")
+    ? 'import { primitiveGalleryCssImports, renderPrimitiveGalleryDocument } from "@sanchika/gallery";'
+    : "";
+  const galleryChecks = packages.includes("gallery")
+    ? [
+        '  primitiveGalleryCssImports[0] === "@sanchika/tokens/theme.css",',
+        "  renderPrimitiveGalleryDocument().includes('data-sk-pattern=\"TrustBoundary\" data-sk-state=\"permission-required\"'),",
+      ].join("\n")
+    : "";
   writeFileSync(
     probePath,
     `import { createRequire } from "node:module";
 import { colorTokens } from "@sanchika/tokens";
 import { primitiveClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
-import { primitiveGalleryCssImports, renderPrimitiveGalleryDocument } from "@sanchika/gallery";
+${galleryImport}
 
 const require = createRequire(import.meta.url);
 const checks = [
   colorTokens.brandPrimary.cssVariable === "--sk-color-brand-primary",
   primitiveClassName("Button", "brand", "md") === "sk-button sk-tone-brand sk-size-md",
   patternSpecs.some((pattern) => pattern.name === "EvidencePanel"),
-  primitiveGalleryCssImports[0] === "@sanchika/tokens/theme.css",
-  renderPrimitiveGalleryDocument().includes('data-sk-pattern="TrustBoundary" data-sk-state="permission-required"'),
+${galleryChecks}
   require.resolve("@sanchika/tokens/theme.css").endsWith("/dist/theme.css"),
   require.resolve("@sanchika/primitives/styles.css").endsWith("/dist/styles.css"),
 ];
@@ -215,7 +261,25 @@ if (checks.some((check) => !check)) {
 
 function runConsumerTypecheck() {
   mkdirSync(join(consumerRoot, "type-tests"));
-  copyFileSync(join(root, "type-tests/package-api.ts"), join(consumerRoot, "type-tests/package-api.ts"));
+  const typeTestPath = join(consumerRoot, "type-tests/package-api.ts");
+  if (packages.includes("gallery")) {
+    copyFileSync(join(root, "type-tests/package-api.ts"), typeTestPath);
+  } else {
+    writeFileSync(
+      typeTestPath,
+      `import { colorTokens } from "@sanchika/tokens";
+import { primitiveClassName } from "@sanchika/primitives";
+import { patternSpecs } from "@sanchika/patterns";
+
+const token: "--sk-color-brand-primary" = colorTokens.brandPrimary.cssVariable;
+const className: string = primitiveClassName("Button", "brand", "md");
+const patternName: string | undefined = patternSpecs[0]?.name;
+void token;
+void className;
+void patternName;
+`,
+    );
+  }
   writeFileSync(
     join(consumerRoot, "tsconfig.json"),
     `${JSON.stringify(
@@ -268,7 +332,7 @@ function valueAfter(flag) {
 
 function assertValidSimulatedVersion(version) {
   if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
-    throw new Error("--version must be a semver version such as 0.0.1 or 0.0.1-tarball-check.0");
+    throw new Error("--version must be a semantic version; prerelease identifiers are allowed for low-level checks");
   }
 }
 

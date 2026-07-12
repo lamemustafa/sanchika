@@ -1,6 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  findUnresolvedGalleryVariables,
+  runGalleryVariableFixtures,
+} from "./validation/gallery-css-variables.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const galleryDir = join(root, "dist", "gallery");
@@ -16,6 +20,10 @@ for (const path of [indexPath, themePath, primitivesPath]) {
 }
 
 const html = existsSync(indexPath) ? readFileSync(indexPath, "utf8") : "";
+const copiedCss = [
+  { name: "assets/theme.css", css: existsSync(themePath) ? readFileSync(themePath, "utf8") : "" },
+  { name: "assets/primitives.css", css: existsSync(primitivesPath) ? readFileSync(primitivesPath, "utf8") : "" },
+];
 for (const required of [
   "<!doctype html>",
   "<title>Sanchika | Design evidence system</title>",
@@ -51,6 +59,17 @@ if (html.indexOf("assets/theme.css") > html.indexOf("assets/primitives.css")) {
   failures.push("dist/gallery/index.html must load token CSS before primitive CSS");
 }
 
+for (const unresolved of findUnresolvedGalleryVariables({ html, copiedCss })) {
+  failures.push(
+    `generated gallery references undefined ${unresolved.variable} in ${unresolved.locations.join(", ")}`,
+  );
+}
+
+const variableFixtures = runGalleryVariableFixtures();
+for (const failure of variableFixtures.failures) {
+  failures.push(`gallery variable fixture ${failure}`);
+}
+
 if (failures.length > 0) {
   console.error("Sanchika gallery artifact check failed:");
   for (const failure of failures) console.error(`- ${failure}`);
@@ -58,6 +77,7 @@ if (failures.length > 0) {
 }
 
 console.log("Sanchika gallery artifact check passed.");
+console.log(`Sanchika gallery variable fixtures passed (${variableFixtures.count} cases).`);
 
 function relative(path) {
   return path.replace(`${root}/`, "");

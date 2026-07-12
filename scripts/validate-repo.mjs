@@ -15,6 +15,16 @@ import { expectedGithubLabels } from "./validation/github-labels.mjs";
 import { validatePackageManifest } from "./validation/package-manifests.mjs";
 import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
 import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
+import {
+  createReleaseArtifactManifest,
+  loadReleaseManifest,
+  parseReleaseManifest,
+  releaseManifestFixtureCases,
+  resolveReleaseVersion,
+  sha256File,
+  stableReleasePackageOrder,
+  validateReleaseManifest,
+} from "./validation/release-manifest.mjs";
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
 
@@ -286,9 +296,141 @@ if (rootPackage.scripts?.["release:tarballs"] !== "pnpm build && node scripts/ch
 
 if (
   rootPackage.scripts?.["release:stable-tarballs"] !==
-  "pnpm build && node scripts/check-packed-tarball-consumer.mjs --version 0.0.1 --emit-dir dist/release"
+  "pnpm build && node scripts/check-packed-tarball-consumer.mjs --stable-release --emit-dir dist/release"
 ) {
   fail("root package must expose release:stable-tarballs for approval-gated stable GitHub release assets");
+}
+
+let releaseManifest;
+try {
+  releaseManifest = loadReleaseManifest(join(root, "release.json"));
+} catch (error) {
+  fail(error.message);
+}
+
+if (
+  releaseManifest &&
+  JSON.stringify(releaseManifest.packages) !== JSON.stringify(stableReleasePackageOrder)
+) {
+  fail(`release.json packages must be exactly ${stableReleasePackageOrder.join(", ")}`);
+}
+
+let releaseManifestFixtureCount = 0;
+for (const fixture of releaseManifestFixtureCases()) {
+  releaseManifestFixtureCount += 1;
+  const fixtureFailures = validateReleaseManifest(fixture.manifest);
+  const matched = fixture.expectedFailure
+    ? fixtureFailures.some((message) => message.includes(fixture.expectedFailure))
+    : fixtureFailures.length === 0;
+  if (!matched) {
+    fail(
+      `Release manifest fixture ${fixture.name} expected ${fixture.expectedFailure ?? "success"}; found ${fixtureFailures.join(", ") || "success"}`,
+    );
+  }
+}
+
+for (const [name, operation, expectedFailure] of [
+  ["missing manifest", () => loadReleaseManifest(join(root, "release-does-not-exist.json")), "is missing"],
+  ["malformed manifest", () => parseReleaseManifest("{", "fixture"), "malformed JSON"],
+  [
+    "version mismatch",
+    () => resolveReleaseVersion({ manifest: releaseManifest, override: `${releaseManifest?.version}-mismatch` }),
+    "must match release manifest version",
+  ],
+]) {
+  releaseManifestFixtureCount += 1;
+  try {
+    operation();
+    fail(`Release manifest fixture ${name} must fail`);
+  } catch (error) {
+    if (!error.message.includes(expectedFailure)) {
+      fail(`Release manifest fixture ${name} must fail with ${expectedFailure}; received ${error.message}`);
+    }
+  }
+}
+
+releaseManifestFixtureCount += 1;
+try {
+  if (resolveReleaseVersion({ manifest: releaseManifest, override: releaseManifest.version }) !== releaseManifest.version) {
+    fail("Release manifest fixture matching version override must use the manifest version");
+  }
+} catch (error) {
+  fail(`Release manifest fixture matching version override failed unexpectedly: ${error.message}`);
+}
+
+const fixtureArtifactPath = join(root, "release.json");
+const fixtureChecksum = sha256File(fixtureArtifactPath);
+const validArtifactTarballs = () =>
+  releaseManifest.packages.map((packageName) => ({
+    packageName,
+    version: releaseManifest.version,
+    filename: `${packageName.replace("@sanchika/", "sanchika-")}-${releaseManifest.version}.tgz`,
+    path: fixtureArtifactPath,
+    sha256: fixtureChecksum,
+  }));
+
+for (const [name, mutate, expectedFailure] of [
+  ["valid emitted metadata", (tarballs) => tarballs, null],
+  [
+    "artifact version mismatch",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, version: "9.9.9" } : tarball),
+    "artifact version",
+  ],
+  [
+    "artifact filename mismatch",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, filename: "wrong-version.tgz" } : tarball),
+    "artifact filename",
+  ],
+  [
+    "invalid artifact checksum",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, sha256: "invalid" } : tarball),
+    "SHA-256 checksum",
+  ],
+  [
+    "artifact checksum does not match bytes",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, sha256: "a".repeat(64) } : tarball),
+    "checksum must match the bytes",
+  ],
+]) {
+  releaseManifestFixtureCount += 1;
+  try {
+    const artifactManifest = createReleaseArtifactManifest({
+      version: releaseManifest.version,
+      channel: releaseManifest.channel,
+      source: { repository: "fixture", commit: "fixture" },
+      generatedAt: "fixture",
+      tarballs: mutate(validArtifactTarballs()),
+    });
+    if (expectedFailure) {
+      fail(`Release manifest fixture ${name} must fail with ${expectedFailure}`);
+    } else if (
+      artifactManifest.version !== releaseManifest.version ||
+      artifactManifest.packages.some(
+        (entry) => entry.version !== releaseManifest.version || entry.sha256 !== fixtureChecksum,
+      )
+    ) {
+      fail("Release manifest fixture emitted metadata must agree with release version and final-byte checksums");
+    }
+  } catch (error) {
+    if (!expectedFailure) {
+      fail(`Release manifest fixture ${name} failed unexpectedly: ${error.message}`);
+    } else if (!error.message.includes(expectedFailure)) {
+      fail(`Release manifest fixture ${name} must fail with ${expectedFailure}; received ${error.message}`);
+    }
+  }
+}
+
+if (releaseManifest) {
+  const stableVersion = releaseManifest.version;
+  const embeddedVersionTargets = [
+    ["package.json scripts", JSON.stringify(rootPackage.scripts)],
+    ["scripts/check-packed-tarball-consumer.mjs", readText("scripts/check-packed-tarball-consumer.mjs")],
+  ];
+  for (const [label, source] of embeddedVersionTargets) {
+    if (source.includes(stableVersion)) {
+      fail(`${label} must not embed stable release version ${stableVersion}; read it from release.json`);
+    }
+  }
 }
 
 for (const [scriptPath, commandName] of [
@@ -310,13 +452,15 @@ for (const [scriptPath, commandName] of [
 
 const packedTarballScript = requireText("scripts/check-packed-tarball-consumer.mjs");
 for (const requiredTarballEvidenceFragment of [
-  "createHash",
+  "sha256File",
   "sha256",
   "Tarball evidence:",
-  "simulatedVersion",
+  "artifactVersion",
   "--version",
+  "--stable-release",
+  "resolveReleaseVersion",
   "assertValidSimulatedVersion",
-  "0.0.1-tarball-check.0",
+  "0.0.0-tarball-check.0",
   "--emit-dir",
   "manifest.json",
   "Release artifact bundle written to",
@@ -1720,6 +1864,7 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
+console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
 console.log("Sanchika repo validation passed.");
 
 function readOklch(variable) {

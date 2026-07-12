@@ -29,7 +29,8 @@ Before the first package publish:
 7. For an approval-gated stable GitHub release that still avoids npm
    publishing, run `pnpm release:stable-tarballs`. This uses the same pack,
    scratch-consumer, probe, typecheck, manifest, and SHA-256 path as
-   `release:tarballs`, but emits package tarballs with version `0.0.1`.
+   `release:tarballs`, but reads the stable version and ordered package set
+   from root `release.json`.
 8. Review accessibility claims against actual primitive behavior.
 9. Verify no real compliance data exists in docs, examples, tests, or fixtures.
 10. Prefer npm Trusted Publishing with GitHub Actions OIDC over long-lived npm
@@ -51,11 +52,26 @@ version, package filenames, and SHA-256 hashes. Upload every file in
 consumer needs a CI-installable artifact but the npm scope is still private.
 
 `pnpm release:stable-tarballs` is the stable GitHub-release promotion path for
-the same V0 package shape. It does not publish to npm and does not create a Git
-tag or GitHub release by itself. It only generates locally verified `0.0.1`
-assets under `dist/release/` so a maintainer can review the manifest, create
-`v0.0.1`, upload the generated tarballs and manifest, and then update consumers
-from the prerelease tarball URLs to the stable release asset URLs.
+the releasable V0 package set. It does not publish to npm and does not create a Git
+tag or GitHub release by itself. It validates root `release.json`, then
+generates matching package metadata, tarball filenames, checksums, and emitted
+manifest metadata under `dist/release/`. A command-line version override must
+equal the release manifest version. The current stable artifact baseline is
+`v0.0.2`, with `@sanchika/tokens`, `@sanchika/primitives`, and
+`@sanchika/patterns` in dependency order. `@sanchika/gallery` remains a V0
+consumer-compatibility surface, but it is not part of this stable release set.
+
+## Current Baseline And Planned Structural Release
+
+S0 introduces release-manifest hygiene for the existing `v0.0.2` artifact
+baseline. It does not publish packages, create a tag, create a GitHub release,
+or approve npm publication. Source package manifests remain on the experimental
+`0.0.0` model.
+
+The next material structural release is planned as `v0.1.0`. That later change
+may move the gallery from its current package and string renderer to an Astro
+application. S0 does not implement that migration. The structural PR will
+document migration and rollback expectations before any release decision.
 
 ## Future Trusted Publishing Contract
 
