@@ -24,8 +24,7 @@ const requiredFragments = [
   "Current public evidence ledger",
   "Static HTML, CSS, and package contracts",
   "Use Sanchika as evidence, not authority.",
-  "assets/theme.css",
-  "assets/primitives.css",
+  '<link rel="stylesheet" href="/_astro/',
 ];
 
 const staleFragments = [

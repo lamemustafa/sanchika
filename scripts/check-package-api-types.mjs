@@ -12,7 +12,6 @@ const packageLinks = {
   "@sanchika/tokens": join(root, "packages/tokens"),
   "@sanchika/primitives": join(root, "packages/primitives"),
   "@sanchika/patterns": join(root, "packages/patterns"),
-  "@sanchika/gallery": join(root, "packages/gallery"),
 };
 
 try {

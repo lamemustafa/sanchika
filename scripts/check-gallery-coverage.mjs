@@ -8,9 +8,7 @@ assertBuiltPackageArtifacts({ root, commandName: "pnpm check:gallery" });
 
 const { primitiveSpecs } = await import("../packages/primitives/dist/index.js");
 const { patternSpecs } = await import("../packages/patterns/dist/index.js");
-const { renderPrimitiveGalleryMarkup } = await import("../packages/gallery/dist/index.js");
-
-const markup = renderPrimitiveGalleryMarkup();
+const markup = readFileSync(new URL("../apps/gallery/dist/index.html", import.meta.url), "utf8");
 const failures = [];
 
 validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail: (message) => failures.push(message) });
@@ -39,8 +37,7 @@ for (const pattern of patternSpecs) {
   }
 }
 
-const html = readFileSync(new URL("../dist/gallery/index.html", import.meta.url), "utf8");
-if (html.includes("@sanchika/")) {
+if (markup.includes("@sanchika/")) {
   failures.push("openable gallery artifact must not contain unresolved @sanchika/* hrefs");
 }
 

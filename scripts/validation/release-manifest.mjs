@@ -7,7 +7,7 @@ export const stableReleasePackageOrder = [
   "@sanchika/patterns",
 ];
 
-const knownPackages = new Set([...stableReleasePackageOrder, "@sanchika/gallery"]);
+const knownPackages = new Set(stableReleasePackageOrder);
 
 export function loadReleaseManifest(path) {
   if (!existsSync(path)) {
@@ -139,7 +139,7 @@ export function releaseManifestFixtureCases() {
     { name: "unsupported channel", manifest: { ...valid, channel: "next" }, expectedFailure: "channel must be stable" },
     { name: "duplicate package", manifest: { ...valid, packages: [stableReleasePackageOrder[0], stableReleasePackageOrder[0]] }, expectedFailure: "duplicate package" },
     { name: "unknown package", manifest: { ...valid, packages: ["@sanchika/unknown"] }, expectedFailure: "unknown package" },
-    { name: "gallery is not released", manifest: { ...valid, packages: ["@sanchika/gallery"] }, expectedFailure: "not approved for the stable release set" },
+    { name: "gallery app is not a release package", manifest: { ...valid, packages: ["@sanchika/gallery"] }, expectedFailure: "unknown package" },
     { name: "invalid version", manifest: { ...valid, version: "01.2.3" }, expectedFailure: "non-prerelease semantic version" },
     { name: "prerelease version", manifest: { ...valid, version: "1.2.3-next.1" }, expectedFailure: "non-prerelease semantic version" },
     { name: "non-deterministic order", manifest: { ...valid, packages: [...stableReleasePackageOrder].reverse() }, expectedFailure: "deterministic order" },

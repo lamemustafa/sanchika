@@ -15,7 +15,6 @@ try {
     "@sanchika/tokens": join(root, "packages/tokens"),
     "@sanchika/primitives": join(root, "packages/primitives"),
     "@sanchika/patterns": join(root, "packages/patterns"),
-    "@sanchika/gallery": join(root, "packages/gallery"),
   };
 
   run("pnpm", [
@@ -34,15 +33,12 @@ try {
 import { colorTokens } from "@sanchika/tokens";
 import { primitiveClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
-import { primitiveGalleryCssImports, renderPrimitiveGalleryDocument } from "@sanchika/gallery";
 
 const require = createRequire(import.meta.url);
 const checks = [
   colorTokens.brandPrimary.cssVariable === "--sk-color-brand-primary",
   primitiveClassName("Button", "brand", "md") === "sk-button sk-tone-brand sk-size-md",
   patternSpecs.some((pattern) => pattern.name === "EvidencePanel"),
-  primitiveGalleryCssImports[0] === "@sanchika/tokens/theme.css",
-  renderPrimitiveGalleryDocument().includes('data-sanchika-gallery-document="primitive"'),
   require.resolve("@sanchika/tokens/theme.css").endsWith("/dist/theme.css"),
   require.resolve("@sanchika/primitives/styles.css").endsWith("/dist/styles.css"),
 ];

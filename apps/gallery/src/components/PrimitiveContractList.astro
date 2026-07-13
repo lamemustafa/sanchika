@@ -1,0 +1,20 @@
+---
+import { primitiveClassName, primitiveSpecs } from "@sanchika/primitives";
+---
+
+<section class="sk-gallery-section" aria-labelledby="primitive-contracts">
+  <h2 id="primitive-contracts">Primitive contracts</h2>
+  {primitiveSpecs.map((primitive) => (
+    <details class={`sk-gallery-contract ${primitiveClassName(primitive.name)}`}>
+      <summary><span>{primitive.name}</span><strong>{primitive.role}</strong></summary>
+      <div class="sk-gallery-contract-body">
+        <h3>Required states</h3><ul>{primitive.requiredStates.map((state) => <li>{state}</li>)}</ul>
+        <h3>State evidence</h3>
+        <ul>{primitive.stateEvidence.map((evidence) => (
+          <li><strong>{evidence.state}</strong>: {evidence.notes}<h4>Attributes</h4><ul>{evidence.attributes.map((attribute) => <li>{attribute}</li>)}</ul><h4>Selectors</h4><ul>{evidence.selectors.map((selector) => <li>{selector}</li>)}</ul></li>
+        ))}</ul>
+        {primitive.standards?.length ? <><h3>Standards</h3><ul>{primitive.standards.map((standard) => <li><strong>{standard.id}</strong>: <a href={standard.sourceUrl}>{standard.sourceUrl}</a><ul>{standard.requirements.map((requirement) => <li>{requirement}</li>)}</ul></li>)}</ul></> : null}
+      </div>
+    </details>
+  ))}
+</section>

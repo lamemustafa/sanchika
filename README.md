@@ -14,12 +14,12 @@ exists.
 
 ## V0 Scope
 
-Sanchika starts with four packages:
+Sanchika starts with three release packages and one private static application:
 
 - `@sanchika/tokens` - semantic OKLCH tokens, CSS variables, and token metadata.
 - `@sanchika/primitives` - typed primitive contracts and class composition.
 - `@sanchika/patterns` - reusable compliance-interface pattern contracts.
-- `@sanchika/gallery` - a lightweight primitive proof surface.
+- `@sanchika/gallery-app` - the private Astro gallery and design-evidence site.
 
 ## Consumer Order
 
@@ -82,25 +82,26 @@ Primitive styles consume Sanchika CSS variables and do not define product colors
 Use `primitiveClassName(...)` or equivalent class composition to apply
 `sk-button`, `sk-card`, `sk-badge`, and `sk-field` contracts.
 
-## Gallery Proof Artifact
+## Gallery Application
 
-`@sanchika/gallery` exports `renderPrimitiveGalleryMarkup()` for fragment-level
-checks and `renderPrimitiveGalleryDocument()` for a package-specifier HTML review document.
-The document renderer includes token CSS before primitive CSS and is
-intended for CI/review proof. It is not a directly openable browser artifact
-unless the consuming tool resolves `@sanchika/*` CSS hrefs.
+`apps/gallery` is a private Astro static application. It imports contract data
+from the public `tokens`, `primitives`, and `patterns` package entrypoints and
+loads token CSS before primitive CSS. It is a showcase and documentation
+surface, not a package that consumers import.
 
-Run `pnpm gallery:build` after `pnpm build` to write the openable proof artifact:
+Run `pnpm build` to build the release packages and write the openable static
+site. After those package artifacts exist, `pnpm gallery:build` rebuilds only
+the gallery application:
 
 ```text
-dist/gallery/index.html
-dist/gallery/assets/theme.css
-dist/gallery/assets/primitives.css
+apps/gallery/dist/index.html
+apps/gallery/dist/_astro/*.css
 ```
 
-Run `pnpm gallery:check` to fail unresolved `@sanchika/*` CSS hrefs and confirm
-token CSS loads before primitive CSS. The gallery artifact is not an app route,
-server, Storybook replacement, or runtime shell.
+Run `pnpm gallery:check` to fail unresolved `@sanchika/*` CSS references,
+confirm token CSS precedes primitive CSS, and reject unintended client
+JavaScript. The gallery remains a static app with one canonical root route; it
+is not a server, Storybook replacement, framework adapter, or runtime shell.
 
 ## Status
 

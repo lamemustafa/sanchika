@@ -5,7 +5,6 @@ const requiredArtifactsByPackage = new Map([
   ["tokens", ["dist/index.js", "dist/index.d.ts", "dist/theme.css"]],
   ["primitives", ["dist/index.js", "dist/index.d.ts", "dist/styles.css"]],
   ["patterns", ["dist/index.js", "dist/index.d.ts", "dist/evidence-loop.js", "dist/evidence-loop.d.ts"]],
-  ["gallery", ["dist/index.js", "dist/index.d.ts"]],
 ]);
 
 export function assertBuiltPackageArtifacts({ root, commandName, packageNames = [...requiredArtifactsByPackage.keys()] }) {

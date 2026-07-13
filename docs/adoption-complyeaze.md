@@ -42,7 +42,7 @@ workspace.
 1. In Sanchika, run `pnpm install`, `pnpm validate`, `pnpm typecheck`, and
    `pnpm build`.
 2. Link only package entrypoints such as `@sanchika/tokens`,
-   `@sanchika/primitives`, `@sanchika/patterns`, and `@sanchika/gallery`.
+   `@sanchika/primitives`, and `@sanchika/patterns`.
 3. In ComplyEaze, target the public/product route group first. Add token CSS
    before primitive CSS at the chosen CSS boundary, then apply one primitive or
    token mapping to a controlled surface.

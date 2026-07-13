@@ -9,10 +9,10 @@ assertBuiltPackageArtifacts({ root, commandName: "pnpm smoke" });
 const { colorTokens } = await import("../packages/tokens/dist/index.js");
 const { primitiveClassName, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
 const { patternSpecs } = await import("../packages/patterns/dist/index.js");
-const { renderPrimitiveGalleryDocument, renderPrimitiveGalleryMarkup } = await import("../packages/gallery/dist/index.js");
 
-const markup = renderPrimitiveGalleryMarkup();
-const documentMarkup = renderPrimitiveGalleryDocument();
+const documentMarkup = readFileSync(new URL("../apps/gallery/dist/index.html", import.meta.url), "utf8");
+const markup = documentMarkup;
+const normalizedMarkup = markup.replaceAll("&#39;", "'");
 const primitiveCss = readFileSync(new URL("../packages/primitives/src/styles.css", import.meta.url), "utf8");
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 const tokenDocs = readFileSync(new URL("../docs/tokens.md", import.meta.url), "utf8");
@@ -52,23 +52,16 @@ const requiredFragments = [
 ];
 
 const requiredDocumentFragments = [
-  "<!doctype html>",
+  "<!DOCTYPE html>",
   "<title>Sanchika | Design evidence system</title>",
   '<meta name="description"',
   '<link rel="canonical" href="https://sanchika.complyeaze.com/">',
   "https://sanchika.complyeaze.com/",
-  '<link rel="stylesheet" href="@sanchika/tokens/theme.css">',
-  '<link rel="stylesheet" href="@sanchika/primitives/styles.css">',
+  '<link rel="stylesheet" href="/_astro/',
   'data-sanchika-gallery-document="primitive"',
   markup,
 ];
 
-assertBefore(
-  documentMarkup,
-  '@sanchika/tokens/theme.css',
-  '@sanchika/primitives/styles.css',
-  "gallery document CSS import order",
-);
 assertBefore(readme, '@sanchika/tokens/theme.css', '@sanchika/primitives/styles.css', "README CSS import order");
 assertBefore(tokenDocs, '@sanchika/tokens/theme.css', '@sanchika/primitives/styles.css', "tokens docs CSS import order");
 
@@ -166,7 +159,7 @@ for (const pattern of patternSpecs) {
 }
 
 const missing = [
-  ...requiredFragments.filter((fragment) => !markup.includes(fragment)),
+  ...requiredFragments.filter((fragment) => !normalizedMarkup.includes(fragment)),
   ...requiredDocumentFragments.filter((fragment) => !documentMarkup.includes(fragment)),
 ];
 

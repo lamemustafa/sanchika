@@ -12,12 +12,13 @@ repository reality is different: Sanchika is an independent public Git
 repository at `lamemustafa/sanchika`, locally nestable near ComplyEaze for
 coordination but not part of the parent app workspace and not a Git submodule.
 
-The current v0 packages are:
+The current v0 release packages are:
 
 - `@sanchika/tokens`
 - `@sanchika/primitives`
 - `@sanchika/patterns`
-- `@sanchika/gallery`
+
+The private static application is `@sanchika/gallery-app` under `apps/gallery`.
 
 The immediate readiness gap is not more package surface area. It is visible,
 checkable proof that the existing contracts render correctly and can be adopted

@@ -5,15 +5,16 @@ Sanchika is a design-system SDK, not an application framework.
 ## Package Direction
 
 ```text
-tokens -> primitives -> patterns -> gallery
+tokens -> primitives -> patterns
+   \----------\----------> apps/gallery
 ```
 
 - `tokens` has no package dependencies.
 - `primitives` depends on token names and shared type contracts only.
 - `patterns` composes primitives into compliance-interface structures.
-- `gallery` renders static markup and document strings for review and
-  regression checks. It must not add routes, servers, app shells, Storybook, or
-  framework runtime dependencies.
+- `apps/gallery` is a private Astro static application. It renders package
+  contract exports and CSS into the canonical gallery site without exposing a
+  consumer runtime package, framework adapter, or client island by default.
 - CSS package exports are the only declared package side effects:
   `@sanchika/tokens/theme.css` and `@sanchika/primitives/styles.css` stay
   side-effectful so production bundlers do not prune required styles. Code-only
@@ -25,7 +26,7 @@ V0 local-link adoption is checked by `pnpm consumer:check` and
 `pnpm typecheck:api`; packed tarballs are verified by
 `pnpm publish:tarball-check` as a pre-publish packaging and consumer-smoke path.
 Consumers may use tarballs only when a consumer-specific adoption plan approves
-that artifact path.
+that artifact path. Consumers do not import `@sanchika/gallery-app`.
 
 ## Release Posture
 

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const packages = ["tokens", "primitives", "patterns", "gallery"];
+const packages = ["tokens", "primitives", "patterns"];
 const dependencyFields = ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"];
 const failures = [];
 
@@ -108,23 +108,6 @@ function expectedPackageFiles(manifest) {
   for (const target of Object.values(manifest.exports ?? {})) {
     if (typeof target === "string" && target.startsWith("./dist/")) {
       files.add(target.slice(2));
-    }
-  }
-
-  if (manifest.name === "@sanchika/gallery") {
-    for (const helperFile of [
-      "dist/page-sections.d.ts",
-      "dist/page-sections.js",
-      "dist/page-style-content.d.ts",
-      "dist/page-style-content.js",
-      "dist/page-style-core.d.ts",
-      "dist/page-style-core.js",
-      "dist/page-style-responsive.d.ts",
-      "dist/page-style-responsive.js",
-      "dist/page-styles.d.ts",
-      "dist/page-styles.js",
-    ]) {
-      files.add(helperFile);
     }
   }
 

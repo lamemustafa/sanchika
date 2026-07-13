@@ -56,8 +56,12 @@ function requireText(path) {
   return readText(path);
 }
 
-const expectedPackages = ["gallery", "patterns", "primitives", "tokens"];
-const actualPackages = readdirSync(join(root, "packages")).filter((entry) => !entry.startsWith(".")).sort();
+const expectedPackages = ["patterns", "primitives", "tokens"];
+const actualPackages = readdirSync(join(root, "packages"))
+  .filter((entry) => !entry.startsWith(".") && existsSync(join(root, "packages", entry, "package.json")))
+  .sort();
+const expectedApps = ["gallery"];
+const actualApps = readdirSync(join(root, "apps")).filter((entry) => !entry.startsWith(".")).sort();
 
 validateSensitiveExamples({ root, fail });
 
@@ -65,13 +69,36 @@ if (JSON.stringify(actualPackages) !== JSON.stringify(expectedPackages)) {
   fail(`packages/ must contain exactly ${expectedPackages.join(", ")}, found ${actualPackages.join(", ")}`);
 }
 
-for (const blocked of ["apps", "pack", "tools", "src/app"]) {
+if (JSON.stringify(actualApps) !== JSON.stringify(expectedApps)) {
+  fail(`apps/ must contain exactly ${expectedApps.join(", ")}, found ${actualApps.join(", ")}`);
+}
+
+for (const blocked of ["pack", "tools", "src/app"]) {
   if (existsSync(join(root, blocked))) {
     fail(`${blocked} must not exist in Sanchika v0`);
   }
 }
 
 const rootPackage = readJson("package.json");
+const galleryAppPackage = readJson("apps/gallery/package.json");
+const galleryAstroConfig = readText("apps/gallery/astro.config.mjs");
+const galleryTypecheckConfig = readText("apps/gallery/tsconfig.json");
+if (galleryAppPackage.name !== "@sanchika/gallery-app" || galleryAppPackage.private !== true) {
+  fail("apps/gallery must be the private @sanchika/gallery-app package");
+}
+if (galleryAppPackage.devDependencies?.astro !== "7.0.7") {
+  fail("@sanchika/gallery-app must pin Astro 7.0.7 exactly");
+}
+for (const requiredGalleryBuildFragment of ['transformer: "postcss"', 'cssMinify: "esbuild"']) {
+  if (!galleryAstroConfig.includes(requiredGalleryBuildFragment)) {
+    fail(`apps/gallery Astro config must preserve package CSS selectors with ${requiredGalleryBuildFragment}`);
+  }
+}
+for (const packageName of ["patterns", "primitives", "tokens"]) {
+  if (!galleryTypecheckConfig.includes(`"@sanchika/${packageName}": ["../../packages/${packageName}/src/index.ts"]`)) {
+    fail(`apps/gallery typecheck must resolve @sanchika/${packageName} without built package artifacts`);
+  }
+}
 if (rootPackage.name !== "sanchika") {
   fail("root package must be named sanchika");
 }
@@ -242,6 +269,22 @@ if (!rootPackage.scripts?.verify?.includes("pnpm evidence:loop:fixtures")) {
 
 if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-types.mjs") {
   fail("root package must expose typecheck:api for package API declaration proof");
+}
+
+if (
+  rootPackage.scripts?.["smoke:check"] !==
+  "pnpm gallery:check && pnpm check:tokens && pnpm check:gallery && pnpm check:content && node scripts/smoke-gallery.mjs"
+) {
+  fail("root package must expose smoke:check as the check-only gallery smoke lane");
+}
+if (rootPackage.scripts?.smoke !== "pnpm gallery:build && pnpm smoke:check") {
+  fail("root smoke command must build the gallery once before smoke:check");
+}
+if (
+  !rootPackage.scripts?.verify?.includes("pnpm smoke:check") ||
+  /(?:^|&&\s*)pnpm smoke(?:\s*&&|\s*$)/.test(rootPackage.scripts?.verify ?? "")
+) {
+  fail("root verify must reuse its built gallery through smoke:check without rebuilding it");
 }
 
 const verifyScript = rootPackage.scripts?.verify ?? "";
@@ -499,7 +542,6 @@ for (const requiredPublishReadyFragment of [
   "npm publish ./packages/tokens",
   "npm publish ./packages/primitives",
   "npm publish ./packages/patterns",
-  "npm publish ./packages/gallery",
   "--provenance",
   "dependencyFields",
   "peerDependencies",
@@ -578,7 +620,9 @@ const tokenCss = readText("packages/tokens/src/theme.css");
 const primitiveSource = readText("packages/primitives/src/index.ts");
 const primitiveCss = readText("packages/primitives/src/styles.css");
 const patternSource = readText("packages/patterns/src/index.ts");
-const gallerySource = readText("packages/gallery/src/index.ts");
+const gallerySource = readText("apps/gallery/src/components/PatternContracts.astro");
+const galleryPrimitiveMatrixSource = readText("apps/gallery/src/components/PrimitiveStateMatrix.astro");
+const galleryPrimitiveSummarySource = readText("apps/gallery/src/components/PrimitiveSummary.astro");
 const tokenDocs = readText("docs/tokens.md");
 const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
@@ -604,7 +648,6 @@ const hostingDocs = requireText("docs/hosting.md");
 const githubSetupDocs = requireText("docs/github-repository-setup.md");
 const repositorySettingsDocs = requireText("docs/repository-settings.md");
 const packageManifestValidationSource = readText("scripts/validation/package-manifests.mjs");
-const galleryReadme = readText("packages/gallery/README.md");
 const workflowPreflightSource = readText("scripts/check-workflow-preflight.mjs");
 const githubRulesetSource = readText("scripts/render-github-master-ruleset.mjs");
 const githubStateCheckSource = readText("scripts/check-github-repo-state.mjs");
@@ -691,6 +734,18 @@ if (tokenDocs.includes("--sk-motion-standard")) {
 
 validatePrimitiveContracts({ primitiveSource, primitiveDocs, primitiveCss, tokenCssDeclarations, fail });
 
+if (/:where\([^)]*::(?:after|placeholder)/.test(primitiveCss)) {
+  fail("primitive pseudo-elements must sit outside :where() so browsers can match the selector");
+}
+for (const requiredPrimitivePseudoSelector of [
+  ':where(.sk-button[aria-busy="true"], .sk-button[data-loading="true"])::after',
+  ':where(.sk-field :is(input, textarea, select, [data-sk-control]))::placeholder',
+]) {
+  if (!primitiveCss.includes(requiredPrimitivePseudoSelector)) {
+    fail(`primitive CSS must include valid selector ${requiredPrimitivePseudoSelector}`);
+  }
+}
+
 const primitiveManifest = readJson("packages/primitives/package.json");
 if (primitiveManifest.exports?.["./styles.css"] !== "./dist/styles.css") {
   fail("@sanchika/primitives must export ./styles.css");
@@ -767,8 +822,7 @@ for (const requiredPatternDocFragment of [
 }
 
 for (const requiredGalleryStatusFragment of [
-  "renderPatternStateExemplars",
-  "pattern.requiredStates.flatMap",
+  "pattern.states.map",
   "state.requiredVisibleSignals",
   "state.programmaticStatus",
   "data-sk-visible-signal",
@@ -777,6 +831,18 @@ for (const requiredGalleryStatusFragment of [
   if (!gallerySource.includes(requiredGalleryStatusFragment)) {
     fail(`gallery source must implement ${requiredGalleryStatusFragment}`);
   }
+}
+
+for (const [path, source] of [
+  ["apps/gallery/src/components/PrimitiveStateMatrix.astro", galleryPrimitiveMatrixSource],
+  ["apps/gallery/src/components/PrimitiveSummary.astro", galleryPrimitiveSummarySource],
+]) {
+  if (!source.includes("primitiveSpecs")) {
+    fail(`${path} must derive primitive contract enumerations from primitiveSpecs`);
+  }
+}
+if (/const\s+badgeTones\s*=\s*\[/.test(galleryPrimitiveMatrixSource)) {
+  fail("PrimitiveStateMatrix must not duplicate Badge tones in an app-local array");
 }
 
 for (const sourceUrl of [
@@ -933,35 +999,6 @@ for (const packageName of expectedPackages) {
   }
 }
 
-const galleryManifest = readJson("packages/gallery/package.json");
-const galleryTypecheckConfig = readText("packages/gallery/tsconfig.typecheck.json");
-if (galleryManifest.scripts?.typecheck !== "tsc -p tsconfig.typecheck.json --noEmit") {
-  fail("@sanchika/gallery typecheck must use tsconfig.typecheck.json");
-}
-
-for (const requiredGalleryTypecheckFragment of [
-  '"@sanchika/tokens": ["../tokens/src/index.ts"]',
-  '"@sanchika/primitives": ["../primitives/src/index.ts"]',
-  '"@sanchika/patterns": ["../patterns/src/index.ts"]',
-]) {
-  if (!galleryTypecheckConfig.includes(requiredGalleryTypecheckFragment)) {
-    fail(`packages/gallery/tsconfig.typecheck.json must include ${requiredGalleryTypecheckFragment}`);
-  }
-}
-
-for (const requiredGalleryDocumentFragment of [
-  "package-specifier HTML review document",
-  "not a directly openable browser artifact",
-  "resolves `@sanchika/*` CSS hrefs",
-]) {
-  if (!galleryReadme.includes(requiredGalleryDocumentFragment)) {
-    fail(`packages/gallery/README.md must clarify ${requiredGalleryDocumentFragment}`);
-  }
-  if (!readText("README.md").includes(requiredGalleryDocumentFragment)) {
-    fail(`README.md must clarify ${requiredGalleryDocumentFragment}`);
-  }
-}
-
 if (/package link or packed artifact|Link or pack|package link\/artifact method/i.test(complyeazeAdoptionDocs)) {
   fail("docs/adoption-complyeaze.md must not present packed artifacts as a supported V0 adoption path");
 }
@@ -1059,7 +1096,7 @@ validatePagesSmokeWorkflow({ pagesSmokeWorkflow, fail });
 
 const retentionFailureMessage =
   "Pages workflow ordinary build evidence retention-days must be a literal integer from 1 to 7";
-const pagesArtifactPath = "          path: dist/gallery";
+const pagesArtifactPath = "          path: apps/gallery/dist";
 for (const [name, retentionYaml, shouldFail] of [
   ["unquoted lower bound", "          retention-days: 1", false],
   ["unquoted upper bound", "          retention-days: 7", false],
@@ -1108,7 +1145,6 @@ for (const requiredHostingFragment of [
   "sanchika.complyeaze.com",
   "The authoritative public host is `sanchika.complyeaze.com`",
   "GitHub Pages",
-  "pnpm gallery:build",
   "pnpm gallery:check",
   ".github/workflows/pages-smoke.yml",
   "node scripts/check-pages-smoke.mjs",
@@ -1541,7 +1577,6 @@ for (const requiredReleaseFragment of [
   "npm publish ./packages/tokens --provenance",
   "npm publish ./packages/primitives --provenance",
   "npm publish ./packages/patterns --provenance",
-  "npm publish ./packages/gallery --provenance",
   "private orchestration root",
 ]) {
   if (!releasePolicy.includes(requiredReleaseFragment)) {
@@ -1801,6 +1836,10 @@ for (const requiredPreflightFragment of [
   if (!workflowPreflightSource.includes(requiredPreflightFragment)) {
     fail(`scripts/check-workflow-preflight.mjs must include ${requiredPreflightFragment}`);
   }
+}
+
+if (workflowPreflightSource.includes('["apps", "pack", "tools"')) {
+  fail("scripts/check-workflow-preflight.mjs must allow the validated private apps/gallery workspace");
 }
 
 for (const requiredPackageArtifactFragment of [

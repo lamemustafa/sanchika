@@ -40,7 +40,7 @@ is local-link evaluation.
 1. In Sanchika, run `pnpm install`, `pnpm validate`, `pnpm typecheck`,
    `pnpm build`, `pnpm typecheck:api`, and `pnpm consumer:check`.
 2. Link only package entrypoints such as `@sanchika/tokens`,
-   `@sanchika/primitives`, `@sanchika/patterns`, and `@sanchika/gallery`.
+   `@sanchika/primitives`, and `@sanchika/patterns`.
 3. Load token CSS before primitive CSS and keep product-specific color, copy,
    routing, auth, telemetry, and persistence outside Sanchika.
 4. Record changed files and rollback files in the consuming repository.

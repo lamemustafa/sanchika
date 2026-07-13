@@ -58,8 +58,9 @@ generates matching package metadata, tarball filenames, checksums, and emitted
 manifest metadata under `dist/release/`. A command-line version override must
 equal the release manifest version. The current stable artifact baseline is
 `v0.0.2`, with `@sanchika/tokens`, `@sanchika/primitives`, and
-`@sanchika/patterns` in dependency order. `@sanchika/gallery` remains a V0
-consumer-compatibility surface, but it is not part of this stable release set.
+`@sanchika/patterns` in dependency order. The private
+`@sanchika/gallery-app` is not a consumer package and is excluded from release
+tarballs.
 
 ## Current Baseline And Planned Structural Release
 
@@ -68,10 +69,10 @@ baseline. It does not publish packages, create a tag, create a GitHub release,
 or approve npm publication. Source package manifests remain on the experimental
 `0.0.0` model.
 
-The next material structural release is planned as `v0.1.0`. That later change
-may move the gallery from its current package and string renderer to an Astro
-application. S0 does not implement that migration. The structural PR will
-document migration and rollback expectations before any release decision.
+S1 moves the gallery from its package and string renderer to the private Astro
+application without publishing, tagging, or changing the `v0.0.2` release
+manifest. The next material package release remains planned as `v0.1.0` and is
+separate from this architecture migration.
 
 ## Future Trusted Publishing Contract
 
@@ -97,8 +98,7 @@ decision is confirmed. The intended publisher contract is:
 - Package publishing must target package directories in dependency order:
   `npm publish ./packages/tokens --provenance`,
   `npm publish ./packages/primitives --provenance`,
-  `npm publish ./packages/patterns --provenance`, then
-  `npm publish ./packages/gallery --provenance`. Never publish the private orchestration root.
+  `npm publish ./packages/patterns --provenance`. Never publish the private orchestration root or `apps/gallery`.
 - Before publish, package manifests must no longer contain `workspace:*`
   dependencies, and package tarballs must include package-level README and
   LICENSE files.

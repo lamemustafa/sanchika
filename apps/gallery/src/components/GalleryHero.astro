@@ -1,0 +1,60 @@
+---
+import { colorTokens } from "@sanchika/tokens";
+import { primitiveClassName } from "@sanchika/primitives";
+import { evidenceLedger } from "../content/gallery";
+
+const colorRoleCount = Object.keys(colorTokens).length;
+---
+
+<section class="sk-gallery-hero" aria-labelledby="gallery-title">
+  <div class="sk-gallery-hero-copy">
+    <p class="sk-gallery-eyebrow">Live static artifact · synthetic examples only</p>
+    <h1 id="gallery-title">Interfaces that survive compliance review.</h1>
+    <p class="sk-gallery-lede">Sanchika is a design system for AI-shaped compliance UI. It makes the contract visible before adoption: what the surface may claim, which state it is in, what evidence rendered, and where the runtime boundary stops.</p>
+    <div class="sk-gallery-actions" aria-label="Primary gallery actions">
+      <a class={primitiveClassName("Button", "brand", "md")} href="#evidence-loop">Follow the evidence loop</a>
+      <a class={primitiveClassName("Button", "neutral", "md")} href="#primitive-contracts">Inspect contracts</a>
+    </div>
+    <div class="sk-gallery-proof-lattice" aria-label="Sanchika proof loop summary">
+      <div><span>01</span><strong>Claim named</strong><p>TrustBrief locks the allowed claim before a surface becomes reusable.</p></div>
+      <div><span>02</span><strong>State rendered</strong><p>DesignBrief and browser evidence prove the UI actually carries that state.</p></div>
+      <div><span>03</span><strong>Adoption gated</strong><p>Consumer proof decides whether the contract can travel to product code.</p></div>
+    </div>
+    <dl class="sk-gallery-proof-strip" aria-label="Current gallery proof signals">
+      <div><dt>Live host</dt><dd>sanchika.complyeaze.com</dd></div>
+      <div><dt>Tokens</dt><dd>{colorRoleCount} color roles loaded</dd></div>
+      <div><dt>Boundary</dt><dd>No taxpayer, portal, filing, or client data</dd></div>
+    </dl>
+  </div>
+  <aside class="sk-gallery-workbench" aria-labelledby="gallery-status-title">
+    <div class="sk-gallery-workbench-bar"><p>Evidence run</p><span>static artifact</span></div>
+    <div class="sk-gallery-claim">
+      <span id="gallery-status-title">Current truth</span>
+      <strong>A design system that can defend itself.</strong>
+      <p>The gallery proves package behavior. Product readiness still requires browser, accessibility, consumer, and rollback evidence.</p>
+    </div>
+    <div class="sk-gallery-workbench-map" aria-label="Current proof boundary map">
+      <div><span>contract</span><strong>framework-agnostic</strong></div>
+      <div><span>adapter</span><strong>Primitive contract</strong></div>
+      <div><span>boundary</span><strong>static artifact</strong></div>
+      <div><span>adoption</span><strong>ComplyEaze first</strong></div>
+    </div>
+    <div class="sk-gallery-evidence-rail" aria-label="Sanchika evidence flow">
+      <span>TrustBrief</span><span>DesignBrief</span><span>Browser evidence</span><span>Adoption decision</span>
+    </div>
+    <dl class="sk-gallery-status-grid">
+      <div><dt>Runtime</dt><dd>Static HTML, CSS, and package contracts</dd></div>
+      <div><dt>Review mode</dt><dd>Open source artifact, not compliance authority</dd></div>
+      <div><dt>Consumer path</dt><dd>Adopt only after real product evidence</dd></div>
+    </dl>
+    <div class="sk-gallery-current-evidence" aria-label="Current public evidence ledger">
+      {evidenceLedger.map((item) => (
+        <div data-sk-evidence-state={item.state}>
+          <span>{item.state.charAt(0).toUpperCase() + item.state.slice(1)}</span>
+          <strong>{item.label}</strong><code>{item.command}</code><small>{item.source}</small><p>{item.detail}</p>
+        </div>
+      ))}
+    </div>
+    <p class="sk-gallery-disclaimer" data-sk-synthetic-disclaimer>All gallery examples are synthetic and must not be treated as taxpayer, portal, filing, or client data.</p>
+  </aside>
+</section>
