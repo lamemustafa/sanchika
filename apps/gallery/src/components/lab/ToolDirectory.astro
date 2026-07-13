@@ -1,5 +1,6 @@
 ---
 import type { LabTool, ToolCategory } from "../../content/lab/references";
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
 
 interface Props {
   tools: readonly LabTool[];
@@ -10,11 +11,11 @@ const { tools, axalHref } = Astro.props;
 const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCategory[];
 ---
 
-<section class="lab-directory" aria-labelledby="directory-title" data-tool-directory>
-  <div class="lab-directory__head">
+<section class={`lab-directory ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby="directory-title" data-tool-directory>
+  <div class={`lab-directory__head ${primitiveClassName("Cluster", { gap: "lg", align: "end", justify: "between" })}`}>
     <div>
       <span>Local tool index</span>
-      <h2 id="directory-title">Search by the work on your desk.</h2>
+      <h2 id="directory-title" class={textClassName("heading")}>Search by the work on your desk.</h2>
     </div>
     <p role="status" aria-live="polite" aria-atomic="true"><strong data-tool-count>{tools.length}</strong> draft tools</p>
   </div>
@@ -36,7 +37,7 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
     <p id="tool-search-note">Filtering happens only in this browser. Nothing is uploaded.</p>
   </form>
 
-  <div class="lab-directory__filters" aria-label="Tool categories" data-tool-filters hidden>
+  <div class={`lab-directory__filters ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Tool categories" data-tool-filters hidden>
     <button type="button" aria-pressed="true" data-tool-category="all">All work</button>
     {categories.map((category) => (
       <button type="button" aria-pressed="false" data-tool-category={category}>{category}</button>
@@ -58,7 +59,7 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
           <h3>{tool.name}</h3>
           <p>{tool.job}</p>
         </div>
-        <dl>
+        <dl class={primitiveClassName("Grid", { columns: "3", gap: "md" })}>
           <div><dt>Input</dt><dd>{tool.input}</dd></div>
           <div><dt>Output</dt><dd>{tool.output}</dd></div>
           <div><dt>Review</dt><dd>{tool.review}</dd></div>
@@ -77,7 +78,7 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
     <span>Recurring or saved work</span>
     <h3 id="directory-escalation-title">Move continuing review into Axal.</h3>
     <p>Use a local tool for a bounded draft. Use Axal when evidence, ownership, review state, or a continuing client record must remain visible.</p>
-    <a href={axalHref}>Open the synthetic Axal review desk <span aria-hidden="true">→</span></a>
+    <a class={primitiveClassName("Link")} href={axalHref}>Open the synthetic Axal review desk <span aria-hidden="true">→</span></a>
   </aside>
 </section>
 

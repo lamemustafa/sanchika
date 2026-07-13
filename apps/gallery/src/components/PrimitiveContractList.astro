@@ -1,11 +1,11 @@
 ---
-import { primitiveClassName, primitiveSpecs } from "@sanchika/primitives";
+import { primitiveClassName, primitiveGroups } from "@sanchika/primitives";
 ---
 
 <section class="sk-gallery-section" aria-labelledby="primitive-contracts">
   <h2 id="primitive-contracts">Primitive contracts</h2>
-  {primitiveSpecs.map((primitive) => (
-    <details class={`sk-gallery-contract ${primitiveClassName(primitive.name)}`}>
+  {primitiveGroups.legacy.map((primitive) => (
+    <details class={`sk-gallery-contract ${primitiveClassName(primitive.name)}`} data-sk-contract={primitive.name}>
       <summary><span>{primitive.name}</span><strong>{primitive.role}</strong></summary>
       <div class="sk-gallery-contract-body">
         <h3>Required states</h3><ul>{primitive.requiredStates.map((state) => <li>{state}</li>)}</ul>

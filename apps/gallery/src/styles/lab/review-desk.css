@@ -11,10 +11,7 @@
 }
 
 .lab-review-desk__topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sk-space-6);
+  flex-wrap: nowrap;
   min-height: 4.75rem;
   padding: var(--sk-space-4) var(--sk-space-6);
   color: var(--sk-color-surface-raised);
@@ -36,11 +33,6 @@
   display: block;
   margin-top: var(--sk-space-1);
   font-size: 1.1rem;
-}
-
-.lab-review-desk__summary {
-  display: flex;
-  gap: var(--sk-space-6);
 }
 
 .lab-review-desk__summary span {
@@ -72,8 +64,6 @@
 }
 
 .lab-work-queue__list {
-  display: grid;
-  gap: var(--sk-space-3);
   margin-top: var(--sk-space-6);
 }
 
@@ -97,13 +87,6 @@
 
 .lab-work-queue__list article[data-tone="ready"] {
   border-color: var(--sk-color-brand-secondary);
-}
-
-.lab-work-queue__identity {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sk-space-3);
 }
 
 .lab-work-queue__identity span {
@@ -236,9 +219,6 @@
 }
 
 .lab-checkpoint-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sk-space-2);
   margin-top: var(--sk-space-4);
 }
 
@@ -261,8 +241,6 @@
 }
 
 .lab-evidence-rail__items {
-  display: grid;
-  gap: var(--sk-space-2);
   margin-top: var(--sk-space-6);
 }
 

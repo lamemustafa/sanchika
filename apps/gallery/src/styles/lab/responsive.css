@@ -29,6 +29,7 @@
   }
 
   .lab-evidence-rail__items {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -117,7 +118,7 @@
     margin-top: var(--sk-space-6);
   }
 
-  .lab-actions .sk-button {
+  .lab-action-link {
     justify-content: center;
     width: 100%;
   }
@@ -212,6 +213,7 @@
   }
 
   .lab-work-queue__list {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--sk-space-2);
     margin-top: var(--sk-space-4);

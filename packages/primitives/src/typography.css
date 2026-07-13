@@ -1,0 +1,68 @@
+@layer sanchika-primitives {
+  :where(.sk-text) {
+    max-inline-size: var(--sk-container-full);
+    color: inherit;
+    font-family: var(--sk-font-body);
+    font-size: var(--sk-font-size-lg);
+    font-weight: var(--sk-font-weight-regular);
+    letter-spacing: var(--sk-letter-spacing-normal);
+    line-height: var(--sk-line-height-body);
+    overflow-wrap: anywhere;
+  }
+
+  :where(.sk-text-display) {
+    font-family: var(--sk-font-display);
+    font-size: var(--sk-font-size-5xl);
+    font-weight: var(--sk-font-weight-bold);
+    letter-spacing: var(--sk-letter-spacing-tight);
+    line-height: var(--sk-line-height-display);
+    text-wrap: balance;
+  }
+
+  :where(.sk-text-heading) {
+    font-family: var(--sk-font-display);
+    font-size: var(--sk-font-size-3xl);
+    font-weight: var(--sk-font-weight-bold);
+    letter-spacing: var(--sk-letter-spacing-tight);
+    line-height: var(--sk-line-height-display);
+    text-wrap: balance;
+  }
+
+  :where(.sk-text-body) {
+    font-size: var(--sk-font-size-lg);
+    line-height: var(--sk-line-height-body);
+    text-wrap: pretty;
+  }
+
+  :where(.sk-text-lead) {
+    max-inline-size: var(--sk-container-reading);
+    color: var(--sk-color-ink-secondary);
+    font-size: var(--sk-font-size-xl);
+    line-height: var(--sk-line-height-body);
+    text-wrap: pretty;
+  }
+
+  :where(.sk-text-caption) {
+    color: var(--sk-color-ink-muted);
+    font-size: var(--sk-font-size-sm);
+    line-height: var(--sk-line-height-caption);
+  }
+
+  :where(.sk-text-eyebrow) {
+    color: var(--sk-color-ink-secondary);
+    font-family: var(--sk-font-mono);
+    font-size: var(--sk-font-size-xs);
+    font-weight: var(--sk-font-weight-bold);
+    letter-spacing: var(--sk-letter-spacing-caps);
+    line-height: var(--sk-line-height-caption);
+    text-transform: uppercase;
+  }
+
+  :where(.sk-text-data, .sk-text-mono) {
+    font-family: var(--sk-font-mono);
+    font-size: inherit;
+    letter-spacing: var(--sk-letter-spacing-normal);
+    line-height: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+}

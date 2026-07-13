@@ -3,11 +3,15 @@ import { existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
+import { validatePrimitiveRuntime } from "./validation/primitive-runtime.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+assertBuiltPackageArtifacts({ root, commandName: "pnpm artifact:check" });
 const packages = ["tokens", "primitives", "patterns"];
 const dependencyFields = ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"];
 const failures = [];
+let primitiveRuntimeFixtures = null;
 
 for (const packageName of packages) {
   const packageDir = join(root, "packages", packageName);
@@ -51,6 +55,14 @@ for (const packageName of packages) {
   }
 }
 
+try {
+  const { primitiveClassName, primitiveGroups, primitiveSpecs, textClassName } = await import("../packages/primitives/dist/index.js");
+  primitiveRuntimeFixtures = validatePrimitiveRuntime({ primitiveClassName, primitiveGroups, primitiveSpecs, textClassName });
+  failures.push(...primitiveRuntimeFixtures.failures);
+} catch (error) {
+  failures.push(`primitive runtime fixtures could not load built package exports: ${String(error)}`);
+}
+
 if (failures.length > 0) {
   console.error("Sanchika package artifact check failed:");
   for (const failure of failures) {
@@ -60,6 +72,7 @@ if (failures.length > 0) {
 }
 
 console.log("Sanchika package artifact check passed.");
+if (primitiveRuntimeFixtures) console.log(`Sanchika primitive runtime fixtures passed (${primitiveRuntimeFixtures.count} cases).`);
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
@@ -104,6 +117,30 @@ function expectedPackageFiles(manifest) {
     "README.md",
     "package.json",
   ]);
+
+  if (manifest.name === "@sanchika/primitives") {
+    for (const path of [
+      "dist/classes.d.ts",
+      "dist/classes.js",
+      "dist/contracts/actions.d.ts",
+      "dist/contracts/actions.js",
+      "dist/contracts/form-status.d.ts",
+      "dist/contracts/form-status.js",
+      "dist/contracts/layout-core.d.ts",
+      "dist/contracts/layout-core.js",
+      "dist/contracts/layout-planes.d.ts",
+      "dist/contracts/layout-planes.js",
+      "dist/contracts/types.d.ts",
+      "dist/contracts/types.js",
+      "dist/contracts/typography.d.ts",
+      "dist/contracts/typography.js",
+      "dist/registry.d.ts",
+      "dist/registry.js",
+    ]) files.add(path);
+    files.add("dist/components.css");
+    files.add("dist/foundation.css");
+    files.add("dist/typography.css");
+  }
 
   for (const target of Object.values(manifest.exports ?? {})) {
     if (typeof target === "string" && target.startsWith("./dist/")) {

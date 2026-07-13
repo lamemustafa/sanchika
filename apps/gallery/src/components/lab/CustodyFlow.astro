@@ -1,4 +1,6 @@
 ---
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+
 interface CustodyStage {
   readonly step: string;
   readonly title: string;
@@ -19,8 +21,8 @@ interface Props {
 const { stages, facts } = Astro.props;
 ---
 
-<section class="lab-custody" aria-labelledby="custody-title">
-  <div class="lab-artifact-bar lab-artifact-bar--dark">
+<section class={`lab-custody ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby="custody-title">
+  <div class={`lab-artifact-bar lab-artifact-bar--dark ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
     <div>
       <span>Local custody trace</span>
       <strong id="custody-title">From portal session to this device.</strong>
@@ -36,7 +38,7 @@ const { stages, facts } = Astro.props;
           <span aria-hidden="true"></span>
         </div>
         <div>
-          <h2>{stage.title}</h2>
+          <h2 class={textClassName("heading")}>{stage.title}</h2>
           <p>{stage.detail}</p>
           <strong>{stage.boundary}</strong>
         </div>
@@ -68,8 +70,8 @@ const { stages, facts } = Astro.props;
       <span>Proof available</span>
       <strong>Source and release inspectable</strong>
       <p class="lab-custody__links">
-        <a href="https://github.com/lamemustafa/pack">Inspect public source</a>
-        <a href="https://github.com/lamemustafa/pack/releases">Review release artifacts</a>
+        <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/pack">Inspect public source</a>
+        <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/pack/releases">Review release artifacts</a>
       </p>
     </div>
   </div>

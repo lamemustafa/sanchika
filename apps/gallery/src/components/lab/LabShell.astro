@@ -1,6 +1,7 @@
 ---
 import "@sanchika/tokens/theme.css";
 import "@sanchika/primitives/styles.css";
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
 import "../../styles/lab/index.css";
 
 interface Props {
@@ -27,12 +28,12 @@ const canonicalUrl = new URL(Astro.url.pathname, "https://sanchika.complyeaze.co
   </head>
   <body class={`lab-page lab-page--${mode}`}>
     <a class="lab-skip-link" href="#lab-content">Skip to reference</a>
-    <main id="lab-content" class="lab-stage" data-sanchika-example="synthetic" tabindex="-1">
+    <main id="lab-content" class={`lab-stage ${primitiveClassName("Container", { width: "wide" })}`} data-sanchika-example="synthetic" tabindex="-1">
       <slot />
     </main>
-    <footer class="lab-colophon">
-      <p><strong>Sanchika North Star lab</strong> · C1 review artifact · synthetic examples only</p>
-      <p>No taxpayer, client, portal-session, credential, or private repository data is used.</p>
+    <footer class={`lab-colophon ${primitiveClassName("Container", { width: "wide" })} ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
+      <p class={textClassName("caption")}><strong>Sanchika North Star lab</strong> · C1 review artifact · synthetic examples only</p>
+      <p class={textClassName("caption")}>No taxpayer, client, portal-session, credential, or private repository data is used.</p>
     </footer>
   </body>
 </html>

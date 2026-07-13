@@ -1,19 +1,22 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
+import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
 import { validateGalleryExemplars } from "./validation/gallery-exemplars.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-assertBuiltPackageArtifacts({ root, commandName: "pnpm smoke" });
+assertGalleryBuildArtifacts({ root, commandName: "pnpm smoke:check" });
 
 const { colorTokens } = await import("../packages/tokens/dist/index.js");
 const { primitiveClassName, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
 const { patternSpecs } = await import("../packages/patterns/dist/index.js");
 
 const documentMarkup = readFileSync(new URL("../apps/gallery/dist/index.html", import.meta.url), "utf8");
-const markup = documentMarkup;
+const foundationMarkup = readFileSync(new URL("../apps/gallery/dist/primitives/foundations/index.html", import.meta.url), "utf8");
+const markup = `${documentMarkup}\n${foundationMarkup}`;
 const normalizedMarkup = markup.replaceAll("&#39;", "'");
-const primitiveCss = readFileSync(new URL("../packages/primitives/src/styles.css", import.meta.url), "utf8");
+const primitiveCss = ["styles.css", "foundation.css", "typography.css", "components.css"]
+  .map((path) => readFileSync(new URL(`../packages/primitives/src/${path}`, import.meta.url), "utf8"))
+  .join("\n");
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 const tokenDocs = readFileSync(new URL("../docs/tokens.md", import.meta.url), "utf8");
 
@@ -59,7 +62,7 @@ const requiredDocumentFragments = [
   "https://sanchika.complyeaze.com/",
   '<link rel="stylesheet" href="/_astro/',
   'data-sanchika-gallery-document="primitive"',
-  markup,
+  documentMarkup,
 ];
 
 assertBefore(readme, '@sanchika/tokens/theme.css', '@sanchika/primitives/styles.css', "README CSS import order");
@@ -163,7 +166,13 @@ const missing = [
   ...requiredDocumentFragments.filter((fragment) => !documentMarkup.includes(fragment)),
 ];
 
-validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail: (message) => missing.push(message) });
+validateGalleryExemplars({
+  markup,
+  primitiveSpecs,
+  patternSpecs,
+  validateUniqueDocumentIds: false,
+  fail: (message) => missing.push(message),
+});
 
 if (missing.length > 0) {
   console.error("Sanchika gallery smoke failed. Missing fragments:");

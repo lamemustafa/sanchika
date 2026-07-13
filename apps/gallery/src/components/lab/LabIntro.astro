@@ -1,4 +1,6 @@
 ---
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+
 interface Action {
   label: string;
   href: string;
@@ -18,13 +20,13 @@ const { eyebrow, title, lede, primary, secondary, compact = false } = Astro.prop
 
 <header class:list={["lab-intro", compact && "lab-intro--compact"]}>
   <div class="lab-intro__copy">
-    <p class="lab-eyebrow">{eyebrow}</p>
-    <h1>{title}</h1>
-    <p class="lab-lede">{lede}</p>
+    <p class={`lab-eyebrow ${textClassName("eyebrow")}`}>{eyebrow}</p>
+    <h1 class={textClassName("display")}>{title}</h1>
+    <p class={`lab-lede ${textClassName("lead")}`}>{lede}</p>
     {(primary || secondary) && (
-      <div class="lab-actions" aria-label="Reference actions">
-        {primary && <a class="sk-button sk-tone-brand sk-size-md" href={primary.href}>{primary.label}</a>}
-        {secondary && <a class="sk-button sk-tone-neutral sk-size-md" href={secondary.href}>{secondary.label}</a>}
+      <div class={`lab-actions ${primitiveClassName("Cluster", { gap: "md" })}`} aria-label="Reference actions">
+        {primary && <a class={`lab-action-link lab-action-link--brand ${primitiveClassName("Link")}`} href={primary.href}>{primary.label}</a>}
+        {secondary && <a class={`lab-action-link lab-action-link--neutral ${primitiveClassName("Link")}`} href={secondary.href}>{secondary.label}</a>}
       </div>
     )}
   </div>

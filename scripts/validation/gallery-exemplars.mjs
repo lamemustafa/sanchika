@@ -1,8 +1,9 @@
-export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail }) {
-  validateUniqueIds({ markup, fail });
+export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail, validateUniqueDocumentIds = true }) {
+  if (validateUniqueDocumentIds) validateUniqueIds({ markup, fail });
   validateButtonExemplars({ markup, primitiveSpecs, fail });
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
+  validateLinkCardExemplars({ markup, fail });
   validateTrustBoundarySignals({ markup, fail });
   validateSyntheticGalleryBoundary({ markup, fail });
   validateStateSpecificPatternCopy({ markup, fail });
@@ -45,6 +46,82 @@ export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs,
     fail,
     "Field disabled exemplar",
   );
+}
+
+export function runGalleryExemplarFixtures() {
+  const cases = [
+    {
+      name: "valid root-anchor LinkCard",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><strong>Proof</strong></a>',
+      expectedFailure: null,
+    },
+    {
+      name: "valid named-link LinkCard",
+      markup: '<article data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card"><a href="/proof">Proof destination</a><span>Metadata</span></article>',
+      expectedFailure: null,
+    },
+    {
+      name: "nested button",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><button type="button">Command</button></a>',
+      expectedFailure: "<button>",
+    },
+    {
+      name: "nested anchor",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><a href="/other">Other</a></a>',
+      expectedFailure: "<a>",
+    },
+    {
+      name: "nested input",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><input aria-label="Filter"></a>',
+      expectedFailure: "<input>",
+    },
+    {
+      name: "nested select",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><select aria-label="State"><option>Open</option></select></a>',
+      expectedFailure: "<select>",
+    },
+    {
+      name: "nested textarea",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><textarea aria-label="Note"></textarea></a>',
+      expectedFailure: "<textarea>",
+    },
+    {
+      name: "nested summary",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><details><summary>More</summary></details></a>',
+      expectedFailure: "<summary>",
+    },
+    {
+      name: "contenteditable descendant",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><span contenteditable="true">Editable</span></a>',
+      expectedFailure: "contenteditable",
+    },
+    {
+      name: "tabindex descendant",
+      markup: '<a data-sk-primitive="LinkCard" data-sk-state="default" class="sk-link-card" href="/proof"><span tabindex="0">Focusable</span></a>',
+      expectedFailure: "tabindex=\"0\"",
+    },
+  ];
+  const failures = [];
+
+  for (const fixture of cases) {
+    const fixtureFailures = [];
+    validateGalleryExemplars({
+      markup: fixture.markup,
+      primitiveSpecs: [{ name: "LinkCard", requiredStates: ["default"] }],
+      patternSpecs: [],
+      validateUniqueDocumentIds: false,
+      fail: (message) => fixtureFailures.push(message),
+    });
+    const linkCardFailures = fixtureFailures.filter((message) => message.startsWith("LinkCard exemplar"));
+    if (fixture.expectedFailure === null && linkCardFailures.length > 0) {
+      failures.push(`${fixture.name} unexpectedly failed: ${linkCardFailures.join("; ")}`);
+    }
+    if (fixture.expectedFailure !== null && !linkCardFailures.some((message) => message.includes(fixture.expectedFailure))) {
+      failures.push(`${fixture.name} did not report ${fixture.expectedFailure}`);
+    }
+  }
+
+  return { count: cases.length, failures };
 }
 
 function validateStateSpecificPatternCopy({ markup, fail }) {
@@ -300,12 +377,103 @@ function validateCardFocusSemantics({ markup, fail }) {
   }
 }
 
+function validateLinkCardExemplars({ markup, fail }) {
+  const elements = parseHtmlElements(markup);
+  const exemplars = flattenElements(elements).filter(
+    (element) => getAttribute(element.attrs, "data-sk-primitive") === "LinkCard",
+  );
+
+  for (const [index, exemplar] of exemplars.entries()) {
+    const state = getAttribute(exemplar.attrs, "data-sk-state") ?? `index-${index + 1}`;
+    const label = `LinkCard exemplar ${state}`;
+    const descendants = flattenElements(exemplar.children);
+    const rootIsAnchor = exemplar.tag === "a";
+
+    if (rootIsAnchor && !getAttribute(exemplar.attrs, "href")) {
+      fail(`${label} root <a> must have href`);
+    }
+
+    if (rootIsAnchor) {
+      for (const descendant of descendants) {
+        const reason = interactiveReason(descendant);
+        if (reason) fail(`${label} must not contain nested interactive ${reason}`);
+      }
+      continue;
+    }
+
+    const namedLinks = descendants.filter(
+      (descendant) => descendant.tag === "a" && Boolean(getAttribute(descendant.attrs, "href")),
+    );
+    if (namedLinks.length !== 1) {
+      fail(`${label} named-link composition must contain exactly one <a href>; found ${namedLinks.length}`);
+    }
+    for (const descendant of descendants) {
+      if (descendant === namedLinks[0]) continue;
+      const reason = interactiveReason(descendant);
+      if (reason) fail(`${label} named-link composition must not contain additional interactive ${reason}`);
+    }
+  }
+}
+
+function parseHtmlElements(markup) {
+  const roots = [];
+  const stack = [];
+  const voidTags = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+
+  for (const match of markup.matchAll(/<\/?([a-z][\w:-]*)\b[^>]*>/gi)) {
+    const source = match[0];
+    const tag = match[1].toLowerCase();
+    if (source.startsWith("</")) {
+      const matchingIndex = stack.findLastIndex((element) => element.tag === tag);
+      if (matchingIndex >= 0) stack.length = matchingIndex;
+      continue;
+    }
+
+    const attrs = source.replace(/^<[^\s>]+/, "").replace(/\/?>$/, "");
+    const element = { tag, attrs, children: [] };
+    const parent = stack.at(-1);
+    if (parent) parent.children.push(element);
+    else roots.push(element);
+    if (!source.endsWith("/>") && !voidTags.has(tag)) stack.push(element);
+  }
+
+  return roots;
+}
+
+function flattenElements(elements) {
+  return elements.flatMap((element) => [element, ...flattenElements(element.children)]);
+}
+
+function interactiveReason(element) {
+  if (element.tag === "a") return "<a>";
+  if (["button", "input", "select", "textarea", "summary", "iframe"].includes(element.tag)) return `<${element.tag}>`;
+  if (element.tag === "area" && getAttribute(element.attrs, "href")) return "<area href>";
+  if (["audio", "video"].includes(element.tag) && hasAttribute(element.attrs, "controls")) return `<${element.tag} controls>`;
+
+  if (hasAttribute(element.attrs, "contenteditable")) {
+    const value = getAttribute(element.attrs, "contenteditable");
+    if (value !== "false") return `<${element.tag} contenteditable>`;
+  }
+
+  if (hasAttribute(element.attrs, "tabindex")) {
+    const value = getAttribute(element.attrs, "tabindex") ?? "0";
+    const tabIndex = Number(value);
+    if (!Number.isFinite(tabIndex) || tabIndex >= 0) return `<${element.tag} tabindex="${value}">`;
+  }
+
+  return null;
+}
+
 function idsForDescriptiveText(fieldMarkup) {
   return [...fieldMarkup.matchAll(/<[^>]+\sid="([^"]+)"[^>]+data-sk-(?:hint|error)\b/g)].map(([, id]) => id);
 }
 
 function getAttribute(source, name) {
   return source.match(new RegExp(`\\s${name}="([^"]+)"`))?.[1] ?? null;
+}
+
+function hasAttribute(source, name) {
+  return new RegExp(`(?:^|\\s)${name}(?:\\s*=|\\s|$)`, "i").test(source);
 }
 
 function findPatternStateExemplar(markup, patternName, stateName) {

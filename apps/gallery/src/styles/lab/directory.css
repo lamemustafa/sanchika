@@ -11,10 +11,7 @@
 }
 
 .lab-directory__head {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: var(--sk-space-6);
+  flex-wrap: nowrap;
   padding: clamp(1.5rem, 3vw, 3rem);
   color: var(--sk-color-surface-raised);
   background: var(--sk-color-brand-primary);
@@ -99,9 +96,6 @@
 }
 
 .lab-directory__filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sk-space-2);
   padding: var(--sk-space-4) clamp(1.5rem, 3vw, 3rem);
   border-bottom: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
 }
@@ -172,12 +166,6 @@
 .lab-tool-card__main p {
   margin-top: var(--sk-space-2);
   color: var(--sk-color-ink-muted);
-}
-
-.lab-directory__results dl {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--sk-space-4);
 }
 
 .lab-directory__results dt {

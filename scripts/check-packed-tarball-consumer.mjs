@@ -233,7 +233,7 @@ function runConsumerProbe() {
     `import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { colorTokens, tokenDefinitions } from "@sanchika/tokens";
-import { primitiveClassName } from "@sanchika/primitives";
+import { primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
 
 const require = createRequire(import.meta.url);
@@ -247,6 +247,12 @@ const checks = [
   JSON.stringify(Object.keys(colorTokens)) === JSON.stringify(legacyColorTokenKeys),
   tokenDefinitions.some((token) => token.id === "color.surface-raised" && token.cssVariable === "--sk-color-surface-raised"),
   primitiveClassName("Button", "brand", "md") === "sk-button sk-tone-brand sk-size-md",
+  primitiveClassName("Card", "warning", "lg") === "sk-card sk-tone-warning sk-size-lg",
+  primitiveClassName("Container", { width: "wide" }) === "sk-container sk-container-width-wide",
+  primitiveClassName("Surface", { variant: "inset", padding: "md" }) === "sk-surface sk-surface-inset sk-surface-pad-md",
+  textClassName("data") === "sk-text sk-text-data",
+  primitiveSpecs.length === 16,
+  new Set(primitiveSpecs.map((primitive) => primitive.name)).size === primitiveSpecs.length,
   patternSpecs.some((pattern) => pattern.name === "EvidencePanel"),
   themePath.endsWith("/dist/theme.css"),
   require.resolve("@sanchika/primitives/styles.css").endsWith("/dist/styles.css"),
@@ -259,6 +265,53 @@ const checks = [
 if (checks.some((check) => !check)) {
   throw new Error("Sanchika packed-tarball consumer probe failed");
 }
+
+try {
+  primitiveClassName("Grid", { columns: "12" });
+  throw new Error("Unknown Sanchika primitive variant did not fail");
+} catch (error) {
+  if (!String(error).includes('Unsupported columns "12" for primitive Grid')) throw error;
+}
+
+const inheritedRuntimeKeys = ["toString", "constructor", "__proto__", "prototype", "hasOwnProperty"];
+const legacyNames = ["Button", "Card", "Badge", "Field"];
+const appendedNames = ["Container", "Section", "Stack", "Cluster", "Grid", "Split", "Surface", "Divider", "VisuallyHidden", "Text", "Link", "LinkCard"];
+const expectedButtonStandards = [{ id: "WAI-ARIA APG Button Pattern", sourceUrl: "https://www.w3.org/WAI/ARIA/apg/patterns/button/", requirements: ["Prefer native <button> elements for command actions.", 'If a non-button element uses role="button", the consumer must provide Space and Enter activation.', "Toggle buttons use aria-pressed without changing the visible label.", "Consumers must define focus after activation according to the resulting workflow."] }];
+if (primitiveSpecs.slice(0, legacyNames.length).map((primitive) => primitive.name).join(",") !== legacyNames.join(",")) {
+  throw new Error("Sanchika packed consumer lost the legacy primitiveSpecs prefix");
+}
+if (primitiveSpecs.slice(legacyNames.length).map((primitive) => primitive.name).join(",") !== appendedNames.join(",")) {
+  throw new Error("Sanchika packed consumer lost the exact appended S4 primitive inventory");
+}
+if (!Object.hasOwn(primitiveSpecs[0], "standards") || !Object.keys(primitiveSpecs[0]).includes("standards") || JSON.stringify(primitiveSpecs[0].standards) !== JSON.stringify(expectedButtonStandards)) {
+  throw new Error("Button lost its exact legacy standards value");
+}
+for (const name of legacyNames.slice(1)) {
+  const primitive = primitiveSpecs.find((candidate) => candidate.name === name);
+  if (!primitive || !Object.hasOwn(primitive, "standards") || !Object.keys(primitive).includes("standards") || primitive.standards.length !== 0) {
+    throw new Error(name + " lost its enumerable standards: [] compatibility shape");
+  }
+}
+for (const inheritedKey of inheritedRuntimeKeys) {
+  expectInvalid("primitive " + inheritedKey, () => primitiveClassName(inheritedKey));
+  expectInvalid("text role " + inheritedKey, () => textClassName(inheritedKey));
+  for (const primitive of primitiveSpecs) {
+    expectInvalid(primitive.name + " option " + inheritedKey, () => primitiveClassName(primitive.name, JSON.parse('{"' + inheritedKey + '":"fixture"}')));
+    for (const variant of primitive.variants) {
+      expectInvalid(primitive.name + "." + variant.name + " " + inheritedKey, () => primitiveClassName(primitive.name, { [variant.name]: inheritedKey }));
+    }
+  }
+}
+
+function expectInvalid(label, operation) {
+  try {
+    operation();
+  } catch (error) {
+    if (/Unknown primitive|Unsupported/.test(String(error))) return;
+    throw error;
+  }
+  throw new Error(label + " was accepted");
+}
 `,
   );
   run(process.execPath, [probePath], consumerRoot);
@@ -266,23 +319,7 @@ if (checks.some((check) => !check)) {
 
 function runConsumerTypecheck() {
   mkdirSync(join(consumerRoot, "type-tests"));
-  const typeTestPath = join(consumerRoot, "type-tests/package-api.ts");
-  writeFileSync(
-    typeTestPath,
-    `import { colorTokens, getTokenDefinition } from "@sanchika/tokens";
-import { primitiveClassName } from "@sanchika/primitives";
-import { patternSpecs } from "@sanchika/patterns";
-
-const token: "--sk-color-brand-primary" = colorTokens.brandPrimary.cssVariable;
-const newToken = getTokenDefinition("color.surface-raised");
-const className: string = primitiveClassName("Button", "brand", "md");
-const patternName: string | undefined = patternSpecs[0]?.name;
-void token;
-void newToken;
-void className;
-void patternName;
-`,
-  );
+  copyFileSync(join(root, "type-tests/package-api.ts"), join(consumerRoot, "type-tests/package-api.ts"));
   writeFileSync(
     join(consumerRoot, "tsconfig.json"),
     `${JSON.stringify(
