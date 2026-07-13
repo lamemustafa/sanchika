@@ -1,0 +1,29 @@
+---
+import BoundaryBanner from "../../components/lab/BoundaryBanner.astro";
+import LabIntro from "../../components/lab/LabIntro.astro";
+import LabShell from "../../components/lab/LabShell.astro";
+import ToolDirectory from "../../components/lab/ToolDirectory.astro";
+import { labRoutes, labTools } from "../../content/lab/references";
+
+const route = labRoutes.tools;
+---
+
+<LabShell title={route.title} description={route.description} routeId="tools-directory" mode="tools">
+  <BoundaryBanner
+    label="Browser-local boundary"
+    statement="Search terms and entered work stay in this browser; outputs remain drafts."
+    tone="draft"
+    facts={[
+      { label: "Account", value: "Not required" },
+      { label: "Upload", value: "None" },
+      { label: "Review", value: "Named on every tool" },
+    ]}
+  />
+  <LabIntro
+    eyebrow={route.eyebrow}
+    title="Find the browser-local draft tool for the work on your desk."
+    lede="Search the job, inspect the input and output boundary, and know the review requirement before opening a tool."
+    compact
+  />
+  <ToolDirectory tools={labTools} axalHref={labRoutes.axal.path} />
+</LabShell>

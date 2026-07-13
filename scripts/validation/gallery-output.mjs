@@ -4,7 +4,12 @@ const executableExtensions = new Set([".js", ".mjs", ".cjs"]);
 const metadataScriptTypes = new Set(["application/ld+json", "application/json"]);
 const galleryOrigin = "https://sanchika.complyeaze.com";
 
-export function inspectGalleryAssetGraph({ html, outputFiles }) {
+export function inspectGalleryAssetGraph({
+  html,
+  outputFiles,
+  allowUnreferencedStylesheets = false,
+  allowedInlineScriptMarker = null,
+}) {
   const failures = [];
   const activeHtml = html.replace(/<!--[\s\S]*?-->/g, "");
   const stylesheetPaths = [];
@@ -41,7 +46,9 @@ export function inspectGalleryAssetGraph({ html, outputFiles }) {
 
   const emittedCss = [...outputFiles.keys()].filter((path) => path.endsWith(".css")).sort();
   for (const path of emittedCss) {
-    if (!seenStylesheets.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by index.html`);
+    if (!allowUnreferencedStylesheets && !seenStylesheets.has(path)) {
+      failures.push(`emitted stylesheet ${path} is not referenced by index.html`);
+    }
   }
   if (stylesheetPaths.length === 0) failures.push("index.html must reference generated CSS");
 
@@ -53,12 +60,18 @@ export function inspectGalleryAssetGraph({ html, outputFiles }) {
   }
 
   let scriptIndex = 0;
+  const allowedInlineScriptInventory = [];
   for (const match of activeHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
     scriptIndex += 1;
     const attributes = parseAttributes(match[1]);
     const type = attributes.get("type")?.toLowerCase() ?? "";
     const src = attributes.get("src");
     if (metadataScriptTypes.has(type) && !src) continue;
+    const marker = attributes.get("data-sanchika-lab-script");
+    if (!src && allowedInlineScriptMarker && marker === allowedInlineScriptMarker) {
+      allowedInlineScriptInventory.push(marker);
+      continue;
+    }
     failures.push(
       src
         ? `index.html script #${scriptIndex} must not load client JavaScript from ${src}`
@@ -71,6 +84,7 @@ export function inspectGalleryAssetGraph({ html, outputFiles }) {
     stylesheetPaths,
     stylesheets: stylesheetPaths.map((path) => ({ name: path, css: outputFiles.get(path) ?? "" })),
     clientJavaScriptInventory,
+    allowedInlineScriptInventory,
   };
 }
 
@@ -82,6 +96,13 @@ export function runGalleryOutputFixtures() {
   ]);
   const fixtures = [
     { name: "referenced stylesheet and JSON-LD metadata", html: validHtml, files: validFiles, expected: null },
+    {
+      name: "named lab enhancement may be explicitly allowed",
+      html: '<link rel="stylesheet" href="/_astro/current.css"><script data-sanchika-lab-script="tool-filter">document.documentElement.dataset.enhanced = "true";</script>',
+      files: validFiles,
+      options: { allowedInlineScriptMarker: "tool-filter" },
+      expected: null,
+    },
     {
       name: "missing referenced stylesheet",
       html: '<link rel="stylesheet" href="/_astro/missing.css">',
@@ -116,7 +137,11 @@ export function runGalleryOutputFixtures() {
 
   const failures = [];
   for (const fixture of fixtures) {
-    const findings = inspectGalleryAssetGraph({ html: fixture.html, outputFiles: fixture.files }).failures;
+    const findings = inspectGalleryAssetGraph({
+      html: fixture.html,
+      outputFiles: fixture.files,
+      ...fixture.options,
+    }).failures;
     const matched = fixture.expected
       ? findings.some((finding) => finding.includes(fixture.expected))
       : findings.length === 0;

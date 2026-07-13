@@ -1,0 +1,38 @@
+---
+import "@sanchika/tokens/theme.css";
+import "@sanchika/primitives/styles.css";
+import "../../styles/lab/index.css";
+
+interface Props {
+  title: string;
+  description: string;
+  routeId: string;
+  mode: "complyeaze" | "axal" | "pack" | "tools" | "motion";
+}
+
+const { title, description, routeId, mode } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, "https://sanchika.complyeaze.com").href;
+---
+
+<!doctype html>
+<html lang="en" data-sanchika-lab={routeId}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2212%22%20fill=%22%230d2029%22/%3E%3Ccircle%20cx=%2232%22%20cy=%2232%22%20r=%2213%22%20fill=%22%23e1b640%22/%3E%3C/svg%3E" />
+  </head>
+  <body class={`lab-page lab-page--${mode}`}>
+    <a class="lab-skip-link" href="#lab-content">Skip to reference</a>
+    <main id="lab-content" class="lab-stage" data-sanchika-example="synthetic" tabindex="-1">
+      <slot />
+    </main>
+    <footer class="lab-colophon">
+      <p><strong>Sanchika North Star lab</strong> · C1 review artifact · synthetic examples only</p>
+      <p>No taxpayer, client, portal-session, credential, or private repository data is used.</p>
+    </footer>
+  </body>
+</html>

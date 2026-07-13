@@ -25,10 +25,58 @@ const outputFiles = existsSync(galleryDir)
       .filter((path) => typeof path === "string" && statSync(join(galleryDir, path)).isFile())
       .map((path) => [path.replaceAll("\\", "/"), readOutputFile(path)])
   : [];
-const assetGraph = inspectGalleryAssetGraph({ html, outputFiles: new Map(outputFiles) });
-const copiedCss = assetGraph.stylesheets;
+const outputFileMap = new Map(outputFiles);
+const htmlOutputs = outputFiles.filter(([path]) => path.endsWith(".html"));
+const expectedLabDocuments = [
+  "lab/axal-review-desk/index.html",
+  "lab/complyeaze-core/index.html",
+  "lab/motion-and-assist/index.html",
+  "lab/pack-local-proof/index.html",
+  "lab/tools-directory/index.html",
+];
+const stylesheetConsumers = new Set();
+let assetGraph = null;
 
-failures.push(...assetGraph.failures);
+for (const [path, documentHtml] of htmlOutputs) {
+  const graph = inspectGalleryAssetGraph({
+    html: documentHtml,
+    outputFiles: outputFileMap,
+    allowUnreferencedStylesheets: true,
+    allowedInlineScriptMarker: path === "lab/tools-directory/index.html" ? "tool-filter" : null,
+  });
+  if (path === "index.html") assetGraph = graph;
+  for (const stylesheetPath of graph.stylesheetPaths) stylesheetConsumers.add(stylesheetPath);
+  for (const failure of graph.failures) failures.push(`${path}: ${failure}`);
+  for (const unresolved of findUnresolvedGalleryVariables({ html: documentHtml, copiedCss: graph.stylesheets })) {
+    failures.push(
+      `${path} references undefined ${unresolved.variable} in ${unresolved.locations.join(", ")}`,
+    );
+  }
+
+  if (path.startsWith("lab/") && !documentHtml.includes('<meta name="robots" content="noindex,nofollow">')) {
+    failures.push(`${path} must declare noindex,nofollow`);
+  }
+  if (path === "lab/tools-directory/index.html" && graph.allowedInlineScriptInventory.length !== 1) {
+    failures.push(`${path} must contain exactly one named tool-filter enhancement script`);
+  }
+}
+
+for (const path of expectedLabDocuments) {
+  if (!outputFileMap.has(path)) failures.push(`${path} must exist`);
+}
+
+for (const [path] of outputFiles.filter(([path]) => path.endsWith(".css"))) {
+  if (!stylesheetConsumers.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any gallery document`);
+}
+
+const canonicalHrefs = [...html.matchAll(/<a\b[^>]*\shref="([^"]+)"/gi)].map((match) => match[1]);
+if (expectedLabDocuments.some((path) => canonicalHrefs.includes(`/${path.replace("/index.html", "/")}`))) {
+  failures.push("canonical gallery navigation must not link to noindex lab routes");
+}
+
+const copiedCss = assetGraph?.stylesheets ?? [];
+
+if (!assetGraph) failures.push("apps/gallery/dist/index.html asset graph must be inspectable");
 
 for (const required of [
   "<!DOCTYPE html>",
@@ -75,12 +123,6 @@ if ((generatedCss.match(/:where\([^)]*\.sk-button\[aria-busy=(?:true|"true")\][^
 }
 if (!/:where\(\.sk-field :is\(input,textarea,select,\[data-sk-control\]\)\):{1,2}placeholder/.test(generatedCss)) {
   failures.push("apps/gallery generated CSS must preserve the field placeholder selector");
-}
-
-for (const unresolved of findUnresolvedGalleryVariables({ html, copiedCss })) {
-  failures.push(
-    `generated gallery references undefined ${unresolved.variable} in ${unresolved.locations.join(", ")}`,
-  );
 }
 
 const variableFixtures = runGalleryVariableFixtures();

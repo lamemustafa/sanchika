@@ -1,0 +1,29 @@
+---
+import BoundaryBanner from "../../components/lab/BoundaryBanner.astro";
+import LabIntro from "../../components/lab/LabIntro.astro";
+import LabShell from "../../components/lab/LabShell.astro";
+import MotionSpecimens from "../../components/lab/MotionSpecimens.astro";
+import { labRoutes, motionSpecimens } from "../../content/lab/references";
+
+const route = labRoutes.motion;
+---
+
+<LabShell title={route.title} description={route.description} routeId="motion-and-assist" mode="motion">
+  <BoundaryBanner
+    label="Motion contract"
+    statement="Motion clarifies state change; text, focus, and source carry the meaning."
+    tone="assist"
+    facts={[
+      { label: "Runtime", value: "CSS only" },
+      { label: "Reduce", value: "State remains explicit" },
+      { label: "Assist", value: "Suggestion, not judgment" },
+    ]}
+  />
+  <LabIntro
+    eyebrow={route.eyebrow}
+    title="Responsive enough to guide. Quiet enough to trust."
+    lede="These specimens test focus, disclosure, progress, and AI-shaped assistance without making animation a requirement for understanding."
+    compact
+  />
+  <MotionSpecimens specimens={motionSpecimens} />
+</LabShell>

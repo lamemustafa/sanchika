@@ -1,0 +1,32 @@
+---
+interface Fact {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  label: string;
+  statement: string;
+  facts?: readonly Fact[];
+  tone?: "workspace" | "local" | "draft" | "assist";
+}
+
+const { label, statement, facts = [], tone = "workspace" } = Astro.props;
+---
+
+<aside class={`lab-boundary lab-boundary--${tone}`} aria-label={label}>
+  <div class="lab-boundary__claim">
+    <span>{label}</span>
+    <strong>{statement}</strong>
+  </div>
+  {facts.length > 0 && (
+    <dl class="lab-boundary__facts">
+      {facts.map((fact) => (
+        <div>
+          <dt>{fact.label}</dt>
+          <dd>{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )}
+</aside>
