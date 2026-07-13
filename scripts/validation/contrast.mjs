@@ -8,10 +8,14 @@ export const productSections = [
 ];
 
 export const requiredMotionVariables = [
+  "--sk-motion-duration-instant",
+  "--sk-motion-duration-fast",
   "--sk-motion-duration-standard",
-  "--sk-motion-duration-loading",
+  "--sk-motion-duration-slow",
   "--sk-motion-easing-standard",
-  "--sk-motion-easing-linear",
+  "--sk-motion-easing-enter",
+  "--sk-motion-easing-exit",
+  "--sk-motion-easing-emphasized",
 ];
 
 export const requiredPrimitiveContracts = ["stateEvidence", "attributes", "selectors", "notes"];
@@ -25,15 +29,56 @@ export const requiredPatternContracts = [
 ];
 
 export const contrastPairs = [
-  ["ink-primary on surface", "--sk-color-ink-primary", "--sk-color-bg-surface", 4.5],
-  ["ink-muted on surface", "--sk-color-ink-muted", "--sk-color-bg-surface", 4.5],
-  ["danger on surface", "--sk-color-danger", "--sk-color-bg-surface", 4.5],
-  ["surface text on brand solid button", "--sk-color-bg-surface", "--sk-color-brand-primary", 4.5],
-  ["surface text on danger solid button", "--sk-color-bg-surface", "--sk-color-danger", 4.5],
-  ["focus outline on surface", "--sk-color-info", "--sk-color-bg-surface", 3],
-  ["control border on surface", "--sk-color-border-control", "--sk-color-bg-surface", 3],
-  ["control border on base", "--sk-color-border-control", "--sk-color-bg-base", 3],
+  ["ink-primary on canvas", "--sk-color-ink-primary", "--sk-color-canvas", 4.5],
+  ["ink-primary on surface", "--sk-color-ink-primary", "--sk-color-surface", 4.5],
+  ["ink-muted on canvas", "--sk-color-ink-muted", "--sk-color-canvas", 4.5],
+  ["inverse ink on brand-primary", "--sk-color-ink-inverse", "--sk-color-brand-primary", 4.5],
+  ["link on canvas", "--sk-color-link", "--sk-color-canvas", 4.5],
+  ["link on surface", "--sk-color-link", "--sk-color-surface", 4.5],
+  ["selection text on selection background", "--sk-color-selection-text", "--sk-color-selection-bg", 4.5],
+  ["success foreground on background", "--sk-color-success-fg", "--sk-color-success-bg", 4.5],
+  ["warning foreground on background", "--sk-color-warning-fg", "--sk-color-warning-bg", 4.5],
+  ["danger foreground on background", "--sk-color-danger-fg", "--sk-color-danger-bg", 4.5],
+  ["info foreground on background", "--sk-color-info-fg", "--sk-color-info-bg", 4.5],
+  ["neutral foreground on background", "--sk-color-neutral-fg", "--sk-color-neutral-bg", 4.5],
+  ["focus on canvas", "--sk-color-focus", "--sk-color-canvas", 3],
+  ["focus on surface", "--sk-color-focus", "--sk-color-surface", 3],
+  ["default border on canvas", "--sk-color-border-default", "--sk-color-canvas", 3],
+  ["default border on surface", "--sk-color-border-default", "--sk-color-surface", 3],
 ];
+
+export function evaluateContrastPairs(css, pairs = contrastPairs) {
+  const declarations = parseCssCustomProperties(css);
+  return pairs.map(([name, foreground, background, minimum]) => ({
+    name,
+    foreground,
+    background,
+    minimum,
+    ratio: contrastRatio(resolveOklchVariable(declarations, foreground), resolveOklchVariable(declarations, background)),
+  }));
+}
+
+export function parseCssCustomProperties(css) {
+  return new Map(
+    [...css.matchAll(/(--sk-[\w-]+)\s*:\s*([^;]+);/g)].map((match) => [match[1], match[2].trim()]),
+  );
+}
+
+export function resolveCssVariable(declarations, variable, stack = []) {
+  const value = declarations.get(variable);
+  if (!value) throw new Error(`Missing generated CSS variable ${variable}`);
+  const alias = value.match(/^var\((--sk-[\w-]+)\)$/);
+  if (!alias) return value;
+  if (stack.includes(variable)) throw new Error(`Circular generated CSS alias ${[...stack, variable].join(" -> ")}`);
+  return resolveCssVariable(declarations, alias[1], [...stack, variable]);
+}
+
+export function resolveOklchVariable(declarations, variable) {
+  const value = resolveCssVariable(declarations, variable);
+  const color = parseOklch(value);
+  if (!color) throw new Error(`${variable} must resolve to an opaque OKLCH color; received ${value}`);
+  return color;
+}
 
 export function parseOklch(value) {
   const match = value.match(/^oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)$/);

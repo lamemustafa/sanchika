@@ -2,10 +2,13 @@ import {
   colorTokens,
   elevationTokens,
   focusTokens,
+  getTokenDefinition,
   motionTokens,
   radiusTokens,
   sizeTokens,
   spacingTokens,
+  tokenDefinitions,
+  tokenGroupDefinitions,
   typographyTokens,
 } from "@sanchika/tokens";
 import { primitiveClassName } from "@sanchika/primitives";
@@ -31,6 +34,10 @@ import type {
 import { validateDesignBrief, validateEvidenceLoop, validateTrustBrief } from "@sanchika/patterns";
 
 const brandRole: "brandPrimary" = colorTokens.brandPrimary.role;
+const legacyBackgroundVariable: "--sk-color-bg-base" = colorTokens.bgBase.cssVariable;
+const canonicalTokenId: "color.canvas" = tokenDefinitions[0].id;
+const canonicalGroupId: "color-surfaces" = tokenGroupDefinitions[0].id;
+const canonicalToken = getTokenDefinition("color.canvas");
 const spacingStep: "4" = spacingTokens["4"].step;
 const radiusRole: "control" = radiusTokens.control.role;
 const motionRole: "durationStandard" = motionTokens.durationStandard.role;
@@ -135,6 +142,10 @@ primitiveClassName("Button", buttonTone, "md");
 primitiveClassName("Field", "danger", fieldSize);
 
 void brandRole;
+void legacyBackgroundVariable;
+void canonicalTokenId;
+void canonicalGroupId;
+void canonicalToken;
 void spacingStep;
 void radiusRole;
 void motionRole;

@@ -5,6 +5,13 @@ const packageCssAssets = new Map([
 
 const packageInternalDistFiles = new Map([
   [
+    "tokens",
+    [
+      "dist/generated.d.ts",
+      "dist/generated.js",
+    ],
+  ],
+  [
     "patterns",
     [
       "dist/evidence-loop.d.ts",

@@ -5,9 +5,10 @@ interface Props {
   title: string;
   description: string;
   canonical: string;
+  dataFavicon?: boolean;
 }
 
-const { title, description, canonical } = Astro.props;
+const { title, description, canonical, dataFavicon = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -25,6 +26,7 @@ const { title, description, canonical } = Astro.props;
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    {dataFavicon && <link rel="icon" href="data:," />}
   </head>
   <body>
     <a class="sk-gallery-skip-link" href="#gallery-content">Skip to gallery content</a>

@@ -26,21 +26,38 @@ try {
   ]);
   assertLinkDependencies(packageLinks);
 
+  writeFileSync(
+    join(consumerDir, "legacy-token.css"),
+    '@import "@sanchika/tokens/theme.css";\n.legacy-surface { background: var(--sk-color-bg-base); color: var(--sk-color-ink-primary); border: 1px solid var(--sk-color-border-control); border-radius: var(--sk-radius-card); }\n',
+  );
+
   const probePath = join(consumerDir, "probe.mjs");
   writeFileSync(
     probePath,
     `import { createRequire } from "node:module";
-import { colorTokens } from "@sanchika/tokens";
+import { readFileSync } from "node:fs";
+import { colorTokens, tokenDefinitions } from "@sanchika/tokens";
 import { primitiveClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
 
 const require = createRequire(import.meta.url);
+const themePath = require.resolve("@sanchika/tokens/theme.css");
+const themeCss = readFileSync(themePath, "utf8");
+const legacyCss = readFileSync(new URL("./legacy-token.css", import.meta.url), "utf8");
+const legacyColorTokenKeys = ["bgBase", "bgSurface", "inkPrimary", "inkMuted", "borderControl", "brandPrimary", "accent", "success", "warning", "danger", "info"];
 const checks = [
   colorTokens.brandPrimary.cssVariable === "--sk-color-brand-primary",
+  colorTokens.bgBase.cssVariable === "--sk-color-bg-base",
+  JSON.stringify(Object.keys(colorTokens)) === JSON.stringify(legacyColorTokenKeys),
+  tokenDefinitions.some((token) => token.id === "color.surface-raised" && token.cssVariable === "--sk-color-surface-raised"),
   primitiveClassName("Button", "brand", "md") === "sk-button sk-tone-brand sk-size-md",
   patternSpecs.some((pattern) => pattern.name === "EvidencePanel"),
-  require.resolve("@sanchika/tokens/theme.css").endsWith("/dist/theme.css"),
+  themePath.endsWith("/dist/theme.css"),
   require.resolve("@sanchika/primitives/styles.css").endsWith("/dist/styles.css"),
+  themeCss.includes("--sk-color-bg-base: var(--sk-color-canvas);"),
+  themeCss.includes("--sk-color-border-control: var(--sk-color-border-default);"),
+  legacyCss.includes("var(--sk-color-bg-base)"),
+  legacyCss.includes("var(--sk-radius-card)"),
 ];
 
 if (checks.some((check) => !check)) {

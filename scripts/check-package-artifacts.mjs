@@ -116,6 +116,11 @@ function expectedPackageFiles(manifest) {
     files.add("dist/evidence-loop.js");
   }
 
+  if (manifest.name === "@sanchika/tokens") {
+    files.add("dist/generated.d.ts");
+    files.add("dist/generated.js");
+  }
+
   return [...files].sort();
 }
 

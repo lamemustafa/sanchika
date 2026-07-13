@@ -81,8 +81,8 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
     fail("primitive styles must define a foreground variable for contrast-sensitive text");
   }
 
-  if (!primitiveCss.includes("--sk-primitive-border: var(--sk-color-border-control)")) {
-    fail("primitive control borders must use the validated control-border token");
+  if (!primitiveCss.includes("--sk-primitive-border: var(--sk-color-border-default)")) {
+    fail("primitive control borders must use the validated default-border token");
   }
 
   if (!primitiveCss.includes(controlInvalidSelector)) {
@@ -98,8 +98,8 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
     }
   }
 
-  if (!/outline:\s*var\(--sk-focus-outline-width\)\s+solid\s+var\(--sk-color-info\)/.test(primitiveCss)) {
-    fail("primitive focus-visible styles must use the validated info token outline");
+  if (!/outline:\s*var\(--sk-focus-outline-width\)\s+solid\s+var\(--sk-color-focus\)/.test(primitiveCss)) {
+    fail("primitive focus-visible styles must use the validated focus token outline");
   }
 
   if (!/outline-offset:\s*var\(--sk-focus-outline-offset\)/.test(primitiveCss)) {

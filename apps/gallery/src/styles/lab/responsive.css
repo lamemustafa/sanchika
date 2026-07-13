@@ -24,7 +24,7 @@
 
   .lab-evidence-rail {
     grid-column: 1 / -1;
-    border-top: var(--lab-border) solid var(--lab-line);
+    border-top: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
     border-left: 0 !important;
   }
 
@@ -34,7 +34,7 @@
 
   .lab-evidence-rail details + details {
     padding-left: var(--sk-space-4);
-    border-left: var(--lab-border) solid var(--lab-line);
+    border-left: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
   }
 
   .lab-audit ol {
@@ -58,7 +58,7 @@
   }
 
   .lab-motion-card:nth-child(n + 2) {
-    border-top: var(--lab-border) solid var(--lab-line);
+    border-top: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
   }
 
   .lab-directory__escalation,
@@ -90,7 +90,7 @@
   }
 
   .lab-boundary__facts dd {
-    font-size: 0.72rem;
+    font-size: var(--sk-font-size-xs);
   }
 
   .lab-intro,
@@ -103,13 +103,13 @@
   .lab-intro--compact .lab-intro__copy h1 {
     max-width: 14ch;
     font-size: clamp(2.7rem, 14vw, 4rem);
-    letter-spacing: -0.04em;
+    letter-spacing: var(--sk-letter-spacing-tight);
     line-height: 0.94;
   }
 
   .lab-lede {
     margin-top: var(--sk-space-4);
-    font-size: 1rem;
+    font-size: var(--sk-font-size-lg);
   }
 
   .lab-actions {
@@ -143,7 +143,7 @@
     min-height: 23rem;
     padding: var(--sk-space-6);
     border-right: 0;
-    border-bottom: var(--lab-border) solid var(--lab-dark-line);
+    border-bottom: var(--sk-border-width-default) solid var(--lab-dark-line);
   }
 
   .lab-route-primary__copy h2 {
@@ -207,7 +207,7 @@
   }
 
   .lab-review-desk__body > * + * {
-    border-top: var(--lab-border) solid var(--lab-line);
+    border-top: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
     border-left: 0;
   }
 
@@ -265,7 +265,7 @@
   }
 
   .lab-custody__stages li + li {
-    border-top: var(--lab-border) solid var(--lab-line);
+    border-top: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
     border-left: 0;
   }
 
@@ -282,7 +282,7 @@
   }
 
   .lab-custody__facts div:nth-child(even) {
-    border-left: var(--lab-border) solid var(--lab-dark-line);
+    border-left: var(--sk-border-width-default) solid var(--lab-dark-line);
   }
 
   .lab-custody__facts div:last-child {
@@ -354,6 +354,6 @@
 
   .lab-motion-card__demo {
     border-right: 0;
-    border-bottom: var(--lab-border) solid var(--lab-line);
+    border-bottom: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
   }
 }
