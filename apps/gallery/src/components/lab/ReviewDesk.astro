@@ -1,0 +1,133 @@
+---
+interface QueueItem {
+  readonly id: string;
+  readonly title: string;
+  readonly state: string;
+  readonly source: string;
+  readonly owner: string;
+  readonly due: string;
+  readonly tone: string;
+}
+
+interface EvidenceItem {
+  readonly label: string;
+  readonly value: string;
+  readonly state: string;
+}
+
+interface AuditItem {
+  readonly time: string;
+  readonly event: string;
+  readonly actor: string;
+}
+
+interface Props {
+  queue: readonly QueueItem[];
+  evidence: readonly EvidenceItem[];
+  audit: readonly AuditItem[];
+}
+
+const { queue, evidence, audit } = Astro.props;
+const selected = queue[0];
+const linkedSourceCount = evidence.filter((item) => item.state === "Linked").length;
+---
+
+<section class="lab-review-desk" aria-labelledby="review-desk-title">
+  <div class="lab-review-desk__topbar">
+    <div>
+      <span>Axal review desk</span>
+      <strong id="review-desk-title">Work requiring judgment</strong>
+    </div>
+    <div class="lab-review-desk__summary" aria-label="Queue summary">
+      <span><strong>3</strong> open</span>
+      <span><strong>1</strong> CA checkpoint</span>
+      <span><strong>{linkedSourceCount}</strong> {linkedSourceCount === 1 ? "source" : "sources"} linked</span>
+    </div>
+  </div>
+
+  <div class="lab-review-desk__body">
+    <section class="lab-work-queue" aria-labelledby="work-queue-title">
+      <div class="lab-pane-title">
+        <h2 id="work-queue-title">Work queue</h2>
+        <span>Priority order</span>
+      </div>
+      <div class="lab-work-queue__list">
+        {queue.map((item, index) => (
+          <article data-tone={item.tone} data-selected={index === 0 ? "true" : undefined}>
+            <div class="lab-work-queue__identity">
+              <span>{item.id}</span>
+              <strong>{item.title}</strong>
+            </div>
+            <p>{item.state}</p>
+            <div class="lab-work-queue__meta">
+              <span>{item.source}</span>
+              <span>Owner {item.owner}</span>
+              <span>{item.due}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    {selected && (
+      <article class="lab-selected-case" aria-labelledby="selected-case-title">
+        <div class="lab-pane-title">
+          <div>
+            <span>{selected.id} · Selected item</span>
+            <h2 id="selected-case-title">{selected.title}</h2>
+          </div>
+          <span class="lab-review-state">{selected.state}</span>
+        </div>
+        <div class="lab-selected-case__question">
+          <span>Decision to make</span>
+          <strong>Does the synthetic source support the proposed response position?</strong>
+          <p>The extracted difference is visible, but interpretation remains with the assigned CA reviewer.</p>
+        </div>
+        <dl class="lab-selected-case__facts">
+          <div><dt>Owner</dt><dd>{selected.owner} · CA reviewer</dd></div>
+          <div><dt>Due</dt><dd>{selected.due}</dd></div>
+          <div><dt>Source state</dt><dd>{selected.source}</dd></div>
+          <div><dt>Automation</dt><dd>Draft assistance only</dd></div>
+        </dl>
+        <section id="human-checkpoint" class="lab-human-checkpoint" aria-labelledby="human-checkpoint-title">
+          <span>Human approval checkpoint</span>
+          <h3 id="human-checkpoint-title">CA decision required before the response advances.</h3>
+          <p>Approve, revise, or request evidence only after opening the linked synthetic source.</p>
+          <div class="lab-checkpoint-actions" aria-label="Illustrative review decisions">
+            <span data-action="primary">Open source before deciding</span>
+            <span data-action="secondary">Request evidence</span>
+          </div>
+        </section>
+      </article>
+    )}
+
+    <aside class="lab-evidence-rail" aria-labelledby="evidence-rail-title">
+      <div class="lab-pane-title">
+        <h2 id="evidence-rail-title">Source evidence</h2>
+        <span>3 records</span>
+      </div>
+      <div class="lab-evidence-rail__items">
+        {evidence.map((item, index) => (
+          <details open={index === 0}>
+            <summary>
+              <span>{item.label}</span>
+              <strong>{item.state}</strong>
+            </summary>
+            <p>{item.value}</p>
+          </details>
+        ))}
+      </div>
+      <section class="lab-audit" aria-labelledby="audit-title">
+        <h3 id="audit-title">Audit trail excerpt</h3>
+        <ol>
+          {audit.map((item) => (
+            <li>
+              <time>{item.time}</time>
+              <span><strong>{item.event}</strong><small>{item.actor}</small></span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </aside>
+  </div>
+</section>

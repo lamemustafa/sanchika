@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { invalidTrustCopyFixtures } from "./validation/content-trust-fixtures.mjs";
@@ -13,10 +13,16 @@ for (const fixture of invalidTrustCopyFixtures) {
   }
 }
 
-const galleryPath = join(root, "apps", "gallery", "dist", "index.html");
-const galleryHtml = readFileSync(galleryPath, "utf8");
-for (const finding of lintTrustCopy(stripTags(galleryHtml))) {
-  failures.push(`apps/gallery/dist/index.html ${finding.reason}: ${finding.match}`);
+const galleryDir = join(root, "apps", "gallery", "dist");
+const galleryDocuments = readdirSync(galleryDir, { recursive: true })
+  .filter((path) => typeof path === "string" && path.endsWith(".html"))
+  .sort();
+
+for (const documentPath of galleryDocuments) {
+  const galleryHtml = readFileSync(join(galleryDir, documentPath), "utf8");
+  for (const finding of lintTrustCopy(stripTags(galleryHtml))) {
+    failures.push(`apps/gallery/dist/${documentPath} ${finding.reason}: ${finding.match}`);
+  }
 }
 
 if (failures.length > 0) {

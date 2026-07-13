@@ -1,0 +1,140 @@
+---
+import type { LabTool, ToolCategory } from "../../content/lab/references";
+
+interface Props {
+  tools: readonly LabTool[];
+  axalHref: string;
+}
+
+const { tools, axalHref } = Astro.props;
+const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCategory[];
+---
+
+<section class="lab-directory" aria-labelledby="directory-title" data-tool-directory>
+  <div class="lab-directory__head">
+    <div>
+      <span>Local tool index</span>
+      <h2 id="directory-title">Search by the work on your desk.</h2>
+    </div>
+    <p role="status" aria-live="polite" aria-atomic="true"><strong data-tool-count>{tools.length}</strong> draft tools</p>
+  </div>
+
+  <form class="lab-directory__search" role="search" data-tool-search-form>
+    <label for="tool-search">What do you need to prepare?</label>
+    <div class="lab-directory__search-control">
+      <input
+        id="tool-search"
+        name="query"
+        type="search"
+        placeholder="Try notice, GSTR-2B, dates, evidence…"
+        autocomplete="off"
+        aria-describedby="tool-search-note"
+        data-tool-search
+      />
+      <button type="button" aria-label="Clear tool search" data-tool-clear hidden>Clear</button>
+    </div>
+    <p id="tool-search-note">Filtering happens only in this browser. Nothing is uploaded.</p>
+  </form>
+
+  <div class="lab-directory__filters" aria-label="Tool categories" data-tool-filters hidden>
+    <button type="button" aria-pressed="true" data-tool-category="all">All work</button>
+    {categories.map((category) => (
+      <button type="button" aria-pressed="false" data-tool-category={category}>{category}</button>
+    ))}
+  </div>
+
+  <noscript><p class="lab-directory__noscript">JavaScript is off, so the complete tool list remains visible.</p></noscript>
+
+  <div class="lab-directory__results" data-tool-results>
+    {tools.map((tool, index) => (
+      <article
+        data-tool-card
+        data-category={tool.category}
+        data-search={[tool.name, tool.category, tool.job, ...tool.keywords].join(" ").toLowerCase()}
+      >
+        <div class="lab-tool-card__index">{String(index + 1).padStart(2, "0")}</div>
+        <div class="lab-tool-card__main">
+          <span>{tool.category}</span>
+          <h3>{tool.name}</h3>
+          <p>{tool.job}</p>
+        </div>
+        <dl>
+          <div><dt>Input</dt><dd>{tool.input}</dd></div>
+          <div><dt>Output</dt><dd>{tool.output}</dd></div>
+          <div><dt>Review</dt><dd>{tool.review}</dd></div>
+        </dl>
+      </article>
+    ))}
+  </div>
+
+  <div class="lab-directory__empty" data-tool-empty hidden role="status" aria-live="polite">
+    <span>0 matches</span>
+    <h3>No local draft tool matches that work.</h3>
+    <p>Clear the search or choose another category. The query never leaves this browser.</p>
+  </div>
+
+  <aside class="lab-directory__escalation" aria-labelledby="directory-escalation-title">
+    <span>Recurring or saved work</span>
+    <h3 id="directory-escalation-title">Move continuing review into Axal.</h3>
+    <p>Use a local tool for a bounded draft. Use Axal when evidence, ownership, review state, or a continuing client record must remain visible.</p>
+    <a href={axalHref}>Open the synthetic Axal review desk <span aria-hidden="true">→</span></a>
+  </aside>
+</section>
+
+<script is:inline data-sanchika-lab-script="tool-filter">
+  const directory = document.querySelector("[data-tool-directory]");
+  if (directory) {
+    const form = directory.querySelector("[data-tool-search-form]");
+    const input = directory.querySelector("[data-tool-search]");
+    const clear = directory.querySelector("[data-tool-clear]");
+    const filters = directory.querySelector("[data-tool-filters]");
+    const cards = [...directory.querySelectorAll("[data-tool-card]")];
+    const count = directory.querySelector("[data-tool-count]");
+    const empty = directory.querySelector("[data-tool-empty]");
+    let category = "all";
+
+    filters.hidden = false;
+
+    const applyFilters = () => {
+      const query = input.value.trim().toLowerCase();
+      let visible = 0;
+
+      clear.hidden = query.length === 0;
+
+      for (const card of cards) {
+        const categoryMatches = category === "all" || card.dataset.category === category;
+        const queryMatches = !query || card.dataset.search.includes(query);
+        card.hidden = !(categoryMatches && queryMatches);
+        if (!card.hidden) visible += 1;
+      }
+
+      count.textContent = String(visible);
+      empty.hidden = visible !== 0;
+    };
+
+    form.addEventListener("submit", (event) => event.preventDefault());
+    input.addEventListener("input", applyFilters);
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || input.value.length === 0) return;
+      event.preventDefault();
+      input.value = "";
+      applyFilters();
+    });
+    clear.addEventListener("click", () => {
+      input.value = "";
+      applyFilters();
+      input.focus();
+    });
+    filters.addEventListener("click", (event) => {
+      if (!(event.target instanceof Node)) return;
+      const target = event.target instanceof Element ? event.target : event.target.parentElement;
+      const button = target?.closest("[data-tool-category]");
+      if (!button) return;
+      category = button.dataset.toolCategory;
+      for (const candidate of filters.querySelectorAll("[data-tool-category]")) {
+        candidate.setAttribute("aria-pressed", String(candidate === button));
+      }
+      applyFilters();
+    });
+  }
+</script>

@@ -1,0 +1,29 @@
+---
+import BoundaryBanner from "../../components/lab/BoundaryBanner.astro";
+import LabIntro from "../../components/lab/LabIntro.astro";
+import LabShell from "../../components/lab/LabShell.astro";
+import ReviewDesk from "../../components/lab/ReviewDesk.astro";
+import { auditTrail, labRoutes, reviewEvidence, reviewQueue } from "../../content/lab/references";
+
+const route = labRoutes.axal;
+---
+
+<LabShell title={route.title} description={route.description} routeId="axal-review-desk" mode="axal">
+  <BoundaryBanner
+    label="Synthetic workspace boundary"
+    statement="Saved review context is visible; the CA owns the judgment."
+    tone="workspace"
+    facts={[
+      { label: "Data", value: "Synthetic only" },
+      { label: "Assist", value: "Draft, never approval" },
+      { label: "Decision", value: "Named human reviewer" },
+    ]}
+  />
+  <LabIntro
+    eyebrow={route.eyebrow}
+    title="See what needs action, why, and what still needs CA review."
+    lede="A dense operating desk keeps the queue, source evidence, due state, owner, and human checkpoint in one review path."
+    compact
+  />
+  <ReviewDesk queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />
+</LabShell>

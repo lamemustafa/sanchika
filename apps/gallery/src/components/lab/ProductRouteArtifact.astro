@@ -1,0 +1,79 @@
+---
+interface ProductRoute {
+  readonly label: string;
+  readonly name: string;
+  readonly job: string;
+  readonly boundary: string;
+  readonly href: string;
+  readonly signal: string;
+}
+
+interface QueueItem {
+  readonly id: string;
+  readonly title: string;
+  readonly state: string;
+  readonly source: string;
+  readonly owner: string;
+  readonly due: string;
+  readonly tone: string;
+}
+
+interface Props {
+  routes: readonly ProductRoute[];
+  queue: readonly QueueItem[];
+}
+
+const { routes, queue } = Astro.props;
+const [primaryRoute, ...secondaryRoutes] = routes;
+---
+
+<section id="product-routes" class="lab-route-artifact" aria-labelledby="product-route-title">
+  <div class="lab-artifact-bar">
+    <div>
+      <span>Choose by operating boundary</span>
+      <strong id="product-route-title">Your work decides the route.</strong>
+    </div>
+    <span class="lab-status-mark">Synthetic reference</span>
+  </div>
+
+  {primaryRoute && (
+    <article class="lab-route-primary">
+      <div class="lab-route-primary__copy">
+        <p>{primaryRoute.label}</p>
+        <h2>{primaryRoute.name}</h2>
+        <strong>{primaryRoute.signal}</strong>
+        <p>{primaryRoute.job}</p>
+        <span>{primaryRoute.boundary}</span>
+        <a href={primaryRoute.href}>Inspect the Axal review desk <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="lab-mini-queue" aria-label="Synthetic Axal review queue">
+        <p>Review queue</p>
+        {queue.map((item) => (
+          <article data-tone={item.tone}>
+            <div>
+              <span>{item.id}</span>
+              <strong>{item.title}</strong>
+            </div>
+            <p>{item.state}</p>
+            <small>{item.due}</small>
+          </article>
+        ))}
+      </div>
+    </article>
+  )}
+
+  <div class="lab-route-secondary">
+    {secondaryRoutes.map((route) => (
+      <article>
+        <div>
+          <p>{route.label}</p>
+          <h2>{route.name}</h2>
+        </div>
+        <strong>{route.signal}</strong>
+        <p>{route.job}</p>
+        <span>{route.boundary}</span>
+        <a href={route.href}>Inspect {route.name} proof <span aria-hidden="true">→</span></a>
+      </article>
+    ))}
+  </div>
+</section>

@@ -1,0 +1,32 @@
+---
+interface Action {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  lede: string;
+  primary?: Action;
+  secondary?: Action;
+  compact?: boolean;
+}
+
+const { eyebrow, title, lede, primary, secondary, compact = false } = Astro.props;
+---
+
+<header class:list={["lab-intro", compact && "lab-intro--compact"]}>
+  <div class="lab-intro__copy">
+    <p class="lab-eyebrow">{eyebrow}</p>
+    <h1>{title}</h1>
+    <p class="lab-lede">{lede}</p>
+    {(primary || secondary) && (
+      <div class="lab-actions" aria-label="Reference actions">
+        {primary && <a class="sk-button sk-tone-brand sk-size-md" href={primary.href}>{primary.label}</a>}
+        {secondary && <a class="sk-button sk-tone-neutral sk-size-md" href={secondary.href}>{secondary.label}</a>}
+      </div>
+    )}
+  </div>
+  <slot />
+</header>

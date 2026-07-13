@@ -1,0 +1,29 @@
+---
+import BoundaryBanner from "../../components/lab/BoundaryBanner.astro";
+import CustodyFlow from "../../components/lab/CustodyFlow.astro";
+import LabIntro from "../../components/lab/LabIntro.astro";
+import LabShell from "../../components/lab/LabShell.astro";
+import { custodyFacts, custodyStages, labRoutes } from "../../content/lab/references";
+
+const route = labRoutes.pack;
+---
+
+<LabShell title={route.title} description={route.description} routeId="pack-local-proof" mode="pack">
+  <BoundaryBanner
+    label="Local-first boundary"
+    statement="The file moves from the GST Portal response to Chrome Downloads on this device."
+    tone="local"
+    facts={[
+      { label: "Account", value: "No ComplyEaze account" },
+      { label: "Upload", value: "No extension file handoff" },
+      { label: "Telemetry", value: "None from this workflow" },
+    ]}
+  />
+  <LabIntro
+    eyebrow={route.eyebrow}
+    title="Portal session in. Local file out. No ComplyEaze handoff."
+    lede="Pack moves supported filed-return files from the GST Portal session to local Chrome Downloads without sending the file or credentials to ComplyEaze."
+    compact
+  />
+  <CustodyFlow stages={custodyStages} facts={custodyFacts} />
+</LabShell>

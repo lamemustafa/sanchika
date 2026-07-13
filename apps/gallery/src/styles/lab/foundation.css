@@ -1,0 +1,350 @@
+.lab-page {
+  /* LAB: candidate for --sk-color-canvas-mineral; must be promoted or deleted before release */
+  --lab-canvas: oklch(97% 0.008 220);
+  /* LAB: candidate for --sk-color-surface-mineral; must be promoted or deleted before release */
+  --lab-paper: oklch(99.2% 0.003 220);
+  /* LAB: candidate for --sk-color-surface-raised; must be promoted or deleted before release */
+  --lab-surface: oklch(100% 0 0);
+  /* LAB: candidate for --sk-color-ink-strong; must be promoted or deleted before release */
+  --lab-ink: oklch(19% 0.028 245);
+  /* LAB: candidate for --sk-color-ink-subtle; must be promoted or deleted before release */
+  --lab-muted: oklch(43% 0.024 245);
+  /* LAB: candidate for --sk-color-border-hairline; must be promoted or deleted before release */
+  --lab-line: oklch(82% 0.018 245);
+  /* LAB: candidate for --sk-color-border-strong; must be promoted or deleted before release */
+  --lab-line-strong: oklch(57% 0.03 245);
+  /* LAB: candidate for --sk-color-accent-copper; must be promoted or deleted before release */
+  --lab-accent: oklch(56% 0.12 47);
+  /* LAB: candidate for --sk-color-accent-copper-soft; must be promoted or deleted before release */
+  --lab-accent-soft: oklch(91% 0.045 55);
+  /* LAB: candidate for --sk-color-evidence-mint; must be promoted or deleted before release */
+  --lab-evidence: oklch(73% 0.09 162);
+  /* LAB: candidate for --sk-color-evidence-mint-soft; must be promoted or deleted before release */
+  --lab-evidence-soft: oklch(94% 0.03 162);
+  /* LAB: candidate for --sk-color-attention-gold; must be promoted or deleted before release */
+  --lab-attention: oklch(76% 0.14 82);
+  /* LAB: candidate for --sk-color-dark-panel; must be promoted or deleted before release */
+  --lab-dark: oklch(16% 0.028 235);
+  /* LAB: candidate for --sk-color-dark-panel-muted; must be promoted or deleted before release */
+  --lab-dark-muted: oklch(72% 0.025 220);
+  /* LAB: candidate for --sk-color-dark-panel-line; must be promoted or deleted before release */
+  --lab-dark-line: oklch(31% 0.035 230);
+  /* LAB: candidate for --sk-font-family-body; must be promoted or deleted before release */
+  --lab-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* LAB: candidate for --sk-font-family-mono; must be promoted or deleted before release */
+  --lab-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  /* LAB: candidate for --sk-font-size-display; must be promoted or deleted before release */
+  --lab-display: clamp(3.15rem, 7.1vw, 6rem);
+  /* LAB: candidate for --sk-font-size-title; must be promoted or deleted before release */
+  --lab-title: clamp(2.3rem, 5.2vw, 5rem);
+  /* LAB: candidate for --sk-font-size-section; must be promoted or deleted before release */
+  --lab-section: clamp(1.55rem, 2.8vw, 2.65rem);
+  /* LAB: candidate for --sk-size-content-shell; must be promoted or deleted before release */
+  --lab-shell: 86rem;
+  /* LAB: candidate for --sk-space-page-gutter; must be promoted or deleted before release */
+  --lab-gutter: clamp(0.75rem, 3vw, 2.5rem);
+  /* LAB: candidate for --sk-radius-proof; must be promoted or deleted before release */
+  --lab-radius: 1.1rem;
+  /* LAB: candidate for --sk-radius-proof-small; must be promoted or deleted before release */
+  --lab-radius-small: 0.7rem;
+  /* LAB: candidate for --sk-border-proof; must be promoted or deleted before release */
+  --lab-border: 1px;
+  /* LAB: candidate for --sk-motion-fast; must be promoted or deleted before release */
+  --lab-motion-fast: 140ms;
+  /* LAB: candidate for --sk-motion-slow; must be promoted or deleted before release */
+  --lab-motion-slow: 640ms;
+  /* LAB: candidate for --sk-motion-ease-emphasized; must be promoted or deleted before release */
+  --lab-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  margin: 0;
+  min-width: 20rem;
+  color: var(--lab-ink);
+  background: var(--lab-canvas);
+  font-family: var(--lab-font-body);
+  font-size: var(--sk-font-size-lg);
+  line-height: var(--sk-line-height-body);
+  text-rendering: optimizeLegibility;
+}
+
+html[data-sanchika-lab] {
+  min-width: 20rem;
+  background: var(--lab-canvas);
+  scroll-behavior: smooth;
+}
+
+html[data-sanchika-lab] *,
+html[data-sanchika-lab] *::before,
+html[data-sanchika-lab] *::after {
+  box-sizing: border-box;
+}
+
+html[data-sanchika-lab] [hidden] {
+  display: none !important;
+}
+
+html[data-sanchika-lab] ::selection {
+  color: var(--lab-dark);
+  background: var(--lab-attention);
+}
+
+.lab-page :where(h1, h2, h3, p, dl, dd, ol, ul) {
+  margin: 0;
+}
+
+.lab-page :where(h1, h2, h3, strong) {
+  text-wrap: balance;
+}
+
+.lab-page :where(a, button, input, summary) {
+  font: inherit;
+}
+
+.lab-page :where(a, button, input, summary):focus-visible {
+  outline: var(--sk-focus-outline-width) solid var(--lab-accent);
+  outline-offset: var(--sk-focus-outline-offset);
+}
+
+.lab-skip-link {
+  position: fixed;
+  z-index: 100;
+  inset: var(--sk-space-3) auto auto var(--sk-space-3);
+  padding: var(--sk-space-3) var(--sk-space-4);
+  color: var(--lab-surface);
+  background: var(--lab-dark);
+  border-radius: var(--sk-radius-control);
+  transform: translateY(-180%);
+  transition: transform var(--lab-motion-fast) var(--lab-ease);
+}
+
+.lab-skip-link:focus {
+  transform: translateY(0);
+}
+
+.lab-stage,
+.lab-colophon {
+  width: min(100%, var(--lab-shell));
+  margin-inline: auto;
+  padding-inline: var(--lab-gutter);
+}
+
+.lab-stage {
+  padding-block: var(--lab-gutter) var(--sk-space-16);
+}
+
+.lab-colophon {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sk-space-4);
+  padding-block: var(--sk-space-6);
+  border-top: var(--lab-border) solid var(--lab-line);
+  color: var(--lab-muted);
+  font-size: var(--sk-font-size-sm);
+}
+
+.lab-colophon strong {
+  color: var(--lab-ink);
+}
+
+.lab-eyebrow,
+.lab-artifact-bar span,
+.lab-boundary__claim span,
+.lab-intro-note span,
+.lab-pane-title > span,
+.lab-selected-case__question > span,
+.lab-human-checkpoint > span,
+.lab-directory__head > div > span,
+.lab-motion-card__copy > span {
+  color: var(--lab-accent);
+  font-family: var(--lab-font-mono);
+  font-size: 0.72rem;
+  font-weight: var(--sk-font-weight-bold);
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.lab-boundary__claim span {
+  color: var(--lab-ink);
+}
+
+.lab-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.55fr);
+  align-items: end;
+  gap: var(--sk-space-8);
+  padding: clamp(3.25rem, 8vw, 7.5rem) clamp(0rem, 3vw, 3.5rem) clamp(2.5rem, 6vw, 5rem);
+}
+
+.lab-intro--compact {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 69rem;
+  padding-block: clamp(2.75rem, 6vw, 5.5rem) clamp(2rem, 4vw, 3.5rem);
+}
+
+.lab-intro__copy h1 {
+  max-width: 13ch;
+  margin-top: var(--sk-space-4);
+  font-size: var(--lab-display);
+  font-weight: 780;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+.lab-intro--compact .lab-intro__copy h1 {
+  max-width: 19ch;
+  font-size: var(--lab-title);
+  line-height: 0.95;
+}
+
+.lab-lede {
+  max-width: 50rem;
+  margin-top: var(--sk-space-6);
+  color: var(--lab-muted);
+  font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+  line-height: 1.55;
+}
+
+.lab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-3);
+  margin-top: var(--sk-space-8);
+}
+
+.lab-actions .sk-button {
+  min-height: var(--sk-size-control-lg);
+  padding-inline: var(--sk-space-6);
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.lab-actions .sk-tone-brand {
+  color: var(--lab-surface);
+  background: var(--lab-dark);
+  border-color: var(--lab-dark);
+}
+
+.lab-intro-note {
+  padding: var(--sk-space-6);
+  border-top: 0.2rem solid var(--lab-accent);
+  border-bottom: var(--lab-border) solid var(--lab-line);
+}
+
+.lab-intro-note strong {
+  display: block;
+  margin-top: var(--sk-space-4);
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.lab-intro-note p {
+  margin-top: var(--sk-space-3);
+  color: var(--lab-muted);
+}
+
+.lab-boundary {
+  display: grid;
+  grid-template-columns: minmax(15rem, 1.2fr) minmax(0, 1fr);
+  gap: var(--sk-space-8);
+  align-items: center;
+  padding: var(--sk-space-4) var(--sk-space-6);
+  color: var(--lab-ink);
+  background: var(--lab-evidence-soft);
+  border: var(--lab-border) solid color-mix(in oklch, var(--lab-evidence) 48%, var(--lab-line));
+  border-radius: var(--lab-radius-small);
+}
+
+.lab-boundary__claim strong {
+  display: block;
+  margin-top: var(--sk-space-1);
+  font-size: 1rem;
+}
+
+.lab-boundary__facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lab-boundary__facts div {
+  padding-inline: var(--sk-space-4);
+  border-left: var(--lab-border) solid color-mix(in oklch, var(--lab-evidence) 48%, var(--lab-line));
+}
+
+.lab-boundary__facts dt {
+  color: var(--lab-muted);
+  font-size: 0.68rem;
+  font-weight: var(--sk-font-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lab-boundary__facts dd {
+  margin-top: var(--sk-space-1);
+  font-size: var(--sk-font-size-sm);
+  font-weight: var(--sk-font-weight-bold);
+}
+
+.lab-boundary--local {
+  background: var(--lab-accent-soft);
+  border-color: color-mix(in oklch, var(--lab-accent) 48%, var(--lab-line));
+}
+
+.lab-boundary--draft {
+  background: var(--lab-paper);
+  border-color: var(--lab-line-strong);
+}
+
+.lab-boundary--assist {
+  background: var(--lab-dark);
+  border-color: var(--lab-dark-line);
+  color: var(--lab-surface);
+}
+
+.lab-boundary--assist .lab-boundary__claim span,
+.lab-boundary--assist dt {
+  color: var(--lab-evidence);
+}
+
+.lab-boundary--assist .lab-boundary__facts div {
+  border-color: var(--lab-dark-line);
+}
+
+.lab-boundary--assist dd {
+  color: var(--lab-surface);
+}
+
+.lab-artifact-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sk-space-4);
+  padding: var(--sk-space-4) var(--sk-space-6);
+  border-bottom: var(--lab-border) solid var(--lab-line);
+}
+
+.lab-artifact-bar > div > strong {
+  display: block;
+  margin-top: var(--sk-space-1);
+  font-size: 1.05rem;
+}
+
+.lab-status-mark {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sk-size-badge-min);
+  padding-inline: var(--sk-space-3);
+  color: var(--lab-ink) !important;
+  background: var(--lab-attention);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.lab-pane-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sk-space-3);
+}
+
+.lab-pane-title h2 {
+  font-size: 1rem;
+}

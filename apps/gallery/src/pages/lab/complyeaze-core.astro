@@ -1,0 +1,24 @@
+---
+import LabIntro from "../../components/lab/LabIntro.astro";
+import LabShell from "../../components/lab/LabShell.astro";
+import ProductRouteArtifact from "../../components/lab/ProductRouteArtifact.astro";
+import { labRoutes, productRoutes, reviewQueue } from "../../content/lab/references";
+
+const route = labRoutes.complyeaze;
+---
+
+<LabShell title={route.title} description={route.description} routeId="complyeaze-core" mode="complyeaze">
+  <LabIntro
+    eyebrow={route.eyebrow}
+    title="Choose your compliance route before data moves."
+    lede="ComplyEaze helps Indian compliance teams move from a question to the right workspace or local tool, with account, upload, and review boundaries visible before they act."
+    primary={{ label: "Inspect the Axal desk", href: labRoutes.axal.path }}
+    secondary={{ label: "Compare product routes", href: "#product-routes" }}
+  >
+    <aside class="lab-intro-note" aria-label="ComplyEaze operating promise">
+      <span>One family, three operating modes</span>
+      <strong>Workspace when context must persist. Local when custody must not move.</strong>
+    </aside>
+  </LabIntro>
+  <ProductRouteArtifact routes={productRoutes} queue={reviewQueue} />
+</LabShell>
