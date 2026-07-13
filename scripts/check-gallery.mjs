@@ -6,6 +6,7 @@ import {
   runGalleryVariableFixtures,
 } from "./validation/gallery-css-variables.mjs";
 import {
+  findCanonicalLabRouteLinks,
   inspectGalleryAssetGraph,
   runGalleryOutputFixtures,
 } from "./validation/gallery-output.mjs";
@@ -69,8 +70,7 @@ for (const [path] of outputFiles.filter(([path]) => path.endsWith(".css"))) {
   if (!stylesheetConsumers.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any gallery document`);
 }
 
-const canonicalHrefs = [...html.matchAll(/<a\b[^>]*\shref="([^"]+)"/gi)].map((match) => match[1]);
-if (expectedLabDocuments.some((path) => canonicalHrefs.includes(`/${path.replace("/index.html", "/")}`))) {
+if (findCanonicalLabRouteLinks({ html, expectedLabDocuments }).length > 0) {
   failures.push("canonical gallery navigation must not link to noindex lab routes");
 }
 

@@ -88,6 +88,35 @@ export function inspectGalleryAssetGraph({
   };
 }
 
+export function findCanonicalLabRouteLinks({ html, expectedLabDocuments }) {
+  const expectedPaths = new Set(expectedLabDocuments.flatMap((path) => labRoutePathVariants(path)));
+  const activeHtml = html.replace(/<!--[\s\S]*?-->/g, "");
+  const matches = [];
+
+  for (const match of activeHtml.matchAll(/<a\b([^>]*)>/gi)) {
+    const href = parseAttributes(match[1]).get("href");
+    if (!href) continue;
+
+    let url;
+    try {
+      url = new URL(href, `${galleryOrigin}/`);
+    } catch {
+      continue;
+    }
+    if (url.origin !== galleryOrigin) continue;
+
+    let pathname;
+    try {
+      pathname = normalizeRoutePath(url.pathname);
+    } catch {
+      continue;
+    }
+    if (expectedPaths.has(pathname)) matches.push(href);
+  }
+
+  return matches;
+}
+
 export function runGalleryOutputFixtures() {
   const validHtml = '<link rel="stylesheet" href="/_astro/current.css"><script type="application/ld+json">{"name":"Sanchika"}</script>';
   const validFiles = new Map([
@@ -149,7 +178,44 @@ export function runGalleryOutputFixtures() {
       failures.push(`${fixture.name}: expected ${fixture.expected ?? "success"}; found ${findings.join(", ") || "success"}`);
     }
   }
-  return { count: fixtures.length, failures };
+
+  const expectedLabDocuments = ["lab/tools-directory/index.html"];
+  const labLinkFixtures = [
+    { name: "relative lab route", href: "/lab/tools-directory/", expected: true },
+    {
+      name: "absolute lab route with query and hash",
+      href: "https://sanchika.complyeaze.com/lab/tools-directory/?view=all#results",
+      expected: true,
+    },
+    { name: "lab route without trailing slash", href: "/lab/tools-directory", expected: true },
+    { name: "lab output document path", href: "/lab/tools-directory/index.html", expected: true },
+    { name: "external lookalike route", href: "https://example.com/lab/tools-directory/", expected: false },
+    { name: "malformed encoded route", href: "/lab/%E0%A4%A", expected: false },
+  ];
+
+  for (const fixture of labLinkFixtures) {
+    const matches = findCanonicalLabRouteLinks({
+      html: `<a href="${fixture.href}">Reference</a>`,
+      expectedLabDocuments,
+    });
+    if ((matches.length > 0) !== fixture.expected) {
+      failures.push(`${fixture.name}: expected lab link match ${fixture.expected}; found ${matches.length > 0}`);
+    }
+  }
+
+  return { count: fixtures.length + labLinkFixtures.length, failures };
+}
+
+function labRoutePathVariants(path) {
+  const documentPath = normalizeRoutePath(`/${path}`);
+  const routePath = normalizeRoutePath(`/${path.replace(/index\.html$/i, "")}`);
+  return [documentPath, routePath];
+}
+
+function normalizeRoutePath(pathname) {
+  const decoded = decodeURIComponent(pathname);
+  const normalized = posix.normalize(decoded.startsWith("/") ? decoded : `/${decoded}`);
+  return normalized === "/" ? normalized : normalized.replace(/\/$/, "");
 }
 
 function resolveOutputHref(href) {

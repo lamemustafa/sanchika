@@ -162,6 +162,10 @@ html[data-sanchika-lab] ::selection {
   text-transform: uppercase;
 }
 
+.lab-boundary__claim span {
+  color: var(--lab-ink);
+}
+
 .lab-intro {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.55fr);

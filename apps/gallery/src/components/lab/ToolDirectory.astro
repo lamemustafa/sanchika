@@ -126,7 +126,9 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
       input.focus();
     });
     filters.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-tool-category]");
+      if (!(event.target instanceof Node)) return;
+      const target = event.target instanceof Element ? event.target : event.target.parentElement;
+      const button = target?.closest("[data-tool-category]");
       if (!button) return;
       category = button.dataset.toolCategory;
       for (const candidate of filters.querySelectorAll("[data-tool-category]")) {

@@ -29,6 +29,7 @@ interface Props {
 
 const { queue, evidence, audit } = Astro.props;
 const selected = queue[0];
+const linkedSourceCount = evidence.filter((item) => item.state === "Linked").length;
 ---
 
 <section class="lab-review-desk" aria-labelledby="review-desk-title">
@@ -40,7 +41,7 @@ const selected = queue[0];
     <div class="lab-review-desk__summary" aria-label="Queue summary">
       <span><strong>3</strong> open</span>
       <span><strong>1</strong> CA checkpoint</span>
-      <span><strong>2</strong> sources linked</span>
+      <span><strong>{linkedSourceCount}</strong> {linkedSourceCount === 1 ? "source" : "sources"} linked</span>
     </div>
   </div>
 
