@@ -82,10 +82,7 @@
 }
 
 .lab-mini-queue {
-  display: flex;
-  flex-direction: column;
   justify-content: center;
-  gap: var(--sk-space-3);
   padding: clamp(2rem, 5vw, 5rem);
   background: color-mix(in oklch, var(--sk-color-brand-primary) 90%, var(--sk-color-brand-secondary));
 }

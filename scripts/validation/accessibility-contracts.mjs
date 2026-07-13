@@ -54,6 +54,8 @@ export const controlInvalidSelector = ".sk-field :is(input, textarea, select, [d
 
 export const requiredFocusVisibleSelectors = [
   ".sk-button:focus-visible",
+  ".sk-link:focus-visible",
+  ".sk-link-card:focus-visible",
   ".sk-card:focus-visible",
   ".sk-field :is(input, textarea, select, [data-sk-control]):focus-visible",
 ];

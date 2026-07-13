@@ -11,8 +11,8 @@ import {
   tokenGroupDefinitions,
   typographyTokens,
 } from "@sanchika/tokens";
-import { primitiveClassName } from "@sanchika/primitives";
-import type { PrimitiveSizeFor, PrimitiveToneFor } from "@sanchika/primitives";
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import type { PrimitiveClassOptionsFor, PrimitiveContract, PrimitiveSizeFor, PrimitiveSpec, PrimitiveToneFor, TextRole } from "@sanchika/primitives";
 import type {
   ConsumerMode,
   PatternA11yCheckFor,
@@ -48,6 +48,37 @@ const focusRole: "outlineWidth" = focusTokens.outlineWidth.role;
 
 const buttonTone: PrimitiveToneFor<"Button"> = "brand";
 const fieldSize: PrimitiveSizeFor<"Field"> = "lg";
+const splitOptions: PrimitiveClassOptionsFor<"Split"> = { ratio: "primary", gap: "lg" };
+const textRole: TextRole = "data";
+const legacyPrimitiveSpec: PrimitiveSpec = {
+  name: "Fixture",
+  role: "Legacy compatible fixture",
+  tones: ["neutral"],
+  sizes: ["md"],
+  requiredStates: ["default"],
+  stateEvidence: [{ state: "default", attributes: [], selectors: [".fixture"], notes: "Legacy shape." }],
+  standards: [],
+  accessibility: ["legacy-compatible"],
+};
+const richPrimitiveContract: PrimitiveContract = {
+  ...legacyPrimitiveSpec,
+  purpose: "Proves the rich S4 contract remains complete.",
+  whenToUse: ["Rich fixture"],
+  whenNotToUse: ["Legacy-only fixture"],
+  semanticElement: "Use a neutral element.",
+  classHooks: [".fixture"],
+  anatomy: [{ name: "root", purpose: "Fixture root." }],
+  variants: [],
+  keyboardObligations: ["No keyboard behavior."],
+  screenReaderObligations: ["Preserve text."],
+  contentRules: ["Use fixture copy."],
+  motion: { behavior: "No motion.", reducedMotion: "No override needed." },
+  forcedColorsBehavior: ["No authored color."],
+  mobileBehavior: ["Wrap safely."],
+  examples: [{ title: "Fixture", className: "fixture", markup: "<div class=\"fixture\"></div>" }],
+  galleryCoverage: ["Fixture"],
+  consumerResponsibilities: ["Choose semantics."],
+};
 const evidenceSlot: PatternSlotNameFor<"EvidencePanel"> = "sourceList";
 const trustState: PatternStateNameFor<"TrustBoundary"> = "local-only";
 const externalConsumerMode: ConsumerMode = "external/operational-saas";
@@ -140,6 +171,8 @@ const packEvidenceLoopIssues: readonly EvidenceLoopValidationIssue[] = validateE
 
 primitiveClassName("Button", buttonTone, "md");
 primitiveClassName("Field", "danger", fieldSize);
+primitiveClassName("Split", splitOptions);
+textClassName(textRole);
 
 void brandRole;
 void legacyBackgroundVariable;
@@ -153,6 +186,10 @@ void typographyRole;
 void sizeRole;
 void elevationRole;
 void focusRole;
+void splitOptions;
+void textRole;
+void legacyPrimitiveSpec;
+void richPrimitiveContract;
 void evidenceSlot;
 void trustState;
 void externalConsumerMode;
@@ -179,6 +216,12 @@ primitiveClassName("Button", "success", "md");
 // @ts-expect-error Badge does not support the lg size.
 primitiveClassName("Badge", "success", "lg");
 
+// @ts-expect-error Unknown layout variants must not compile.
+primitiveClassName("Grid", { columns: "12" });
+
+// @ts-expect-error Rich contracts require S4-only contract fields.
+const incompleteRichPrimitiveContract: PrimitiveContract = legacyPrimitiveSpec;
+
 // @ts-expect-error TrustBoundary does not expose EvidencePanel slots.
 const wrongPatternSlot: PatternSlotNameFor<"TrustBoundary"> = "sourceList";
 
@@ -188,3 +231,4 @@ const wrongStateSlot: PatternStateRequiredSlotNameFor<"EvidencePanel", "empty"> 
 void wrongTokenRole;
 void wrongPatternSlot;
 void wrongStateSlot;
+void incompleteRichPrimitiveContract;

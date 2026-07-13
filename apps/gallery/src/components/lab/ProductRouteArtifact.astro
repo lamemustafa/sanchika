@@ -1,4 +1,6 @@
 ---
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+
 interface ProductRoute {
   readonly label: string;
   readonly name: string;
@@ -27,8 +29,8 @@ const { routes, queue } = Astro.props;
 const [primaryRoute, ...secondaryRoutes] = routes;
 ---
 
-<section id="product-routes" class="lab-route-artifact" aria-labelledby="product-route-title">
-  <div class="lab-artifact-bar">
+<section id="product-routes" class={`lab-route-artifact ${primitiveClassName("Surface", { variant: "inverse", padding: "none" })}`} aria-labelledby="product-route-title">
+  <div class={`lab-artifact-bar ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
     <div>
       <span>Choose by operating boundary</span>
       <strong id="product-route-title">Your work decides the route.</strong>
@@ -39,14 +41,14 @@ const [primaryRoute, ...secondaryRoutes] = routes;
   {primaryRoute && (
     <article class="lab-route-primary">
       <div class="lab-route-primary__copy">
-        <p>{primaryRoute.label}</p>
-        <h2>{primaryRoute.name}</h2>
+        <p class={textClassName("eyebrow")}>{primaryRoute.label}</p>
+        <h2 class={textClassName("display")}>{primaryRoute.name}</h2>
         <strong>{primaryRoute.signal}</strong>
         <p>{primaryRoute.job}</p>
         <span>{primaryRoute.boundary}</span>
-        <a href={primaryRoute.href}>Inspect the Axal review desk <span aria-hidden="true">→</span></a>
+        <a class={primitiveClassName("Link")} href={primaryRoute.href}>Inspect the Axal review desk <span aria-hidden="true">→</span></a>
       </div>
-      <div class="lab-mini-queue" aria-label="Synthetic Axal review queue">
+      <div class={`lab-mini-queue ${primitiveClassName("Stack", { gap: "sm" })}`} aria-label="Synthetic Axal review queue">
         <p>Review queue</p>
         {queue.map((item) => (
           <article data-tone={item.tone}>
@@ -66,13 +68,13 @@ const [primaryRoute, ...secondaryRoutes] = routes;
     {secondaryRoutes.map((route) => (
       <article>
         <div>
-          <p>{route.label}</p>
+          <p class={textClassName("eyebrow")}>{route.label}</p>
           <h2>{route.name}</h2>
         </div>
         <strong>{route.signal}</strong>
         <p>{route.job}</p>
         <span>{route.boundary}</span>
-        <a href={route.href}>Inspect {route.name} proof <span aria-hidden="true">→</span></a>
+        <a class={primitiveClassName("Link")} href={route.href}>Inspect {route.name} proof <span aria-hidden="true">→</span></a>
       </article>
     ))}
   </div>

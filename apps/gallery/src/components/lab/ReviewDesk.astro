@@ -1,4 +1,6 @@
 ---
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+
 interface QueueItem {
   readonly id: string;
   readonly title: string;
@@ -33,12 +35,12 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
 ---
 
 <section class="lab-review-desk" aria-labelledby="review-desk-title">
-  <div class="lab-review-desk__topbar">
+  <div class={`lab-review-desk__topbar ${primitiveClassName("Cluster", { gap: "lg", justify: "between" })}`}>
     <div>
       <span>Axal review desk</span>
       <strong id="review-desk-title">Work requiring judgment</strong>
     </div>
-    <div class="lab-review-desk__summary" aria-label="Queue summary">
+    <div class={`lab-review-desk__summary ${primitiveClassName("Cluster", { gap: "lg" })}`} aria-label="Queue summary">
       <span><strong>3</strong> open</span>
       <span><strong>1</strong> CA checkpoint</span>
       <span><strong>{linkedSourceCount}</strong> {linkedSourceCount === 1 ? "source" : "sources"} linked</span>
@@ -47,14 +49,14 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
 
   <div class="lab-review-desk__body">
     <section class="lab-work-queue" aria-labelledby="work-queue-title">
-      <div class="lab-pane-title">
+      <div class={`lab-pane-title ${primitiveClassName("Cluster", { gap: "sm", align: "start", justify: "between" })}`}>
         <h2 id="work-queue-title">Work queue</h2>
         <span>Priority order</span>
       </div>
-      <div class="lab-work-queue__list">
+      <div class={`lab-work-queue__list ${primitiveClassName("Stack", { gap: "sm" })}`}>
         {queue.map((item, index) => (
           <article data-tone={item.tone} data-selected={index === 0 ? "true" : undefined}>
-            <div class="lab-work-queue__identity">
+            <div class={`lab-work-queue__identity ${primitiveClassName("Cluster", { gap: "sm", align: "center", justify: "between" })}`}>
               <span>{item.id}</span>
               <strong>{item.title}</strong>
             </div>
@@ -71,7 +73,7 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
 
     {selected && (
       <article class="lab-selected-case" aria-labelledby="selected-case-title">
-        <div class="lab-pane-title">
+        <div class={`lab-pane-title ${primitiveClassName("Cluster", { gap: "sm", align: "start", justify: "between" })}`}>
           <div>
             <span>{selected.id} · Selected item</span>
             <h2 id="selected-case-title">{selected.title}</h2>
@@ -93,7 +95,7 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
           <span>Human approval checkpoint</span>
           <h3 id="human-checkpoint-title">CA decision required before the response advances.</h3>
           <p>Approve, revise, or request evidence only after opening the linked synthetic source.</p>
-          <div class="lab-checkpoint-actions" aria-label="Illustrative review decisions">
+          <div class={`lab-checkpoint-actions ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Illustrative review decisions">
             <span data-action="primary">Open source before deciding</span>
             <span data-action="secondary">Request evidence</span>
           </div>
@@ -102,15 +104,15 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
     )}
 
     <aside class="lab-evidence-rail" aria-labelledby="evidence-rail-title">
-      <div class="lab-pane-title">
+      <div class={`lab-pane-title ${primitiveClassName("Cluster", { gap: "sm", align: "start", justify: "between" })}`}>
         <h2 id="evidence-rail-title">Source evidence</h2>
         <span>3 records</span>
       </div>
-      <div class="lab-evidence-rail__items">
+      <div class={`lab-evidence-rail__items ${primitiveClassName("Stack", { gap: "sm" })}`}>
         {evidence.map((item, index) => (
           <details open={index === 0}>
             <summary>
-              <span>{item.label}</span>
+              <span class={textClassName("caption")}>{item.label}</span>
               <strong>{item.state}</strong>
             </summary>
             <p>{item.value}</p>

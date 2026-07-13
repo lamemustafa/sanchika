@@ -22,7 +22,12 @@ import {
 } from "./validation/contrast.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const primitiveCss = read("packages/primitives/src/styles.css");
+const primitiveCss = [
+  "packages/primitives/src/styles.css",
+  "packages/primitives/src/foundation.css",
+  "packages/primitives/src/typography.css",
+  "packages/primitives/src/components.css",
+].map(read).join("\n");
 const tokenEntrypoint = read("packages/tokens/src/index.ts");
 const failures = validateTokenSource({
   tokens: authoredTokens,

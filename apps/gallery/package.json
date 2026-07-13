@@ -9,7 +9,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "astro build",
+    "build": "astro build && node ../../scripts/write-gallery-build-metadata.mjs",
     "typecheck": "astro check"
   },
   "dependencies": {

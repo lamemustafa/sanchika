@@ -5,6 +5,7 @@ coverage/
 .turbo/
 .next/
 .playwright-cli/
+.sanchika-build/
 output/playwright/
 .DS_Store
 *.tsbuildinfo

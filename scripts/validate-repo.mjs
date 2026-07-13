@@ -14,6 +14,7 @@ import {
 } from "../packages/tokens/src/tokens.ts";
 import { renderTokenArtifacts, validateTokenSource } from "./token-generation.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
+import { runBuildArtifactFixtures } from "./validation/build-artifacts.mjs";
 import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
 import { validatePagesSmokeWorkflow } from "./validation/pages-smoke-workflow.mjs";
 import { expectedGithubLabels } from "./validation/github-labels.mjs";
@@ -39,6 +40,9 @@ const failures = [];
 function fail(message) {
   failures.push(message);
 }
+
+const buildArtifactFixtures = runBuildArtifactFixtures();
+for (const fixtureFailure of buildArtifactFixtures.failures) fail(`build artifact fixture ${fixtureFailure}`);
 
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
@@ -93,6 +97,9 @@ if (galleryAppPackage.name !== "@sanchika/gallery-app" || galleryAppPackage.priv
 }
 if (galleryAppPackage.devDependencies?.astro !== "7.0.7") {
   fail("@sanchika/gallery-app must pin Astro 7.0.7 exactly");
+}
+if (galleryAppPackage.scripts?.build !== "astro build && node ../../scripts/write-gallery-build-metadata.mjs") {
+  fail("@sanchika/gallery-app build must write deterministic gallery build metadata after Astro output");
 }
 for (const requiredGalleryBuildFragment of ['transformer: "postcss"', 'cssMinify: "esbuild"']) {
   if (!galleryAstroConfig.includes(requiredGalleryBuildFragment)) {
@@ -290,8 +297,8 @@ if (
 ) {
   fail("root package must expose smoke:check as the check-only gallery smoke lane");
 }
-if (rootPackage.scripts?.smoke !== "pnpm gallery:build && pnpm smoke:check") {
-  fail("root smoke command must build the gallery once before smoke:check");
+if (rootPackage.scripts?.smoke !== "pnpm build && pnpm gallery:build && pnpm smoke:check") {
+  fail("root smoke command must build packages and the gallery once before smoke:check");
 }
 if (
   !rootPackage.scripts?.verify?.includes("pnpm smoke:check") ||
@@ -489,16 +496,19 @@ if (releaseManifest) {
   }
 }
 
-for (const [scriptPath, commandName] of [
-  ["scripts/smoke-gallery.mjs", "pnpm smoke"],
-  ["scripts/check-package-api-types.mjs", "pnpm typecheck:api"],
-  ["scripts/check-local-link-consumer.mjs", "pnpm consumer:check"],
-  ["scripts/check-packed-tarball-consumer.mjs", "pnpm publish:tarball-check"],
-  ["scripts/validation/trust-brief-fixtures.mjs", "pnpm trust:brief:fixtures"],
-  ["scripts/validation/evidence-loop-fixtures.mjs", "pnpm evidence:loop:fixtures"],
+for (const [scriptPath, commandName, helperName] of [
+  ["scripts/smoke-gallery.mjs", "pnpm smoke:check", "assertGalleryBuildArtifacts"],
+  ["scripts/check-gallery.mjs", "pnpm gallery:check", "assertGalleryBuildArtifacts"],
+  ["scripts/check-gallery-coverage.mjs", "pnpm check:gallery", "assertGalleryBuildArtifacts"],
+  ["scripts/check-package-api-types.mjs", "pnpm typecheck:api", "assertBuiltPackageArtifacts"],
+  ["scripts/check-package-artifacts.mjs", "pnpm artifact:check", "assertBuiltPackageArtifacts"],
+  ["scripts/check-local-link-consumer.mjs", "pnpm consumer:check", "assertBuiltPackageArtifacts"],
+  ["scripts/check-packed-tarball-consumer.mjs", "pnpm publish:tarball-check", "assertBuiltPackageArtifacts"],
+  ["scripts/validation/trust-brief-fixtures.mjs", "pnpm trust:brief:fixtures", "assertBuiltPackageArtifacts"],
+  ["scripts/validation/evidence-loop-fixtures.mjs", "pnpm evidence:loop:fixtures", "assertBuiltPackageArtifacts"],
 ]) {
   const scriptSource = requireText(scriptPath);
-  if (!scriptSource.includes("assertBuiltPackageArtifacts")) {
+  if (!scriptSource.includes(helperName)) {
     fail(`${scriptPath} must check built package artifacts before running ${commandName}`);
   }
   if (!scriptSource.includes(commandName)) {
@@ -631,12 +641,32 @@ validatePackageManifest("patterns", syntheticPublishablePatternManifest, fail);
 const tokenEntrypoint = readText("packages/tokens/src/index.ts");
 const tokenGeneratedSource = readText("packages/tokens/src/generated.ts");
 const tokenCss = readText("packages/tokens/src/theme.css");
-const primitiveSource = readText("packages/primitives/src/index.ts");
-const primitiveCss = readText("packages/primitives/src/styles.css");
+const primitiveSource = [
+  "packages/primitives/src/index.ts",
+  "packages/primitives/src/classes.ts",
+  "packages/primitives/src/registry.ts",
+  "packages/primitives/src/contracts/types.ts",
+  "packages/primitives/src/contracts/layout-core.ts",
+  "packages/primitives/src/contracts/layout-planes.ts",
+  "packages/primitives/src/contracts/typography.ts",
+  "packages/primitives/src/contracts/actions.ts",
+  "packages/primitives/src/contracts/form-status.ts",
+].map(readText).join("\n");
+const primitiveCss = [
+  "packages/primitives/src/styles.css",
+  "packages/primitives/src/foundation.css",
+  "packages/primitives/src/typography.css",
+  "packages/primitives/src/components.css",
+].map(readText).join("\n");
 const patternSource = readText("packages/patterns/src/index.ts");
 const gallerySource = readText("apps/gallery/src/components/PatternContracts.astro");
 const galleryPrimitiveMatrixSource = readText("apps/gallery/src/components/PrimitiveStateMatrix.astro");
 const galleryPrimitiveSummarySource = readText("apps/gallery/src/components/PrimitiveSummary.astro");
+const galleryPrimitiveContractListSource = readText("apps/gallery/src/components/PrimitiveContractList.astro");
+const galleryFoundationProofSource = readText("apps/gallery/src/components/FoundationPrimitiveProof.astro");
+const galleryStyleSources = readdirSync(join(root, "apps/gallery/src/styles"), { recursive: true })
+  .filter((path) => typeof path === "string" && path.endsWith(".css"))
+  .map((path) => [`apps/gallery/src/styles/${path.replaceAll("\\", "/")}`, readText(`apps/gallery/src/styles/${path}`)]);
 const tokenDocs = readText("docs/tokens.md");
 const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
@@ -819,10 +849,33 @@ for (const requiredGalleryStatusFragment of [
 
 for (const [path, source] of [
   ["apps/gallery/src/components/PrimitiveStateMatrix.astro", galleryPrimitiveMatrixSource],
-  ["apps/gallery/src/components/PrimitiveSummary.astro", galleryPrimitiveSummarySource],
 ]) {
   if (!source.includes("primitiveSpecs")) {
     fail(`${path} must derive primitive contract enumerations from primitiveSpecs`);
+  }
+}
+for (const [path, source] of [
+  ["apps/gallery/src/components/PrimitiveSummary.astro", galleryPrimitiveSummarySource],
+  ["apps/gallery/src/components/PrimitiveContractList.astro", galleryPrimitiveContractListSource],
+  ["apps/gallery/src/components/FoundationPrimitiveProof.astro", galleryFoundationProofSource],
+]) {
+  if (!source.includes("primitiveGroups")) {
+    fail(`${path} must derive its primitive inventory from package-owned primitiveGroups`);
+  }
+}
+for (const duplicatedInventory of [
+  /const\s+s4Names\s*=/,
+  /const\s+legacyPrimitiveNames\s*=/,
+  /const\s+surfaceVariants\s*=\s*\[/,
+  /const\s+textRoles\s*=\s*\[/,
+]) {
+  if (duplicatedInventory.test(`${galleryPrimitiveSummarySource}\n${galleryPrimitiveContractListSource}\n${galleryFoundationProofSource}`)) {
+    fail(`gallery primitive inventories must not duplicate package-owned contracts with ${duplicatedInventory}`);
+  }
+}
+for (const [path, source] of galleryStyleSources) {
+  for (const match of source.matchAll(/--sk-(?:stack|grid)-gap\s*:/g)) {
+    fail(`${path} must not override primitive-internal ${match[0].slice(0, -1).trim()}`);
   }
 }
 if (/const\s+badgeTones\s*=\s*\[/.test(galleryPrimitiveMatrixSource)) {
@@ -1887,5 +1940,6 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
+console.log(`Sanchika build artifact fixtures passed (${buildArtifactFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
 console.log("Sanchika repo validation passed.");

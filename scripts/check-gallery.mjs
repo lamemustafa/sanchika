@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
 import {
   findUnresolvedGalleryVariables,
   runGalleryVariableFixtures,
@@ -12,6 +13,7 @@ import {
 } from "./validation/gallery-output.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+assertGalleryBuildArtifacts({ root, commandName: "pnpm gallery:check" });
 const galleryDir = join(root, "apps", "gallery", "dist");
 const indexPath = join(galleryDir, "index.html");
 const failures = [];
@@ -36,6 +38,7 @@ const expectedLabDocuments = [
   "lab/tools-directory/index.html",
 ];
 const tokenProofDocument = "foundations/tokens/index.html";
+const primitiveFoundationDocument = "primitives/foundations/index.html";
 const stylesheetConsumers = new Set();
 let assetGraph = null;
 
@@ -81,6 +84,25 @@ if (!tokenProofHtml) {
     "--sk-motion-duration-fast",
   ]) {
     if (!tokenProofHtml.includes(required)) failures.push(`${tokenProofDocument} must include ${required}`);
+  }
+}
+
+const primitiveFoundationHtml = outputFileMap.get(primitiveFoundationDocument) ?? "";
+if (!primitiveFoundationHtml) {
+  failures.push(`${primitiveFoundationDocument} must exist`);
+} else {
+  for (const required of [
+    "<title>Foundation primitives | Sanchika</title>",
+    '<link rel="canonical" href="https://sanchika.complyeaze.com/primitives/foundations/">',
+    'data-sanchika-gallery="foundation-primitives"',
+    "Layout is a contract, not a screenshot.",
+    "Link is navigation. Button is action.",
+    "Never nest interactive controls inside LinkCard.",
+    'data-sk-primitive="Container"',
+    'data-sk-primitive="VisuallyHidden"',
+    'data-sk-primitive="LinkCard"',
+  ]) {
+    if (!primitiveFoundationHtml.includes(required)) failures.push(`${primitiveFoundationDocument} must include ${required}`);
   }
 }
 

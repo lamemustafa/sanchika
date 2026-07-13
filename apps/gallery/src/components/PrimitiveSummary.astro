@@ -1,5 +1,5 @@
 ---
-import { primitiveSpecs } from "@sanchika/primitives";
+import { primitiveGroups, primitiveSpecs } from "@sanchika/primitives";
 
 function summaryFor(primitive: (typeof primitiveSpecs)[number]): string {
   if (primitive.name === "Badge") return primitive.tones.map(titleCase).join(", ");
@@ -21,6 +21,6 @@ function titleCase(value: string): string {
     <p>Each primitive keeps the interaction state explicit enough for a CA workflow, browser-local tool, or review surface to adopt without inventing hidden behavior.</p>
   </div>
   <div class="sk-gallery-matrix-grid">
-    {primitiveSpecs.map((primitive) => <article><span>{primitive.name}</span><strong>{summaryFor(primitive)}</strong></article>)}
+    {primitiveGroups.legacy.map((primitive) => <article data-sk-primitive-summary={primitive.name}><span>{primitive.name}</span><strong>{summaryFor(primitive)}</strong></article>)}
   </div>
 </section>
