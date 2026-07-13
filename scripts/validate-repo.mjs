@@ -2,12 +2,17 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  contrastPairs,
+  evaluateContrastPairs,
+  parseCssCustomProperties,
   productSections,
   requiredMotionVariables,
-  contrastRatio,
-  parseOklch,
 } from "./validation/contrast.mjs";
+import {
+  authoredTokenGroups,
+  authoredTokens,
+  compatibilityCollections,
+} from "../packages/tokens/src/tokens.ts";
+import { renderTokenArtifacts, validateTokenSource } from "./token-generation.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
 import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
 import { validatePagesSmokeWorkflow } from "./validation/pages-smoke-workflow.mjs";
@@ -117,6 +122,14 @@ if (rootPackage.engines?.node !== ">=24") {
 
 if (rootPackage.scripts?.["consumer:check"] !== "node scripts/check-local-link-consumer.mjs") {
   fail("root package must expose consumer:check for local-link adoption proof");
+}
+
+if (rootPackage.scripts?.["build:tokens"] !== "node scripts/build-tokens.mjs") {
+  fail("root package must expose build:tokens for deterministic token generation");
+}
+
+if (rootPackage.scripts?.["check:tokens"] !== "node scripts/check-token-integrity.mjs") {
+  fail("root package must expose check:tokens for generated-output drift and token fixtures");
 }
 
 if (rootPackage.scripts?.["workflow:preflight"] !== "node scripts/check-workflow-preflight.mjs") {
@@ -615,7 +628,8 @@ const syntheticPublishablePatternManifest = {
 };
 validatePackageManifest("patterns", syntheticPublishablePatternManifest, fail);
 
-const tokenSource = readText("packages/tokens/src/index.ts");
+const tokenEntrypoint = readText("packages/tokens/src/index.ts");
+const tokenGeneratedSource = readText("packages/tokens/src/generated.ts");
 const tokenCss = readText("packages/tokens/src/theme.css");
 const primitiveSource = readText("packages/primitives/src/index.ts");
 const primitiveCss = readText("packages/primitives/src/styles.css");
@@ -665,57 +679,27 @@ const adoptionDocs = {
   External: readText("docs/adoption-external.md"),
 };
 
-if (tokenSource.includes("oklch(")) {
-  fail("TypeScript token metadata must not duplicate raw OKLCH values");
+const tokenCssDeclarations = parseCssCustomProperties(tokenCss);
+const expectedTokenArtifacts = renderTokenArtifacts({
+  tokens: authoredTokens,
+  groups: authoredTokenGroups,
+  collections: compatibilityCollections,
+});
+for (const tokenFailure of validateTokenSource({
+  tokens: authoredTokens,
+  groups: authoredTokenGroups,
+  collections: compatibilityCollections,
+})) {
+  fail(tokenFailure);
 }
-
-const tokenVariables = [...tokenSource.matchAll(/cssVariable: "(--sk-[^"]+)"/g)].map((match) => match[1]);
-const tokenCssDeclarations = new Map(
-  [...tokenCss.matchAll(/(--sk-[\w-]+)\s*:\s*([^;]+);/g)].map((match) => [match[1], match[2].trim()]),
-);
-
-for (const variable of tokenVariables) {
-  if (!tokenCssDeclarations.has(variable)) {
-    fail(`theme.css is missing ${variable}`);
-  }
+if (tokenCss !== expectedTokenArtifacts.css) fail("packages/tokens/src/theme.css is stale; run pnpm build:tokens");
+if (tokenGeneratedSource !== expectedTokenArtifacts.typescript) fail("packages/tokens/src/generated.ts is stale; run pnpm build:tokens");
+if (tokenDocs !== expectedTokenArtifacts.docs) fail("docs/tokens.md is stale; run pnpm build:tokens");
+if (!tokenEntrypoint.includes('export * from "./generated.js";') || /oklch\(|cssVariable\s*:/.test(tokenEntrypoint)) {
+  fail("packages/tokens/src/index.ts must remain a value-free generated-metadata entrypoint");
 }
-
-for (const variable of tokenCssDeclarations.keys()) {
-  if (!tokenVariables.includes(variable)) {
-    fail(`TypeScript token metadata is missing ${variable}`);
-  }
-}
-
-for (const [variable, value] of tokenCssDeclarations) {
-  if (variable.startsWith("--sk-color-") && !value.startsWith("oklch(")) {
-    fail(`${variable} must use OKLCH in theme.css`);
-  }
-
-  if (variable.startsWith("--sk-color-") && /#|rgb\(|hsl\(/i.test(value)) {
-    fail(`${variable} must not use hex, rgb, or hsl in theme.css`);
-  }
-}
-
-for (const variable of ["--sk-color-border-control"]) {
-  if (!tokenCssDeclarations.has(variable)) {
-    fail(`theme.css is missing ${variable}`);
-  }
-}
-
-for (const pair of contrastPairs) {
-  const [name, foreground, background, minimum] = pair;
-  const ratio = contrastRatio(readOklch(foreground), readOklch(background));
-  if (ratio < minimum) {
-    fail(`${name} contrast ${ratio.toFixed(2)}:1 is below ${minimum}:1`);
-  }
-}
-
-if (/spacingTokens[\s\S]*?"[0-9.]+rem"/.test(tokenSource)) {
-  fail("TypeScript spacing token metadata must not duplicate raw rem values");
-}
-
-if (/radiusTokens[\s\S]*?"[0-9.]+rem"/.test(tokenSource)) {
-  fail("TypeScript radius token metadata must not duplicate raw rem values");
+for (const result of evaluateContrastPairs(tokenCss)) {
+  if (result.ratio < result.minimum) fail(`${result.name} contrast ${result.ratio.toFixed(2)}:1 is below ${result.minimum}:1`);
 }
 
 for (const motionVariable of requiredMotionVariables) {
@@ -1905,14 +1889,3 @@ if (failures.length > 0) {
 
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
 console.log("Sanchika repo validation passed.");
-
-function readOklch(variable) {
-  const value = tokenCssDeclarations.get(variable);
-  const color = value ? parseOklch(value) : null;
-  if (!color) {
-    fail(`${variable} must be an OKLCH token`);
-    return { l: 0, c: 0, h: 0 };
-  }
-
-  return color;
-}

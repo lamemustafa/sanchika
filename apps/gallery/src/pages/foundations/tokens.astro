@@ -1,0 +1,99 @@
+---
+import { tokenDefinitions, tokenGroupDefinitions } from "@sanchika/tokens";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+import "../../styles/token-proof.css";
+
+const groups = tokenGroupDefinitions.map((group) => ({
+  ...group,
+  tokens: tokenDefinitions.filter((token) => token.group === group.id),
+}));
+const title = "Token foundations | Sanchika";
+const description = "Generated Sanchika v0.1 token metadata, visual examples, usage boundaries, C1 sources, and v0.0.2 compatibility aliases.";
+---
+
+<GalleryLayout title={title} description={description} canonical="https://sanchika.complyeaze.com/foundations/tokens/" dataFavicon>
+  <main id="gallery-content" class="sk-token-proof">
+    <header class="sk-token-proof__intro">
+      <a href="/">Sanchika gallery</a>
+      <p>Generated foundation proof · C1 extraction</p>
+      <h1>One source. Every token decision inspectable.</h1>
+      <p>
+        These examples render from generated package metadata. C1 approves the direction and extraction basis;
+        brand memorability, emotional impact, product character, workflow depth, and edge-state completeness remain open.
+      </p>
+      <dl>
+        <div><dt>Authoring source</dt><dd><code>packages/tokens/src/tokens.ts</code></dd></div>
+        <div><dt>Public CSS</dt><dd><code>@sanchika/tokens/theme.css</code></dd></div>
+        <div><dt>Theme</dt><dd>Canonical light only</dd></div>
+        <div><dt>Runtime font request</dt><dd>None</dd></div>
+      </dl>
+    </header>
+
+    {groups.map((group) => (
+      <section class="sk-token-group" aria-labelledby={`token-group-${group.id}`}>
+        <header>
+          <p>{group.tokens.length} generated roles</p>
+          <h2 id={`token-group-${group.id}`}>{group.title}</h2>
+          <p>{group.description}</p>
+        </header>
+        <div class="sk-token-ledger">
+          {group.tokens.map((token) => (
+            <article
+              class="sk-token-row"
+              data-token-type={token.type}
+              data-token-deprecated={token.deprecated ? "true" : undefined}
+              style={`--token-value: var(${token.cssVariable})`}
+            >
+              <div class="sk-token-row__identity">
+                <span class="sk-token-row__index" aria-hidden="true"></span>
+                <div>
+                  <h3>{token.id}</h3>
+                  <code>{token.cssVariable}</code>
+                </div>
+              </div>
+              <div class="sk-token-row__proof" aria-label={`${token.id} visual example`}>
+                {token.type === "color" && <span class="sk-token-swatch" aria-hidden="true"></span>}
+                {token.type === "font-family" && <span class="sk-token-font-family">Source · GSTIN · ₹12,34,567</span>}
+                {token.type === "font-size" && <span class="sk-token-font-size">Review state</span>}
+                {token.type === "font-weight" && <span class="sk-token-font-weight">Evidence linked</span>}
+                {token.type === "line-height" && <span class="sk-token-line-height">Source visible.<br />Human review required.</span>}
+                {token.type === "letter-spacing" && <span class="sk-token-letter-spacing">SOURCE RECORD</span>}
+                {token.type === "shadow" && <span class="sk-token-shadow">Raised evidence plane</span>}
+                {token.type === "dimension" && <span class="sk-token-measure"><i aria-hidden="true"></i>Measured rhythm</span>}
+                {(token.type === "duration" || token.type === "easing") && (
+                  <span
+                    class="sk-token-motion"
+                    tabindex="0"
+                    aria-label={`${token.id} motion preview. Hover or focus to inspect its timing.`}
+                  >
+                    Hover or focus to inspect timing
+                  </span>
+                )}
+                <code>{token.alias ? `alias → ${token.alias}` : token.resolvedValue}</code>
+              </div>
+              <dl class="sk-token-row__guidance">
+                <div><dt>Use</dt><dd>{token.usage}</dd></div>
+                <div><dt>Do not use</dt><dd>{token.avoid}</dd></div>
+                <div><dt>Source</dt><dd>{token.source}</dd></div>
+                {(token.legacyAliases.length > 0 || token.deprecated) && (
+                  <div>
+                    <dt>Compatibility</dt>
+                    <dd>
+                      {token.legacyAliases.map((item) => <span><code>{item.cssVariable}</code> — {item.note}</span>)}
+                      {token.deprecated && <span>Deprecated; use <code>{token.replacement}</code>.</span>}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <aside class="sk-token-proof__boundary" aria-label="S3 boundary">
+      <strong>Extraction is not visual completion.</strong>
+      <p>The five C1 reservations remain open. S4 is the next phase: foundation and layout primitives.</p>
+    </aside>
+  </main>
+</GalleryLayout>

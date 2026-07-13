@@ -50,6 +50,8 @@ runtime floor.
 
 ```bash
 pnpm install
+pnpm build:tokens
+pnpm check:tokens
 pnpm validate
 pnpm typecheck
 pnpm build

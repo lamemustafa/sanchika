@@ -39,3 +39,16 @@ semantics that native elements cannot provide.
 
 Automated checks are necessary but not sufficient. Manual keyboard review is
 required before production-readiness claims.
+
+## Forced Colors
+
+- Do not disable system colors blindly with `forced-color-adjust: none`.
+- Preserve visible control borders and focus evidence; allow the browser to use
+  system colors when they communicate the state more reliably.
+- Keep visible status text as the semantic signal so success, warning, danger,
+  information, and neutral states never depend on authored color alone.
+- Sanchika package tokens are not a substitute for native forced-color behavior
+  or consumer-level Windows High Contrast review.
+
+S3 does not add a high-contrast theme. A future theme requires real primitive
+and consumer evidence rather than a palette-only remap.

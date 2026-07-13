@@ -2,10 +2,10 @@
   :where(.sk-button, .sk-card, .sk-badge, .sk-field) {
     --sk-primitive-tone: var(--sk-color-ink-muted);
     --sk-primitive-fg: var(--sk-color-ink-primary);
-    --sk-primitive-on-tone: var(--sk-color-bg-surface);
-    --sk-primitive-border: var(--sk-color-border-control);
-    --sk-primitive-tint: color-mix(in oklch, var(--sk-primitive-tone) 10%, var(--sk-color-bg-surface));
-    --sk-primitive-control-block: var(--sk-size-control-md);
+    --sk-primitive-on-tone: var(--sk-color-ink-inverse);
+    --sk-primitive-border: var(--sk-color-border-default);
+    --sk-primitive-tint: color-mix(in oklch, var(--sk-primitive-tone) 10%, var(--sk-color-surface-raised));
+    --sk-primitive-control-block: var(--sk-control-height-md);
     --sk-primitive-control-pad-inline: var(--sk-space-4);
     --sk-primitive-control-pad-block: var(--sk-space-2);
     --sk-primitive-font-size: var(--sk-font-size-md);
@@ -15,7 +15,7 @@
     box-sizing: border-box;
     color: var(--sk-color-ink-primary);
     font: inherit;
-    letter-spacing: 0;
+    letter-spacing: var(--sk-letter-spacing-normal);
   }
 
   :where(.sk-tone-brand) {
@@ -23,29 +23,29 @@
   }
 
   :where(.sk-tone-accent) {
-    --sk-primitive-tone: var(--sk-color-accent);
+    --sk-primitive-tone: var(--sk-color-accent-seal);
     --sk-primitive-on-tone: var(--sk-color-ink-primary);
   }
 
   :where(.sk-tone-success) {
-    --sk-primitive-tone: var(--sk-color-success);
+    --sk-primitive-tone: var(--sk-color-success-fg);
   }
 
   :where(.sk-tone-warning) {
-    --sk-primitive-tone: var(--sk-color-warning);
+    --sk-primitive-tone: var(--sk-color-warning-border);
     --sk-primitive-on-tone: var(--sk-color-ink-primary);
   }
 
   :where(.sk-tone-danger) {
-    --sk-primitive-tone: var(--sk-color-danger);
+    --sk-primitive-tone: var(--sk-color-danger-fg);
   }
 
   :where(.sk-tone-info) {
-    --sk-primitive-tone: var(--sk-color-info);
+    --sk-primitive-tone: var(--sk-color-info-fg);
   }
 
   :where(.sk-size-sm) {
-    --sk-primitive-control-block: var(--sk-size-control-sm);
+    --sk-primitive-control-block: var(--sk-control-height-sm);
     --sk-primitive-control-pad-inline: var(--sk-space-3);
     --sk-primitive-control-pad-block: var(--sk-space-1);
     --sk-primitive-font-size: var(--sk-font-size-sm);
@@ -54,7 +54,7 @@
   }
 
   :where(.sk-size-lg) {
-    --sk-primitive-control-block: var(--sk-size-control-lg);
+    --sk-primitive-control-block: var(--sk-control-height-lg);
     --sk-primitive-control-pad-inline: var(--sk-space-6);
     --sk-primitive-control-pad-block: var(--sk-space-3);
     --sk-primitive-font-size: var(--sk-font-size-lg);
@@ -65,9 +65,9 @@
   :where(.sk-button) {
     align-items: center;
     appearance: none;
-    background: var(--sk-color-bg-surface);
-    border: 1px solid var(--sk-primitive-border);
-    border-radius: var(--sk-radius-control);
+    background: var(--sk-color-surface-raised);
+    border: var(--sk-border-width-default) solid var(--sk-primitive-border);
+    border-radius: var(--sk-radius-sm);
     color: var(--sk-color-ink-primary);
     cursor: pointer;
     display: inline-flex;
@@ -115,7 +115,7 @@
   }
 
   :where(.sk-button:focus-visible, .sk-card:focus-visible, .sk-field :is(input, textarea, select, [data-sk-control]):focus-visible) {
-    outline: var(--sk-focus-outline-width) solid var(--sk-color-info);
+    outline: var(--sk-focus-outline-width) solid var(--sk-color-focus);
     outline-offset: var(--sk-focus-outline-offset);
   }
 
@@ -132,7 +132,7 @@
   :where(.sk-button[aria-busy="true"], .sk-button[data-loading="true"])::after {
     animation: sk-primitive-spin var(--sk-motion-duration-loading) var(--sk-motion-easing-linear) infinite;
     block-size: 0.8em;
-    border: 2px solid currentColor;
+    border: var(--sk-focus-outline-width) solid currentColor;
     border-inline-end-color: transparent;
     border-radius: 50%;
     content: "";
@@ -140,10 +140,10 @@
   }
 
   :where(.sk-card) {
-    background: var(--sk-color-bg-surface);
-    border: 1px solid var(--sk-primitive-border);
-    border-radius: var(--sk-radius-card);
-    box-shadow: var(--sk-elevation-card);
+    background: var(--sk-color-surface-raised);
+    border: var(--sk-border-width-default) solid var(--sk-primitive-border);
+    border-radius: var(--sk-radius-md);
+    box-shadow: var(--sk-shadow-card);
     display: grid;
     gap: var(--sk-space-2);
     max-inline-size: 100%;
@@ -151,7 +151,7 @@
   }
 
   :where(.sk-card.sk-tone-neutral) {
-    box-shadow: var(--sk-elevation-card);
+    box-shadow: var(--sk-shadow-card);
   }
 
   :where(a.sk-card) {
@@ -172,8 +172,8 @@
   :where(.sk-badge) {
     align-items: center;
     background: var(--sk-primitive-tint);
-    border: 1px solid var(--sk-primitive-border);
-    border-radius: var(--sk-radius-control);
+    border: var(--sk-border-width-default) solid var(--sk-primitive-border);
+    border-radius: var(--sk-radius-sm);
     color: var(--sk-primitive-fg);
     display: inline-flex;
     font-size: var(--sk-primitive-font-size);
@@ -202,9 +202,9 @@
 
   :where(.sk-field :is(input, textarea, select, [data-sk-control])) {
     appearance: none;
-    background: var(--sk-color-bg-surface);
-    border: 1px solid var(--sk-primitive-border);
-    border-radius: var(--sk-radius-control);
+    background: var(--sk-color-surface-raised);
+    border: var(--sk-border-width-default) solid var(--sk-primitive-border);
+    border-radius: var(--sk-radius-sm);
     color: var(--sk-color-ink-primary);
     font: inherit;
     inline-size: 100%;
@@ -229,12 +229,12 @@
   }
 
   :where(.sk-field[data-invalid="true"]) {
-    --sk-primitive-tone: var(--sk-color-danger);
+    --sk-primitive-tone: var(--sk-color-danger-fg);
   }
 
   :where(.sk-field[data-invalid="true"] :is(input, textarea, select, [data-sk-control]), .sk-field :is(input, textarea, select, [data-sk-control])[aria-invalid="true"]) {
-    border-color: var(--sk-color-danger);
-    box-shadow: 0 0 0 1px color-mix(in oklch, var(--sk-color-danger) 35%, transparent);
+    border-color: var(--sk-color-danger-border);
+    box-shadow: 0 0 0 var(--sk-border-width-hairline) color-mix(in oklch, var(--sk-color-danger-fg) 35%, transparent);
   }
 
   :where(.sk-field :is([data-sk-hint], [data-sk-error])) {
@@ -246,7 +246,7 @@
   }
 
   :where(.sk-field :is([data-sk-error])) {
-    color: var(--sk-color-danger);
+    color: var(--sk-color-danger-fg);
     font-weight: var(--sk-font-weight-semibold);
   }
 

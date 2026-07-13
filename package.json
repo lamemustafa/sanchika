@@ -18,6 +18,7 @@
   "homepage": "https://github.com/lamemustafa/sanchika#readme",
   "scripts": {
     "build": "pnpm -r build",
+    "build:tokens": "node scripts/build-tokens.mjs",
     "typecheck": "pnpm -r typecheck",
     "typecheck:api": "node scripts/check-package-api-types.mjs",
     "check": "pnpm typecheck",

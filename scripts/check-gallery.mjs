@@ -35,6 +35,7 @@ const expectedLabDocuments = [
   "lab/pack-local-proof/index.html",
   "lab/tools-directory/index.html",
 ];
+const tokenProofDocument = "foundations/tokens/index.html";
 const stylesheetConsumers = new Set();
 let assetGraph = null;
 
@@ -64,6 +65,23 @@ for (const [path, documentHtml] of htmlOutputs) {
 
 for (const path of expectedLabDocuments) {
   if (!outputFileMap.has(path)) failures.push(`${path} must exist`);
+}
+
+const tokenProofHtml = outputFileMap.get(tokenProofDocument) ?? "";
+if (!tokenProofHtml) {
+  failures.push(`${tokenProofDocument} must exist`);
+} else {
+  for (const required of [
+    "<title>Token foundations | Sanchika</title>",
+    '<link rel="canonical" href="https://sanchika.complyeaze.com/foundations/tokens/">',
+    "One source. Every token decision inspectable.",
+    "Extraction is not visual completion.",
+    "data-token-type=",
+    "--sk-color-canvas",
+    "--sk-motion-duration-fast",
+  ]) {
+    if (!tokenProofHtml.includes(required)) failures.push(`${tokenProofDocument} must include ${required}`);
+  }
 }
 
 for (const [path] of outputFiles.filter(([path]) => path.endsWith(".css"))) {

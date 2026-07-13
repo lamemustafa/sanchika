@@ -39,7 +39,7 @@
     "./theme.css": "./dist/theme.css"
   },
   "scripts": {
-    "build": "node ../../scripts/build-package.mjs theme.css",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../../scripts/build-tokens.mjs && node ../../scripts/build-package.mjs theme.css",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.source.json --noEmit"
   }
 }
