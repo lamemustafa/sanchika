@@ -29,11 +29,6 @@ import type {
   TrustBriefValidationIssue,
 } from "@sanchika/patterns";
 import { validateDesignBrief, validateEvidenceLoop, validateTrustBrief } from "@sanchika/patterns";
-import {
-  primitiveGalleryCssImports,
-  renderOpenablePrimitiveGalleryDocument,
-  renderPrimitiveGalleryDocument,
-} from "@sanchika/gallery";
 
 const brandRole: "brandPrimary" = colorTokens.brandPrimary.role;
 const spacingStep: "4" = spacingTokens["4"].step;
@@ -135,9 +130,6 @@ const packEvidenceLoop: EvidenceLoop = {
   nextActions: ["Open the Pack consumer PR with this evidence loop."],
 };
 const packEvidenceLoopIssues: readonly EvidenceLoopValidationIssue[] = validateEvidenceLoop(packEvidenceLoop);
-const galleryCssImport: "@sanchika/tokens/theme.css" = primitiveGalleryCssImports[0];
-const galleryDocument: string = renderPrimitiveGalleryDocument();
-const openableGalleryDocument: string = renderOpenablePrimitiveGalleryDocument();
 
 primitiveClassName("Button", buttonTone, "md");
 primitiveClassName("Field", "danger", fieldSize);
@@ -166,9 +158,6 @@ void packAdoptionEvidence;
 void packEvidenceLoopDecision;
 void packEvidenceLoop;
 void packEvidenceLoopIssues;
-void galleryCssImport;
-void galleryDocument;
-void openableGalleryDocument;
 
 // @ts-expect-error Token roles must stay tied to their record keys.
 const wrongTokenRole: "danger" = colorTokens.success.role;

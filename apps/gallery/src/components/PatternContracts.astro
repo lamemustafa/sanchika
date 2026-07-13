@@ -1,0 +1,55 @@
+---
+import { patternSpecs } from "@sanchika/patterns";
+import { kebabCase, patternStateSlotCopy } from "../content/pattern-state-copy";
+
+const patterns = patternSpecs.map((pattern) => ({
+  ...pattern,
+  states: pattern.requiredStates.map((state) => ({
+    ...state,
+    programmaticStatus: "programmaticStatus" in state ? state.programmaticStatus : null,
+  })),
+}));
+---
+
+<section class="sk-gallery-section" aria-labelledby="pattern-contracts">
+  <h2 id="pattern-contracts">Pattern contracts</h2>
+  {patterns.map((pattern) => (
+    <details class="sk-pattern-contract sk-gallery-contract" data-pattern={pattern.name}>
+      <summary><span>{pattern.name}</span><strong>{pattern.purpose}</strong></summary>
+      <div class="sk-gallery-contract-body">
+        <h4>Required slots</h4><ul>{pattern.requiredSlots.map((slot) => <li><strong>{slot.name}</strong>: {slot.purpose}</li>)}</ul>
+        <h4>Required states</h4>
+        <ul>{pattern.states.map((state) => (
+          <li><strong>{state.name}</strong>: {state.purpose}
+            <h5>Visible signals</h5><ul>{state.requiredVisibleSignals.map((signal) => <li>{signal}</li>)}</ul>
+            <h5>Required state slots</h5><ul>{state.requiredSlots?.map((slotName) => <li>{slotName}</li>)}</ul>
+            {state.programmaticStatus ? <><h5>Programmatic status</h5><p role={state.programmaticStatus.role} aria-live={state.programmaticStatus.ariaLive} aria-atomic={state.programmaticStatus.ariaAtomic}>{state.programmaticStatus.requirement}</p></> : null}
+            <h5>Accessibility checks</h5><ul>{state.a11yChecks.map((check) => <li><strong>{check.id}</strong> {check.criterion}: {check.requirement} <a href={check.sourceUrl}>{check.sourceUrl}</a><p>{check.manualTest}</p></li>)}</ul>
+          </li>
+        ))}</ul>
+        <h4>Semantic obligations</h4><ul>{pattern.semanticObligations.map((obligation) => <li>{obligation}</li>)}</ul>
+      </div>
+    </details>
+  ))}
+  <h3>Pattern state exemplars</h3>
+  {patterns.flatMap((pattern) => pattern.states.map((state) => {
+    const baseId = `${kebabCase(pattern.name)}-${state.name}`;
+    const headingId = `${baseId}-heading`;
+    const stateSlotNames = [...new Set([
+      ...(state.requiredSlots ?? pattern.requiredSlots.map((slot) => slot.name)),
+      ...state.a11yChecks.flatMap((check) => check.slotRefs ?? []),
+      ...(state.programmaticStatus?.slotRefs ?? []),
+    ])];
+    const slotIds = stateSlotNames.map((slotName) => `${baseId}-${kebabCase(slotName)}`);
+    return (
+      <details class="sk-gallery-exemplar" data-sk-pattern={pattern.name} data-sk-state={state.name} aria-labelledby={headingId} aria-describedby={slotIds.length ? slotIds.join(" ") : undefined}>
+        <summary id={headingId}>{pattern.name} {state.name} state</summary>
+        <div class="sk-gallery-contract-body">
+          <ul>{state.requiredVisibleSignals.map((signal) => <li data-sk-visible-signal>{signal}</li>)}</ul>
+          {stateSlotNames.map((slotName, index) => <p id={`${baseId}-${kebabCase(slotName)}`} data-sk-slot={slotName}>{patternStateSlotCopy(pattern.name, state.name, slotName, state.requiredVisibleSignals, index)}</p>)}
+          {state.programmaticStatus ? <p data-sk-programmatic-status role={state.programmaticStatus.role} aria-live={state.programmaticStatus.ariaLive} aria-atomic={state.programmaticStatus.ariaAtomic}>{state.programmaticStatus.requirement}</p> : null}
+        </div>
+      </details>
+    );
+  }))}
+</section>

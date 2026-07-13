@@ -5,8 +5,8 @@ backend, account system, telemetry, database, or consumer app runtime.
 
 ## GitHub Pages
 
-`.github/workflows/pages.yml` deploys the openable gallery artifact from
-`dist/gallery` to GitHub Pages from `master`. It runs automatically on scoped
+`.github/workflows/pages.yml` deploys the Astro gallery output from
+`apps/gallery/dist` to GitHub Pages from `master`. It runs automatically on scoped
 `master` pushes that can affect the gallery artifact, and it can still be run
 manually with `workflow_dispatch`. Manual runs from non-`master` refs are
 ignored by the deploy job.
@@ -14,10 +14,9 @@ ignored by the deploy job.
 The workflow:
 
 - installs dependencies with `pnpm install --frozen-lockfile --ignore-scripts`;
-- runs `pnpm build`;
-- runs `pnpm gallery:build`;
+- runs `pnpm build`, which builds the release packages and gallery application once;
 - runs `pnpm gallery:check`;
-- uploads `dist/gallery` with `actions/upload-pages-artifact`;
+- uploads `apps/gallery/dist` with `actions/upload-pages-artifact`;
 - deploys with `actions/deploy-pages`.
 
 All action references are pinned to full commit SHAs. The workflow requests only

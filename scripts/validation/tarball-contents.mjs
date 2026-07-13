@@ -11,21 +11,6 @@ const packageInternalDistFiles = new Map([
       "dist/evidence-loop.js",
     ],
   ],
-  [
-    "gallery",
-    [
-      "dist/page-sections.d.ts",
-      "dist/page-sections.js",
-      "dist/page-style-content.d.ts",
-      "dist/page-style-content.js",
-      "dist/page-style-core.d.ts",
-      "dist/page-style-core.js",
-      "dist/page-style-responsive.d.ts",
-      "dist/page-style-responsive.js",
-      "dist/page-styles.d.ts",
-      "dist/page-styles.js",
-    ],
-  ],
 ]);
 
 const commonAllowedPaths = new Set(["package.json", "README.md", "LICENSE", "dist/index.js", "dist/index.d.ts"]);

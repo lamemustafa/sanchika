@@ -4,13 +4,12 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const packages = ["tokens", "primitives", "patterns", "gallery"];
+const packages = ["tokens", "primitives", "patterns"];
 const dependencyFields = ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"];
 const packagePublishCommands = [
   "npm publish ./packages/tokens --provenance",
   "npm publish ./packages/primitives --provenance",
   "npm publish ./packages/patterns --provenance",
-  "npm publish ./packages/gallery --provenance",
 ];
 const publishWorkflowPath = ".github/workflows/publish.yml";
 const failures = [];
@@ -244,7 +243,7 @@ function validatePackagePublishCommands(workflow) {
 
   for (const match of workflow.matchAll(/^\s*(?:-\s*)?(?:run:\s*)?npm\s+publish\b(.*)$/gm)) {
     const args = match[1] ?? "";
-    if (!/\.\/packages\/(?:tokens|primitives|patterns|gallery)\b/.test(args)) {
+    if (!/\.\/packages\/(?:tokens|primitives|patterns)\b/.test(args)) {
       failures.push("publish workflow must not run npm publish from the private root package");
     }
     if (!/\s--provenance\b/.test(args)) {

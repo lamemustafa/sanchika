@@ -38,7 +38,7 @@ const artifactVersion = releaseManifest
 assertValidSimulatedVersion(artifactVersion);
 const packages = releaseManifest
   ? releaseManifest.packages.map((packageName) => packageName.replace("@sanchika/", ""))
-  : ["tokens", "primitives", "patterns", "gallery"];
+  : ["tokens", "primitives", "patterns"];
 const packageNames = new Set(packages.map((packageName) => `@sanchika/${packageName}`));
 assertBuiltPackageArtifacts({ root, commandName: "pnpm publish:tarball-check", packageNames: packages });
 const tempRoot = mkdtempSync(join(tmpdir(), "sanchika-tarball-consumer-"));
@@ -224,29 +224,18 @@ function writeConsumerPackage() {
 
 function runConsumerProbe() {
   const probePath = join(consumerRoot, "probe.mjs");
-  const galleryImport = packages.includes("gallery")
-    ? 'import { primitiveGalleryCssImports, renderPrimitiveGalleryDocument } from "@sanchika/gallery";'
-    : "";
-  const galleryChecks = packages.includes("gallery")
-    ? [
-        '  primitiveGalleryCssImports[0] === "@sanchika/tokens/theme.css",',
-        "  renderPrimitiveGalleryDocument().includes('data-sk-pattern=\"TrustBoundary\" data-sk-state=\"permission-required\"'),",
-      ].join("\n")
-    : "";
   writeFileSync(
     probePath,
     `import { createRequire } from "node:module";
 import { colorTokens } from "@sanchika/tokens";
 import { primitiveClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
-${galleryImport}
 
 const require = createRequire(import.meta.url);
 const checks = [
   colorTokens.brandPrimary.cssVariable === "--sk-color-brand-primary",
   primitiveClassName("Button", "brand", "md") === "sk-button sk-tone-brand sk-size-md",
   patternSpecs.some((pattern) => pattern.name === "EvidencePanel"),
-${galleryChecks}
   require.resolve("@sanchika/tokens/theme.css").endsWith("/dist/theme.css"),
   require.resolve("@sanchika/primitives/styles.css").endsWith("/dist/styles.css"),
 ];
@@ -262,12 +251,9 @@ if (checks.some((check) => !check)) {
 function runConsumerTypecheck() {
   mkdirSync(join(consumerRoot, "type-tests"));
   const typeTestPath = join(consumerRoot, "type-tests/package-api.ts");
-  if (packages.includes("gallery")) {
-    copyFileSync(join(root, "type-tests/package-api.ts"), typeTestPath);
-  } else {
-    writeFileSync(
-      typeTestPath,
-      `import { colorTokens } from "@sanchika/tokens";
+  writeFileSync(
+    typeTestPath,
+    `import { colorTokens } from "@sanchika/tokens";
 import { primitiveClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
 
@@ -278,8 +264,7 @@ void token;
 void className;
 void patternName;
 `,
-    );
-  }
+  );
   writeFileSync(
     join(consumerRoot, "tsconfig.json"),
     `${JSON.stringify(

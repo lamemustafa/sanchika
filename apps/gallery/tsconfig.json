@@ -1,0 +1,13 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@sanchika/patterns": ["../../packages/patterns/src/index.ts"],
+      "@sanchika/primitives": ["../../packages/primitives/src/index.ts"],
+      "@sanchika/tokens": ["../../packages/tokens/src/index.ts"]
+    }
+  },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
+}

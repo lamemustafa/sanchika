@@ -13,7 +13,9 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
     "- master",
     "paths:",
     "- \".github/workflows/pages.yml\"",
+    "- \"apps/gallery/**\"",
     "- \"packages/**\"",
+    "- \"pnpm-workspace.yaml\"",
     "- \"scripts/**\"",
     "contents: read",
     "pages: write",
@@ -25,9 +27,8 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
     "persist-credentials: false",
     "run: pnpm install --frozen-lockfile --ignore-scripts",
     "run: pnpm build",
-    "run: pnpm gallery:build",
     "run: pnpm gallery:check",
-    "path: dist/gallery",
+    "path: apps/gallery/dist",
   ]) {
     if (!activeWorkflow.includes(requiredFragment)) {
       fail(`Pages workflow must include ${requiredFragment}`);
@@ -73,6 +74,10 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
 
   if (!activeWorkflow.includes("workflow_dispatch:") || !activeWorkflow.includes("push:")) {
     fail("Pages workflow must support manual dispatch and scoped master push deployment");
+  }
+
+  if (activeWorkflow.includes("run: pnpm gallery:build")) {
+    fail("Pages workflow must not rebuild the gallery after pnpm build");
   }
 
   const pinnedActions = {

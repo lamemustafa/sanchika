@@ -8,7 +8,8 @@ SDK. It is not part of the parent ComplyEaze app workspace.
 - Remote target: `https://github.com/lamemustafa/sanchika.git`.
 - Public default branch: `master`.
 - Package manager: pnpm only.
-- V0 packages: `tokens`, `primitives`, `patterns`, and `gallery`.
+- V0 release packages: `tokens`, `primitives`, and `patterns`.
+- Private static showcase application: `apps/gallery` (`@sanchika/gallery-app`).
 - Consumer order: ComplyEaze, Axal, Pack, then Tools.
 - Product/design docs: `PRODUCT.md`, `DESIGN.md`, `docs/architecture.md`,
   `docs/primitives.md`, `docs/patterns.md`, `docs/adoption-complyeaze.md`,

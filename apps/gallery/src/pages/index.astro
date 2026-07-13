@@ -1,0 +1,32 @@
+---
+import EvidenceJourney from "../components/EvidenceJourney.astro";
+import EvidenceLoop from "../components/EvidenceLoop.astro";
+import GalleryFooter from "../components/GalleryFooter.astro";
+import GalleryHeader from "../components/GalleryHeader.astro";
+import GalleryHero from "../components/GalleryHero.astro";
+import PatternContracts from "../components/PatternContracts.astro";
+import PrimitiveContractList from "../components/PrimitiveContractList.astro";
+import PrimitiveStateMatrix from "../components/PrimitiveStateMatrix.astro";
+import PrimitiveSummary from "../components/PrimitiveSummary.astro";
+import ProductFamilySection from "../components/ProductFamilySection.astro";
+import GalleryLayout from "../layouts/GalleryLayout.astro";
+
+const title = "Sanchika | Design evidence system";
+const description = "Sanchika is an AI-native design-system SDK for compliance-grade interfaces, with synthetic proof artifacts, primitive contracts, pattern states, and clear adoption boundaries.";
+const canonical = "https://sanchika.complyeaze.com/";
+---
+
+<GalleryLayout {title} {description} {canonical}>
+  <main id="gallery-content" class="sk-gallery-page" data-sanchika-gallery="primitive" data-sanchika-example="synthetic">
+    <GalleryHeader />
+    <GalleryHero />
+    <ProductFamilySection />
+    <EvidenceJourney />
+    <EvidenceLoop />
+    <PrimitiveSummary />
+    <PrimitiveContractList />
+    <PrimitiveStateMatrix />
+    <PatternContracts />
+    <GalleryFooter />
+  </main>
+</GalleryLayout>

@@ -71,7 +71,7 @@ function checkCleanTree() {
 }
 
 function checkBlockedRuntimeFolders() {
-  for (const blocked of ["apps", "pack", "tools", join("src", "app")]) {
+  for (const blocked of ["pack", "tools", join("src", "app")]) {
     if (existsSync(join(root, blocked))) {
       issues.push(`${blocked} must not exist in Sanchika v0`);
     }

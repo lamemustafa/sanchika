@@ -13,10 +13,10 @@ for (const fixture of invalidTrustCopyFixtures) {
   }
 }
 
-const galleryPath = join(root, "dist", "gallery", "index.html");
+const galleryPath = join(root, "apps", "gallery", "dist", "index.html");
 const galleryHtml = readFileSync(galleryPath, "utf8");
 for (const finding of lintTrustCopy(stripTags(galleryHtml))) {
-  failures.push(`dist/gallery/index.html ${finding.reason}: ${finding.match}`);
+  failures.push(`apps/gallery/dist/index.html ${finding.reason}: ${finding.match}`);
 }
 
 if (failures.length > 0) {
