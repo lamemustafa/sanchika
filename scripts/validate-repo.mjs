@@ -766,7 +766,7 @@ const {
   assistGuidanceEntries,
   motionAssistClassName,
   motionAssistUtilities,
-} = await import(`../packages/primitives/dist/motion-assist.js?validate=${Date.now()}`);
+} = await import(`../packages/primitives/src/motion-assist.ts?validate=${Date.now()}`);
 const motionFixtureCount = runMotionAssistFixtures({
   utilities: motionAssistUtilities,
   guidance: assistGuidanceEntries,
