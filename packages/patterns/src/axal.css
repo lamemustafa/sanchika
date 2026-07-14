@@ -218,15 +218,16 @@
   margin-top: var(--sk-space-4);
 }
 
-.sk-pattern-checkpoint-actions span {
+.sk-pattern-checkpoint-actions :where(a, button) {
   padding: var(--sk-space-2) var(--sk-space-3);
   border: var(--sk-border-width-default) solid color-mix(in oklch, var(--sk-color-ink-inverse) 18%, var(--sk-color-brand-primary));
   border-radius: var(--sk-radius-control);
   font-size: var(--sk-font-size-xs);
   font-weight: var(--sk-font-weight-bold);
+  text-decoration: none;
 }
 
-.sk-pattern-checkpoint-actions span[data-action="primary"] {
+.sk-pattern-checkpoint-actions [data-action="primary"] {
   color: var(--sk-color-brand-primary);
   background: var(--sk-color-brand-secondary);
   border-color: var(--sk-color-brand-secondary);

@@ -62,6 +62,7 @@ const { stages, facts } = Astro.props;
   </ol>
 
   <dl class={`sk-pattern-local-artifact-flow__facts ${productPatternClassName("CustodyBoundary", { variant: "ledger", state: "local-only" })}`}>
+    <div><dt>State</dt><dd>Local only · destination: user-controlled Chrome Downloads · no handoff to ComplyEaze</dd></div>
     {facts.map((fact) => (
       <div>
         <dt>{fact.label}</dt>

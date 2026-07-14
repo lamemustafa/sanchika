@@ -118,9 +118,9 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
             <div><dt>Next safe action</dt><dd>Open the linked synthetic source</dd></div>
             <div><dt>History</dt><dd>{audit[0]?.time ?? "Not recorded"} · audit trail retained below</dd></div>
           </dl>
-          <div class={`sk-pattern-checkpoint-actions ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Illustrative review decisions">
-            <span data-action="primary">Open source before deciding</span>
-            <span data-action="secondary">Request evidence</span>
+          <div class={`sk-pattern-checkpoint-actions ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Illustrative checkpoint actions">
+            <a href="#evidence-rail-title" data-action="primary">Open source before deciding</a>
+            <a href="/patterns/axal/#pattern-contract-ledger-title" data-action="secondary">Inspect request-evidence contract</a>
           </div>
         </section>
       </article>

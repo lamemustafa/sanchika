@@ -1,5 +1,8 @@
 import vm from "node:vm";
 
+class MockNode {}
+class MockElement extends MockNode {}
+
 export async function runGalleryReferenceRuntimeFixtures({ searchScript, toolsScript, copyScript }) {
   const failures = [];
   let count = 0;
@@ -44,6 +47,13 @@ export async function runGalleryReferenceRuntimeFixtures({ searchScript, toolsSc
   check(toolsTimers.activeCount() === 0, "Tools filter must not announce intermediate IME input");
   firstTools.input.emit("compositionend", {});
   check(firstTools.form.dataset.filtering === "true" && toolsTimers.activeCount() === 1, "Tools filter must expose one settled composition update");
+  toolsTimers.flush();
+  firstTools.input.value = "";
+  firstTools.filters.emit("click", { target: firstTools.categoryButtons[1] });
+  check(!firstTools.clear.hidden && firstTools.form.dataset.hasValue === "true" && firstTools.cards[1].hidden, "Tools category-only filter must expose Clear and filter results");
+  let toolsEscapePrevented = false;
+  firstTools.root.emit("keydown", { key: "Escape", preventDefault() { toolsEscapePrevented = true; } });
+  check(toolsEscapePrevented && firstTools.clear.hidden && firstTools.input.focused && firstTools.cards.every((card) => !card.hidden), "Tools Escape must reset a category-only filter and return focus to search");
 
   const copyTimers = createTimers();
   const successfulCopy = createCopyButton("checksum");
@@ -71,8 +81,6 @@ export async function runGalleryReferenceRuntimeFixtures({ searchScript, toolsSc
 }
 
 function runScript(source, { roots = [], buttons = [], timers, clipboard = { writeText: async () => {} } }) {
-  class Node {}
-  class Element extends Node {}
   const document = {
     querySelectorAll(selector) {
       if (selector === "[data-s5-directory]" || selector === "[data-tool-directory]") return roots;
@@ -83,8 +91,8 @@ function runScript(source, { roots = [], buttons = [], timers, clipboard = { wri
   vm.runInNewContext(source, {
     document,
     navigator: { clipboard },
-    Node,
-    Element,
+    Node: MockNode,
+    Element: MockElement,
     setTimeout: timers.setTimeout,
     clearTimeout: timers.clearTimeout,
   });
@@ -92,7 +100,7 @@ function runScript(source, { roots = [], buttons = [], timers, clipboard = { wri
 
 function createElement({ textContent = "", value = "", dataset = {} } = {}) {
   const listeners = new Map();
-  return {
+  return Object.assign(new MockElement(), {
     attributes: new Map(), dataset: { ...dataset }, disabled: false, focused: false, hidden: false,
     listeners, textContent, value,
     addEventListener(type, listener) { listeners.set(type, listener); },
@@ -102,7 +110,8 @@ function createElement({ textContent = "", value = "", dataset = {} } = {}) {
     removeAttribute(name) { this.attributes.delete(name); },
     hasAttribute(name) { return this.attributes.has(name); },
     focus() { this.focused = true; },
-  };
+    closest() { return this; },
+  });
 }
 
 function createSearchRoot(searchValues) {
@@ -132,7 +141,10 @@ function createToolsRoot() {
   const input = createElement();
   const clear = createElement();
   const filters = createElement();
-  filters.querySelectorAll = () => [];
+  const categoryButtons = [createElement({ dataset: { toolCategory: "all" } }), createElement({ dataset: { toolCategory: "GST" } })];
+  categoryButtons[0].setAttribute("aria-pressed", "true");
+  categoryButtons[1].setAttribute("aria-pressed", "false");
+  filters.querySelectorAll = () => categoryButtons;
   const count = createElement({ textContent: "2" });
   const status = createElement();
   count.parentElement = status;
@@ -143,7 +155,10 @@ function createToolsRoot() {
     ["[data-tool-search-form]", form], ["[data-tool-search]", input], ["[data-tool-clear]", clear],
     ["[data-tool-filters]", filters], ["[data-tool-count]", count], ["[data-tool-empty]", empty], ["[data-tool-reset]", reset],
   ]);
-  return { root: { querySelector: (selector) => selectors.get(selector), querySelectorAll: () => cards }, form, input };
+  const root = createElement();
+  root.querySelector = (selector) => selectors.get(selector);
+  root.querySelectorAll = () => cards;
+  return { root, form, input, clear, filters, categoryButtons, cards };
 }
 
 function createCopyButton(value) {

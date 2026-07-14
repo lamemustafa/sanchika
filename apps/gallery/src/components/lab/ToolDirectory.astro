@@ -119,10 +119,11 @@ const escalationId = `${instanceId}-escalation-title`;
 
     const applyFilters = ({ announce = true } = {}) => {
       const query = input.value.trim().toLowerCase();
+      const hasActiveFilter = query.length > 0 || category !== "all";
       let visible = 0;
 
-      clear.hidden = query.length === 0;
-      form.dataset.hasValue = String(query.length > 0);
+      clear.hidden = !hasActiveFilter;
+      form.dataset.hasValue = String(hasActiveFilter);
 
       for (const card of cards) {
         const categoryMatches = category === "all" || card.dataset.category === category;
@@ -155,8 +156,8 @@ const escalationId = `${instanceId}-escalation-title`;
     input.addEventListener("compositionstart", () => { composing = true; });
     input.addEventListener("compositionend", () => { composing = false; applyFilters(); });
     input.addEventListener("input", (event) => { if (!composing && !event.isComposing) applyFilters(); });
-    input.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || input.value.length === 0) return;
+    directory.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || (input.value.length === 0 && category === "all")) return;
       event.preventDefault();
       resetDirectory();
     });

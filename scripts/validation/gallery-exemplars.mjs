@@ -192,6 +192,12 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
     for (const [index, fact] of facts.entries()) {
       if (!descendantElements(fact).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) fail(`ProofStrip fact ${index + 1} must include a source link`);
     }
+    if (hasClass(proofStrip, "sk-pattern-proof-strip--state-limited")) {
+      const proofText = visibleText(proofStrip);
+      for (const signal of ["limited", "checked", "missing proof", "next check"]) {
+        if (!new RegExp(`\\b${signal}\\b`, "i").test(proofText)) fail(`ProofStrip limited state must visibly include ${signal}`);
+      }
+    }
   }
 
   const trustBoundary = requireClassElement(publicMarkup, "sk-pattern-trust-boundary", fail, "TrustBoundary");
@@ -227,6 +233,14 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
     for (const signal of ["status", "reviewed", "unproven"]) {
       if (!new RegExp(signal, "i").test(releaseText)) fail(`ReleaseStatusBanner must expose snapshot ${signal}`);
     }
+    if (hasClass(releaseBanner, "sk-pattern-release-status-banner--state-planned")) {
+      for (const signal of ["planned", "no release claim", "source"]) {
+        if (!new RegExp(`\\b${signal}\\b`, "i").test(releaseText)) fail(`ReleaseStatusBanner planned state must visibly include ${signal}`);
+      }
+      if (!descendantElements(releaseBanner).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) {
+        fail("ReleaseStatusBanner planned state must include an evidence link");
+      }
+    }
   }
 
   const axalMarkup = markupByGroup.get("axal-workspace") ?? "";
@@ -253,6 +267,9 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
       const checkpointText = visibleText(checkpoint);
       for (const signal of ["review needed", "Owner", "Evidence", "Blocker", "Next safe action", "History"]) {
         if (!new RegExp(`\\b${signal}\\b`, "i").test(checkpointText)) fail(`HumanReviewCheckpoint must visibly include ${signal}`);
+      }
+      if (!descendantElements(checkpoint).some((element) => ["a", "button"].includes(element.tag) && (element.tag === "button" || getAttribute(element.attrs, "href")))) {
+        fail("HumanReviewCheckpoint must expose a native operable action");
       }
     }
     if (!/synthetic/i.test(text)) fail("ReviewDeskPreview must visibly mark synthetic data");
@@ -290,6 +307,11 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
     const text = visibleText(custodyBoundary);
     for (const signal of ["Current custodian", "What moves", "What never moves", "Credentials", "Local destination", "User control"]) {
       if (!text.includes(signal)) fail(`CustodyBoundary must include ${signal}`);
+    }
+    if (hasClass(custodyBoundary, "sk-pattern-custody-boundary--state-local-only")) {
+      for (const signal of ["local only", "destination", "no handoff"]) {
+        if (!new RegExp(`\\b${signal}\\b`, "i").test(text)) fail(`CustodyBoundary local-only state must visibly include ${signal}`);
+      }
     }
   }
   validateProvenanceStructure({ markup: packMarkup, label: "Pack SourceProvenanceStrip", fail });
@@ -341,13 +363,17 @@ export function runProductPatternExemplarFixtures() {
     { name: "Sanchika as peer route", group: "public-product", replace: ["<h2>Tools</h2>", "<h2>Tools</h2><p>Sanchika</p>"], expected: "peer product route" },
     { name: "conflicting annual prices", group: "public-product", replace: ["₹12,500", "₹12,500 annual · ₹10,000 annual"], expected: "one unambiguous public price" },
     { name: "FAQ JSON-LD mismatch", group: "public-product", replace: ['"Does this submit?"', '"Different question"'], expected: "JSON-LD questions must match" },
+    { name: "limited ProofStrip without missing-proof context", group: "public-product", replace: ["Missing proof", "Pending artifact"], expected: "limited state must visibly include missing proof" },
+    { name: "planned ReleaseStatusBanner without source evidence", group: "public-product", replace: ['<a href="/release-source">Source evidence</a>', ""], expected: "planned state must include an evidence link" },
     { name: "PublicHero without safe action", group: "public-product", replace: ['<a class="sk-pattern-public-hero__action" href="/route">Choose route</a>', ""], expected: "linked safe action" },
     { name: "PublicHero stamped on non-public intro", group: "axal-workspace", replace: ['<main data-sanchika-example="synthetic">', '<main data-sanchika-example="synthetic"><header class="sk-pattern-public-hero"></header>'], expected: "must not stamp a generic introduction" },
     { name: "ReviewDeskPreview without human review", group: "axal-workspace", replace: ["sk-pattern-human-review-checkpoint", "missing-human-review-checkpoint"], expected: "sk-pattern-human-review-checkpoint" },
     { name: "selected WorkQueueRow without visible selection", group: "axal-workspace", replace: ["Selected item · Entity", "Active item · Entity"], expected: "visible selected text" },
     { name: "checkpoint without required context", group: "axal-workspace", replace: ["Evidence linked · Blocker none · Next safe action open source · History 14 July 2026", "Decision pending"], expected: "HumanReviewCheckpoint must visibly include" },
+    { name: "checkpoint without native action", group: "axal-workspace", replace: ['<a href="/evidence">Open evidence</a>', "Open evidence"], expected: "native operable action" },
     { name: "unmarked synthetic data", group: "axal-workspace", replace: [' data-sanchika-example="synthetic"', ""], expected: "mark synthetic exemplar data" },
     { name: "custody stage without custodian", group: "pack-local-utility", replace: ["<dt>Custodian / location</dt><dd>Browser session</dd>", "<dt>Custodian / location</dt><dd></dd>"], expected: "name its current custodian" },
+    { name: "local CustodyBoundary without visible state", group: "pack-local-utility", replace: ["Local only · destination · no handoff · ", ""], expected: "local-only state must visibly include local only" },
     { name: "permission without denial behavior", group: "pack-local-utility", replace: ["<span>If denied: use manual download</span>", ""], expected: "include If denied" },
     { name: "ToolDirectory missing no-results", group: "tools-local-artifact", replace: ['<div data-tool-empty hidden>No results</div>', ""], expected: "data-tool-empty" },
     { name: "ToolCard nested button", group: "tools-local-artifact", replace: ["Inspect tool contract</a>", "Inspect tool contract<button>Run</button></a>"], expected: "nested interactive <button>" },
@@ -373,13 +399,13 @@ function validProductPatternFixtureMarkup() {
       "public-product",
       `<main data-sanchika-example="synthetic">
         <section class="sk-pattern-public-hero"><h2>Choose the operating route.</h2><a class="sk-pattern-public-hero__action" href="/route">Choose route</a><aside class="sk-pattern-public-hero-note">Source-backed proof</aside></section>
-        <dl class="sk-pattern-proof-strip"><div><dt>Contract</dt><dd><a href="/source">Source</a></dd></div><div><dt>Status</dt><dd><a href="/status">Snapshot</a></dd></div></dl>
+        <dl class="sk-pattern-proof-strip sk-pattern-proof-strip--state-limited"><div><dt>Contract</dt><dd>Limited · checked 14 July 2026 · <a href="/source">Source</a></dd></div><div><dt>Status</dt><dd>Missing proof · next check after release · <a href="/status">Snapshot</a></dd></div></dl>
         <aside class="sk-pattern-trust-boundary"><a href="/source">Source</a><dl><div><dt>Crosses</dt><dd>Chosen data</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div><div><dt>Action owner</dt><dd>User</dd></div><div><dt>Safe action</dt><dd>Inspect boundary</dd></div></dl></aside>
         <section class="sk-pattern-product-route-map"><article class="sk-pattern-product-route-map__primary"><h2>Axal</h2></article><div class="sk-pattern-product-route-map__secondary"><article><h2>Pack</h2></article><article><h2>Tools</h2></article></div><footer class="sk-pattern-product-route-map__colophon"><a href="/patterns/">Sanchika pattern contracts</a></footer></section>
         <section class="sk-pattern-source-provenance-strip"><div><a href="/source">Source</a></div><div class="sk-pattern-grammar--quiet-verified-seal">14 July 2026 · S7 validator</div></section>
         <section class="sk-pattern-pricing-block"><p>₹12,500</p></section>
         <section class="sk-pattern-faq-accordion"><details><summary>Does this submit?</summary><p>No.</p></details><script type="application/ld+json" data-pattern-faq-jsonld>{"mainEntity":[{"name":"Does this submit?"}]}</script></section>
-        <aside class="sk-pattern-release-status-banner">Planned status · reviewed 14 July 2026 · adoption unproven</aside>
+        <aside class="sk-pattern-release-status-banner sk-pattern-release-status-banner--state-planned">Planned status · no release claim · reviewed 14 July 2026 · adoption unproven · <a href="/release-source">Source evidence</a></aside>
       </main>`,
     ],
     [
@@ -387,7 +413,7 @@ function validProductPatternFixtureMarkup() {
       `<main data-sanchika-example="synthetic"><section class="sk-pattern-review-desk-preview">
         <section><h2>Work queue</h2><article class="sk-pattern-work-queue-row sk-pattern-work-queue-row--state-selected">Selected item · Entity synthetic A · Source linked · Owner AK · Due today · Blocker none · Next safe action open source</article></section>
         <aside class="sk-pattern-evidence-panel">Source evidence · synthetic source</aside>
-        <section class="sk-pattern-human-review-checkpoint">Human approval checkpoint · review needed · Owner AK · Evidence linked · Blocker none · Next safe action open source · History 14 July 2026</section>
+        <section class="sk-pattern-human-review-checkpoint">Human approval checkpoint · review needed · Owner AK · Evidence linked · Blocker none · Next safe action open source · History 14 July 2026 · <a href="/evidence">Open evidence</a></section>
         <section class="sk-pattern-audit-trail-preview">Audit trail</section>
       </section></main>`,
     ],
@@ -396,7 +422,7 @@ function validProductPatternFixtureMarkup() {
       `<main data-sanchika-example="synthetic">
         <aside class="sk-pattern-permission-explainer"><span>Purpose: local file</span><span>Scope: current action</span><span>Data touched: response</span><span>Data not touched: credentials</span><span>If denied: use manual download</span><button>Review permission</button></aside>
         <section class="sk-pattern-local-artifact-flow"><ol class="sk-pattern-local-artifact-flow__stages"><li><dl><div><dt>Custodian / location</dt><dd>Browser session</dd></div><div><dt>Data / action</dt><dd>Portal response</dd></div><div><dt>Crosses</dt><dd>Portal to browser</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div><div><dt>Source</dt><dd>Portal</dd></div><div><dt>Result</dt><dd>Local file</dd></div></dl></li></ol>
-          <dl class="sk-pattern-custody-boundary"><div>Current custodian</div><div>What moves</div><div>What never moves</div><div>Credentials</div><div>Local destination</div><div>User control</div></dl>
+          <dl class="sk-pattern-custody-boundary sk-pattern-custody-boundary--state-local-only"><div>Local only · destination · no handoff · Current custodian</div><div>What moves</div><div>What never moves</div><div>Credentials</div><div>Local destination</div><div>User control</div></dl>
           <section class="sk-pattern-source-provenance-strip"><a href="/source">Source</a><div class="sk-pattern-grammar--quiet-verified-seal">14 July 2026 · S7 validator</div></section>
         </section>
       </main>`,

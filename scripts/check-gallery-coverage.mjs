@@ -41,6 +41,7 @@ const northStarSources = [
   "CustodyFlow.astro",
   "ToolDirectory.astro",
 ].map((path) => readFileSync(new URL(`../apps/gallery/src/components/lab/${path}`, import.meta.url), "utf8")).join("\n");
+const motionSpecimenSource = readFileSync(new URL("../apps/gallery/src/components/lab/MotionSpecimens.astro", import.meta.url), "utf8");
 const primitiveCss = ["search-feedback.css", "process-data.css", "motion.css"]
   .map((path) => readFileSync(new URL(`../packages/primitives/src/${path}`, import.meta.url), "utf8"))
   .join("\n");
@@ -88,6 +89,12 @@ if (JSON.stringify(retainedLabStyles) !== JSON.stringify(["motion.css"])) {
 }
 for (const required of ["@sanchika/patterns/styles.css", "productPatternClassName", "ProductRouteMap", "ReviewDeskPreview", "LocalArtifactFlow", "ToolDirectory"]) {
   if (!northStarSources.includes(required)) failures.push(`North Star package integration must include ${required}`);
+}
+for (const legacyHook of ["lab-artifact-bar", "lab-status-mark"]) {
+  if (motionSpecimenSource.includes(legacyHook)) failures.push(`motion reference must not retain undefined ${legacyHook}`);
+}
+for (const packageHook of ["sk-pattern-artifact-bar", "sk-pattern-status-mark"]) {
+  if (!motionSpecimenSource.includes(packageHook) || !northStarSources.includes(packageHook)) failures.push(`motion and North Star artifacts must share ${packageHook}`);
 }
 
 for (const [groupName, requiredFragments] of [
