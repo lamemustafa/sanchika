@@ -21,9 +21,11 @@ const defaultTimeZone = "Asia/Kolkata";
 export function formatIndianNumber(value: IndianNumericInput, options: IndianNumberFormatOptions = {}): string {
   const numeric = toFiniteNumeric(value, "number");
   const { display = "exact", ...intlOptions } = options;
+  assertDisplayMode(display, "number");
   const compactNumeric = display === "compact" ? toFiniteNumber(value, "number") : 0;
   if (display === "compact" && Math.abs(compactNumeric) >= 100_000) {
-    const divisor = Math.abs(compactNumeric) >= 10_000_000 ? 10_000_000 : 100_000;
+    let divisor = Math.abs(compactNumeric) >= 10_000_000 ? 10_000_000 : 100_000;
+    if (divisor === 100_000 && roundsToNextCompactUnit(compactNumeric / divisor, intlOptions)) divisor = 10_000_000;
     const unit = divisor === 10_000_000 ? "crore" : "lakh";
     const formatted = new Intl.NumberFormat(locale, { maximumFractionDigits: 2, minimumFractionDigits: 0, ...intlOptions, style: "decimal", notation: "standard" }).format(compactNumeric / divisor);
     return `${formatted} ${unit}`;
@@ -40,11 +42,15 @@ export function formatIndianNumber(value: IndianNumericInput, options: IndianNum
 
 export function formatIndianCurrency(value: IndianNumericInput, options: IndianCurrencyFormatOptions = {}): string {
   const numeric = toFiniteNumeric(value, "currency");
-  const { currency = "INR", display = "exact", ...intlOptions } = options;
+  const { currency: currencySource = "INR", display = "exact", ...intlOptions } = options;
+  assertDisplayMode(display, "currency");
+  if (typeof currencySource !== "string") throw new IndianFormatError("currency must be an ISO currency code string");
+  const currency = currencySource.toUpperCase();
   if (display === "compact") {
     const compactNumeric = toFiniteNumber(value, "currency");
     if (Math.abs(compactNumeric) >= 100_000) {
-      const divisor = Math.abs(compactNumeric) >= 10_000_000 ? 10_000_000 : 100_000;
+      let divisor = Math.abs(compactNumeric) >= 10_000_000 ? 10_000_000 : 100_000;
+      if (divisor === 100_000 && roundsToNextCompactUnit(compactNumeric / divisor, intlOptions)) divisor = 10_000_000;
       const unit = divisor === 10_000_000 ? "crore" : "lakh";
       const formatted = new Intl.NumberFormat(locale, { maximumFractionDigits: 2, minimumFractionDigits: 0, ...intlOptions, style: "currency", currency, notation: "standard" }).format(compactNumeric / divisor);
       return `${formatted} ${unit}`;
@@ -116,6 +122,18 @@ function toFiniteNumber(value: IndianNumericInput, label: string): number {
   const numeric = typeof value === "bigint" ? Number(value) : typeof value === "string" ? Number(assertDecimalString(value, label)) : value;
   if (!Number.isFinite(numeric)) throw new IndianFormatError(`${label} must be a finite number`);
   return Object.is(numeric, -0) ? 0 : numeric;
+}
+
+function assertDisplayMode(value: unknown, label: string): asserts value is "exact" | "compact" {
+  if (value !== "exact" && value !== "compact") throw new IndianFormatError(`${label} display must be "exact" or "compact"`);
+}
+
+function roundsToNextCompactUnit(
+  scaledValue: number,
+  options: Omit<Intl.NumberFormatOptions, "style" | "currency" | "unit" | "notation" | "compactDisplay">,
+): boolean {
+  const formatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 2, minimumFractionDigits: 0, ...options, style: "decimal", notation: "standard", useGrouping: false, numberingSystem: "latn" });
+  return Math.abs(Number(formatter.format(scaledValue))) >= 100;
 }
 
 function toFiniteNumeric(value: IndianNumericInput, label: string): ExactNumeric {

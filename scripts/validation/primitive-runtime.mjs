@@ -180,6 +180,7 @@ export function validateIndianFormatting(formatters) {
   check(formatIndianNumber(10000000) === "1,00,00,000", "crore boundary must remain exact by default");
   check(formatIndianNumber(100000, { display: "compact" }) === "1 lakh", "explicit compact lakh must be labelled");
   check(formatIndianNumber(12500000, { display: "compact" }) === "1.25 crore", "explicit compact crore must be labelled");
+  check(formatIndianNumber(9999999, { display: "compact" }) === "1 crore", "rounded compact output must promote across the crore threshold");
   check(formatIndianNumber(0.000001, { maximumFractionDigits: 6 }) === "0.000001", "very small values must remain deterministic");
   check(formatIndianNumber(9007199254740991) === "9,00,71,99,25,47,40,991", "very large safe integers must remain deterministic");
   check(formatIndianNumber(123456789012345678901234567890n) === "1,23,45,67,89,01,23,45,67,89,01,23,45,67,890", "very large bigint values must retain exact digits");
@@ -189,11 +190,13 @@ export function validateIndianFormatting(formatters) {
   check(formatIndianCurrency(`-${enormousInteger}`).replaceAll(",", "") === `-₹${enormousInteger}.00`, "default INR strings beyond Number range must remain exact");
   check(formatIndianNumber(`${enormousInteger}.${"1".repeat(100)}`).endsWith("1".repeat(100)), "manual exact number path must accept the documented 100-digit fraction boundary");
   check(formatIndianCurrency(`${enormousInteger}.${"1".repeat(100)}`).endsWith("1".repeat(100)), "manual exact INR path must accept the documented 100-digit fraction boundary");
+  check(formatIndianCurrency(enormousInteger, { currency: "inr" }).replaceAll(",", "") === `₹${enormousInteger}.00`, "manual exact INR path must normalize currency-code casing");
   check(formatIndianCurrency(1234567, { maximumFractionDigits: 0 }) === "₹12,34,567", "INR currency must use Indian grouping");
   check(formatIndianCurrency(-0) === "₹0.00" && formatIndianCurrency("-0.00") === "₹0.00", "signed zero currency inputs must display as unsigned zero");
   check(formatIndianCurrency("1.23456") === "₹1.23456", "exact INR currency must preserve supplied fractional digits");
   check(formatIndianCurrency(12500000, { display: "compact" }) === "₹1.25 crore", "compact currency must be explicitly labelled");
   check(formatIndianCurrency(-12500000, { display: "compact" }) === "-₹1.25 crore", "compact negative currency must retain locale sign placement");
+  check(formatIndianCurrency(9999999, { display: "compact" }) === "₹1 crore", "rounded compact currency must promote across the crore threshold");
   check(formatPercentage(0.18) === "18%", "fraction percentage convention must be default");
   check(formatPercentage(18, { input: "percent" }) === "18%", "whole percentage convention must be explicit");
   check(formatIndianDate("2026-07-14") === "14-07-2026", "ISO date-only must default to DD-MM-YYYY");
@@ -217,6 +220,7 @@ export function validateIndianFormatting(formatters) {
     ["overlong manual exact number fraction", () => formatIndianNumber(`${enormousInteger}.${"1".repeat(101)}`)],
     ["overlong manual exact currency fraction", () => formatIndianCurrency(`${enormousInteger}.${"1".repeat(101)}`)],
     ["unknown percentage input mode", () => formatPercentage(18, { input: "percentage" })],
+    ["unknown number display mode", () => formatIndianNumber(100000, { display: "compact " })], ["unknown currency display mode", () => formatIndianCurrency(100000, { display: "compact " })],
     ["invalid date", () => formatIndianDate("not-a-date")], ["invalid date-only", () => formatIndianDate("2026-02-29")],
     ["ambiguous local date-time", () => formatIndianDateTime("2026-07-14T00:00:00")], ["date-only passed as date-time", () => formatIndianDateTime("2026-07-14")],
     ["invalid instant calendar date", () => formatIndianDateTime("2026-02-29T00:00:00Z")], ["invalid instant timezone offset", () => formatIndianDateTime("2026-07-14T00:00:00+25:00")],
