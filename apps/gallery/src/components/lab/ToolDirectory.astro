@@ -5,36 +5,43 @@ import { primitiveClassName, textClassName } from "@sanchika/primitives";
 interface Props {
   tools: readonly LabTool[];
   axalHref: string;
+  instanceId: string;
 }
 
-const { tools, axalHref } = Astro.props;
+const { tools, axalHref, instanceId } = Astro.props;
 const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCategory[];
+const titleId = `${instanceId}-title`;
+const statusId = `${instanceId}-status`;
+const searchId = `${instanceId}-search`;
+const noteId = `${instanceId}-note`;
+const escalationId = `${instanceId}-escalation-title`;
 ---
 
-<section class={`lab-directory ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby="directory-title" data-tool-directory>
+<section class={`lab-directory ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby={titleId} data-tool-directory data-tool-instance={instanceId}>
   <div class={`lab-directory__head ${primitiveClassName("Cluster", { gap: "lg", align: "end", justify: "between" })}`}>
     <div>
       <span>Local tool index</span>
-      <h2 id="directory-title" class={textClassName("heading")}>Search by the work on your desk.</h2>
+      <h2 id={titleId} class={textClassName("heading")}>Search by the work on your desk.</h2>
     </div>
-    <p role="status" aria-live="polite" aria-atomic="true"><strong data-tool-count>{tools.length}</strong> draft tools</p>
+    <p id={statusId} data-sk-result-status role="status" aria-live="polite" aria-atomic="true"><strong data-tool-count>{tools.length}</strong> draft tools</p>
   </div>
 
-  <form class="lab-directory__search" role="search" data-tool-search-form>
-    <label for="tool-search">What do you need to prepare?</label>
-    <div class="lab-directory__search-control">
+  <form class={`lab-directory__search ${primitiveClassName("SearchField", { size: "lg" })}`} role="search" data-tool-search-form data-has-value="false">
+    <label for={searchId}>What do you need to prepare?</label>
+    <div class="lab-directory__search-control sk-search-field__control">
+      <span class="sk-search-field__icon" aria-hidden="true">⌕</span>
       <input
-        id="tool-search"
+        id={searchId}
         name="query"
         type="search"
         placeholder="Try notice, GSTR-2B, dates, evidence…"
         autocomplete="off"
-        aria-describedby="tool-search-note"
+        aria-describedby={`${noteId} ${statusId}`}
         data-tool-search
       />
-      <button type="button" aria-label="Clear tool search" data-tool-clear hidden>Clear</button>
+      <button class="sk-search-field__clear" type="button" aria-label="Clear tool search and category filter" data-tool-clear>Clear</button>
     </div>
-    <p id="tool-search-note">Filtering happens only in this browser. Nothing is uploaded.</p>
+    <p id={noteId} data-sk-search-hint>Filtering happens only in this browser. Nothing is uploaded.</p>
   </form>
 
   <div class={`lab-directory__filters ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Tool categories" data-tool-filters hidden>
@@ -44,7 +51,7 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
     ))}
   </div>
 
-  <noscript><p class="lab-directory__noscript">JavaScript is off, so the complete tool list remains visible.</p></noscript>
+  <noscript><p class={`lab-directory__noscript ${primitiveClassName("InlineStatus", { tone: "info" })}`}><span class="sk-inline-status__marker" aria-hidden="true">i</span><span>JavaScript is off, so the complete tool list remains visible.</span></p></noscript>
 
   <div class="lab-directory__results" data-tool-results>
     {tools.map((tool, index) => (
@@ -68,23 +75,23 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
     ))}
   </div>
 
-  <div class="lab-directory__empty" data-tool-empty hidden role="status" aria-live="polite">
+  <div class={`lab-directory__empty ${primitiveClassName("EmptyState", { kind: "filtered" })}`} data-empty-kind="filtered" data-tool-empty hidden>
     <span>0 matches</span>
     <h3>No local draft tool matches that work.</h3>
     <p>Clear the search or choose another category. The query never leaves this browser.</p>
+    <div class="sk-empty-state__actions"><button class={primitiveClassName("Button", "neutral", "md")} type="button" data-tool-reset>Reset directory</button></div>
   </div>
 
-  <aside class="lab-directory__escalation" aria-labelledby="directory-escalation-title">
+  <aside class="lab-directory__escalation" aria-labelledby={escalationId}>
     <span>Recurring or saved work</span>
-    <h3 id="directory-escalation-title">Move continuing review into Axal.</h3>
+    <h3 id={escalationId}>Move continuing review into Axal.</h3>
     <p>Use a local tool for a bounded draft. Use Axal when evidence, ownership, review state, or a continuing client record must remain visible.</p>
     <a class={primitiveClassName("Link")} href={axalHref}>Open the synthetic Axal review desk <span aria-hidden="true">→</span></a>
   </aside>
 </section>
 
 <script is:inline data-sanchika-lab-script="tool-filter">
-  const directory = document.querySelector("[data-tool-directory]");
-  if (directory) {
+  for (const directory of document.querySelectorAll("[data-tool-directory]")) {
     const form = directory.querySelector("[data-tool-search-form]");
     const input = directory.querySelector("[data-tool-search]");
     const clear = directory.querySelector("[data-tool-clear]");
@@ -92,15 +99,19 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
     const cards = [...directory.querySelectorAll("[data-tool-card]")];
     const count = directory.querySelector("[data-tool-count]");
     const empty = directory.querySelector("[data-tool-empty]");
+    const reset = directory.querySelector("[data-tool-reset]");
     let category = "all";
+    let announcementTimer;
+    let composing = false;
 
     filters.hidden = false;
 
-    const applyFilters = () => {
+    const applyFilters = ({ announce = true } = {}) => {
       const query = input.value.trim().toLowerCase();
       let visible = 0;
 
       clear.hidden = query.length === 0;
+      form.dataset.hasValue = String(query.length > 0);
 
       for (const card of cards) {
         const categoryMatches = category === "all" || card.dataset.category === category;
@@ -109,23 +120,39 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
         if (!card.hidden) visible += 1;
       }
 
-      count.textContent = String(visible);
       empty.hidden = visible !== 0;
+      form.dataset.noResults = String(visible === 0);
+      if (announce) {
+        clearTimeout(announcementTimer);
+        form.dataset.filtering = "true";
+        count.parentElement.setAttribute("aria-busy", "true");
+        announcementTimer = setTimeout(() => { count.textContent = String(visible); delete form.dataset.filtering; count.parentElement.removeAttribute("aria-busy"); }, 180);
+      } else {
+        count.textContent = String(visible);
+      }
+    };
+
+    const resetDirectory = () => {
+      input.value = "";
+      category = "all";
+      for (const candidate of filters.querySelectorAll("[data-tool-category]")) candidate.setAttribute("aria-pressed", String(candidate.dataset.toolCategory === "all"));
+      applyFilters();
+      input.focus();
     };
 
     form.addEventListener("submit", (event) => event.preventDefault());
-    input.addEventListener("input", applyFilters);
+    input.addEventListener("compositionstart", () => { composing = true; });
+    input.addEventListener("compositionend", () => { composing = false; applyFilters(); });
+    input.addEventListener("input", (event) => { if (!composing && !event.isComposing) applyFilters(); });
     input.addEventListener("keydown", (event) => {
       if (event.key !== "Escape" || input.value.length === 0) return;
       event.preventDefault();
-      input.value = "";
-      applyFilters();
+      resetDirectory();
     });
     clear.addEventListener("click", () => {
-      input.value = "";
-      applyFilters();
-      input.focus();
+      resetDirectory();
     });
+    reset.addEventListener("click", resetDirectory);
     filters.addEventListener("click", (event) => {
       if (!(event.target instanceof Node)) return;
       const target = event.target instanceof Element ? event.target : event.target.parentElement;
@@ -137,5 +164,6 @@ const categories = [...new Set(tools.map((tool) => tool.category))] as ToolCateg
       }
       applyFilters();
     });
+    applyFilters({ announce: false });
   }
 </script>

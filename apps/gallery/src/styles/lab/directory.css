@@ -57,38 +57,6 @@
   position: relative;
 }
 
-.lab-directory__search input {
-  width: 100%;
-  min-height: 3.7rem;
-  padding: var(--sk-space-3) 6.5rem var(--sk-space-3) var(--sk-space-4);
-  color: var(--sk-color-ink-primary);
-  background: var(--sk-color-surface-raised);
-  border: var(--sk-border-width-default) solid var(--sk-color-border-strong);
-  border-radius: 999px;
-  font-size: var(--sk-font-size-lg);
-}
-
-.lab-directory__search input::placeholder {
-  color: var(--sk-color-ink-muted);
-  opacity: 1;
-}
-
-.lab-directory__search-control button {
-  position: absolute;
-  inset: 50% var(--sk-space-4) auto auto;
-  min-width: 3.4rem;
-  min-height: 2.75rem;
-  padding-inline: var(--sk-space-3);
-  color: var(--sk-color-surface-raised);
-  background: var(--sk-color-brand-primary);
-  border: 0;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: var(--sk-font-size-sm);
-  font-weight: var(--sk-font-weight-bold);
-  transform: translateY(-50%);
-}
-
 .lab-directory__search > p {
   grid-column: 2;
   color: var(--sk-color-ink-muted);
@@ -205,6 +173,10 @@
   max-width: 34rem;
   margin: var(--sk-space-3) auto 0;
   color: var(--sk-color-ink-muted);
+}
+
+.lab-directory__empty .sk-empty-state__actions {
+  justify-content: center;
 }
 
 .lab-directory__escalation {

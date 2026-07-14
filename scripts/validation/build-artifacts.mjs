@@ -197,6 +197,20 @@ export function runBuildArtifactFixtures() {
     );
     writeFileSync(primitiveSourcePath, "export const fixture = 1;\n");
 
+    const s5ContractPath = join(fixtureRoot, "packages", "primitives", "src", "contracts", "search-feedback.ts");
+    writeFileSync(s5ContractPath, "export const fixture = 2;\n");
+    expectFailure("stale S5 primitive contract source", "@sanchika/primitives source", () =>
+      assertBuiltPackageArtifacts({ root: fixtureRoot, commandName: "fixture check", packageNames: ["primitives"] }),
+    );
+    writeFileSync(s5ContractPath, "export const fixture = 1;\n");
+
+    const formattingSourcePath = join(fixtureRoot, "packages", "primitives", "src", "formatting", "indian.ts");
+    writeFileSync(formattingSourcePath, "export const fixture = 2;\n");
+    expectFailure("stale Indian formatting source", "@sanchika/primitives source", () =>
+      assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
+    );
+    writeFileSync(formattingSourcePath, "export const fixture = 1;\n");
+
     const primitiveOutputPath = join(fixtureRoot, "packages", "primitives", "dist", "index.js");
     writeFileSync(primitiveOutputPath, "export const fixture = 2;\n");
     expectFailure("stale package output", "@sanchika/primitives output", () =>
@@ -210,6 +224,13 @@ export function runBuildArtifactFixtures() {
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
     writeFileSync(gallerySourcePath, "<main>fixture</main>\n");
+
+    const galleryReferencePath = join(fixtureRoot, "apps", "gallery", "src", "components", "S5SearchPanel.astro");
+    writeFileSync(galleryReferencePath, "<script>changed</script>\n");
+    expectFailure("stale S5 gallery reference behavior", "gallery source", () =>
+      assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
+    );
+    writeFileSync(galleryReferencePath, "<script>fixture</script>\n");
 
     const galleryOutputPath = join(fixtureRoot, "apps", "gallery", "dist", "index.html");
     writeFileSync(galleryOutputPath, "<main>changed</main>\n");
@@ -272,6 +293,12 @@ function createFixtureTree(root) {
     mkdirSync(join(packageDir, "src"), { recursive: true });
     writeFileSync(join(packageDir, "src", "index.ts"), "export const fixture = 1;\n");
     writeFileSync(join(packageDir, "package.json"), `${JSON.stringify({ name: `@sanchika/${packageName}` })}\n`);
+    if (packageName === "primitives") {
+      mkdirSync(join(packageDir, "src", "contracts"), { recursive: true });
+      mkdirSync(join(packageDir, "src", "formatting"), { recursive: true });
+      writeFileSync(join(packageDir, "src", "contracts", "search-feedback.ts"), "export const fixture = 1;\n");
+      writeFileSync(join(packageDir, "src", "formatting", "indian.ts"), "export const fixture = 1;\n");
+    }
     for (const artifact of requiredArtifacts) {
       const artifactPath = join(packageDir, artifact);
       mkdirSync(join(artifactPath, ".."), { recursive: true });
@@ -280,8 +307,10 @@ function createFixtureTree(root) {
   }
   const galleryDir = join(root, "apps", "gallery");
   mkdirSync(join(galleryDir, "src"), { recursive: true });
+  mkdirSync(join(galleryDir, "src", "components"), { recursive: true });
   mkdirSync(join(galleryDir, "dist"), { recursive: true });
   writeFileSync(join(galleryDir, "src", "index.astro"), "<main>fixture</main>\n");
+  writeFileSync(join(galleryDir, "src", "components", "S5SearchPanel.astro"), "<script>fixture</script>\n");
   writeFileSync(join(galleryDir, "package.json"), `${JSON.stringify({ name: "@sanchika/gallery-app" })}\n`);
   writeFileSync(join(galleryDir, "dist", "index.html"), "<main>fixture</main>\n");
 }

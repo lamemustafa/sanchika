@@ -651,12 +651,19 @@ const primitiveSource = [
   "packages/primitives/src/contracts/typography.ts",
   "packages/primitives/src/contracts/actions.ts",
   "packages/primitives/src/contracts/form-status.ts",
+  "packages/primitives/src/contracts/search-feedback.ts",
+  "packages/primitives/src/contracts/states.ts",
+  "packages/primitives/src/contracts/process.ts",
+  "packages/primitives/src/contracts/navigation-data.ts",
+  "packages/primitives/src/formatting/indian.ts",
 ].map(readText).join("\n");
 const primitiveCss = [
   "packages/primitives/src/styles.css",
   "packages/primitives/src/foundation.css",
   "packages/primitives/src/typography.css",
   "packages/primitives/src/components.css",
+  "packages/primitives/src/search-feedback.css",
+  "packages/primitives/src/process-data.css",
 ].map(readText).join("\n");
 const patternSource = readText("packages/patterns/src/index.ts");
 const gallerySource = readText("apps/gallery/src/components/PatternContracts.astro");

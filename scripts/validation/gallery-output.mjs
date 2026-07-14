@@ -9,11 +9,13 @@ export function inspectGalleryAssetGraph({
   outputFiles,
   allowUnreferencedStylesheets = false,
   allowedInlineScriptMarker = null,
+  allowedInlineScriptMarkers = [],
 }) {
   const failures = [];
   const activeHtml = html.replace(/<!--[\s\S]*?-->/g, "");
   const stylesheetPaths = [];
   const seenStylesheets = new Set();
+  const allowedScriptMarkers = new Set([allowedInlineScriptMarker, ...allowedInlineScriptMarkers].filter(Boolean));
 
   for (const match of activeHtml.matchAll(/<link\b([^>]*)>/gi)) {
     const attributes = parseAttributes(match[1]);
@@ -67,8 +69,8 @@ export function inspectGalleryAssetGraph({
     const type = attributes.get("type")?.toLowerCase() ?? "";
     const src = attributes.get("src");
     if (metadataScriptTypes.has(type) && !src) continue;
-    const marker = attributes.get("data-sanchika-lab-script");
-    if (!src && allowedInlineScriptMarker && marker === allowedInlineScriptMarker) {
+    const marker = attributes.get("data-sanchika-gallery-script") ?? attributes.get("data-sanchika-lab-script");
+    if (!src && allowedScriptMarkers.has(marker)) {
       allowedInlineScriptInventory.push(marker);
       continue;
     }

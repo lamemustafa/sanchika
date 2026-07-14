@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
 import {
   findUnresolvedGalleryVariables,
@@ -11,6 +12,7 @@ import {
   inspectGalleryAssetGraph,
   runGalleryOutputFixtures,
 } from "./validation/gallery-output.mjs";
+import { runGalleryReferenceRuntimeFixtures } from "./validation/gallery-reference-runtime.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertGalleryBuildArtifacts({ root, commandName: "pnpm gallery:check" });
@@ -39,8 +41,10 @@ const expectedLabDocuments = [
 ];
 const tokenProofDocument = "foundations/tokens/index.html";
 const primitiveFoundationDocument = "primitives/foundations/index.html";
+const s5Document = "primitives/search-state-feedback/index.html";
 const stylesheetConsumers = new Set();
 let assetGraph = null;
+const scriptSizes = new Map();
 
 for (const [path, documentHtml] of htmlOutputs) {
   const graph = inspectGalleryAssetGraph({
@@ -48,6 +52,7 @@ for (const [path, documentHtml] of htmlOutputs) {
     outputFiles: outputFileMap,
     allowUnreferencedStylesheets: true,
     allowedInlineScriptMarker: path === "lab/tools-directory/index.html" ? "tool-filter" : null,
+    allowedInlineScriptMarkers: path === s5Document ? ["s5-search-field", "s5-copy-button"] : [],
   });
   if (path === "index.html") assetGraph = graph;
   for (const stylesheetPath of graph.stylesheetPaths) stylesheetConsumers.add(stylesheetPath);
@@ -63,6 +68,27 @@ for (const [path, documentHtml] of htmlOutputs) {
   }
   if (path === "lab/tools-directory/index.html" && graph.allowedInlineScriptInventory.length !== 1) {
     failures.push(`${path} must contain exactly one named tool-filter enhancement script`);
+  }
+  if (path === "lab/tools-directory/index.html" && graph.allowedInlineScriptInventory.length === 1) {
+    const match = /<script[^>]*data-sanchika-lab-script="tool-filter"[^>]*>([\s\S]*?)<\/script>/i.exec(documentHtml);
+    if (match) {
+      const raw = Buffer.byteLength(match[1]);
+      const gzip = gzipSync(match[1]).byteLength;
+      scriptSizes.set(`${path}:tool-filter`, { raw, gzip });
+      if (raw > 6144) failures.push(`${path} tool-filter script must stay at or below 6144 raw bytes; found ${raw}`);
+    }
+  }
+  if (path === s5Document) {
+    const expectedMarkers = ["s5-search-field", "s5-copy-button"];
+    if (JSON.stringify(graph.allowedInlineScriptInventory) !== JSON.stringify(expectedMarkers)) failures.push(`${path} must contain exactly the named S5 SearchField and CopyButton scripts`);
+    for (const marker of expectedMarkers) {
+      const match = new RegExp(`<script[^>]*data-sanchika-gallery-script="${marker}"[^>]*>([\\s\\S]*?)<\\/script>`, "i").exec(documentHtml);
+      if (!match) continue;
+      const raw = Buffer.byteLength(match[1]);
+      const gzip = gzipSync(match[1]).byteLength;
+      scriptSizes.set(`${path}:${marker}`, { raw, gzip });
+      if (raw > 6144) failures.push(`${path} ${marker} script must stay at or below 6144 raw bytes; found ${raw}`);
+    }
   }
 }
 
@@ -105,6 +131,33 @@ if (!primitiveFoundationHtml) {
     if (!primitiveFoundationHtml.includes(required)) failures.push(`${primitiveFoundationDocument} must include ${required}`);
   }
 }
+
+const s5Html = outputFileMap.get(s5Document) ?? "";
+if (!s5Html) {
+  failures.push(`${s5Document} must exist`);
+} else {
+  for (const required of [
+    "<title>Search, state, and feedback primitives | Sanchika</title>",
+    '<link rel="canonical" href="https://sanchika.complyeaze.com/primitives/search-state-feedback/">',
+    'data-sanchika-gallery="search-state-feedback"',
+    "Make the next state legible.",
+    'data-sk-contract="SearchField"',
+    'data-sk-contract="TableShell"',
+    'type="search"',
+    'aria-current="step"',
+    '<details class="sk-disclosure"',
+    'aria-live="polite"',
+    'data-empty-kind="filtered"',
+    "PAN and GSTIN helpers group display text only",
+  ]) if (!s5Html.includes(required)) failures.push(`${s5Document} must include ${required}`);
+}
+
+const referenceRuntimeFixtures = await runGalleryReferenceRuntimeFixtures({
+  searchScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-search-field"),
+  copyScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-copy-button"),
+  toolsScript: extractInlineScript(outputFileMap.get("lab/tools-directory/index.html") ?? "", "data-sanchika-lab-script", "tool-filter"),
+});
+for (const failure of referenceRuntimeFixtures.failures) failures.push(`gallery reference runtime fixture ${failure}`);
 
 for (const [path] of outputFiles.filter(([path]) => path.endsWith(".css"))) {
   if (!stylesheetConsumers.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any gallery document`);
@@ -184,6 +237,8 @@ if (failures.length > 0) {
 console.log("Sanchika gallery artifact check passed.");
 console.log(`Sanchika gallery variable fixtures passed (${variableFixtures.count} cases).`);
 console.log(`Sanchika gallery output fixtures passed (${outputFixtures.count} cases).`);
+console.log(`Sanchika gallery reference runtime fixtures passed (${referenceRuntimeFixtures.count} cases).`);
+for (const [label, size] of scriptSizes) console.log(`Sanchika client script ${label}: ${size.raw} raw bytes; ${size.gzip} gzip bytes.`);
 
 function relative(path) {
   return path.replace(`${root}/`, "");
@@ -191,4 +246,8 @@ function relative(path) {
 
 function readOutputFile(path) {
   return /\.(?:css|html)$/i.test(path) ? readFileSync(join(galleryDir, path), "utf8") : "";
+}
+
+function extractInlineScript(html, markerAttribute, marker) {
+  return new RegExp(`<script[^>]*${markerAttribute}="${marker}"[^>]*>([\\s\\S]*?)<\\/script>`, "i").exec(html)?.[1] ?? "";
 }

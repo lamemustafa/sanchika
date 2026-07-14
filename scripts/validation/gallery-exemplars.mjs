@@ -1,15 +1,18 @@
-export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail, validateUniqueDocumentIds = true }) {
+export function validateGalleryExemplars({ markup, primitiveSpecs, patternSpecs, fail, validateUniqueDocumentIds = true, stateMarkerExclusions = [] }) {
   if (validateUniqueDocumentIds) validateUniqueIds({ markup, fail });
   validateButtonExemplars({ markup, primitiveSpecs, fail });
   validateFieldAssociations({ markup, fail });
   validateCardFocusSemantics({ markup, fail });
   validateLinkCardExemplars({ markup, fail });
+  validateSearchFieldExemplars({ markup, fail });
   validateTrustBoundarySignals({ markup, fail });
   validateSyntheticGalleryBoundary({ markup, fail });
   validateStateSpecificPatternCopy({ markup, fail });
   validatePatternStateExemplars({ markup, patternSpecs, fail });
 
+  const excludedStateMarkers = new Set(stateMarkerExclusions);
   for (const primitive of primitiveSpecs) {
+    if (excludedStateMarkers.has(primitive.name)) continue;
     for (const state of primitive.requiredStates) {
       const marker = `data-sk-primitive="${primitive.name}" data-sk-state="${state}"`;
       if (!markup.includes(marker)) {
@@ -121,7 +124,38 @@ export function runGalleryExemplarFixtures() {
     }
   }
 
-  return { count: cases.length, failures };
+  for (const fixture of [
+    {
+      name: "placeholder-only SearchField",
+      markup: '<form class="sk-search-field"><input id="search" type="search" placeholder="Search"><button class="sk-search-field__clear" aria-label="Clear search"></button></form>',
+      expectedFailure: "visible label",
+    },
+    {
+      name: "unnamed SearchField clear button",
+      markup: '<form class="sk-search-field"><label for="search">Search records</label><input id="search" type="search"><button class="sk-search-field__clear"></button></form>',
+      expectedFailure: "accessible name",
+    },
+  ]) {
+    const fixtureFailures = [];
+    validateSearchFieldExemplars({ markup: fixture.markup, fail: (message) => fixtureFailures.push(message) });
+    if (!fixtureFailures.some((message) => message.includes(fixture.expectedFailure))) failures.push(`${fixture.name} did not report ${fixture.expectedFailure}`);
+  }
+
+  return { count: cases.length + 2, failures };
+}
+
+function validateSearchFieldExemplars({ markup, fail }) {
+  for (const match of markup.matchAll(/<form\b(?<attrs>[^>]*\bsk-search-field\b[^>]*)>(?<body>[\s\S]*?)<\/form>/gi)) {
+    const body = match.groups?.body ?? "";
+    const input = body.match(/<input\b(?<attrs>[^>]*\btype=(?:"search"|'search'|search)[^>]*)>/i)?.groups;
+    if (!input) { fail("SearchField exemplar must include native input type=search"); continue; }
+    const inputId = getAttribute(input.attrs, "id");
+    const label = inputId ? body.match(new RegExp(`<label\\b[^>]*for=(?:"${inputId}"|'${inputId}'|${inputId})[^>]*>([\\s\\S]*?)<\\/label>`, "i")) : null;
+    if (!label || !label[1].replace(/<[^>]+>/g, "").trim()) fail("SearchField exemplar must include a visible label; placeholder-only search is invalid");
+    const clear = body.match(/<button\b(?<attrs>[^>]*\bsk-search-field__clear\b[^>]*)>/i)?.groups;
+    if (!clear || !getAttribute(clear.attrs, "aria-label")?.trim()) fail("SearchField clear button must have an accessible name");
+    if (/\bdisabled\b/i.test(input.attrs) && clear && !/\bdisabled\b/i.test(clear.attrs)) fail("Disabled SearchField must disable its clear button");
+  }
 }
 
 function validateStateSpecificPatternCopy({ markup, fail }) {

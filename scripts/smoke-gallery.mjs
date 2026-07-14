@@ -2,19 +2,21 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
 import { validateGalleryExemplars } from "./validation/gallery-exemplars.mjs";
+import { validateS5GalleryExemplars } from "./validation/s5-gallery-exemplars.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertGalleryBuildArtifacts({ root, commandName: "pnpm smoke:check" });
 
 const { colorTokens } = await import("../packages/tokens/dist/index.js");
-const { primitiveClassName, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
+const { primitiveClassName, primitiveGroups, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
 const { patternSpecs } = await import("../packages/patterns/dist/index.js");
 
 const documentMarkup = readFileSync(new URL("../apps/gallery/dist/index.html", import.meta.url), "utf8");
 const foundationMarkup = readFileSync(new URL("../apps/gallery/dist/primitives/foundations/index.html", import.meta.url), "utf8");
-const markup = `${documentMarkup}\n${foundationMarkup}`;
+const s5Markup = readFileSync(new URL("../apps/gallery/dist/primitives/search-state-feedback/index.html", import.meta.url), "utf8");
+const markup = `${documentMarkup}\n${foundationMarkup}\n${s5Markup}`;
 const normalizedMarkup = markup.replaceAll("&#39;", "'");
-const primitiveCss = ["styles.css", "foundation.css", "typography.css", "components.css"]
+const primitiveCss = ["styles.css", "foundation.css", "typography.css", "components.css", "search-feedback.css", "process-data.css"]
   .map((path) => readFileSync(new URL(`../packages/primitives/src/${path}`, import.meta.url), "utf8"))
   .join("\n");
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
@@ -171,6 +173,13 @@ validateGalleryExemplars({
   primitiveSpecs,
   patternSpecs,
   validateUniqueDocumentIds: false,
+  stateMarkerExclusions: primitiveGroups.searchStateFeedback.map((primitive) => primitive.name),
+  fail: (message) => missing.push(message),
+});
+validateS5GalleryExemplars({
+  markup: s5Markup,
+  primitiveCss,
+  primitiveSpecs: primitiveGroups.searchStateFeedback,
   fail: (message) => missing.push(message),
 });
 

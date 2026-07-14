@@ -15,6 +15,9 @@ tokens -> primitives -> patterns
 - `apps/gallery` is a private Astro static application. It renders package
   contract exports and CSS into the canonical gallery site without exposing a
   consumer runtime package, framework adapter, or client island by default.
+  S5 permits tiny zero-dependency scripts inside gallery examples for
+  SearchField and CopyButton progressive enhancement. Those scripts are app
+  evidence only and are never exported from `@sanchika/primitives`.
 - CSS package exports are the only declared package side effects:
   `@sanchika/tokens/theme.css` and `@sanchika/primitives/styles.css` stay
   side-effectful so production bundlers do not prune required styles. Code-only

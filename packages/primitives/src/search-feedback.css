@@ -1,0 +1,77 @@
+@layer sanchika-primitives {
+  :where(.sk-search-field, .sk-inline-status, .sk-skeleton, .sk-empty-state, .sk-error-state) { box-sizing: border-box; }
+
+  :where(.sk-search-field) {
+    --sk-search-control-height: var(--sk-control-height-md);
+    display: grid;
+    gap: var(--sk-space-2);
+    max-inline-size: var(--sk-container-full);
+  }
+  :where(.sk-search-field.sk-size-sm) { --sk-search-control-height: var(--sk-control-height-sm); }
+  :where(.sk-search-field.sk-size-lg) { --sk-search-control-height: var(--sk-control-height-lg); }
+  :where(.sk-search-field > label) { color: var(--sk-color-ink-primary); font-weight: var(--sk-font-weight-semibold); line-height: var(--sk-line-height-label); }
+  :where(.sk-search-field__control) { position: relative; display: flex; align-items: center; min-inline-size: 0; }
+  :where(.sk-search-field__icon) { position: absolute; inset-inline-start: var(--sk-space-3); color: var(--sk-color-ink-muted); pointer-events: none; }
+  :where(.sk-search-field input[type="search"]) {
+    appearance: none; inline-size: var(--sk-container-full); min-inline-size: 0; min-block-size: var(--sk-search-control-height);
+    padding: var(--sk-space-2) calc(var(--sk-space-8) + var(--sk-space-4)) var(--sk-space-2) calc(var(--sk-space-8) + var(--sk-space-1));
+    color: var(--sk-color-ink-primary); background: var(--sk-color-surface-raised); border: var(--sk-border-width-default) solid var(--sk-color-border-default);
+    border-radius: var(--sk-radius-sm); font: inherit; line-height: var(--sk-line-height-body);
+  }
+  :where(.sk-search-field input[type="search"])::-webkit-search-cancel-button { appearance: none; }
+  :where(.sk-search-field input[type="search"])::placeholder { color: var(--sk-color-ink-muted); opacity: 1; }
+  :where(.sk-search-field__clear) {
+    position: absolute; inset-inline-end: var(--sk-space-2); min-block-size: var(--sk-control-height-sm); min-inline-size: var(--sk-control-height-sm);
+    padding-inline: var(--sk-space-3); color: var(--sk-color-ink-primary); background: var(--sk-color-surface-muted);
+    border: var(--sk-border-width-default) solid var(--sk-color-border-default); border-radius: var(--sk-radius-sm); cursor: pointer; font: inherit;
+  }
+  :where(.sk-search-field[data-has-value="true"] .sk-search-field__clear) { display: inline-flex; align-items: center; justify-content: center; }
+  :where(.sk-search-field:not([data-has-value="true"]) .sk-search-field__clear) { display: none; }
+  :where(.sk-search-field[data-filtering="true"] [data-sk-result-status], .sk-search-field[data-no-results="true"] [data-sk-result-status]) { font-weight: var(--sk-font-weight-semibold); }
+  :where(.sk-search-field[data-disabled="true"] .sk-search-field__clear, .sk-search-field__clear:disabled) { cursor: not-allowed; opacity: 0.62; pointer-events: none; }
+  :where(.sk-search-field input:disabled) { cursor: not-allowed; opacity: 0.62; }
+  :where(.sk-search-field[data-invalid="true"] input[type="search"], .sk-search-field input[type="search"][aria-invalid="true"]) { border-color: var(--sk-color-danger-border); }
+  :where(.sk-search-field :is([data-sk-search-hint], [data-sk-result-status], [data-sk-search-error])) { margin-block: 0; color: var(--sk-color-ink-muted); font-size: var(--sk-font-size-sm); line-height: var(--sk-line-height-body); overflow-wrap: anywhere; }
+  :where(.sk-search-field [data-sk-search-error]) { color: var(--sk-color-danger-fg); font-weight: var(--sk-font-weight-semibold); }
+  :where(.sk-search-field input[type="search"]:focus-visible, .sk-search-field__clear:focus-visible) { outline: var(--sk-focus-outline-width) solid var(--sk-color-focus); outline-offset: var(--sk-focus-outline-offset); }
+
+  :where(.sk-inline-status) {
+    --sk-status-bg: var(--sk-color-neutral-bg); --sk-status-fg: var(--sk-color-neutral-fg); --sk-status-border: var(--sk-color-neutral-border);
+    display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--sk-space-2); max-inline-size: var(--sk-container-full);
+    padding: var(--sk-space-1) var(--sk-space-2); color: var(--sk-status-fg); background: var(--sk-status-bg);
+    border: var(--sk-border-width-default) solid var(--sk-status-border); border-radius: var(--sk-radius-sm); font-size: var(--sk-font-size-sm); font-weight: var(--sk-font-weight-semibold);
+  }
+  :where(.sk-inline-status.sk-tone-success) { --sk-status-bg: var(--sk-color-success-bg); --sk-status-fg: var(--sk-color-success-fg); --sk-status-border: var(--sk-color-success-border); }
+  :where(.sk-inline-status.sk-tone-warning) { --sk-status-bg: var(--sk-color-warning-bg); --sk-status-fg: var(--sk-color-warning-fg); --sk-status-border: var(--sk-color-warning-border); }
+  :where(.sk-inline-status.sk-tone-danger) { --sk-status-bg: var(--sk-color-danger-bg); --sk-status-fg: var(--sk-color-danger-fg); --sk-status-border: var(--sk-color-danger-border); }
+  :where(.sk-inline-status.sk-tone-info) { --sk-status-bg: var(--sk-color-info-bg); --sk-status-fg: var(--sk-color-info-fg); --sk-status-border: var(--sk-color-info-border); }
+  :where(.sk-inline-status__marker) { flex: none; font-weight: var(--sk-font-weight-bold); }
+  :where(.sk-inline-status__meta) { color: var(--sk-color-ink-secondary); font-family: var(--sk-font-mono); font-size: var(--sk-font-size-xs); font-weight: var(--sk-font-weight-regular); }
+
+  :where(.sk-skeleton) { display: block; block-size: var(--sk-font-size-lg); inline-size: min(34ch, var(--sk-container-full)); max-inline-size: var(--sk-container-full); background: var(--sk-color-surface-inset); border: var(--sk-border-width-default) solid var(--sk-color-border-subtle); border-radius: var(--sk-radius-sm); animation: sk-skeleton-pulse var(--sk-motion-duration-loading) var(--sk-motion-easing-standard) infinite alternate; }
+  :where(.sk-skeleton-text) { block-size: var(--sk-font-size-lg); inline-size: min(34ch, var(--sk-container-full)); }
+  :where(.sk-skeleton-block) { block-size: calc(var(--sk-control-height-lg) * 3); inline-size: var(--sk-container-full); }
+  :where(.sk-skeleton-row) { block-size: var(--sk-table-row-comfortable); inline-size: var(--sk-container-full); }
+  :where(.sk-skeleton-avatar) { block-size: var(--sk-control-height-lg); inline-size: var(--sk-control-height-lg); border-radius: 50%; }
+  @keyframes sk-skeleton-pulse { to { opacity: 0.52; } }
+
+  :where(.sk-empty-state, .sk-error-state) { display: grid; justify-items: start; gap: var(--sk-space-3); max-inline-size: var(--sk-container-reading); padding: var(--sk-space-6); background: var(--sk-color-surface); border: var(--sk-border-width-default) solid var(--sk-color-border-default); border-radius: var(--sk-radius-md); }
+  :where(.sk-empty-state[hidden], .sk-error-state[hidden]) { display: none; }
+  :where(.sk-empty-state-filtered, .sk-empty-state[data-empty-kind="filtered"]) { border-style: dashed; }
+  :where(.sk-empty-state-unavailable, .sk-empty-state[data-empty-kind="unavailable"]) { background: var(--sk-color-surface-muted); }
+  :where(.sk-empty-state > :is(h1, h2, h3, p), .sk-error-state > :is(h1, h2, h3, p)) { margin-block: 0; overflow-wrap: anywhere; }
+  :where(.sk-empty-state__marker) { color: var(--sk-color-ink-secondary); font-weight: var(--sk-font-weight-bold); }
+  :where(.sk-empty-state__actions, .sk-error-state__actions) { display: flex; flex-wrap: wrap; gap: var(--sk-space-2); }
+  :where(.sk-empty-state__detail, .sk-error-state__reference) { color: var(--sk-color-ink-secondary); font-size: var(--sk-font-size-sm); }
+  :where(.sk-error-state) { border-color: var(--sk-color-danger-border); }
+  :where(.sk-error-state-blocking, .sk-error-state[data-error-severity="blocking"]) { border-width: var(--sk-border-width-strong); }
+  :where(.sk-error-state__reference) { font-family: var(--sk-font-mono); font-variant-numeric: tabular-nums; }
+  :where(.sk-error-state__details) { inline-size: var(--sk-container-full); }
+
+  @media (prefers-reduced-motion: reduce) { :where(.sk-skeleton) { animation: none; } }
+  @media (forced-colors: active) {
+    :where(.sk-search-field input[type="search"], .sk-search-field__clear, .sk-inline-status, .sk-skeleton, .sk-empty-state, .sk-error-state) { border-color: CanvasText; }
+    :where(.sk-search-field input[type="search"]:focus-visible, .sk-search-field__clear:focus-visible) { outline-color: Highlight; }
+    :where(.sk-skeleton) { background: Canvas; animation: none; }
+  }
+}

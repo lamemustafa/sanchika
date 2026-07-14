@@ -18,6 +18,18 @@ export type PrimitiveClassOptions = {
   Card: { tone?: PrimitiveToneFor<"Card">; size?: PrimitiveSizeFor<"Card"> };
   Badge: { tone?: PrimitiveToneFor<"Badge">; size?: PrimitiveSizeFor<"Badge"> };
   Field: { tone?: PrimitiveToneFor<"Field">; size?: PrimitiveSizeFor<"Field"> };
+  SearchField: { size?: "sm" | "md" | "lg" };
+  InlineStatus: { tone?: "neutral" | "success" | "warning" | "danger" | "info" };
+  Skeleton: { form?: "text" | "block" | "row" | "avatar" };
+  EmptyState: { kind?: "empty" | "filtered" | "unavailable" };
+  ErrorState: { severity?: "recoverable" | "blocking" };
+  Progress: { state?: "determinate" | "indeterminate" | "complete" | "error" };
+  Stepper: { orientation?: "horizontal" | "vertical" };
+  Disclosure: Record<string, never>;
+  CopyButton: { state?: "idle" | "copied" | "failed"; size?: "sm" | "md" };
+  Breadcrumb: Record<string, never>;
+  Stat: { alignment?: "start" | "end" };
+  TableShell: { density?: "compact" | "comfortable"; header?: "static" | "sticky" };
 };
 
 export type PrimitiveClassOptionsFor<Name extends PrimitiveName> = PrimitiveClassOptions[Name];
@@ -48,6 +60,18 @@ const optionClassNames = new Map<PrimitiveName, PrimitiveOptions>([
   ["Card", options([["tone", toneValues(["neutral", "info", "success", "warning", "danger"])], ["size", sizeValues(["md", "lg"]) ]])],
   ["Badge", options([["tone", toneValues(["neutral", "success", "warning", "danger", "info"])], ["size", sizeValues(["sm", "md"]) ]])],
   ["Field", options([["tone", toneValues(["neutral", "danger"])], ["size", sizeValues(["sm", "md", "lg"]) ]])],
+  ["SearchField", options([["size", sizeValues(["sm", "md", "lg"]) ]])],
+  ["InlineStatus", options([["tone", toneValues(["neutral", "success", "warning", "danger", "info"]) ]])],
+  ["Skeleton", options([["form", values("sk-skeleton", ["text", "block", "row", "avatar"]) ]])],
+  ["EmptyState", options([["kind", values("sk-empty-state", ["empty", "filtered", "unavailable"]) ]])],
+  ["ErrorState", options([["severity", values("sk-error-state", ["recoverable", "blocking"]) ]])],
+  ["Progress", options([["state", values("sk-progress", ["determinate", "indeterminate", "complete", "error"]) ]])],
+  ["Stepper", options([["orientation", values("sk-stepper", ["horizontal", "vertical"]) ]])],
+  ["Disclosure", options([])],
+  ["CopyButton", options([["state", values("sk-copy-button", ["idle", "copied", "failed"])], ["size", sizeValues(["sm", "md"]) ]])],
+  ["Breadcrumb", options([])],
+  ["Stat", options([["alignment", values("sk-stat-align", ["start", "end"]) ]])],
+  ["TableShell", options([["density", values("sk-table-shell", ["compact", "comfortable"])], ["header", values("sk-table-shell-header", ["static", "sticky"]) ]])],
 ]);
 
 export function primitiveClassName<Name extends LegacyPrimitiveName>(
@@ -87,6 +111,10 @@ function composeOptions(name: PrimitiveName, options: Record<string, string>): s
   const supportedOptions = optionClassNames.get(name);
   if (!baseClassName || !supportedOptions) throw new Error(`Unknown primitive ${String(name)}`);
   const classes = [baseClassName];
+
+  for (const option in options) {
+    if (!Object.hasOwn(options, option)) throw new Error(`Unsupported inherited option "${option}" for primitive ${name}`);
+  }
 
   for (const [option, value] of Object.entries(options)) {
     const supportedValues = supportedOptions.get(option);
