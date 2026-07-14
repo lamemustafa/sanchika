@@ -94,7 +94,7 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
   for (const s5Import of ['@import "./search-feedback.css";', '@import "./process-data.css";']) {
     if (!primitiveCss.includes(s5Import)) fail(`primitive styles.css must expose ${s5Import}`);
   }
-  for (const variantSelector of [".sk-empty-state-filtered", ".sk-empty-state-unavailable", ".sk-error-state-blocking"]) {
+  for (const variantSelector of [".sk-empty-state-filtered", ".sk-empty-state-unavailable", ".sk-error-state-blocking", ".sk-progress-indeterminate"]) {
     if (!primitiveSource.includes(variantSelector)) fail(`primitive contracts must declare finite variant selector ${variantSelector}`);
     if (!primitiveCss.includes(variantSelector)) fail(`primitive styles must implement finite variant selector ${variantSelector}`);
   }

@@ -124,6 +124,7 @@ export function validatePrimitiveRuntime({ primitiveClassName, primitiveGroups, 
   check(primitiveClassName("EmptyState", { kind: "filtered" }) === "sk-empty-state sk-empty-state-filtered", "EmptyState filtered class output must remain wired to its finite variant");
   check(primitiveClassName("EmptyState", { kind: "unavailable" }) === "sk-empty-state sk-empty-state-unavailable", "EmptyState unavailable class output must remain wired to its finite variant");
   check(primitiveClassName("ErrorState", { severity: "blocking" }) === "sk-error-state sk-error-state-blocking", "ErrorState blocking class output must remain wired to its finite variant");
+  check(primitiveClassName("Progress", { state: "indeterminate" }) === "sk-progress sk-progress-indeterminate", "Progress indeterminate class output must remain wired to its finite variant");
   check(textClassName("data") === "sk-text sk-text-data", "Text data output must remain stable");
 
   for (const inheritedKey of inheritedRuntimeKeys) {
@@ -197,6 +198,8 @@ export function validateIndianFormatting(formatters) {
   check(formatIndianDate("2024-02-29") === "29-02-2024", "valid leap day must format");
   check(formatIndianDateTime("2026-07-14T00:00:00Z", { timeZone: "Asia/Kolkata" }).includes("14 Jul 2026"), "date-time must honor explicit Asia/Kolkata timezone");
   check(formatIndianDateTime("2026-07-14T00:00:00Z", { timeZone: "UTC" }).includes("14 Jul 2026"), "date-time must honor explicit UTC timezone");
+  check(/05:30/.test(formatIndianDateTime("2026-07-14T00:00:00Z", { timeZone: "Asia/Kolkata", hour12: false })), "auxiliary hour-cycle options must preserve the default date-time shape");
+  check(/5:30.*IST/i.test(formatIndianDateTime("2026-07-14T00:00:00Z", { timeZone: "Asia/Kolkata", timeZoneName: "short" })), "auxiliary timezone-name options must preserve time in the default date-time shape");
   check(Boolean(formatIndianDateTime("2026-07-14T00:00:00Z", { timeZone: "UTC", year: "numeric", month: "2-digit", day: "2-digit" })), "date-time must support explicit component options without conflicting defaults");
   check(formatPANDisplay("abcde" + "1234" + "f") === "ABCDE 1234 F", "PAN display grouping must be deterministic");
   check(formatGSTINDisplay("27" + "abcde" + "1234" + "f1z5") === "27 ABCDE 1234 F 1 Z 5", "GSTIN display grouping must be deterministic");

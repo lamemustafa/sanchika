@@ -5,7 +5,7 @@
   :where(.sk-progress__header) { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sk-space-2); font-weight: var(--sk-font-weight-semibold); }
   :where(.sk-progress progress) { inline-size: var(--sk-container-full); block-size: var(--sk-space-3); accent-color: var(--sk-color-brand-primary); }
   :where(.sk-progress__value) { color: var(--sk-color-ink-secondary); font-family: var(--sk-font-mono); font-variant-numeric: tabular-nums; }
-  :where(.sk-progress[data-progress-state="indeterminate"] progress) { accent-color: var(--sk-color-neutral-fg); }
+  :where(.sk-progress-indeterminate progress, .sk-progress[data-progress-state="indeterminate"] progress) { accent-color: var(--sk-color-neutral-fg); }
   :where(.sk-progress-complete progress, .sk-progress[data-progress-state="complete"] progress) { accent-color: var(--sk-color-success-fg); }
   :where(.sk-progress-error progress, .sk-progress[data-progress-state="error"] progress) { accent-color: var(--sk-color-danger-fg); }
 

@@ -86,8 +86,10 @@ export function formatIndianDate(value: Date | string | number, options: IndianD
 export function formatIndianDateTime(value: Date | string | number, options: IndianDateTimeFormatOptions = {}): string {
   const date = toValidDate(value);
   const { timeZone = defaultTimeZone, ...intlOptions } = options;
-  const hasRequestedShape = Object.keys(intlOptions).length > 0;
-  return new Intl.DateTimeFormat(locale, { ...(hasRequestedShape ? intlOptions : { dateStyle: "medium", timeStyle: "short" }), timeZone }).format(date);
+  const shapeKeys: readonly (keyof Intl.DateTimeFormatOptions)[] = ["dateStyle", "timeStyle", "weekday", "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits"];
+  const hasRequestedShape = shapeKeys.some((key) => Object.hasOwn(intlOptions, key));
+  const defaultShape = { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" } as const;
+  return new Intl.DateTimeFormat(locale, { ...(hasRequestedShape ? {} : defaultShape), ...intlOptions, timeZone }).format(date);
 }
 
 export function formatGSTINDisplay(value: string): string {
