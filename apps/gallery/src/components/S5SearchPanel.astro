@@ -1,0 +1,93 @@
+---
+import { primitiveClassName, primitiveGroups, textClassName } from "@sanchika/primitives";
+
+interface Props { instanceId: string; }
+
+const { instanceId } = Astro.props;
+const contracts = primitiveGroups.searchStateFeedback;
+const directoryItems = contracts.map((contract) => ({ name: contract.name, role: contract.role, search: `${contract.name} ${contract.role} ${contract.purpose}`.toLowerCase() }));
+const titleId = `${instanceId}-search-title`;
+const inputId = `${instanceId}-primitive-search`;
+const hintId = `${instanceId}-search-hint`;
+const statusId = `${instanceId}-search-status`;
+const emptyTitleId = `${instanceId}-empty-title`;
+const disabledId = `${instanceId}-search-disabled`;
+const errorId = `${instanceId}-search-error`;
+const errorMessageId = `${instanceId}-search-error-message`;
+---
+
+<section class={primitiveClassName("Section", { space: "lg" })} aria-labelledby={titleId} data-s5-directory data-s5-instance={instanceId}>
+  <div class={primitiveClassName("Stack", { gap: "md" })}>
+    <div><p class={textClassName("eyebrow")}>Searchable directory</p><h2 id={titleId} class={textClassName("heading")}>Search stays local and focus stays put.</h2></div>
+    <form role="search" class={primitiveClassName("SearchField", { size: "lg" })} data-s5-search-field data-has-value="false">
+      <label for={inputId}>Find an S5 primitive</label>
+      <div class="sk-search-field__control">
+        <span class="sk-search-field__icon" aria-hidden="true">⌕</span>
+        <input id={inputId} type="search" placeholder="Try status, table, copy…" autocomplete="off" aria-describedby={`${hintId} ${statusId}`} data-s5-search data-sk-focus-proof />
+        <button type="button" class="sk-search-field__clear" aria-label="Clear primitive search" data-s5-clear>Clear</button>
+      </div>
+      <p id={hintId} data-sk-search-hint>The complete directory is server-rendered. Filtering makes no network request.</p>
+      <p id={statusId} data-sk-result-status role="status" aria-live="polite" aria-atomic="true"><span data-s5-count>{directoryItems.length}</span> <span data-s5-count-label>results</span></p>
+    </form>
+
+    <noscript><p class={primitiveClassName("InlineStatus", { tone: "info" })}><span class="sk-inline-status__marker" aria-hidden="true">i</span><span>JavaScript is off. All {directoryItems.length} primitives remain visible.</span></p></noscript>
+
+    <div class="s5-directory-grid" data-s5-results>
+      {directoryItems.map((item) => <article class={primitiveClassName("Surface", { variant: "raised", padding: "md" })} data-s5-item data-search={item.search}><h3>{item.name}</h3><p>{item.role}</p></article>)}
+    </div>
+
+    <section class={primitiveClassName("EmptyState", { kind: "filtered" })} data-empty-kind="filtered" data-s5-empty hidden aria-labelledby={emptyTitleId}>
+      <h3 id={emptyTitleId}>No matching primitive</h3><p>Reset the local filter to restore the complete directory.</p>
+      <div class="sk-empty-state__actions"><button class={primitiveClassName("Button", "neutral", "md")} type="button" data-s5-reset>Reset search</button></div>
+    </section>
+
+    <div class="s5-search-edge-grid">
+      <div class={primitiveClassName("SearchField", { size: "md" })} data-disabled="true"><label for={disabledId}>Disabled search</label><div class="sk-search-field__control"><span class="sk-search-field__icon" aria-hidden="true">⌕</span><input id={disabledId} type="search" value="Locked query" disabled /><button type="button" class="sk-search-field__clear" aria-label="Clear disabled search" disabled>Clear</button></div><p data-sk-search-hint>Clear is inactive whenever search is disabled.</p></div>
+      <div class={primitiveClassName("SearchField", { size: "md" })} data-invalid="true" data-has-value="true"><label for={errorId}>Search error fixture</label><div class="sk-search-field__control"><span class="sk-search-field__icon" aria-hidden="true">⌕</span><input id={errorId} type="search" value="Synthetic failure" aria-invalid="true" aria-describedby={errorMessageId} /><button type="button" class="sk-search-field__clear" aria-label="Clear error search">Clear</button></div><p id={errorMessageId} data-sk-search-error>Local index is unavailable. No query was sent.</p></div>
+    </div>
+  </div>
+</section>
+
+<script is:inline data-sanchika-gallery-script="s5-search-field">
+  for (const root of document.querySelectorAll("[data-s5-directory]")) {
+    const field = root.querySelector("[data-s5-search-field]");
+    const input = root.querySelector("[data-s5-search]");
+    const clear = root.querySelector("[data-s5-clear]");
+    const reset = root.querySelector("[data-s5-reset]");
+    const count = root.querySelector("[data-s5-count]");
+    const countLabel = root.querySelector("[data-s5-count-label]");
+    const status = root.querySelector("[data-sk-result-status]");
+    const empty = root.querySelector("[data-s5-empty]");
+    const items = [...root.querySelectorAll("[data-s5-item]")];
+    let announcementTimer;
+    let composing = false;
+
+    const updateStatus = (visible) => {
+      count.textContent = String(visible);
+      countLabel.textContent = visible === 1 ? "result" : "results";
+    };
+
+    const apply = ({ announce = true } = {}) => {
+      const query = input.value.trim().toLowerCase();
+      let visible = 0;
+      for (const item of items) { item.hidden = Boolean(query) && !item.dataset.search.includes(query); if (!item.hidden) visible += 1; }
+      field.dataset.hasValue = String(Boolean(query));
+      field.dataset.noResults = String(visible === 0);
+      empty.hidden = visible !== 0;
+      if (announce) {
+        clearTimeout(announcementTimer);
+        field.dataset.filtering = "true";
+        status.setAttribute("aria-busy", "true");
+        announcementTimer = setTimeout(() => { updateStatus(visible); delete field.dataset.filtering; status.removeAttribute("aria-busy"); }, 180);
+      } else updateStatus(visible);
+    };
+    const clearSearch = () => { input.value = ""; apply(); input.focus(); };
+    input.addEventListener("compositionstart", () => { composing = true; });
+    input.addEventListener("compositionend", () => { composing = false; apply(); });
+    input.addEventListener("input", (event) => { if (!composing && !event.isComposing) apply(); });
+    input.addEventListener("keydown", (event) => { if (event.key === "Escape" && input.value) { event.preventDefault(); clearSearch(); } });
+    clear.addEventListener("click", clearSearch);
+    reset.addEventListener("click", clearSearch);
+    apply({ announce: false });
+  }
+</script>

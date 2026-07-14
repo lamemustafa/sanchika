@@ -1,0 +1,68 @@
+@layer sanchika-primitives {
+  :where(.sk-progress, .sk-stepper, .sk-disclosure, .sk-copy-button, .sk-breadcrumb, .sk-stat, .sk-table-shell) { box-sizing: border-box; }
+
+  :where(.sk-progress) { display: grid; gap: var(--sk-space-2); max-inline-size: var(--sk-container-full); }
+  :where(.sk-progress__header) { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sk-space-2); font-weight: var(--sk-font-weight-semibold); }
+  :where(.sk-progress progress) { inline-size: var(--sk-container-full); block-size: var(--sk-space-3); accent-color: var(--sk-color-brand-primary); }
+  :where(.sk-progress__value) { color: var(--sk-color-ink-secondary); font-family: var(--sk-font-mono); font-variant-numeric: tabular-nums; }
+  :where(.sk-progress[data-progress-state="indeterminate"] progress) { accent-color: var(--sk-color-neutral-fg); }
+  :where(.sk-progress-complete progress, .sk-progress[data-progress-state="complete"] progress) { accent-color: var(--sk-color-success-fg); }
+  :where(.sk-progress-error progress, .sk-progress[data-progress-state="error"] progress) { accent-color: var(--sk-color-danger-fg); }
+
+  :where(.sk-stepper) { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(12rem, var(--sk-container-full)), 1fr)); gap: var(--sk-space-3); margin: 0; padding: 0; list-style: none; }
+  :where(.sk-stepper-vertical) { grid-template-columns: minmax(0, 1fr); }
+  :where(.sk-stepper__step) { display: grid; grid-template-columns: var(--sk-control-height-sm) minmax(0, 1fr); gap: var(--sk-space-2); align-items: start; color: var(--sk-color-ink-secondary); }
+  :where(.sk-stepper__marker) { display: grid; place-items: center; min-block-size: var(--sk-control-height-sm); border: var(--sk-border-width-default) solid var(--sk-color-border-default); border-radius: 50%; font-family: var(--sk-font-mono); }
+  :where(.sk-stepper__step[aria-current="step"]) { color: var(--sk-color-ink-primary); font-weight: var(--sk-font-weight-semibold); }
+  :where(.sk-stepper__step[aria-current="step"] .sk-stepper__marker) { border-color: var(--sk-color-brand-primary); box-shadow: inset 0 0 0 var(--sk-border-width-default) var(--sk-color-brand-primary); }
+  :where(.sk-stepper__step[data-step-state="complete"] .sk-stepper__marker) { color: var(--sk-color-success-fg); border-color: var(--sk-color-success-border); }
+  :where(.sk-stepper__step[data-step-state="upcoming"] .sk-stepper__marker) { border-style: dashed; }
+  :where(.sk-stepper__step[data-step-state="blocked"] .sk-stepper__marker) { color: var(--sk-color-danger-fg); border-color: var(--sk-color-danger-border); }
+
+  :where(.sk-disclosure) { max-inline-size: var(--sk-container-full); border-block: var(--sk-border-width-default) solid var(--sk-color-border-subtle); }
+  :where(.sk-disclosure:not([open])) { border-color: var(--sk-color-border-subtle); }
+  :where(.sk-disclosure[open]) { border-color: var(--sk-color-border-default); }
+  :where(.sk-disclosure__summary, .sk-disclosure > summary) { cursor: pointer; padding-block: var(--sk-space-3); color: var(--sk-color-ink-primary); font-weight: var(--sk-font-weight-semibold); overflow-wrap: anywhere; }
+  :where(.sk-disclosure__summary:focus-visible, .sk-disclosure > summary:focus-visible) { outline: var(--sk-focus-outline-width) solid var(--sk-color-focus); outline-offset: var(--sk-focus-outline-offset); }
+  :where(.sk-disclosure__content) { padding-block-end: var(--sk-space-4); overflow-wrap: anywhere; }
+
+  :where(.sk-copy-button) { display: inline-flex; align-items: center; justify-content: center; gap: var(--sk-space-2); min-block-size: var(--sk-control-height-md); padding: var(--sk-space-2) var(--sk-space-4); color: var(--sk-color-ink-primary); background: var(--sk-color-surface-raised); border: var(--sk-border-width-default) solid var(--sk-color-border-default); border-radius: var(--sk-radius-sm); cursor: pointer; font: inherit; font-weight: var(--sk-font-weight-semibold); }
+  :where(.sk-copy-button.sk-size-sm) { min-block-size: var(--sk-control-height-sm); padding-inline: var(--sk-space-3); font-size: var(--sk-font-size-sm); }
+  :where(.sk-copy-button-copied, .sk-copy-button[data-copy-state="copied"]) { color: var(--sk-color-success-fg); border-color: var(--sk-color-success-border); }
+  :where(.sk-copy-button-failed, .sk-copy-button[data-copy-state="failed"]) { color: var(--sk-color-danger-fg); border-color: var(--sk-color-danger-border); }
+  :where(.sk-copy-button:disabled) { cursor: not-allowed; opacity: 0.62; }
+  :where(.sk-copy-button:focus-visible) { outline: var(--sk-focus-outline-width) solid var(--sk-color-focus); outline-offset: var(--sk-focus-outline-offset); }
+  :where(.sk-copy-button__status) { color: var(--sk-color-ink-secondary); font-size: var(--sk-font-size-sm); }
+
+  :where(.sk-breadcrumb) { max-inline-size: var(--sk-container-full); }
+  :where(.sk-breadcrumb__list) { display: flex; flex-wrap: wrap; gap: var(--sk-space-1) var(--sk-space-2); align-items: baseline; margin: 0; padding: 0; list-style: none; }
+  :where(.sk-breadcrumb__item) { min-inline-size: 0; overflow-wrap: anywhere; }
+  :where(.sk-breadcrumb__separator) { margin-inline-start: var(--sk-space-2); color: var(--sk-color-ink-muted); }
+  :where(.sk-breadcrumb [aria-current="page"]) { color: var(--sk-color-ink-primary); font-weight: var(--sk-font-weight-semibold); }
+
+  :where(.sk-stat) { display: grid; gap: var(--sk-space-1); margin: 0; min-inline-size: 0; }
+  :where(.sk-stat-align-end) { text-align: end; }
+  :where(.sk-stat__label) { color: var(--sk-color-ink-secondary); font-size: var(--sk-font-size-sm); }
+  :where(.sk-stat__value) { margin: 0; color: var(--sk-color-ink-primary); font-family: var(--sk-font-mono); font-size: var(--sk-font-size-2xl); font-weight: var(--sk-font-weight-bold); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  :where(.sk-stat__delta, .sk-stat__meta) { margin: 0; color: var(--sk-color-ink-secondary); font-size: var(--sk-font-size-sm); }
+  :where(.sk-stat__meta) { font-family: var(--sk-font-mono); font-size: var(--sk-font-size-xs); }
+
+  :where(.sk-table-shell) { --sk-table-row-height: var(--sk-table-row-comfortable); max-inline-size: var(--sk-container-full); border: var(--sk-border-width-default) solid var(--sk-color-border-default); border-radius: var(--sk-radius-md); background: var(--sk-color-surface); }
+  :where(.sk-table-shell[data-density="comfortable"]) { --sk-table-row-height: var(--sk-table-row-comfortable); }
+  :where(.sk-table-shell-compact, .sk-table-shell[data-density="compact"]) { --sk-table-row-height: var(--sk-table-row-compact); }
+  :where(.sk-table-shell__affordance) { margin: 0; padding: var(--sk-space-2) var(--sk-space-3); color: var(--sk-color-ink-secondary); background: var(--sk-color-surface-muted); border-block-end: var(--sk-border-width-default) solid var(--sk-color-border-subtle); font-size: var(--sk-font-size-sm); }
+  :where(.sk-table-shell__viewport) { max-inline-size: var(--sk-container-full); overflow-x: auto; }
+  :where(.sk-table-shell__viewport:focus-visible) { outline: var(--sk-focus-outline-width) solid var(--sk-color-focus); outline-offset: var(--sk-focus-outline-offset); }
+  :where(.sk-table-shell table) { inline-size: var(--sk-container-full); min-inline-size: max-content; border-collapse: collapse; }
+  :where(.sk-table-shell caption) { padding: var(--sk-space-3); color: var(--sk-color-ink-primary); font-weight: var(--sk-font-weight-semibold); text-align: start; }
+  :where(.sk-table-shell :is(th, td)) { min-block-size: var(--sk-table-row-height); height: var(--sk-table-row-height); padding: var(--sk-space-2) var(--sk-space-3); border-block-start: var(--sk-border-width-default) solid var(--sk-color-border-subtle); text-align: start; overflow-wrap: anywhere; }
+  :where(.sk-table-shell th) { color: var(--sk-color-ink-primary); font-weight: var(--sk-font-weight-semibold); }
+  :where(.sk-table-shell__numeric) { text-align: end; font-family: var(--sk-font-mono); font-variant-numeric: tabular-nums; }
+  :where(.sk-table-shell-header-sticky thead, .sk-table-shell[data-sticky-header="true"] thead) { position: sticky; inset-block-start: 0; background: var(--sk-color-surface-raised); }
+
+  @media (max-width: 47.99rem) { :where(.sk-stepper-horizontal) { grid-template-columns: minmax(0, 1fr); } }
+  @media (forced-colors: active) {
+    :where(.sk-progress progress, .sk-stepper__marker, .sk-disclosure, .sk-copy-button, .sk-table-shell, .sk-table-shell :is(th, td)) { border-color: CanvasText; }
+    :where(.sk-disclosure__summary:focus-visible, .sk-disclosure > summary:focus-visible, .sk-copy-button:focus-visible, .sk-table-shell__viewport:focus-visible) { outline-color: Highlight; }
+  }
+}

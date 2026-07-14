@@ -37,7 +37,7 @@ try {
     `import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { colorTokens, tokenDefinitions } from "@sanchika/tokens";
-import { primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
+import { formatIndianCurrency, formatIndianDate, formatIndianNumber, formatPANDisplay, primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
 
 const require = createRequire(import.meta.url);
@@ -55,7 +55,15 @@ const checks = [
   primitiveClassName("Container", { width: "wide" }) === "sk-container sk-container-width-wide",
   primitiveClassName("Surface", { variant: "inset", padding: "md" }) === "sk-surface sk-surface-inset sk-surface-pad-md",
   textClassName("data") === "sk-text sk-text-data",
-  primitiveSpecs.length === 16,
+  primitiveSpecs.length === 28,
+  primitiveClassName("SearchField", { size: "lg" }) === "sk-search-field sk-size-lg",
+  primitiveClassName("CopyButton", { state: "copied", size: "sm" }) === "sk-copy-button sk-copy-button-copied sk-size-sm",
+  primitiveClassName("TableShell", { density: "compact", header: "sticky" }) === "sk-table-shell sk-table-shell-compact sk-table-shell-header-sticky",
+  formatIndianNumber(12345678) === "1,23,45,678",
+  formatIndianNumber("1.234567890123456789") === "1.234567890123456789",
+  formatIndianCurrency(1234567, { maximumFractionDigits: 0 }) === "₹12,34,567",
+  formatIndianDate("2026-07-14") === "14-07-2026",
+  formatPANDisplay("abcde1234f") === "ABCDE 1234 F",
   new Set(primitiveSpecs.map((primitive) => primitive.name)).size === primitiveSpecs.length,
   patternSpecs.some((pattern) => pattern.name === "EvidencePanel"),
   themePath.endsWith("/dist/theme.css"),
@@ -79,13 +87,13 @@ if (checks.some((check) => !check)) {
 
 const inheritedRuntimeKeys = ["toString", "constructor", "__proto__", "prototype", "hasOwnProperty"];
 const legacyNames = ["Button", "Card", "Badge", "Field"];
-const appendedNames = ["Container", "Section", "Stack", "Cluster", "Grid", "Split", "Surface", "Divider", "VisuallyHidden", "Text", "Link", "LinkCard"];
+const appendedNames = ["Container", "Section", "Stack", "Cluster", "Grid", "Split", "Surface", "Divider", "VisuallyHidden", "Text", "Link", "LinkCard", "SearchField", "InlineStatus", "Skeleton", "EmptyState", "ErrorState", "Progress", "Stepper", "Disclosure", "CopyButton", "Breadcrumb", "Stat", "TableShell"];
 const expectedButtonStandards = [{ id: "WAI-ARIA APG Button Pattern", sourceUrl: "https://www.w3.org/WAI/ARIA/apg/patterns/button/", requirements: ["Prefer native <button> elements for command actions.", 'If a non-button element uses role="button", the consumer must provide Space and Enter activation.', "Toggle buttons use aria-pressed without changing the visible label.", "Consumers must define focus after activation according to the resulting workflow."] }];
 if (primitiveSpecs.slice(0, legacyNames.length).map((primitive) => primitive.name).join(",") !== legacyNames.join(",")) {
   throw new Error("Sanchika local-link consumer lost the legacy primitiveSpecs prefix");
 }
 if (primitiveSpecs.slice(legacyNames.length).map((primitive) => primitive.name).join(",") !== appendedNames.join(",")) {
-  throw new Error("Sanchika local-link consumer lost the exact appended S4 primitive inventory");
+  throw new Error("Sanchika local-link consumer lost the exact appended S4/S5 primitive inventory");
 }
 if (!Object.hasOwn(primitiveSpecs[0], "standards") || !Object.keys(primitiveSpecs[0]).includes("standards") || JSON.stringify(primitiveSpecs[0].standards) !== JSON.stringify(expectedButtonStandards)) {
   throw new Error("Button lost its exact legacy standards value");
@@ -106,6 +114,7 @@ for (const inheritedKey of inheritedRuntimeKeys) {
     }
   }
 }
+expectInvalid("inherited SearchField size", () => primitiveClassName("SearchField", Object.create({ size: "lg" })));
 
 function expectInvalid(label, operation) {
   try {

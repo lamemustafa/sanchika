@@ -1,0 +1,56 @@
+import type { PrimitiveContract } from "./types.js";
+
+const noMotion = { behavior: "State changes are immediate; the primitive adds no decorative motion.", reducedMotion: "No override is required." } as const;
+
+export const searchFeedbackPrimitiveSpecs = [
+  {
+    name: "SearchField",
+    role: "Labelled local filtering control",
+    purpose: "Defines a visible-label search field, accessible clear action, result-status region, no-results recovery, and error association without exporting filtering behavior.",
+    whenToUse: ["Filtering a server-rendered local collection", "Finding an item without moving input focus"],
+    whenNotToUse: ["Remote search", "A placeholder-only field", "Combobox suggestions", "Tracking or analytics"],
+    semanticElement: "Use a role=search form with a visible label, native input type=search, button type=button, and a separate role=status result region.",
+    classHooks: [".sk-search-field", ".sk-search-field__control", ".sk-search-field__icon", ".sk-search-field__clear", "[data-sk-result-status]", "[data-sk-search-error]"],
+    anatomy: [
+      { name: "root", purpose: "Search form or labelled field group." }, { name: "label", purpose: "Required visible label." },
+      { name: "input wrapper", purpose: "Positions input, icon, and clear action." }, { name: "search icon", purpose: "Decorative region hidden from assistive technology." },
+      { name: "input", purpose: "Native search input." }, { name: "clear button", purpose: "Named explicit reset command." },
+      { name: "hint", purpose: "Optional local-boundary or filtering guidance." }, { name: "result status", purpose: "Polite atomic result announcement." },
+      { name: "error", purpose: "Visible associated error message." },
+    ],
+    variants: [{ name: "size", values: ["sm", "md", "lg"], defaultValue: "md" }],
+    tones: [], sizes: ["sm", "md", "lg"],
+    requiredStates: ["default", "focus-visible", "has-value", "filtering", "results", "no-results", "disabled", "error"],
+    stateEvidence: [
+      { state: "default", attributes: ["type=search", "for", "id"], selectors: [".sk-search-field"], notes: "Visible label is mandatory; placeholder is optional." },
+      { state: "focus-visible", attributes: [], selectors: [".sk-search-field input[type=\"search\"]:focus-visible", ".sk-search-field__clear:focus-visible"], notes: "Filtering retains input focus." },
+      { state: "has-value", attributes: ["data-has-value"], selectors: [".sk-search-field[data-has-value=\"true\"]"], notes: "Clear action is available only for a value." },
+      { state: "filtering", attributes: ["aria-busy", "data-filtering"], selectors: [".sk-search-field[data-filtering=\"true\"]"], notes: "Consumers may mark a short local calculation without excessive announcements." },
+      { state: "results", attributes: ["role=status", "aria-live=polite", "aria-atomic=true"], selectors: ["[data-sk-result-status]"], notes: "Announce a concise settled result count." },
+      { state: "no-results", attributes: ["data-no-results"], selectors: [".sk-search-field[data-no-results=\"true\"]"], notes: "Consumer renders an explicit reset action." },
+      { state: "disabled", attributes: ["disabled", "data-disabled"], selectors: [".sk-search-field[data-disabled=\"true\"]", ".sk-search-field input:disabled", ".sk-search-field__clear:disabled"], notes: "Disabled input cannot leave an active clear action." },
+      { state: "error", attributes: ["aria-invalid", "aria-describedby"], selectors: [".sk-search-field[data-invalid=\"true\"]", "[data-sk-search-error]"], notes: "Input references the visible error message." },
+    ],
+    keyboardObligations: ["Keep native input editing", "Consumer may clear on Escape only when a value exists", "Clear button retains focus or returns it to input", "Do not steal focus while filtering"],
+    screenReaderObligations: ["Visible associated label", "Accessible clear-button name", "Polite atomic settled result count", "Associate hint and error", "Avoid duplicate native and custom clear controls"],
+    contentRules: ["Placeholder never replaces label", "Full list remains in server HTML", "No network request", "No analytics", "No-results includes reset", "Result announcements avoid per-keystroke chatter"],
+    motion: noMotion,
+    forcedColorsBehavior: ["Input and clear boundaries use system colors", "Search state remains visible in text"],
+    mobileBehavior: ["Control fills available width", "Label, hint, result, and error wrap", "Clear target remains reachable without overlap"],
+    examples: [{ title: "Local directory search", className: "sk-search-field sk-size-md", markup: "<form role=\"search\" class=\"sk-search-field sk-size-md\"><label for=\"directory-search\">Search tools</label><div class=\"sk-search-field__control\"><span class=\"sk-search-field__icon\" aria-hidden=\"true\">⌕</span><input id=\"directory-search\" type=\"search\" aria-describedby=\"directory-hint directory-results\"><button class=\"sk-search-field__clear\" type=\"button\" aria-label=\"Clear tool search\">Clear</button></div><p id=\"directory-hint\">Filters this page only.</p><p id=\"directory-results\" data-sk-result-status role=\"status\" aria-live=\"polite\" aria-atomic=\"true\">6 results</p></form>" }],
+    galleryCoverage: ["All eight states", "Visible label", "No-results reset", "JavaScript-off full list", "Focus retention", "No network requests"],
+    consumerResponsibilities: ["Implement local filtering and Escape/clear behavior", "Restore the complete list", "Debounce or settle announcements", "Handle native search affordance", "Keep disabled clear inactive"],
+    accessibility: ["visible-label-required", "clear-name-required", "focus-retained", "result-status-associated", "error-associated"],
+  },
+  {
+    name: "InlineStatus",
+    role: "Compact visible state with optional source metadata", purpose: "Pairs a marker and visible state text using S3 status triads without replacing Badge or adding implicit live-region behavior.",
+    whenToUse: ["Visible operational status", "Compact state plus source or time"], whenNotToUse: ["Decorative badge clouds", "Dynamic announcements without consumer semantics", "Color-only severity"],
+    semanticElement: "Use a span, p, or status-bearing element appropriate to context; add role=status only for a genuine dynamic update.",
+    classHooks: [".sk-inline-status", ".sk-inline-status__marker", ".sk-inline-status__meta"], anatomy: [{ name: "marker", purpose: "Visible non-color cue." }, { name: "text", purpose: "Understandable state wording." }, { name: "metadata", purpose: "Optional source or time." }],
+    variants: [{ name: "tone", values: ["neutral", "success", "warning", "danger", "info"], defaultValue: "neutral" }], tones: ["neutral", "success", "warning", "danger", "info"], sizes: [], requiredStates: ["default", "with-metadata", "forced-colors"],
+    stateEvidence: [{ state: "default", attributes: [], selectors: [".sk-inline-status"], notes: "Marker and visible text carry meaning without color." }, { state: "with-metadata", attributes: [], selectors: [".sk-inline-status__meta"], notes: "Source or time remains readable." }, { state: "forced-colors", attributes: [], selectors: [".sk-inline-status"], notes: "Text and boundary survive authored-color replacement." }],
+    keyboardObligations: ["Static status is not focusable."], screenReaderObligations: ["Visible text remains understandable when marker is hidden", "Consumer adds live semantics only for dynamic updates"], contentRules: ["Name the state", "Do not infer severity from icon shape", "Do not imply official verification", "Badge remains a separate primitive"], motion: noMotion,
+    forcedColorsBehavior: ["CanvasText boundary and visible wording remain"], mobileBehavior: ["Wrap text and metadata without clipping"], examples: [{ title: "Source pending", className: "sk-inline-status sk-tone-warning", markup: "<span class=\"sk-inline-status sk-tone-warning\"><span class=\"sk-inline-status__marker\" aria-hidden=\"true\">!</span><span>Source review pending</span></span>" }], galleryCoverage: ["All five tones", "Metadata", "No color-only exemplar"], consumerResponsibilities: ["Supply visible wording", "Choose live semantics only when warranted"], accessibility: ["visible-text-required", "color-not-only-signal", "no-implicit-live-region"],
+  },
+] as const satisfies readonly PrimitiveContract[];

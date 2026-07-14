@@ -11,8 +11,8 @@ import {
   tokenGroupDefinitions,
   typographyTokens,
 } from "@sanchika/tokens";
-import { primitiveClassName, textClassName } from "@sanchika/primitives";
-import type { PrimitiveClassOptionsFor, PrimitiveContract, PrimitiveSizeFor, PrimitiveSpec, PrimitiveToneFor, TextRole } from "@sanchika/primitives";
+import { formatGSTINDisplay, formatIndianCurrency, formatIndianDate, formatIndianDateTime, formatIndianNumber, formatPANDisplay, formatPercentage, primitiveClassName, textClassName } from "@sanchika/primitives";
+import type { IndianDateTimeFormatOptions, IndianNumberFormatOptions, PercentageFormatOptions, PrimitiveClassOptionsFor, PrimitiveContract, PrimitiveSizeFor, PrimitiveSpec, PrimitiveToneFor, TextRole } from "@sanchika/primitives";
 import type {
   ConsumerMode,
   PatternA11yCheckFor,
@@ -50,6 +50,11 @@ const buttonTone: PrimitiveToneFor<"Button"> = "brand";
 const fieldSize: PrimitiveSizeFor<"Field"> = "lg";
 const splitOptions: PrimitiveClassOptionsFor<"Split"> = { ratio: "primary", gap: "lg" };
 const textRole: TextRole = "data";
+const searchOptions: PrimitiveClassOptionsFor<"SearchField"> = { size: "lg" };
+const tableOptions: PrimitiveClassOptionsFor<"TableShell"> = { density: "compact", header: "sticky" };
+const numberOptions: IndianNumberFormatOptions = { display: "compact", maximumFractionDigits: 2 };
+const percentageOptions: PercentageFormatOptions = { input: "percent" };
+const dateTimeOptions: IndianDateTimeFormatOptions = { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" };
 const legacyPrimitiveSpec: PrimitiveSpec = {
   name: "Fixture",
   role: "Legacy compatible fixture",
@@ -173,6 +178,15 @@ primitiveClassName("Button", buttonTone, "md");
 primitiveClassName("Field", "danger", fieldSize);
 primitiveClassName("Split", splitOptions);
 textClassName(textRole);
+primitiveClassName("SearchField", searchOptions);
+primitiveClassName("TableShell", tableOptions);
+formatIndianNumber(12_345_678, numberOptions);
+formatIndianCurrency(1_234_567);
+formatIndianDate("2026-07-14");
+formatIndianDateTime("2026-07-14T00:00:00Z", dateTimeOptions);
+formatPANDisplay("ABCDE" + "1234" + "F");
+formatGSTINDisplay("27" + "ABCDE" + "1234" + "F1Z5");
+formatPercentage(18, percentageOptions);
 
 void brandRole;
 void legacyBackgroundVariable;
@@ -190,6 +204,11 @@ void splitOptions;
 void textRole;
 void legacyPrimitiveSpec;
 void richPrimitiveContract;
+void searchOptions;
+void tableOptions;
+void numberOptions;
+void percentageOptions;
+void dateTimeOptions;
 void evidenceSlot;
 void trustState;
 void externalConsumerMode;
@@ -218,6 +237,12 @@ primitiveClassName("Badge", "success", "lg");
 
 // @ts-expect-error Unknown layout variants must not compile.
 primitiveClassName("Grid", { columns: "12" });
+
+// @ts-expect-error SearchField has finite sizes only.
+primitiveClassName("SearchField", { size: "xl" });
+
+// @ts-expect-error Percentage input convention is explicit.
+formatPercentage(18, { input: "basis-points" });
 
 // @ts-expect-error Rich contracts require S4-only contract fields.
 const incompleteRichPrimitiveContract: PrimitiveContract = legacyPrimitiveSpec;

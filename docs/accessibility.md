@@ -25,6 +25,22 @@ semantics that native elements cannot provide.
   a red border.
 - Long names, GSTINs, PANs, dates, and amounts must not overflow fixed UI.
 - Future data primitives must support Indian numbering and DD-MM-YYYY dates.
+- SearchField requires a visible label, accessible clear name, associated
+  hint/error, polite settled result status, focus retention during filtering,
+  and a disabled clear action when the input is disabled.
+- Skeleton places `aria-busy` on the owning region and normally hides each
+  shape from assistive technology. Reduced motion removes its local pulse.
+- EmptyState has no implicit alert role. ErrorState announcement semantics are
+  contextual and must not steal focus.
+- Progress prefers native `progress`; Stepper prefers an ordered list and
+  exposes the current item with `aria-current="step"`.
+- Disclosure prefers native `details`/`summary`; CopyButton success and failure
+  are both visible and politely announced while focus stays on the button.
+- Breadcrumb is a named navigation landmark with an ordered list and an
+  unlinked `aria-current="page"` item.
+- TableShell requires caption/header relationships. A genuinely wide table may
+  use a named focusable scroll region with a visible overflow affordance; no
+  data-grid keyboard model is implied.
 
 ## Standards Mapping
 
@@ -36,6 +52,9 @@ semantics that native elements cannot provide.
 | Labels, error text, and invalid fields | WCAG 2.2 SC 3.3.1, SC 3.3.2 |
 | Information relationships, programmatic name, role, value, and status messages | WCAG 2.2 SC 1.3.1, SC 4.1.2, SC 4.1.3 |
 | Button command behavior | WAI-ARIA APG Button Pattern |
+| Search result announcements | WCAG 2.2 SC 4.1.3 |
+| Native disclosure name, role, value | WCAG 2.2 SC 4.1.2 |
+| Table caption/header relationships | WCAG 2.2 SC 1.3.1 |
 
 Automated checks are necessary but not sufficient. Manual keyboard review is
 required before production-readiness claims.
@@ -52,3 +71,8 @@ required before production-readiness claims.
 
 S3 does not add a high-contrast theme. A future theme requires real primitive
 and consumer evidence rather than a palette-only remap.
+
+S5 forced-colors rules preserve control, status, table, progress, and focus
+boundaries with system colors. S5 does not begin the shared S6 motion/assist
+layer; Skeleton uses only a local component loading animation and removes it
+under `prefers-reduced-motion: reduce`.

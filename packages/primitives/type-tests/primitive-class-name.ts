@@ -49,6 +49,18 @@ primitiveClassName("VisuallyHidden");
 primitiveClassName("Text", { role: "data" });
 primitiveClassName("Link", { variant: "quiet" });
 primitiveClassName("LinkCard", { variant: "muted" });
+primitiveClassName("SearchField", { size: "lg" });
+primitiveClassName("InlineStatus", { tone: "warning" });
+primitiveClassName("Skeleton", { form: "row" });
+primitiveClassName("EmptyState", { kind: "filtered" });
+primitiveClassName("ErrorState", { severity: "recoverable" });
+primitiveClassName("Progress", { state: "determinate" });
+primitiveClassName("Stepper", { orientation: "vertical" });
+primitiveClassName("Disclosure");
+primitiveClassName("CopyButton", { state: "copied", size: "sm" });
+primitiveClassName("Breadcrumb");
+primitiveClassName("Stat", { alignment: "end" });
+primitiveClassName("TableShell", { density: "compact", header: "sticky" });
 textClassName("heading");
 
 // @ts-expect-error Unknown primitives must not produce plausible class names.
@@ -71,6 +83,9 @@ primitiveClassName("Grid", { columns: "12" });
 
 // @ts-expect-error Surface variants are finite.
 primitiveClassName("Surface", { variant: "glass" });
+
+// @ts-expect-error TableShell is not a data-grid runtime.
+primitiveClassName("TableShell", { density: "virtualized" });
 
 // @ts-expect-error Text roles are semantic, not arbitrary size aliases.
 textClassName("text-12");

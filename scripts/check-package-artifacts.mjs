@@ -2,9 +2,10 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { fileURLToPath } from "node:url";
 import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
-import { validatePrimitiveRuntime } from "./validation/primitive-runtime.mjs";
+import { validateIndianFormatting, validatePrimitiveRuntime } from "./validation/primitive-runtime.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertBuiltPackageArtifacts({ root, commandName: "pnpm artifact:check" });
@@ -12,6 +13,7 @@ const packages = ["tokens", "primitives", "patterns"];
 const dependencyFields = ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"];
 const failures = [];
 let primitiveRuntimeFixtures = null;
+let indianFormattingFixtures = null;
 
 for (const packageName of packages) {
   const packageDir = join(root, "packages", packageName);
@@ -56,9 +58,13 @@ for (const packageName of packages) {
 }
 
 try {
-  const { primitiveClassName, primitiveGroups, primitiveSpecs, textClassName } = await import("../packages/primitives/dist/index.js");
+  const primitives = await import("../packages/primitives/dist/index.js");
+  const { primitiveClassName, primitiveGroups, primitiveSpecs, textClassName } = primitives;
   primitiveRuntimeFixtures = validatePrimitiveRuntime({ primitiveClassName, primitiveGroups, primitiveSpecs, textClassName });
   failures.push(...primitiveRuntimeFixtures.failures);
+  indianFormattingFixtures = validateIndianFormatting(primitives);
+  failures.push(...indianFormattingFixtures.failures);
+  validateTimezoneProcesses();
 } catch (error) {
   failures.push(`primitive runtime fixtures could not load built package exports: ${String(error)}`);
 }
@@ -73,6 +79,14 @@ if (failures.length > 0) {
 
 console.log("Sanchika package artifact check passed.");
 if (primitiveRuntimeFixtures) console.log(`Sanchika primitive runtime fixtures passed (${primitiveRuntimeFixtures.count} cases).`);
+if (indianFormattingFixtures) console.log(`Sanchika Indian formatting fixtures passed (${indianFormattingFixtures.count} cases; UTC and Asia/Kolkata process probe).`);
+
+function validateTimezoneProcesses() {
+  const moduleUrl = pathToFileURL(join(root, "packages/primitives/dist/index.js")).href;
+  const probe = `import { formatIndianDate, formatIndianDateTime } from ${JSON.stringify(moduleUrl)}; console.log(JSON.stringify({ date: formatIndianDate("2026-07-14"), instant: formatIndianDateTime("2026-07-13T20:00:00Z", { timeZone: "Asia/Kolkata" }) }));`;
+  const outputs = ["UTC", "Asia/Kolkata"].map((TZ) => execFileSync(process.execPath, ["--input-type=module", "--eval", probe], { encoding: "utf8", env: { ...process.env, TZ } }).trim());
+  if (outputs[0] !== outputs[1]) failures.push("Indian date formatting must be stable across UTC and Asia/Kolkata process timezones when timezone policy is explicit");
+}
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
@@ -126,6 +140,14 @@ function expectedPackageFiles(manifest) {
       "dist/contracts/actions.js",
       "dist/contracts/form-status.d.ts",
       "dist/contracts/form-status.js",
+      "dist/contracts/search-feedback.d.ts",
+      "dist/contracts/search-feedback.js",
+      "dist/contracts/states.d.ts",
+      "dist/contracts/states.js",
+      "dist/contracts/process.d.ts",
+      "dist/contracts/process.js",
+      "dist/contracts/navigation-data.d.ts",
+      "dist/contracts/navigation-data.js",
       "dist/contracts/layout-core.d.ts",
       "dist/contracts/layout-core.js",
       "dist/contracts/layout-planes.d.ts",
@@ -134,12 +156,16 @@ function expectedPackageFiles(manifest) {
       "dist/contracts/types.js",
       "dist/contracts/typography.d.ts",
       "dist/contracts/typography.js",
+      "dist/formatting/indian.d.ts",
+      "dist/formatting/indian.js",
       "dist/registry.d.ts",
       "dist/registry.js",
     ]) files.add(path);
     files.add("dist/components.css");
     files.add("dist/foundation.css");
     files.add("dist/typography.css");
+    files.add("dist/search-feedback.css");
+    files.add("dist/process-data.css");
   }
 
   for (const target of Object.values(manifest.exports ?? {})) {

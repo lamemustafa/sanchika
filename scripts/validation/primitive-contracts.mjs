@@ -15,10 +15,11 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
   const expectedPrimitiveNames = [
     "Container", "Section", "Stack", "Cluster", "Grid", "Split", "Surface", "Divider", "VisuallyHidden",
     "Text", "Button", "Link", "LinkCard", "Card", "Badge", "Field",
+    "SearchField", "InlineStatus", "Skeleton", "EmptyState", "ErrorState", "Progress", "Stepper", "Disclosure", "CopyButton", "Breadcrumb", "Stat", "TableShell",
   ];
   const declaredPrimitiveNames = [...primitiveSource.matchAll(/^    name: "([A-Z][A-Za-z]+)",$/gm)].map((match) => match[1]);
   if (declaredPrimitiveNames.join(",") !== expectedPrimitiveNames.join(",")) {
-    fail(`primitive registry must declare the exact ordered S4-compatible inventory: ${expectedPrimitiveNames.join(", ")}`);
+    fail(`primitive registry must declare the exact ordered S5-compatible inventory: ${expectedPrimitiveNames.join(", ")}`);
   }
   if (new Set(declaredPrimitiveNames).size !== declaredPrimitiveNames.length) {
     fail("primitive registry must not declare duplicate primitive names");
@@ -89,6 +90,9 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
 
   if (!primitiveCss.includes('@import "./foundation.css";') || !primitiveCss.includes('@import "./typography.css";') || !primitiveCss.includes('@import "./components.css";')) {
     fail("primitive styles.css must expose the foundation, typography, and component CSS inventory");
+  }
+  for (const s5Import of ['@import "./search-feedback.css";', '@import "./process-data.css";']) {
+    if (!primitiveCss.includes(s5Import)) fail(`primitive styles.css must expose ${s5Import}`);
   }
   if (!primitiveCss.includes("@layer sanchika-primitives")) fail("primitive CSS must use the sanchika-primitives cascade layer");
   if (!primitiveCss.includes("@media (forced-colors: active)")) fail("primitive CSS must include forced-colors behavior");

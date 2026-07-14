@@ -326,3 +326,148 @@ layouts, mobile behavior, and forced-colors boundaries. The four noindex North
 Stars use S4 classes for major structure while retaining product-local
 composition. Automated checks prove API, class, markup, and artifact coverage;
 they do not prove visual quality.
+
+## S5 search, state, and feedback primitives
+
+All S5 records append after the complete S4-compatible registry. The
+`Button`, `Card`, `Badge`, `Field` legacy prefix, enumerable own-property
+shapes, and byte-equivalent legacy class outputs remain unchanged.
+`primitiveGroups.searchStateFeedback` is the package-owned gallery inventory.
+
+### SearchField
+
+- Use for local filtering over a complete server-rendered collection. Avoid
+  remote search, analytics, placeholder-only labels, and combobox behavior.
+- Native contract: labelled `role="search"` form, `input type="search"`, named
+  clear button, hint, polite atomic result status, and associated error.
+- States: default, focus-visible, has-value, filtering, results, no-results,
+  disabled, and error.
+- Consumer owns filtering, announcement settling, Escape/clear/reset, focus
+  retention, native search-affordance handling, and restoring the full list.
+- Reference implementations scope queries to each root, require instance-unique
+  label/status IDs, defer updates during IME composition, and mutate the live
+  count only after the current result set settles.
+- Mobile keeps the label, control, clear target, hint, result, and error
+  reachable. Forced colors retain input/clear boundaries. No S5 motion occurs.
+
+### InlineStatus
+
+- Use for a compact visible operational state with optional source/time
+  metadata. Avoid decorative badge clouds and color-only severity.
+- Tones are `neutral`, `success`, `warning`, `danger`, and `info`, using the S3
+  background/foreground/border triads.
+- A visible marker plus understandable text is required. There is no implicit
+  live region; consumers add status semantics only for a genuine dynamic update.
+- Badge remains a separate v0.0.2 compatibility primitive.
+
+### Skeleton
+
+- Forms are finite: `text`, `block`, `row`, and `avatar`. Use avatar only when a
+  real consumer requires it.
+- Put `aria-busy` on the owning region and hide decorative shapes from
+  assistive technology. A truthful textual pending state is safer when layout
+  is unknown.
+- The local component pulse uses existing S3 tokens, stops under reduced
+  motion, and yields to a system-color outline in forced colors. It is not an
+  S6 shared motion utility.
+
+### EmptyState and ErrorState
+
+- EmptyState distinguishes `empty`, `filtered`, and `unavailable`; it requires
+  title, explanation, and a native Link/Button next action. It has no implicit
+  alert role and no decorative illustration substitutes for guidance.
+- ErrorState requires title, explanation, explicit retry/recovery, and may add
+  support, source/reference ID, or native technical disclosure. Consumers
+  choose alert/status semantics for context and must not move focus.
+- Public examples are synthetic and contain no raw stack trace, blame, or false
+  certainty. Both primitives wrap concisely on mobile and retain boundaries in
+  forced colors.
+
+### Progress and Stepper
+
+- Progress prefers native `progress` for determinate values and always includes
+  visible label/value text associated through `aria-labelledby` and
+  `aria-describedby`. Indeterminate, complete, and meaningful error states must
+  remain truthful; no JavaScript runtime or completion animation ships.
+- Stepper prefers an ordered list. Complete, current, upcoming, and genuinely
+  blocked states include visible wording/symbols; current uses
+  `aria-current="step"`. Source order is process order.
+- Stepper does not imply clickability. Pack may reuse its styling for a custody
+  sequence, but S7 owns `LocalArtifactFlow` and S5 does not begin it.
+
+### Disclosure and CopyButton
+
+- Disclosure uses native `details`/`summary` for FAQ and simple reveal. It has
+  closed, open, long-content, and nesting-guidance proof. No height animation,
+  Tabs, Dialog, Popover, Accordion runtime, or S6 shared motion ships.
+- CopyButton copies an explicitly named source/reference/version/checksum/ID
+  only after user activation. Success and failure are visible and politely
+  announced without moving focus; the consumer resets the label after the
+  documented interval and provides a manual fallback on failure.
+- Empty targets are disabled or rejected before clipboard access. Consumers
+  serialize concurrent activation and own one bounded reset timer per button.
+- Package CSS/contracts implement neither clipboard access nor event handlers.
+  The gallery reference script is zero-dependency and app-local.
+
+### Breadcrumb, Stat, and TableShell
+
+- Breadcrumb is a named navigation landmark with an ordered list, decorative
+  assistive-hidden separators, and an unlinked `aria-current="page"` item.
+  Consumers own canonical route logic and any JSON-LD.
+- Stat associates a label with its data/mono value and may include visible-word
+  direction, source/time, and explanation. It adds no chart, count-up animation,
+  or unsupported KPI certainty.
+- TableShell is a native table wrapper, not a data grid. It requires caption and
+  column headers, row headers where appropriate, compact/comfortable density,
+  opt-in sticky header, right-aligned mono numeric cells, and a visible overflow
+  affordance when horizontal scrolling is genuinely necessary.
+- A viewport enters the tab order only when overflow is guaranteed or detected;
+  a fitting table remains outside the tab order. The focused overflow region is
+  associated with visible guidance.
+- Sorting, filtering, pagination, selection, virtualization, grid keyboard
+  behavior, and universal row-to-card transformation remain consumer-owned or
+  out of S5. Priority data must remain reachable at mobile, 200%, and 400% zoom.
+
+## Indian formatting utilities
+
+`@sanchika/primitives` exports:
+
+```ts
+formatIndianNumber(value, options?)
+formatIndianCurrency(value, options?)
+formatIndianDate(value, options?)
+formatIndianDateTime(value, options?)
+formatGSTINDisplay(value)
+formatPANDisplay(value)
+formatPercentage(value, options?)
+```
+
+- Invalid/empty/non-finite numeric and invalid date input throws the typed
+  `IndianFormatError` with code `ERR_SANCHIKA_FORMAT`.
+- Exact `en-IN` grouping is the default. `display: "compact"` explicitly returns
+  labelled lakh/crore output; exact mode never silently becomes approximate.
+  Unless `maximumFractionDigits` is supplied explicitly, number and currency
+  output preserves every fractional digit supplied by a finite number or strict
+  decimal string. Use bigint or a decimal numeric string when a value exceeds
+  JavaScript's safe-number range; both retain their exact digits. Numeric strings
+  accept decimal notation only, so hexadecimal and other coercion syntax is
+  rejected with `IndianFormatError`. Exact fractional input is bounded to the
+  100 digits supported by `Intl.NumberFormat`; longer input is rejected rather
+  than rounded. Default exact number output, and default INR output, also retain
+  strings beyond the finite `Intl` number range; non-INR or additional formatting
+  options on such values are rejected rather than approximated.
+- ISO date-only input preserves its calendar day and defaults to `DD-MM-YYYY`.
+  Date-time output defaults to `Asia/Kolkata`; pass `timeZone` explicitly when a
+  different instant presentation is required. Machine values remain ISO in the
+  consumer data model.
+- Percentage input defaults to fractions (`0.18` to `18%`); use
+  `input: "percent"` for whole units (`18` to `18%`).
+- PAN and GSTIN values are uppercased/grouped for display only. The helpers do
+  not validate identity, format correctness, checksum, registration, or status;
+  non-empty non-standard strings are returned normalized without a validity
+  claim. Inputs are never mutated.
+
+The focused `/primitives/search-state-feedback/` route renders all S5 contracts,
+important states, no-JavaScript search evidence, reduced-motion Skeleton,
+forced-colors boundaries, zoom-safe TableShell, and Indian formatter outputs.
+Only SearchField and CopyButton use tiny gallery-local progressive enhancement.

@@ -3,6 +3,10 @@ import { formStatusPrimitiveSpecs } from "./contracts/form-status.js";
 import { layoutCorePrimitiveSpecs } from "./contracts/layout-core.js";
 import { layoutPlanePrimitiveSpecs } from "./contracts/layout-planes.js";
 import { typographyPrimitiveSpecs } from "./contracts/typography.js";
+import { searchFeedbackPrimitiveSpecs } from "./contracts/search-feedback.js";
+import { statePrimitiveSpecs } from "./contracts/states.js";
+import { processPrimitiveSpecs } from "./contracts/process.js";
+import { navigationDataPrimitiveSpecs } from "./contracts/navigation-data.js";
 import type { PrimitiveContract } from "./contracts/types.js";
 
 export const primitiveSpecs = [
@@ -15,6 +19,10 @@ export const primitiveSpecs = [
   ...typographyPrimitiveSpecs,
   actionPrimitiveSpecs[1],
   actionPrimitiveSpecs[2],
+  ...searchFeedbackPrimitiveSpecs,
+  ...statePrimitiveSpecs,
+  ...processPrimitiveSpecs,
+  ...navigationDataPrimitiveSpecs,
 ] as const satisfies readonly PrimitiveContract[];
 
 export const primitiveGroups = Object.freeze({
@@ -32,6 +40,12 @@ export const primitiveGroups = Object.freeze({
     actionPrimitiveSpecs[1],
     actionPrimitiveSpecs[2],
     actionPrimitiveSpecs[3],
+  ]),
+  searchStateFeedback: Object.freeze([
+    ...searchFeedbackPrimitiveSpecs,
+    ...statePrimitiveSpecs,
+    ...processPrimitiveSpecs,
+    ...navigationDataPrimitiveSpecs,
   ]),
 });
 
