@@ -29,7 +29,8 @@ semantics that native elements cannot provide.
   hint/error, polite settled result status, focus retention during filtering,
   and a disabled clear action when the input is disabled.
 - Skeleton places `aria-busy` on the owning region and normally hides each
-  shape from assistive technology. Reduced motion removes its local pulse.
+  shape from assistive technology. Reduced motion removes its shared loading
+  pulse while preserving a static outlined placeholder.
 - EmptyState has no implicit alert role. ErrorState announcement semantics are
   contextual and must not steal focus.
 - Progress prefers native `progress`; Stepper prefers an ordered list and
@@ -73,6 +74,8 @@ S3 does not add a high-contrast theme. A future theme requires real primitive
 and consumer evidence rather than a palette-only remap.
 
 S5 forced-colors rules preserve control, status, table, progress, and focus
-boundaries with system colors. S5 does not begin the shared S6 motion/assist
-layer; Skeleton uses only a local component loading animation and removes it
-under `prefers-reduced-motion: reduce`.
+boundaries with system colors. S6 consolidates package motion into one scoped
+`prefers-reduced-motion: reduce` block: transforms, transitions, and animations
+are removed while outlines, visible wording, status boundaries, and settled
+content remain. Motion never replaces native semantics, visible state, or
+consumer-owned announcements. See [`motion.md`](./motion.md).

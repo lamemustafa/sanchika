@@ -25,7 +25,7 @@ export const actionPrimitiveSpecs = [
     keyboardObligations: ["Native button activation", "Space and Enter for role=button exceptions", "Suppress all activation paths when aria-disabled", "Keep focus predictable after activation"],
     screenReaderObligations: ["Provide an accessible name", "Expose aria-pressed for toggles", "Expose aria-busy for loading", "Associate disabled reason when needed"],
     contentRules: ["Use an action verb", "Keep loading label stable", "Do not style navigation anchors as Button", "Use lg for primary mobile actions when a practical touch target is required"],
-    motion: { behavior: "Only token-driven color and focus feedback; no lift, bounce, or critical-action choreography.", reducedMotion: "Transitions and the compatibility loading spin are removed while visible pending text/state remains." },
+    motion: { behavior: "Only token-driven color and focus feedback; the loading indicator stays static with no lift, bounce, or critical-action choreography.", reducedMotion: "Transitions are removed while the static loading indicator and visible pending text/state remain." },
     forcedColorsBehavior: ["Focus uses system Highlight", "Control boundary uses ButtonText", "Disabled and pressed state remain visible without authored color"],
     mobileBehavior: ["Labels wrap", "The control stays within available width", "Primary mobile actions should use the large size or consumer-owned full-width composition"],
     examples: [{ title: "Primary command", className: "sk-button sk-tone-brand sk-size-lg", markup: "<button class=\"sk-button sk-tone-brand sk-size-lg\" type=\"button\">Start review</button>" }],

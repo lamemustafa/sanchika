@@ -10,6 +10,8 @@ interface MotionSpecimen {
   readonly c1Action: string;
 }
 
+import { motionAssistClassName } from "@sanchika/primitives";
+
 interface Props {
   specimens: readonly MotionSpecimen[];
 }
@@ -29,11 +31,11 @@ const { specimens } = Astro.props;
     {specimens.map((specimen, index) => (
       <article class={`lab-motion-card lab-motion-card--${specimen.id}`}>
         <div class="lab-motion-card__demo" aria-label={`${specimen.title} visual specimen`}>
-          {specimen.id === "focus" && <a href="#motion-notes">Keyboard focus evidence</a>}
+          {specimen.id === "focus" && <a class={motionAssistClassName("focus-feedback")} href="#motion-notes">Keyboard focus evidence</a>}
           {specimen.id === "disclosure" && (
             <details>
               <summary>Why is review still required?</summary>
-              <p>The assist creates a draft; the named reviewer owns the decision.</p>
+              <p class={motionAssistClassName("disclosure-continuity")}>The assist creates a draft; the named reviewer owns the decision.</p>
             </details>
           )}
           {specimen.id === "progress" && (
@@ -43,7 +45,7 @@ const { specimens } = Astro.props;
             </div>
           )}
           {specimen.id === "assist" && (
-            <div class="lab-assist-note">
+            <div class={`lab-assist-note ${motionAssistClassName("rise-entrance")}`}>
               <span>Draft suggestion</span>
               <p>Ask for the missing period evidence before forming a response position.</p>
               <small>Source: synthetic working note</small>
@@ -68,8 +70,8 @@ const { specimens } = Astro.props;
   <div class="lab-motion-decisions" aria-labelledby="motion-decisions-title">
     <span>Candidate extraction</span>
     <h2 id="motion-decisions-title">Promote repetition; delete isolated effects.</h2>
-    <p><strong>Repeated:</strong> 140ms focus/disclosure timing and the emphasized easing curve appear across the references.</p>
-    <p><strong>One-off:</strong> the looping progress track and assisted-entry translation remain lab-only unless C1 proves a repeated product need.</p>
+    <p><strong>Promoted:</strong> token-driven focus, native disclosure continuity, and short entrance behavior now use the finite S6 package utilities.</p>
+    <p><strong>Deleted:</strong> the local 640ms timing, looping progress track, and duplicate assist-entry keyframes did not meet the shared contract.</p>
   </div>
   <p id="motion-notes" class="lab-motion-note">Reduced motion changes timing and transforms, never the visible state, source, or human-review boundary.</p>
 </section>

@@ -37,7 +37,7 @@ try {
     `import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { colorTokens, tokenDefinitions } from "@sanchika/tokens";
-import { formatIndianCurrency, formatIndianDate, formatIndianNumber, formatPANDisplay, primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
+import { formatIndianCurrency, formatIndianDate, formatIndianNumber, formatPANDisplay, motionAssistClassName, motionAssistUtilities, primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
 
 const require = createRequire(import.meta.url);
@@ -59,6 +59,8 @@ const checks = [
   primitiveClassName("SearchField", { size: "lg" }) === "sk-search-field sk-size-lg",
   primitiveClassName("CopyButton", { state: "copied", size: "sm" }) === "sk-copy-button sk-copy-button-copied sk-size-sm",
   primitiveClassName("TableShell", { density: "compact", header: "sticky" }) === "sk-table-shell sk-table-shell-compact sk-table-shell-header-sticky",
+  motionAssistUtilities.length === 8,
+  motionAssistClassName("focus-feedback") === "sk-motion-focus-feedback",
   formatIndianNumber(12345678) === "1,23,45,678",
   formatIndianNumber("1.234567890123456789") === "1.234567890123456789",
   formatIndianCurrency(1234567, { maximumFractionDigits: 0 }) === "₹12,34,567",

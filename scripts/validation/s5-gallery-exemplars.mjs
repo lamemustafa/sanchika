@@ -16,8 +16,8 @@ const requirements = {
   },
   Skeleton: {
     loading: { markup: ['aria-busy="true"', 'class="s5-skeleton-stack" aria-hidden="true"'] },
-    "reduced-motion": { css: ["@media (prefers-reduced-motion: reduce)", ".sk-skeleton) { animation: none;"] },
-    "forced-colors": { css: ["@media (forced-colors: active)", ".sk-skeleton) { background: Canvas; animation: none;"] },
+    "reduced-motion": { css: ["@media (prefers-reduced-motion: reduce)", ".sk-motion-skeleton-loading, .sk-skeleton", "animation: none;"] },
+    "forced-colors": { css: ["@media (forced-colors: active)", ".sk-skeleton) { background: Canvas;"] },
   },
   EmptyState: {
     empty: { markup: ['data-empty-kind="empty"', "No source records yet"] },

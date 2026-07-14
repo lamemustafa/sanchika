@@ -4,9 +4,6 @@
   --lab-dark-muted: color-mix(in oklch, var(--sk-color-ink-inverse) 72%, var(--sk-color-brand-primary));
   /* LAB: inverse structural line remains local pending S4 surface extraction. */
   --lab-dark-line: color-mix(in oklch, var(--sk-color-ink-inverse) 18%, var(--sk-color-brand-primary));
-  /* LAB: candidate for --sk-motion-slow; must be promoted or deleted before release */
-  --lab-motion-slow: 640ms;
-
   margin: 0;
   min-width: 20rem;
   color: var(--sk-color-ink-primary);

@@ -16,7 +16,7 @@ const foundationMarkup = readFileSync(new URL("../apps/gallery/dist/primitives/f
 const s5Markup = readFileSync(new URL("../apps/gallery/dist/primitives/search-state-feedback/index.html", import.meta.url), "utf8");
 const markup = `${documentMarkup}\n${foundationMarkup}\n${s5Markup}`;
 const normalizedMarkup = markup.replaceAll("&#39;", "'");
-const primitiveCss = ["styles.css", "foundation.css", "typography.css", "components.css", "search-feedback.css", "process-data.css"]
+const primitiveCss = ["styles.css", "foundation.css", "typography.css", "components.css", "search-feedback.css", "process-data.css", "motion.css"]
   .map((path) => readFileSync(new URL(`../packages/primitives/src/${path}`, import.meta.url), "utf8"))
   .join("\n");
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");

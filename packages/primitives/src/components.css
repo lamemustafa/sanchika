@@ -101,7 +101,6 @@
     border-radius: 50%;
     content: "";
     translate: -50% -50%;
-    animation: sk-primitive-spin var(--sk-motion-duration-loading) var(--sk-motion-easing-linear) infinite;
   }
 
   :where(.sk-card) {
@@ -185,13 +184,6 @@
   :where(.sk-field[data-invalid="true"] :is(input, textarea, select, [data-sk-control]), .sk-field :is(input, textarea, select, [data-sk-control])[aria-invalid="true"]) { border-color: var(--sk-color-danger-border); box-shadow: 0 0 0 var(--sk-border-width-hairline) color-mix(in oklch, var(--sk-color-danger-fg) 35%, transparent); }
   :where(.sk-field :is([data-sk-hint], [data-sk-error])) { color: var(--sk-color-ink-muted); font-size: var(--sk-font-size-sm); line-height: var(--sk-line-height-body); margin-block: 0; overflow-wrap: anywhere; }
   :where(.sk-field :is([data-sk-error])) { color: var(--sk-color-danger-fg); font-weight: var(--sk-font-weight-semibold); }
-
-  @keyframes sk-primitive-spin { to { rotate: 1turn; } }
-
-  @media (prefers-reduced-motion: reduce) {
-    :where(.sk-button, .sk-link, .sk-link-card) { transition: none; }
-    :where(.sk-button[aria-busy="true"], .sk-button[data-loading="true"])::after { animation: none; }
-  }
 
   @media (forced-colors: active) {
     :where(.sk-button, .sk-card, .sk-link-card, .sk-field :is(input, textarea, select, [data-sk-control])) { border-color: ButtonText; }

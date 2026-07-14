@@ -165,6 +165,9 @@ function expectedPackageFiles(manifest) {
     files.add("dist/foundation.css");
     files.add("dist/typography.css");
     files.add("dist/search-feedback.css");
+    files.add("dist/motion-assist.d.ts");
+    files.add("dist/motion-assist.js");
+    files.add("dist/motion.css");
     files.add("dist/process-data.css");
   }
 

@@ -21,6 +21,7 @@ import { expectedGithubLabels } from "./validation/github-labels.mjs";
 import { validatePackageManifest } from "./validation/package-manifests.mjs";
 import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
 import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
+import { runMotionAssistFixtures } from "./validation/motion-assist.mjs";
 import {
   createReleaseArtifactManifest,
   loadReleaseManifest,
@@ -656,6 +657,7 @@ const primitiveSource = [
   "packages/primitives/src/contracts/process.ts",
   "packages/primitives/src/contracts/navigation-data.ts",
   "packages/primitives/src/formatting/indian.ts",
+  "packages/primitives/src/motion-assist.ts",
 ].map(readText).join("\n");
 const primitiveCss = [
   "packages/primitives/src/styles.css",
@@ -664,7 +666,10 @@ const primitiveCss = [
   "packages/primitives/src/components.css",
   "packages/primitives/src/search-feedback.css",
   "packages/primitives/src/process-data.css",
+  "packages/primitives/src/motion.css",
 ].map(readText).join("\n");
+const motionCss = readText("packages/primitives/src/motion.css");
+const primitiveStylesEntrypoint = readText("packages/primitives/src/styles.css");
 const patternSource = readText("packages/patterns/src/index.ts");
 const gallerySource = readText("apps/gallery/src/components/PatternContracts.astro");
 const galleryPrimitiveMatrixSource = readText("apps/gallery/src/components/PrimitiveStateMatrix.astro");
@@ -678,6 +683,8 @@ const tokenDocs = readText("docs/tokens.md");
 const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
+const motionDocs = requireText("docs/motion.md");
+const motionGallerySource = requireText("apps/gallery/src/components/MotionAssistProof.astro");
 const ciWorkflow = requireText(".github/workflows/ci.yml");
 const pagesWorkflow = requireText(".github/workflows/pages.yml");
 const pagesSmokeWorkflow = requireText(".github/workflows/pages-smoke.yml");
@@ -754,6 +761,22 @@ if (tokenDocs.includes("--sk-motion-standard")) {
 }
 
 validatePrimitiveContracts({ primitiveSource, primitiveDocs, primitiveCss, tokenCssDeclarations, fail });
+
+const {
+  assistGuidanceEntries,
+  motionAssistClassName,
+  motionAssistUtilities,
+} = await import(`../packages/primitives/src/motion-assist.ts?validate=${Date.now()}`);
+const motionFixtureCount = runMotionAssistFixtures({
+  utilities: motionAssistUtilities,
+  guidance: assistGuidanceEntries,
+  css: motionCss,
+  styles: primitiveStylesEntrypoint,
+  docs: motionDocs,
+  gallery: motionGallerySource,
+  classNameFor: motionAssistClassName,
+  fail,
+});
 
 if (/:where\([^)]*::(?:after|placeholder)/.test(primitiveCss)) {
   fail("primitive pseudo-elements must sit outside :where() so browsers can match the selector");
@@ -1949,4 +1972,5 @@ if (failures.length > 0) {
 
 console.log(`Sanchika build artifact fixtures passed (${buildArtifactFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
+console.log(`Sanchika motion-assist fixtures passed (${motionFixtureCount} cases).`);
 console.log("Sanchika repo validation passed.");
