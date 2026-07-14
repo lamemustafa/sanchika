@@ -94,6 +94,10 @@ export function validatePrimitiveContracts({ primitiveSource, primitiveDocs, pri
   for (const s5Import of ['@import "./search-feedback.css";', '@import "./process-data.css";']) {
     if (!primitiveCss.includes(s5Import)) fail(`primitive styles.css must expose ${s5Import}`);
   }
+  for (const variantSelector of [".sk-empty-state-filtered", ".sk-empty-state-unavailable", ".sk-error-state-blocking"]) {
+    if (!primitiveSource.includes(variantSelector)) fail(`primitive contracts must declare finite variant selector ${variantSelector}`);
+    if (!primitiveCss.includes(variantSelector)) fail(`primitive styles must implement finite variant selector ${variantSelector}`);
+  }
   if (!primitiveCss.includes("@layer sanchika-primitives")) fail("primitive CSS must use the sanchika-primitives cascade layer");
   if (!primitiveCss.includes("@media (forced-colors: active)")) fail("primitive CSS must include forced-colors behavior");
   for (const selectorLine of primitiveCss.split("\n").filter((line) => line.includes(".sk-") && line.trimEnd().endsWith("{"))) {

@@ -121,6 +121,9 @@ export function validatePrimitiveRuntime({ primitiveClassName, primitiveGroups, 
 
   check(primitiveClassName("Button", "brand", "md") === "sk-button sk-tone-brand sk-size-md", "Button legacy output must remain byte-equivalent");
   check(primitiveClassName("Card", "warning", "lg") === "sk-card sk-tone-warning sk-size-lg", "Card legacy output must remain byte-equivalent");
+  check(primitiveClassName("EmptyState", { kind: "filtered" }) === "sk-empty-state sk-empty-state-filtered", "EmptyState filtered class output must remain wired to its finite variant");
+  check(primitiveClassName("EmptyState", { kind: "unavailable" }) === "sk-empty-state sk-empty-state-unavailable", "EmptyState unavailable class output must remain wired to its finite variant");
+  check(primitiveClassName("ErrorState", { severity: "blocking" }) === "sk-error-state sk-error-state-blocking", "ErrorState blocking class output must remain wired to its finite variant");
   check(textClassName("data") === "sk-text sk-text-data", "Text data output must remain stable");
 
   for (const inheritedKey of inheritedRuntimeKeys) {

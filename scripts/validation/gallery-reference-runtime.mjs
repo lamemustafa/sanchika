@@ -10,6 +10,9 @@ export async function runGalleryReferenceRuntimeFixtures({ searchScript, toolsSc
   const secondSearch = createSearchRoot(["gamma"]);
   runScript(searchScript, { roots: [firstSearch.root, secondSearch.root], timers: searchTimers });
   check(firstSearch.input.listeners.has("input") && secondSearch.input.listeners.has("input"), "SearchField script must initialize every root instance");
+  let searchSubmitPrevented = false;
+  firstSearch.field.emit("submit", { preventDefault() { searchSubmitPrevented = true; } });
+  check(searchSubmitPrevented, "SearchField form must prevent enhanced submit navigation");
   firstSearch.input.focused = true;
   firstSearch.input.value = "beta";
   firstSearch.input.emit("compositionstart", {});

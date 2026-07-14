@@ -82,6 +82,7 @@ const errorMessageId = `${instanceId}-search-error-message`;
       } else updateStatus(visible);
     };
     const clearSearch = () => { input.value = ""; apply(); input.focus(); };
+    field.addEventListener("submit", (event) => { event.preventDefault(); });
     input.addEventListener("compositionstart", () => { composing = true; });
     input.addEventListener("compositionend", () => { composing = false; apply(); });
     input.addEventListener("input", (event) => { if (!composing && !event.isComposing) apply(); });
