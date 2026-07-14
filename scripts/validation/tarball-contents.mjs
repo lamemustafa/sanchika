@@ -1,6 +1,7 @@
 const packageCssAssets = new Map([
   ["tokens", "dist/theme.css"],
   ["primitives", "dist/styles.css"],
+  ["patterns", "dist/styles.css"],
 ]);
 
 const packageInternalDistFiles = new Map([
@@ -53,8 +54,30 @@ const packageInternalDistFiles = new Map([
   [
     "patterns",
     [
+      "dist/axal.css",
+      "dist/contracts/axal-workspace.d.ts",
+      "dist/contracts/axal-workspace.js",
+      "dist/contracts/pack-local-utility.d.ts",
+      "dist/contracts/pack-local-utility.js",
+      "dist/contracts/public-product.d.ts",
+      "dist/contracts/public-product.js",
+      "dist/contracts/tools-local-artifact.d.ts",
+      "dist/contracts/tools-local-artifact.js",
       "dist/evidence-loop.d.ts",
       "dist/evidence-loop.js",
+      "dist/pack.css",
+      "dist/product-pattern-definition.d.ts",
+      "dist/product-pattern-definition.js",
+      "dist/product-pattern-registry.d.ts",
+      "dist/product-pattern-registry.js",
+      "dist/product-pattern-types.d.ts",
+      "dist/product-pattern-types.js",
+      "dist/public.css",
+      "dist/responsive.css",
+      "dist/tools.css",
+      "dist/visual-grammar.css",
+      "dist/visual-grammar.d.ts",
+      "dist/visual-grammar.js",
     ],
   ],
 ]);

@@ -62,6 +62,12 @@ product template.
    generic decorative sections.
 5. Keep claims evidence-backed: production, accessibility, compliance, and
    official-source claims require verifier, review, or adoption evidence.
+6. Treat S7's 20 product-pattern contracts as candidate package grammar, not
+   proof of consumer adoption or permission to begin the separate S8 canonical
+   gallery showcase rebuild.
+7. S7 does not close the five C1 reservations: brand memorability, emotional
+   impact, product-specific character, production workflow depth, and
+   edge-state completeness all remain open.
 
 ## Accessibility & Inclusion
 

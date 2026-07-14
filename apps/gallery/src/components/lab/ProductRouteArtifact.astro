@@ -1,5 +1,6 @@
 ---
 import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import { productPatternClassName } from "@sanchika/patterns";
 
 interface ProductRoute {
   readonly label: string;
@@ -13,6 +14,7 @@ interface ProductRoute {
 interface QueueItem {
   readonly id: string;
   readonly title: string;
+  readonly entity: string;
   readonly state: string;
   readonly source: string;
   readonly owner: string;
@@ -29,18 +31,18 @@ const { routes, queue } = Astro.props;
 const [primaryRoute, ...secondaryRoutes] = routes;
 ---
 
-<section id="product-routes" class={`lab-route-artifact ${primitiveClassName("Surface", { variant: "inverse", padding: "none" })}`} aria-labelledby="product-route-title">
-  <div class={`lab-artifact-bar ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
+<section id="product-routes" class={`${productPatternClassName("ProductRouteMap", { variant: "family", state: "default" })} ${primitiveClassName("Surface", { variant: "inverse", padding: "none" })}`} aria-labelledby="product-route-title">
+  <div class={`sk-pattern-artifact-bar ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
     <div>
       <span>Choose by operating boundary</span>
       <strong id="product-route-title">Your work decides the route.</strong>
     </div>
-    <span class="lab-status-mark">Synthetic reference</span>
+    <span class="sk-pattern-status-mark">Synthetic reference</span>
   </div>
 
   {primaryRoute && (
-    <article class="lab-route-primary">
-      <div class="lab-route-primary__copy">
+    <article class="sk-pattern-product-route-map__primary">
+      <div class="sk-pattern-product-route-map__primary__copy">
         <p class={textClassName("eyebrow")}>{primaryRoute.label}</p>
         <h2 class={textClassName("display")}>{primaryRoute.name}</h2>
         <strong>{primaryRoute.signal}</strong>
@@ -48,7 +50,7 @@ const [primaryRoute, ...secondaryRoutes] = routes;
         <span>{primaryRoute.boundary}</span>
         <a class={primitiveClassName("Link")} href={primaryRoute.href}>Inspect the Axal review desk <span aria-hidden="true">→</span></a>
       </div>
-      <div class={`lab-mini-queue ${primitiveClassName("Stack", { gap: "sm" })}`} aria-label="Synthetic Axal review queue">
+      <div class={`sk-pattern-product-route-map__queue ${primitiveClassName("Stack", { gap: "sm" })}`} aria-label="Synthetic Axal review queue">
         <p>Review queue</p>
         {queue.map((item) => (
           <article data-tone={item.tone}>
@@ -57,14 +59,14 @@ const [primaryRoute, ...secondaryRoutes] = routes;
               <strong>{item.title}</strong>
             </div>
             <p>{item.state}</p>
-            <small>{item.due}</small>
+            <small>{item.entity} · {item.due}</small>
           </article>
         ))}
       </div>
     </article>
   )}
 
-  <div class="lab-route-secondary">
+  <div class="sk-pattern-product-route-map__secondary">
     {secondaryRoutes.map((route) => (
       <article>
         <div>
@@ -78,4 +80,8 @@ const [primaryRoute, ...secondaryRoutes] = routes;
       </article>
     ))}
   </div>
+  <footer class="sk-pattern-product-route-map__colophon">
+    <span>Design evidence</span>
+    <a class={primitiveClassName("Link")} href="/patterns/">Sanchika pattern contracts</a>
+  </footer>
 </section>

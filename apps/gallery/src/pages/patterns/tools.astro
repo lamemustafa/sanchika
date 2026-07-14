@@ -1,0 +1,37 @@
+---
+import { productPatternClassName, productPatternGroups } from "@sanchika/patterns";
+import { primitiveClassName } from "@sanchika/primitives";
+import BoundaryBanner from "../../components/lab/BoundaryBanner.astro";
+import LabIntro from "../../components/lab/LabIntro.astro";
+import ToolDirectory from "../../components/lab/ToolDirectory.astro";
+import PatternContractLedger from "../../components/patterns/PatternContractLedger.astro";
+import PatternReferenceHeader from "../../components/patterns/PatternReferenceHeader.astro";
+import { labRoutes, labTools } from "../../content/lab/references";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+
+const group = productPatternGroups[3];
+---
+
+<GalleryLayout title="Tools local artifact patterns | Sanchika" description="Rendered Sanchika patterns for browser-local draft tools and output artifacts." canonical="https://sanchika.complyeaze.com/patterns/tools/" dataFavicon>
+  <main id="gallery-content" class={`pattern-reference-main ${primitiveClassName("Container", { width: "wide" })}`} data-sanchika-pattern-group={group.name} data-sanchika-example="synthetic">
+    <PatternReferenceHeader eyebrow="Tools local artifact" title="Find the job. Inspect the boundary. Review the draft." description={group.visualCharacter} />
+    <section class="pattern-reference-example" aria-label="Tools pattern composition">
+      <BoundaryBanner pattern="LocalBoundaryBanner" label="Browser-local boundary" statement="Search terms and entered work stay in this browser; outputs remain drafts." tone="draft" facts={[{ label: "Processing", value: "This browser" }, { label: "Account", value: "Not required" }, { label: "Upload", value: "None" }, { label: "Network / telemetry", value: "None from the directory" }, { label: "Review", value: "Named per tool" }]} sourceLink={{ label: "Inspect the boundary contract", href: "#pattern-contract-ledger-title" }} />
+      <LabIntro eyebrow="Quiet local utility" title="Search by the work on your desk." lede="Input, output, and review requirements remain visible before a tool opens." compact headingLevel="h2" />
+      <ToolDirectory tools={labTools} axalHref={labRoutes.axal.path} instanceId="pattern-tool-directory" />
+      <aside class={productPatternClassName("OutputArtifactSummary", { variant: "receipt", state: "ready-for-review" })} aria-labelledby="output-summary-title">
+        <div><span>Draft output</span><h2 id="output-summary-title">GST variance review note</h2><p>Generated from synthetic pasted totals and a user-entered period label.</p></div>
+        <a href="#pattern-contract-ledger-title">Inspect contract</a>
+        <dl class="sk-pattern-output-artifact-summary__meta">
+          <div><dt>Artifact type</dt><dd>Generated local draft note</dd></div>
+          <div><dt>Destination</dt><dd>Browser download</dd></div>
+          <div><dt>Source basis</dt><dd>User-entered facts</dd></div>
+          <div><dt>Status / reviewer</dt><dd>Ready for review · CA interpretation required</dd></div>
+          <div><dt>Limitation</dt><dd>Generation does not establish professional approval or compliance</dd></div>
+          <div><dt>Next action</dt><dd>Inspect and revise before copying or download</dd></div>
+        </dl>
+      </aside>
+    </section>
+    <PatternContractLedger contracts={group.patterns} />
+  </main>
+</GalleryLayout>

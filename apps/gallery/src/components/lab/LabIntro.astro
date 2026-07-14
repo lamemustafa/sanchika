@@ -1,5 +1,6 @@
 ---
 import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import { productPatternClassName } from "@sanchika/patterns";
 
 interface Action {
   label: string;
@@ -13,20 +14,26 @@ interface Props {
   primary?: Action;
   secondary?: Action;
   compact?: boolean;
+  headingLevel?: "h1" | "h2";
 }
 
-const { eyebrow, title, lede, primary, secondary, compact = false } = Astro.props;
+const { eyebrow, title, lede, primary, secondary, compact = false, headingLevel = "h1" } = Astro.props;
+const heroClass = compact
+  ? productPatternClassName("PublicHero", { variant: "compact" })
+  : productPatternClassName("PublicHero", { variant: "editorial" });
 ---
 
-<header class:list={["lab-intro", compact && "lab-intro--compact"]}>
-  <div class="lab-intro__copy">
-    <p class={`lab-eyebrow ${textClassName("eyebrow")}`}>{eyebrow}</p>
-    <h1 class={textClassName("display")}>{title}</h1>
-    <p class={`lab-lede ${textClassName("lead")}`}>{lede}</p>
+<header class={heroClass}>
+  <div class="sk-pattern-public-hero__copy">
+    <p class={`sk-pattern-public-hero__eyebrow ${textClassName("eyebrow")}`}>{eyebrow}</p>
+    {headingLevel === "h2"
+      ? <h2 class={textClassName("display")}>{title}</h2>
+      : <h1 class={textClassName("display")}>{title}</h1>}
+    <p class={`sk-pattern-public-hero__lede ${textClassName("lead")}`}>{lede}</p>
     {(primary || secondary) && (
-      <div class={`lab-actions ${primitiveClassName("Cluster", { gap: "md" })}`} aria-label="Reference actions">
-        {primary && <a class={`lab-action-link lab-action-link--brand ${primitiveClassName("Link")}`} href={primary.href}>{primary.label}</a>}
-        {secondary && <a class={`lab-action-link lab-action-link--neutral ${primitiveClassName("Link")}`} href={secondary.href}>{secondary.label}</a>}
+      <div class={`sk-pattern-public-hero__actions ${primitiveClassName("Cluster", { gap: "md" })}`} aria-label="Reference actions">
+        {primary && <a class={`sk-pattern-public-hero__action sk-pattern-public-hero__action--brand ${primitiveClassName("Link")}`} href={primary.href}>{primary.label}</a>}
+        {secondary && <a class={`sk-pattern-public-hero__action sk-pattern-public-hero__action--neutral ${primitiveClassName("Link")}`} href={secondary.href}>{secondary.label}</a>}
       </div>
     )}
   </div>

@@ -1,4 +1,7 @@
 ---
+import { productPatternClassName } from "@sanchika/patterns";
+import { primitiveClassName } from "@sanchika/primitives";
+
 interface Fact {
   label: string;
   value: string;
@@ -9,18 +12,25 @@ interface Props {
   statement: string;
   facts?: readonly Fact[];
   tone?: "workspace" | "local" | "draft" | "assist";
+  pattern?: "TrustBoundary" | "LocalBoundaryBanner";
+  sourceLink?: { readonly label: string; readonly href: string };
 }
 
-const { label, statement, facts = [], tone = "workspace" } = Astro.props;
+const { label, statement, facts = [], tone = "workspace", pattern = "TrustBoundary", sourceLink } = Astro.props;
+const trustTone = tone === "assist" ? "inverse" : tone;
+const boundaryClass = pattern === "LocalBoundaryBanner"
+  ? productPatternClassName("LocalBoundaryBanner", { variant: tone === "local" ? "local" : "draft", state: "local-only" })
+  : productPatternClassName("TrustBoundary", { variant: trustTone, state: tone === "local" || tone === "draft" ? "local-only" : undefined });
 ---
 
-<aside class={`lab-boundary lab-boundary--${tone}`} aria-label={label}>
-  <div class="lab-boundary__claim">
+<aside class={boundaryClass} aria-label={label}>
+  <div class="sk-pattern-trust-boundary__claim">
     <span>{label}</span>
     <strong>{statement}</strong>
+    {sourceLink && <a class={primitiveClassName("Link")} href={sourceLink.href}>{sourceLink.label}</a>}
   </div>
   {facts.length > 0 && (
-    <dl class="lab-boundary__facts">
+    <dl class="sk-pattern-trust-boundary__facts">
       {facts.map((fact) => (
         <div>
           <dt>{fact.label}</dt>

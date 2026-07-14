@@ -4,6 +4,100 @@ Sanchika patterns are contracts, not app components. They describe the slots,
 states, and semantic obligations a consumer surface must satisfy before building
 or extracting reusable UI.
 
+## S7 Product Pattern Inventory
+
+S7 adds an immutable `productPatternContracts` registry and four immutable
+`productPatternGroups`. These are richer adopter contracts beside the legacy
+`patternSpecs` array; they do not turn the package into a component library.
+
+| Group | Pattern | Core anatomy | Variants | Required states |
+| --- | --- | --- | --- | --- |
+| Public/product | `PublicHero` | eyebrow, title, lede, actions, proof, boundary | editorial, compact | default, with-proof-artifact, compact-mobile |
+| Public/product | `ProductRouteMap` | route summary, primary route, alternatives, boundary labels, status, actions, colophon | family | default, compact, limited, unavailable, colophon |
+| Public/product | `ProofStrip` | proof items, checked time | inline | verified, limited |
+| Public/product | `TrustBoundary` | boundary summary, facts, safe action | workspace, local, draft, inverse | local-only, permission-required, upload-required, unavailable |
+| Public/product | `SourceProvenanceStrip` | source type, source, release/reference, status, checked time, reviewer, limitation | ledger | current, stale, unavailable, limited, unverified |
+| Public/product | `PricingBlock` | offer, price, inclusions, exclusions, review boundary, action | single-offer | available |
+| Public/product | `FAQAccordion` | question, answer, source | stack | collapsed, expanded |
+| Public/product | `ReleaseStatusBanner` | product, release, status, scope, reviewed time, source, limitation, safe action | notice, warning | current, alpha, stale, limited, planned, unavailable |
+| Axal | `ReviewDeskPreview` | synthetic marker, queue, selected work, evidence, owner/due/review, blocker, checkpoint, audit | three-pane, stacked | ca-review-needed, client-input-pending, evidence-requested, source-unavailable, ready-for-reviewer, blocked |
+| Axal | `EvidencePanel` | source, evidence state, uncertainty, checked time, reviewer, action | rail, embedded | available, requested, missing, stale, disputed, under-review |
+| Axal | `HumanReviewCheckpoint` | preparation, owner, source readiness, blocker, decision, evidence, actions, history | inverse, inline | preparation, review-needed, held, approved, rejected-returned, blocked |
+| Axal | `AuditTrailPreview` | actor, action, time, source, resulting state, note | rail, list | compact, expanded, empty |
+| Axal | `WorkQueueRow` | identity, synthetic entity, priority, source, owner, due/review state, blocker, next action | compact, card | selected, waiting, ready, overdue |
+| Pack | `LocalArtifactFlow` | source, local action, destination, custody facts, receipt | three-stage, compact | ready, running, complete, blocked |
+| Pack | `PermissionExplainer` | permission, purpose, scope, touched/not-touched data, denial, source, request | inline, panel | required, optional, granted, denied, unavailable, not-requested |
+| Pack | `CustodyBoundary` | owner, inside/outside, crossing, never-crosses, user control, source proof | ledger, banner | local-only, workspace-scoped, public-metadata-only, transfer-pending, no-transfer |
+| Tools | `ToolDirectory` | header, search, filters, tool list, no-results state, reset, local boundary, handoff | rows, cards | default, filtered, no-results |
+| Tools | `ToolCard` | category, title, outcome, input, output, review, boundary, status, action | row, card | available, limited, unavailable |
+| Tools | `LocalBoundaryBanner` | boundary claim, processing, account, upload, network/telemetry, review, source | draft, local | local-only, handoff |
+| Tools | `OutputArtifactSummary` | artifact type/output, source, destination, draft/review, reviewer, limitation, next action | receipt, summary | generated-draft, ready-for-review, copied-downloaded, failed, unavailable |
+
+Every contract also carries purpose, primary product mode, user job, semantic
+root, maturity, evidence status, intended products, required anatomy fields,
+copy obligations, prohibited claims, non-color rules, accessibility hooks,
+trust boundaries, responsive behavior, reduced-motion behavior, forced-colors
+behavior, a synthetic-data requirement, consumer responsibilities, the CSS
+contract, exemplar routes, adopter guidance, and non-goals. The source registry
+is authoritative; the gallery contract ledger and rendered state proofs derive
+from it rather than a second inventory.
+
+### Product visual grammar
+
+The authoritative `productVisualGrammar` metadata exposes the approved semantic
+hooks. These are not decorative utilities.
+
+| Hook | Class | Meaning | Misuse prevented |
+| --- | --- | --- | --- |
+| Ledger rail | `sk-pattern-grammar--ledger-rail` | sequence, lineage, or grouped work | random decorative lines |
+| File tab label | `sk-pattern-grammar--file-tab-label` | one real record or artifact type | fake browser tabs, icon-only labels, or seals |
+| Provenance strip | `sk-pattern-grammar--provenance-strip` | source, release/reference, status, checked time, reviewer, limitation | evidence-free verification claims |
+| Evidence aperture | `sk-pattern-grammar--evidence-aperture` | selected work beside source and review evidence | generic split panes without review meaning |
+| Custody line | `sk-pattern-grammar--custody-line` | custodian, crossing, never-crosses facts, source, destination | implied automatic transfers |
+| Quiet verified seal | `sk-pattern-grammar--quiet-verified-seal` | restrained source/verifier/time proof | government-approval resemblance |
+
+### CSS and class helper
+
+Load existing token and primitive CSS first, then the single public pattern CSS
+entrypoint:
+
+```css
+@import "@sanchika/tokens/theme.css";
+@import "@sanchika/primitives/styles.css";
+@import "@sanchika/patterns/styles.css";
+```
+
+Use `patternClassName(name, { variant, state })` (also exported as
+`productPatternClassName`) for finite hooks. The result order is base, variant,
+then state, for example:
+
+```ts
+patternClassName("EvidencePanel", { variant: "rail", state: "under-review" });
+// sk-pattern-evidence-panel sk-pattern-evidence-panel--rail sk-pattern-evidence-panel--state-under-review
+```
+
+Unknown names, variants, states, option keys, and inherited-property options
+throw. Product code may compose around documented pattern classes, but must not
+override package internals or invent private implementation variables.
+
+### Compatibility
+
+- `patternSpecs` remains the exact four-entry legacy array in its existing
+  order and with its existing enumerable object shape.
+- `ProductFamilyRouter` is the only approved alias and resolves by identity to
+  the canonical `ProductRouteMap` contract.
+- `ServiceSection` remains a retained legacy contract; it is not a synonym for
+  one of the S7 canonical patterns.
+- Speculative historical aliases such as `PublicPageHero`,
+  `ReviewWorkbenchPreview`, `LocalArtifactBoundary`, `ReleaseProvenance`, and
+  `SourceEvidenceSummary` are not exported because no repository or consumer
+  evidence requires them.
+
+Rendered package references live at `/patterns/`, `/patterns/public/`,
+`/patterns/axal/`, `/patterns/pack/`, and `/patterns/tools/`. The existing
+`/lab/*` North Stars remain noindex comparison evidence. Rebuilding the
+canonical gallery is S8, not S7.
+
 ## Required Fields
 
 Each pattern declares:

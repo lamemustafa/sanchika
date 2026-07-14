@@ -39,6 +39,14 @@ const expectedLabDocuments = [
   "lab/pack-local-proof/index.html",
   "lab/tools-directory/index.html",
 ];
+const expectedPatternDocuments = [
+  "patterns/index.html",
+  "patterns/public/index.html",
+  "patterns/axal/index.html",
+  "patterns/pack/index.html",
+  "patterns/tools/index.html",
+];
+const toolDirectoryDocuments = new Set(["lab/tools-directory/index.html", "patterns/tools/index.html"]);
 const tokenProofDocument = "foundations/tokens/index.html";
 const primitiveFoundationDocument = "primitives/foundations/index.html";
 const s5Document = "primitives/search-state-feedback/index.html";
@@ -52,7 +60,7 @@ for (const [path, documentHtml] of htmlOutputs) {
     html: documentHtml,
     outputFiles: outputFileMap,
     allowUnreferencedStylesheets: true,
-    allowedInlineScriptMarker: path === "lab/tools-directory/index.html" ? "tool-filter" : null,
+    allowedInlineScriptMarker: toolDirectoryDocuments.has(path) ? "tool-filter" : null,
     allowedInlineScriptMarkers: path === s5Document ? ["s5-search-field", "s5-copy-button"] : [],
   });
   if (path === "index.html") assetGraph = graph;
@@ -67,11 +75,11 @@ for (const [path, documentHtml] of htmlOutputs) {
   if (path.startsWith("lab/") && !documentHtml.includes('<meta name="robots" content="noindex,nofollow">')) {
     failures.push(`${path} must declare noindex,nofollow`);
   }
-  if (path === "lab/tools-directory/index.html" && graph.allowedInlineScriptInventory.length !== 1) {
+  if (toolDirectoryDocuments.has(path) && graph.allowedInlineScriptInventory.length !== 1) {
     failures.push(`${path} must contain exactly one named tool-filter enhancement script`);
   }
-  if (path === "lab/tools-directory/index.html" && graph.allowedInlineScriptInventory.length === 1) {
-    const match = /<script[^>]*data-sanchika-lab-script="tool-filter"[^>]*>([\s\S]*?)<\/script>/i.exec(documentHtml);
+  if (toolDirectoryDocuments.has(path) && graph.allowedInlineScriptInventory.length === 1) {
+    const match = /<script[^>]*data-sanchika-pattern-script="tool-filter"[^>]*>([\s\S]*?)<\/script>/i.exec(documentHtml);
     if (match) {
       const raw = Buffer.byteLength(match[1]);
       const gzip = gzipSync(match[1]).byteLength;
@@ -95,6 +103,25 @@ for (const [path, documentHtml] of htmlOutputs) {
 
 for (const path of expectedLabDocuments) {
   if (!outputFileMap.has(path)) failures.push(`${path} must exist`);
+}
+for (const path of expectedPatternDocuments) {
+  if (!outputFileMap.has(path)) failures.push(`${path} must exist`);
+}
+
+const patternIndexHtml = outputFileMap.get("patterns/index.html") ?? "";
+for (const required of ["20 patterns. Four product modes.", "/patterns/public/", "/patterns/axal/", "/patterns/pack/", "/patterns/tools/"]) {
+  if (!patternIndexHtml.includes(required)) failures.push(`patterns/index.html must include ${required}`);
+}
+for (const [path, required] of [
+  ["patterns/public/index.html", ["PublicHero", "ProductRouteMap", "ProofStrip", "TrustBoundary", "SourceProvenanceStrip", "PricingBlock", "FAQAccordion", "ReleaseStatusBanner"]],
+  ["patterns/axal/index.html", ["ReviewDeskPreview", "EvidencePanel", "HumanReviewCheckpoint", "AuditTrailPreview", "WorkQueueRow"]],
+  ["patterns/pack/index.html", ["LocalArtifactFlow", "PermissionExplainer", "CustodyBoundary"]],
+  ["patterns/tools/index.html", ["ToolDirectory", "ToolCard", "LocalBoundaryBanner", "OutputArtifactSummary"]],
+]) {
+  const documentHtml = outputFileMap.get(path) ?? "";
+  for (const patternName of required) {
+    if (!documentHtml.includes(`data-pattern-contract="${patternName}"`)) failures.push(`${path} must render package contract ${patternName}`);
+  }
 }
 
 const tokenProofHtml = outputFileMap.get(tokenProofDocument) ?? "";
@@ -172,7 +199,7 @@ if (!motionHtml) {
 const referenceRuntimeFixtures = await runGalleryReferenceRuntimeFixtures({
   searchScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-search-field"),
   copyScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-copy-button"),
-  toolsScript: extractInlineScript(outputFileMap.get("lab/tools-directory/index.html") ?? "", "data-sanchika-lab-script", "tool-filter"),
+  toolsScript: extractInlineScript(outputFileMap.get("lab/tools-directory/index.html") ?? "", "data-sanchika-pattern-script", "tool-filter"),
 });
 for (const failure of referenceRuntimeFixtures.failures) failures.push(`gallery reference runtime fixture ${failure}`);
 

@@ -3,6 +3,7 @@ const dependencyFields = ["dependencies", "peerDependencies", "optionalDependenc
 const cssSideEffectExports = new Map([
   ["tokens", "./dist/theme.css"],
   ["primitives", "./dist/styles.css"],
+  ["patterns", "./dist/styles.css"],
 ]);
 
 export function validatePackageManifest(packageName, manifest, fail) {

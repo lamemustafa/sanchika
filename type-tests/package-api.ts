@@ -21,6 +21,10 @@ import type {
   PatternSlotNameFor,
   PatternStateNameFor,
   PatternStateRequiredSlotNameFor,
+  ProductPatternContractFor,
+  ProductPatternName,
+  ProductPatternStateNameFor,
+  ProductPatternVariantNameFor,
   DesignBrief,
   DesignBriefValidationIssue,
   EvidenceLoop,
@@ -31,7 +35,16 @@ import type {
   TrustBrief,
   TrustBriefValidationIssue,
 } from "@sanchika/patterns";
-import { validateDesignBrief, validateEvidenceLoop, validateTrustBrief } from "@sanchika/patterns";
+import {
+  patternAliases,
+  patternClassName,
+  productPatternContracts,
+  productPatternGroups,
+  resolveProductPatternContract,
+  validateDesignBrief,
+  validateEvidenceLoop,
+  validateTrustBrief,
+} from "@sanchika/patterns";
 
 const brandRole: "brandPrimary" = colorTokens.brandPrimary.role;
 const legacyBackgroundVariable: "--sk-color-bg-base" = colorTokens.bgBase.cssVariable;
@@ -104,6 +117,14 @@ const blockedPatternStatus: PatternProgrammaticStatusFor<"EvidencePanel", "block
   slotRefs: ["uncertaintyCopy", "actionSlot"],
   requirement: "Blocked evidence updates must announce the blocking reason and next safe action.",
 };
+const productPatternName: ProductPatternName = "LocalArtifactFlow";
+const publicHeroVariant: ProductPatternVariantNameFor<"PublicHero"> = "editorial";
+const productEvidenceState: ProductPatternStateNameFor<"EvidencePanel"> = "under-review";
+const routeMapContract: ProductPatternContractFor<"ProductRouteMap"> = resolveProductPatternContract("ProductFamilyRouter");
+const canonicalPatternCount: number = productPatternContracts.length;
+const canonicalPatternGroupCount: number = productPatternGroups.length;
+const routeAliasName: "ProductRouteMap" = patternAliases.ProductFamilyRouter.name;
+const heroClasses: string = patternClassName("PublicHero", { variant: "editorial", state: "default" });
 const packTrustBrief: TrustBrief = {
   id: "pack-local-download-proof",
   consumerMode: "pack/local-utility",
@@ -114,7 +135,10 @@ const packTrustBrief: TrustBrief = {
   dataSensitivity: ["credential-boundary", "document-or-file", "local-artifact"],
   trustBoundaries: ["No upload", "No credential handoff", "No telemetry"],
   evidenceRequirements: ["Source visibility", "Local artifact proof", "User-controlled export"],
-  selectedPatterns: [{ name: "TrustBoundary", states: ["local-only"] }],
+  selectedPatterns: [
+    { name: "TrustBoundary", states: ["local-only"] },
+    { catalog: "product", name: "LocalArtifactFlow", states: ["complete"] },
+  ],
   claims: [{ claim: "Runs locally", evidence: "Boundary copy and source visibility are present before the action" }],
   nonGoals: ["No portal automation", "No backend upload"],
   verificationGates: ["token-only-styling", "wcag-22-aa", "keyboard-focus", "non-color-state", "mobile-render", "package-artifact"],
@@ -178,6 +202,7 @@ primitiveClassName("Button", buttonTone, "md");
 primitiveClassName("Field", "danger", fieldSize);
 primitiveClassName("Split", splitOptions);
 textClassName(textRole);
+patternClassName("EvidencePanel", { variant: "rail", state: "under-review" });
 primitiveClassName("SearchField", searchOptions);
 primitiveClassName("TableShell", tableOptions);
 formatIndianNumber(12_345_678, numberOptions);
@@ -216,6 +241,14 @@ void emptyEvidenceSlot;
 void targetSizeCriterion;
 void blockedPatternCheck;
 void blockedPatternStatus;
+void productPatternName;
+void publicHeroVariant;
+void productEvidenceState;
+void routeMapContract;
+void canonicalPatternCount;
+void canonicalPatternGroupCount;
+void routeAliasName;
+void heroClasses;
 void packTrustBrief;
 void packTrustBriefIssues;
 void packDesignBrief;
@@ -253,7 +286,17 @@ const wrongPatternSlot: PatternSlotNameFor<"TrustBoundary"> = "sourceList";
 // @ts-expect-error EvidencePanel.empty only requires actionSlot.
 const wrongStateSlot: PatternStateRequiredSlotNameFor<"EvidencePanel", "empty"> = "sourceList";
 
+// @ts-expect-error Canonical S7 pattern names are finite.
+const wrongProductPatternName: ProductPatternName = "GenericDashboard";
+
+// @ts-expect-error PublicHero does not expose workspace variants.
+patternClassName("PublicHero", { variant: "three-pane" });
+
+// @ts-expect-error LocalArtifactFlow does not expose EvidencePanel states.
+patternClassName("LocalArtifactFlow", { state: "reviewed" });
+
 void wrongTokenRole;
 void wrongPatternSlot;
 void wrongStateSlot;
+void wrongProductPatternName;
 void incompleteRichPrimitiveContract;

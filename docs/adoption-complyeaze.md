@@ -10,6 +10,18 @@ Initial adoption should be narrow:
 4. Extract patterns from real ComplyEaze pages instead of inventing generic SaaS
    sections.
 
+S7 candidates for that controlled surface are `PublicHero`, `ProductRouteMap`,
+`ProofStrip`, `TrustBoundary`, `SourceProvenanceStrip`, `PricingBlock`,
+`FAQAccordion`, and `ReleaseStatusBanner`. Import
+`@sanchika/patterns/styles.css` after token and primitive CSS and use
+`patternClassName` for finite variants and states.
+
+The package owns editorial composition, proof/boundary grammar, responsive
+collapse, and forced-colors state hooks. ComplyEaze still owns real service
+copy, prices, source review, route destinations, consent, analytics, and every
+runtime action. Adoption must not copy gallery markup wholesale or override
+undocumented pattern descendants.
+
 Do not migrate Axal, Pack, or Tools before the ComplyEaze foundation is usable.
 
 ## Entry Criteria

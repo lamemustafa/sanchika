@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import { fileURLToPath } from "node:url";
 import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
 import { validateIndianFormatting, validatePrimitiveRuntime } from "./validation/primitive-runtime.mjs";
+import { validateProductPatternContracts } from "./validation/pattern-contracts.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertBuiltPackageArtifacts({ root, commandName: "pnpm artifact:check" });
@@ -14,6 +15,7 @@ const dependencyFields = ["dependencies", "peerDependencies", "optionalDependenc
 const failures = [];
 let primitiveRuntimeFixtures = null;
 let indianFormattingFixtures = null;
+let productPatternRuntimeCount = 0;
 
 for (const packageName of packages) {
   const packageDir = join(root, "packages", packageName);
@@ -69,6 +71,28 @@ try {
   failures.push(`primitive runtime fixtures could not load built package exports: ${String(error)}`);
 }
 
+try {
+  const patterns = await import("../packages/patterns/dist/index.js");
+  const patternCss = ["styles.css", "visual-grammar.css", "public.css", "axal.css", "pack.css", "tools.css", "responsive.css"]
+    .map((path) => readFileSync(join(root, "packages/patterns/dist", path), "utf8"))
+    .join("\n");
+  validateProductPatternContracts({
+    contracts: patterns.productPatternContracts,
+    groups: patterns.productPatternGroups,
+    aliases: patterns.patternAliases,
+    visualGrammar: patterns.productVisualGrammar,
+    retainedLegacyPatternNames: patterns.retainedLegacyPatternNames,
+    className: patterns.patternClassName,
+    resolve: patterns.resolveProductPatternContract,
+    css: patternCss,
+    exemplarRoutes: new Set(["/patterns/", "/patterns/public/", "/patterns/axal/", "/patterns/pack/", "/patterns/tools/", "/lab/complyeaze-core/", "/lab/axal-review-desk/", "/lab/pack-local-proof/", "/lab/tools-directory/"]),
+    fail: (message) => failures.push(`built pattern runtime ${message}`),
+  });
+  productPatternRuntimeCount = patterns.productPatternContracts.length;
+} catch (error) {
+  failures.push(`product pattern runtime fixtures could not load built package exports: ${String(error)}`);
+}
+
 if (failures.length > 0) {
   console.error("Sanchika package artifact check failed:");
   for (const failure of failures) {
@@ -80,6 +104,7 @@ if (failures.length > 0) {
 console.log("Sanchika package artifact check passed.");
 if (primitiveRuntimeFixtures) console.log(`Sanchika primitive runtime fixtures passed (${primitiveRuntimeFixtures.count} cases).`);
 if (indianFormattingFixtures) console.log(`Sanchika Indian formatting fixtures passed (${indianFormattingFixtures.count} cases; UTC and Asia/Kolkata process probe).`);
+if (productPatternRuntimeCount) console.log(`Sanchika product pattern runtime fixtures passed (${productPatternRuntimeCount} contracts).`);
 
 function validateTimezoneProcesses() {
   const moduleUrl = pathToFileURL(join(root, "packages/primitives/dist/index.js")).href;
@@ -178,8 +203,32 @@ function expectedPackageFiles(manifest) {
   }
 
   if (manifest.name === "@sanchika/patterns") {
-    files.add("dist/evidence-loop.d.ts");
-    files.add("dist/evidence-loop.js");
+    for (const path of [
+      "dist/axal.css",
+      "dist/contracts/axal-workspace.d.ts",
+      "dist/contracts/axal-workspace.js",
+      "dist/contracts/pack-local-utility.d.ts",
+      "dist/contracts/pack-local-utility.js",
+      "dist/contracts/public-product.d.ts",
+      "dist/contracts/public-product.js",
+      "dist/contracts/tools-local-artifact.d.ts",
+      "dist/contracts/tools-local-artifact.js",
+      "dist/evidence-loop.d.ts",
+      "dist/evidence-loop.js",
+      "dist/pack.css",
+      "dist/product-pattern-definition.d.ts",
+      "dist/product-pattern-definition.js",
+      "dist/product-pattern-registry.d.ts",
+      "dist/product-pattern-registry.js",
+      "dist/product-pattern-types.d.ts",
+      "dist/product-pattern-types.js",
+      "dist/public.css",
+      "dist/responsive.css",
+      "dist/tools.css",
+      "dist/visual-grammar.css",
+      "dist/visual-grammar.d.ts",
+      "dist/visual-grammar.js",
+    ]) files.add(path);
   }
 
   if (manifest.name === "@sanchika/tokens") {

@@ -69,7 +69,7 @@ export function inspectGalleryAssetGraph({
     const type = attributes.get("type")?.toLowerCase() ?? "";
     const src = attributes.get("src");
     if (metadataScriptTypes.has(type) && !src) continue;
-    const marker = attributes.get("data-sanchika-gallery-script") ?? attributes.get("data-sanchika-lab-script");
+    const marker = attributes.get("data-sanchika-gallery-script") ?? attributes.get("data-sanchika-pattern-script") ?? attributes.get("data-sanchika-lab-script");
     if (!src && allowedScriptMarkers.has(marker)) {
       allowedInlineScriptInventory.push(marker);
       continue;
@@ -128,8 +128,8 @@ export function runGalleryOutputFixtures() {
   const fixtures = [
     { name: "referenced stylesheet and JSON-LD metadata", html: validHtml, files: validFiles, expected: null },
     {
-      name: "named lab enhancement may be explicitly allowed",
-      html: '<link rel="stylesheet" href="/_astro/current.css"><script data-sanchika-lab-script="tool-filter">document.documentElement.dataset.enhanced = "true";</script>',
+      name: "named pattern enhancement may be explicitly allowed",
+      html: '<link rel="stylesheet" href="/_astro/current.css"><script data-sanchika-pattern-script="tool-filter">document.documentElement.dataset.enhanced = "true";</script>',
       files: validFiles,
       options: { allowedInlineScriptMarker: "tool-filter" },
       expected: null,

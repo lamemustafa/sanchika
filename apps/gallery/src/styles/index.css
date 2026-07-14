@@ -1,3 +1,5 @@
 @import "@sanchika/tokens/theme.css";
 @import "@sanchika/primitives/styles.css";
+@import "@sanchika/patterns/styles.css";
 @import "./gallery.css";
+@import "./pattern-reference.css";

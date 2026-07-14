@@ -1,0 +1,85 @@
+---
+import { productPatternClassName, productPatternGroups } from "@sanchika/patterns";
+import { primitiveClassName } from "@sanchika/primitives";
+import BoundaryBanner from "../../components/lab/BoundaryBanner.astro";
+import LabIntro from "../../components/lab/LabIntro.astro";
+import ProductRouteArtifact from "../../components/lab/ProductRouteArtifact.astro";
+import PatternContractLedger from "../../components/patterns/PatternContractLedger.astro";
+import PatternReferenceHeader from "../../components/patterns/PatternReferenceHeader.astro";
+import { labRoutes, productRoutes, reviewQueue } from "../../content/lab/references";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+
+const group = productPatternGroups[0];
+---
+
+<GalleryLayout
+  title="Public product patterns | Sanchika"
+  description="Rendered Sanchika product patterns for proof-led public and product pages."
+  canonical="https://sanchika.complyeaze.com/patterns/public/"
+  dataFavicon
+>
+  <main id="gallery-content" class={`pattern-reference-main ${primitiveClassName("Container", { width: "wide" })}`} data-sanchika-pattern-group={group.name} data-sanchika-example="synthetic">
+    <PatternReferenceHeader eyebrow="Public and product" title="Advisory publication, with the boundary before the claim." description={group.visualCharacter} />
+    <section class="pattern-reference-example" aria-label="Public pattern composition">
+      <LabIntro
+        eyebrow="Indian compliance work · boundary first"
+        title="Choose the operating route before data moves."
+        lede="A public product page can explain saved workspace context, user-controlled local files, and browser-local drafts without pretending those modes share one trust boundary."
+        primary={{ label: "Inspect route map", href: "#public-route-map" }}
+        secondary={{ label: "Read contract ledger", href: "#pattern-contract-ledger-title" }}
+        headingLevel="h2"
+      >
+        <aside class="sk-pattern-public-hero-note" aria-label="Operating promise">
+          <span>Editorial proof, not a SaaS pitch</span>
+          <strong>One primary decision, visible sources, restrained actions.</strong>
+        </aside>
+      </LabIntro>
+
+      <dl class={productPatternClassName("ProofStrip", { variant: "inline", state: "verified" })}>
+        <div><dt>Contract</dt><dd>Framework agnostic · <a href="https://github.com/lamemustafa/sanchika/tree/master/packages/patterns">Source</a> · candidate</dd></div>
+        <div><dt>CSS</dt><dd>One package entrypoint · <a href="https://github.com/lamemustafa/sanchika/blob/master/packages/patterns/src/styles.css">Source</a> · unreleased</dd></div>
+        <div><dt>Examples</dt><dd>Synthetic only · <a href="/patterns/">Inventory source</a> · no consumer data</dd></div>
+        <div><dt>Review</dt><dd>Human boundary visible · <a href="#pattern-contract-ledger-title">Contract source</a> · adoption unproven</dd></div>
+      </dl>
+
+      <BoundaryBanner label="Product-page trust boundary" statement="Every route names account, upload, custody, and review behavior before its action." facts={[{ label: "Data", value: "Synthetic" }, { label: "Crosses", value: "Only the route the user chooses" }, { label: "Never crosses", value: "Credentials or artifacts from this page" }, { label: "Decision", value: "Human-owned" }]} sourceLink={{ label: "Inspect the boundary contract", href: "#pattern-contract-ledger-title" }} />
+
+      <div id="public-route-map"><ProductRouteArtifact routes={productRoutes} queue={reviewQueue} /></div>
+
+      <section class={`${productPatternClassName("SourceProvenanceStrip", { variant: "ledger", state: "current" })} sk-pattern-grammar--provenance-strip`} aria-label="Source provenance">
+        <div><span>Claim / type</span><strong>Package-owned pattern grammar · repository source</strong></div>
+        <div><span>Source / release</span><strong><a href="https://github.com/lamemustafa/sanchika">Sanchika source</a> · unreleased S7 candidate</strong></div>
+        <div class="sk-pattern-grammar--quiet-verified-seal"><span>Status / Checked</span><strong>Current local build · 14 July 2026 · S7 validator</strong></div>
+        <div><span>Reference / limitation</span><strong>No published checksum · Consumer adoption not yet claimed</strong></div>
+      </section>
+
+      <section class={productPatternClassName("PricingBlock", { variant: "single-offer", state: "available" })} aria-labelledby="pricing-example-title">
+        <div>
+          <span>Illustrative service scope</span>
+          <h2 id="pricing-example-title">Review-led compliance consultation</h2>
+          <p class="sk-pattern-pricing-block__price">₹12,500 <small>plus applicable taxes</small></p>
+          <p>Status: synthetic exemplar · one engagement · reviewed 14 July 2026</p>
+          <p>Source owner: gallery fixture, not live commercial data</p>
+          <a href="#pattern-contract-ledger-title">Inspect the pricing contract</a>
+        </div>
+        <div class="sk-pattern-pricing-block__scope">
+          <section><h3>Included</h3><p>Source review, one written issue brief, and a named CA checkpoint.</p></section>
+          <section><h3>Not included</h3><p>Government fees, filing guarantee, litigation, or portal credential handling.</p></section>
+        </div>
+      </section>
+
+      <section class={productPatternClassName("FAQAccordion", { variant: "stack", state: "expanded" })} aria-labelledby="faq-example-title">
+        <h2 id="faq-example-title">Boundary questions before engagement</h2>
+        <details open><summary>Does this page submit a filing?</summary><p>No. It explains routes and review boundaries; an authorized product workflow owns any later submission.</p></details>
+        <details><summary>Is browser-local work saved to a workspace?</summary><p>Not unless a later, separately named handoff is chosen.</p></details>
+      </section>
+
+      <aside class={productPatternClassName("ReleaseStatusBanner", { variant: "notice", state: "planned" })} aria-label="Pattern release status">
+        <strong>@sanchika/patterns · unreleased S7 candidate</strong>
+        <span>Planned status · reviewed 14 July 2026 · static pattern routes only · consumer adoption remains unproven.</span>
+        <a href={labRoutes.complyeaze.path}>Compare the C1 North Star</a>
+      </aside>
+    </section>
+    <PatternContractLedger contracts={group.patterns} />
+  </main>
+</GalleryLayout>

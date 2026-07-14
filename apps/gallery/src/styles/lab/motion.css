@@ -1,6 +1,5 @@
-.lab-page--motion {
-  /* LAB: candidate for --sk-color-canvas-assist; must be promoted or deleted before release */
-  --lab-canvas: oklch(95.5% 0.02 215);
+.sk-pattern-page.lab-page--motion {
+  background: color-mix(in oklch, var(--sk-color-canvas) 82%, var(--sk-color-info-bg));
 }
 
 .lab-motion-board {
@@ -38,7 +37,7 @@
 }
 
 .lab-motion-card__demo {
-  background: color-mix(in oklch, var(--lab-canvas) 65%, var(--sk-color-surface-raised));
+  background: color-mix(in oklch, var(--sk-color-canvas) 65%, var(--sk-color-surface-raised));
   border-right: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
 }
 
@@ -142,7 +141,7 @@
 }
 
 .lab-motion-progress small {
-  color: var(--lab-dark-muted);
+  color: color-mix(in oklch, var(--sk-color-ink-inverse) 72%, var(--sk-color-brand-primary));
 }
 
 .lab-motion-progress i {
@@ -151,7 +150,7 @@
   height: 0.28rem;
   margin-top: var(--sk-space-4);
   overflow: hidden;
-  background: var(--lab-dark-line);
+  background: color-mix(in oklch, var(--sk-color-ink-inverse) 18%, var(--sk-color-brand-primary));
   border-radius: 999px;
 }
 
@@ -184,9 +183,9 @@
 
 .lab-motion-note {
   padding: var(--sk-space-4) var(--sk-space-6);
-  color: var(--lab-dark-muted);
+  color: color-mix(in oklch, var(--sk-color-ink-inverse) 72%, var(--sk-color-brand-primary));
   background: var(--sk-color-brand-primary);
-  border-top: var(--sk-border-width-default) solid var(--lab-dark-line);
+  border-top: var(--sk-border-width-default) solid color-mix(in oklch, var(--sk-color-ink-inverse) 18%, var(--sk-color-brand-primary));
   font-size: var(--sk-font-size-sm);
   text-align: center;
 }
@@ -199,7 +198,7 @@
   padding: var(--sk-space-6);
   color: var(--sk-color-surface-raised);
   background: var(--sk-color-brand-primary);
-  border-top: var(--sk-border-width-default) solid var(--lab-dark-line);
+  border-top: var(--sk-border-width-default) solid color-mix(in oklch, var(--sk-color-ink-inverse) 18%, var(--sk-color-brand-primary));
 }
 
 .lab-motion-decisions > span {
@@ -216,7 +215,7 @@
 }
 
 .lab-motion-decisions p {
-  color: var(--lab-dark-muted);
+  color: color-mix(in oklch, var(--sk-color-ink-inverse) 72%, var(--sk-color-brand-primary));
   font-size: var(--sk-font-size-sm);
 }
 
@@ -225,17 +224,58 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-sanchika-lab] {
+  html[data-sanchika-pattern-reference] {
     scroll-behavior: auto;
   }
 
-  .lab-page *,
-  .lab-page *::before,
-  .lab-page *::after {
+  .lab-page--motion *,
+  .lab-page--motion *::before,
+  .lab-page--motion *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
 
+}
+
+@media (max-width: 69.99rem) {
+  .lab-motion-board__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lab-motion-card:nth-child(even) {
+    border-left: 0;
+  }
+
+  .lab-motion-card:nth-child(n + 2) {
+    border-top: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
+  }
+
+  .lab-motion-decisions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .lab-motion-decisions,
+  .lab-motion-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lab-motion-decisions,
+  .lab-motion-card__demo,
+  .lab-motion-card__copy {
+    padding: var(--sk-space-6) var(--sk-space-4);
+  }
+
+  .lab-motion-card__demo,
+  .lab-motion-card__copy {
+    min-height: 15rem;
+  }
+
+  .lab-motion-card__demo {
+    border-right: 0;
+    border-bottom: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
+  }
 }

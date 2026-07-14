@@ -1,5 +1,49 @@
 import { validateEvidenceLoopWithValidators } from "./evidence-loop.js";
 import type { EvidenceLoop, EvidenceLoopValidationIssue } from "./evidence-loop.js";
+import { resolveProductPatternContract } from "./product-pattern-registry.ts";
+import type {
+  ProductPatternName,
+  ProductPatternResolvableName,
+  ProductPatternStateNameFor,
+  ProductPatternStateNameForResolvable,
+} from "./product-pattern-registry.ts";
+export {
+  patternAliases,
+  patternClassName,
+  patternContracts,
+  patternGroups,
+  productPatternClassName,
+  productPatternContractByName,
+  productPatternContracts,
+  productPatternGroups,
+  resolveProductPatternContract,
+  retainedLegacyPatternNames,
+} from "./product-pattern-registry.ts";
+export { productVisualGrammar } from "./visual-grammar.ts";
+export type {
+  ProductPatternAliasName,
+  ProductPatternCanonicalNameFor,
+  ProductPatternContractFor,
+  ProductPatternContractUnion,
+  ProductPatternName,
+  ProductPatternResolvableName,
+  ProductPatternStateNameFor,
+  ProductPatternStateNameForResolvable,
+  ProductPatternVariantNameFor,
+} from "./product-pattern-registry.ts";
+export type {
+  ProductPatternAccessibilityHooks,
+  ProductPatternClassOptions,
+  ProductPatternContract,
+  ProductPatternCssContract,
+  ProductPatternEvidenceStatus,
+  ProductPatternGroup,
+  ProductPatternGroupName,
+  ProductPatternMaturity,
+  ProductPatternPart,
+  ProductPatternState,
+} from "./product-pattern-types.ts";
+export type { ProductVisualGrammarName } from "./visual-grammar.ts";
 export type {
   EvidenceLoop,
   EvidenceLoopAdoptionEvidence,
@@ -134,6 +178,14 @@ export type TrustBriefPatternSelection = {
   };
 }[PatternName];
 
+export type ProductTrustBriefPatternSelection = {
+  [Name in ProductPatternResolvableName]: {
+    catalog: "product";
+    name: Name;
+    states?: readonly ProductPatternStateNameForResolvable<Name>[];
+  };
+}[ProductPatternResolvableName];
+
 export type TrustBriefClaim = {
   claim: string;
   evidence: string;
@@ -149,7 +201,7 @@ export type TrustBrief = {
   dataSensitivity: readonly TrustBriefDataSensitivity[];
   trustBoundaries: readonly string[];
   evidenceRequirements: readonly string[];
-  selectedPatterns: readonly TrustBriefPatternSelection[];
+  selectedPatterns: readonly (TrustBriefPatternSelection | ProductTrustBriefPatternSelection)[];
   claims: readonly TrustBriefClaim[];
   nonGoals: readonly string[];
   verificationGates: readonly TrustBriefVerificationGate[];
@@ -318,7 +370,19 @@ export function validateTrustBrief(brief: TrustBrief): readonly TrustBriefValida
 
   for (const selection of selectedPatterns) {
     const patternName = recordString(selection, "name");
-    const spec = patternSpecs.find((pattern) => pattern.name === patternName);
+    const catalog = recordString(selection, "catalog");
+    if (catalog && catalog !== "product") {
+      issues.push({ field: "selectedPatterns", reason: `Unknown pattern catalog ${catalog}.` });
+      continue;
+    }
+    const productContract = catalog === "product" ? resolveProductPatternContract(patternName) : undefined;
+    const legacySpec = catalog === "product" ? undefined : patternSpecs.find((pattern) => pattern.name === patternName);
+    const spec = legacySpec ?? (productContract
+      ? {
+          consumerModes: productContract.intendedProducts,
+          requiredStates: productContract.states,
+        }
+      : undefined);
     if (!spec) {
       issues.push({
         field: "selectedPatterns",
@@ -592,7 +656,7 @@ function stringList(value: unknown): readonly string[] {
 }
 
 function recordValue(value: unknown, key: string): unknown {
-  return typeof value === "object" && value !== null && key in value
+  return typeof value === "object" && value !== null && Object.hasOwn(value, key)
     ? (value as Record<string, unknown>)[key]
     : undefined;
 }

@@ -1,0 +1,164 @@
+.pattern-reference-main {
+  padding-block: var(--sk-section-padding-md) var(--sk-section-padding-lg);
+}
+
+.pattern-reference-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  gap: var(--sk-space-8);
+  align-items: end;
+  padding-bottom: var(--sk-space-8);
+  border-bottom: var(--sk-border-width-default) solid var(--sk-color-border-strong);
+}
+
+.pattern-reference-header h1 {
+  max-width: 15ch;
+  margin-block: var(--sk-space-3) 0;
+  font-size: var(--sk-font-size-4xl);
+  letter-spacing: var(--sk-letter-spacing-tight);
+  line-height: var(--sk-line-height-display);
+}
+
+.pattern-reference-header p {
+  max-width: var(--sk-container-reading);
+  margin-block: var(--sk-space-3) 0;
+  color: var(--sk-color-ink-muted);
+}
+
+.pattern-reference-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-2) var(--sk-space-4);
+  justify-content: flex-end;
+}
+
+.pattern-reference-example {
+  margin-top: var(--sk-space-12);
+}
+
+.pattern-reference-ledger {
+  display: grid;
+  gap: var(--sk-space-8);
+  margin-top: var(--sk-space-16);
+}
+
+.pattern-reference-ledger__intro {
+  max-width: var(--sk-container-reading);
+}
+
+.pattern-reference-ledger__intro p,
+.pattern-reference-contract > p {
+  color: var(--sk-color-ink-muted);
+}
+
+.pattern-reference-contract {
+  padding-block: var(--sk-space-6);
+  border-top: var(--sk-border-width-default) solid var(--sk-color-border-strong);
+}
+
+.pattern-reference-contract__title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-3);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.pattern-reference-contract__title h3 {
+  margin: 0;
+  font-size: var(--sk-font-size-xl);
+}
+
+.pattern-reference-contract__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sk-space-6);
+  margin-top: var(--sk-space-6);
+}
+
+.pattern-reference-state-proofs {
+  display: grid;
+  gap: var(--sk-space-3);
+}
+
+.pattern-reference-state-proof {
+  padding: var(--sk-space-3);
+  border: var(--sk-border-width-default) solid var(--sk-color-border-strong);
+}
+
+.pattern-reference-state-proof p,
+.pattern-reference-state-proof small {
+  display: block;
+  margin-top: var(--sk-space-2);
+  color: var(--sk-color-ink-muted);
+}
+
+.pattern-reference-state-proof ul {
+  margin-block: var(--sk-space-2) 0;
+  padding-inline-start: var(--sk-space-6);
+}
+
+.pattern-reference-contract__meta h4 {
+  margin-block: 0 var(--sk-space-2);
+  font-size: var(--sk-font-size-sm);
+  text-transform: uppercase;
+}
+
+.pattern-reference-contract__meta ul {
+  display: grid;
+  gap: var(--sk-space-2);
+  margin: 0;
+  padding-inline-start: var(--sk-space-6);
+  color: var(--sk-color-ink-muted);
+  font-size: var(--sk-font-size-sm);
+}
+
+.pattern-reference-inventory {
+  display: grid;
+  gap: var(--sk-space-12);
+  margin-top: var(--sk-space-12);
+}
+
+.pattern-reference-inventory section {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.45fr) minmax(0, 1fr);
+  gap: var(--sk-space-8);
+  padding-top: var(--sk-space-6);
+  border-top: var(--sk-border-width-default) solid var(--sk-color-border-strong);
+}
+
+.pattern-reference-inventory ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sk-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pattern-reference-inventory li {
+  padding: var(--sk-space-4);
+  background: var(--sk-color-surface);
+  border: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
+  border-radius: var(--sk-radius-md);
+}
+
+.pattern-reference-inventory li span {
+  display: block;
+  margin-top: var(--sk-space-2);
+  color: var(--sk-color-ink-muted);
+  font-size: var(--sk-font-size-sm);
+}
+
+@media (max-width: 47.99rem) {
+  .pattern-reference-header,
+  .pattern-reference-inventory section,
+  .pattern-reference-contract__meta,
+  .pattern-reference-inventory ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pattern-reference-header nav {
+    justify-content: flex-start;
+  }
+}
