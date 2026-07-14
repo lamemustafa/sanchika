@@ -69,7 +69,7 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
               <span>{item.id}</span>
               <strong>{item.title}</strong>
             </div>
-            <p>{item.state}</p>
+            <p>{index === 0 ? `Selected · ${item.state}` : item.state}</p>
             <div class="sk-pattern-work-queue__meta">
               <span>Entity {item.entity}</span>
               <span>Source {item.source}</span>
@@ -110,6 +110,14 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
           <span>Human approval checkpoint</span>
           <h3 id="human-checkpoint-title">CA decision required before the response advances.</h3>
           <p>Approve, revise, or request evidence only after opening the linked synthetic source.</p>
+          <dl class="sk-pattern-selected-case__facts">
+            <div><dt>Preparation</dt><dd>Draft assistance only · review needed</dd></div>
+            <div><dt>Owner</dt><dd>{selected.owner} · CA reviewer</dd></div>
+            <div><dt>Evidence</dt><dd>{selected.source} · open before deciding</dd></div>
+            <div><dt>Blocker</dt><dd>None recorded; hold if the source cannot be opened</dd></div>
+            <div><dt>Next safe action</dt><dd>Open the linked synthetic source</dd></div>
+            <div><dt>History</dt><dd>{audit[0]?.time ?? "Not recorded"} · audit trail retained below</dd></div>
+          </dl>
           <div class={`sk-pattern-checkpoint-actions ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Illustrative review decisions">
             <span data-action="primary">Open source before deciding</span>
             <span data-action="secondary">Request evidence</span>

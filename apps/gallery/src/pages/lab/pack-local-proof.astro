@@ -11,15 +11,20 @@ const route = labRoutes.pack;
 
 <LabShell title={route.title} description={route.description} routeId="pack-local-proof" mode="pack">
   <BoundaryBanner
+    pattern="TrustBoundary"
     label="Local-first boundary"
     statement="The file moves from the GST Portal response to Chrome Downloads on this device."
     tone="local"
     facts={[
+      { label: "Crosses", value: "The supported portal response to Chrome Downloads" },
       { label: "Account", value: "No ComplyEaze account" },
       { label: "Upload", value: "No extension file handoff" },
       { label: "Telemetry", value: "None from this workflow" },
     ]}
-    sourceLink={{ label: "Inspect the Pack boundary contract", href: "/patterns/pack/#pattern-contract-ledger-title" }}
+    neverCrosses="Portal credentials or return files to ComplyEaze"
+    actionOwner="The user in the current browser session"
+    safeAction="Review custody and destination before download"
+    sourceLink={{ label: "Inspect the boundary contract", href: "/patterns/public/#pattern-contract-ledger-title" }}
   />
   <LabIntro
     eyebrow={route.eyebrow}

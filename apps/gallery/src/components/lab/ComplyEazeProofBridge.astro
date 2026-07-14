@@ -18,6 +18,7 @@ const { axalHref } = Astro.props;
 </dl>
 
 <BoundaryBanner
+  pattern="TrustBoundary"
   label="Product-family trust boundary"
   statement="Saved workspace context, portal-local downloads, and browser-local drafts keep distinct account, upload, custody, and review rules."
   facts={[
@@ -25,6 +26,9 @@ const { axalHref } = Astro.props;
     { label: "Pack", value: "Portal session to this device" },
     { label: "Tools", value: "Browser-local draft only" },
   ]}
+  neverCrosses="Credentials or artifacts across product modes by default"
+  actionOwner="The user choosing a route and the named reviewer for decisions"
+  safeAction="Inspect the selected route boundary before data moves"
   sourceLink={{ label: "Inspect the public boundary contract", href: "/patterns/public/#pattern-contract-ledger-title" }}
 />
 

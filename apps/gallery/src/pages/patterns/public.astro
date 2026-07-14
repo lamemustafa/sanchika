@@ -42,7 +42,7 @@ const group = productPatternGroups[0];
         <div><dt>Review</dt><dd>Human boundary visible · <a href="#pattern-contract-ledger-title">Contract source</a> · adoption unproven</dd></div>
       </dl>
 
-      <BoundaryBanner label="Product-page trust boundary" statement="Every route names account, upload, custody, and review behavior before its action." facts={[{ label: "Data", value: "Synthetic" }, { label: "Crosses", value: "Only the route the user chooses" }, { label: "Never crosses", value: "Credentials or artifacts from this page" }, { label: "Decision", value: "Human-owned" }]} sourceLink={{ label: "Inspect the boundary contract", href: "#pattern-contract-ledger-title" }} />
+      <BoundaryBanner pattern="TrustBoundary" label="Product-page trust boundary" statement="Every route names account, upload, custody, and review behavior before its action." facts={[{ label: "Data", value: "Synthetic" }, { label: "Crosses", value: "Only the route the user chooses" }, { label: "Decision", value: "Human-owned" }]} neverCrosses="Credentials or artifacts from this page" actionOwner="The user choosing the product route" safeAction="Inspect the route boundary before continuing" sourceLink={{ label: "Inspect the boundary contract", href: "#pattern-contract-ledger-title" }} />
 
       <div id="public-route-map"><ProductRouteArtifact routes={productRoutes} queue={reviewQueue} /></div>
 

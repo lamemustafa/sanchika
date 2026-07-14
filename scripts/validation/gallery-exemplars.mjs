@@ -175,6 +175,14 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
   if (publicHero) {
     if (descendantElements(publicHero).filter((element) => /^h[1-6]$/.test(element.tag)).length !== 1) fail("PublicHero must contain one concise message heading");
     if (!descendantElements(publicHero).some((element) => hasClass(element, "sk-pattern-public-hero-note"))) fail("PublicHero must contain one proof slot");
+    if (!descendantElements(publicHero).some((element) => element.tag === "a" && hasClass(element, "sk-pattern-public-hero__action") && getAttribute(element.attrs, "href"))) {
+      fail("PublicHero must contain a linked safe action");
+    }
+  }
+  for (const groupName of ["axal-workspace", "pack-local-utility", "tools-local-artifact"]) {
+    if (elementsWithClass(markupByGroup.get(groupName) ?? "", "sk-pattern-public-hero").length > 0) {
+      fail(`${groupName} must not stamp a generic introduction as PublicHero`);
+    }
   }
 
   const proofStrip = requireClassElement(publicMarkup, "sk-pattern-proof-strip", fail, "ProofStrip");
@@ -187,8 +195,14 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
   }
 
   const trustBoundary = requireClassElement(publicMarkup, "sk-pattern-trust-boundary", fail, "TrustBoundary");
-  if (trustBoundary && (!/\bCrosses\b/i.test(visibleText(trustBoundary)) || !/\bNever crosses\b/i.test(visibleText(trustBoundary)))) {
-    fail("TrustBoundary must state what crosses and what never crosses");
+  if (trustBoundary) {
+    const trustText = visibleText(trustBoundary);
+    for (const signal of ["Crosses", "Never crosses", "Action owner", "Safe action"]) {
+      if (!new RegExp(`\\b${signal}\\b`, "i").test(trustText)) fail(`TrustBoundary must visibly include ${signal}`);
+    }
+    if (!descendantElements(trustBoundary).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) {
+      fail("TrustBoundary must include a source link");
+    }
   }
 
   validateProvenanceStructure({ markup: publicMarkup, label: "public SourceProvenanceStrip", fail });
@@ -229,6 +243,16 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
       const rowText = visibleText(row);
       for (const signal of ["Entity", "Source", "Owner", "Due", "Blocker", "Next"]) {
         if (!rowText.includes(signal)) fail(`WorkQueueRow ${index + 1} must include ${signal}`);
+      }
+      if (hasClass(row, "sk-pattern-work-queue-row--state-selected") && !/\bselected\b/i.test(rowText)) {
+        fail(`WorkQueueRow ${index + 1} selected state must include visible selected text`);
+      }
+    }
+    const checkpoint = descendantElements(reviewDesk).find((element) => hasClass(element, "sk-pattern-human-review-checkpoint"));
+    if (checkpoint) {
+      const checkpointText = visibleText(checkpoint);
+      for (const signal of ["review needed", "Owner", "Evidence", "Blocker", "Next safe action", "History"]) {
+        if (!new RegExp(`\\b${signal}\\b`, "i").test(checkpointText)) fail(`HumanReviewCheckpoint must visibly include ${signal}`);
       }
     }
     if (!/synthetic/i.test(text)) fail("ReviewDeskPreview must visibly mark synthetic data");
@@ -317,7 +341,11 @@ export function runProductPatternExemplarFixtures() {
     { name: "Sanchika as peer route", group: "public-product", replace: ["<h2>Tools</h2>", "<h2>Tools</h2><p>Sanchika</p>"], expected: "peer product route" },
     { name: "conflicting annual prices", group: "public-product", replace: ["₹12,500", "₹12,500 annual · ₹10,000 annual"], expected: "one unambiguous public price" },
     { name: "FAQ JSON-LD mismatch", group: "public-product", replace: ['"Does this submit?"', '"Different question"'], expected: "JSON-LD questions must match" },
+    { name: "PublicHero without safe action", group: "public-product", replace: ['<a class="sk-pattern-public-hero__action" href="/route">Choose route</a>', ""], expected: "linked safe action" },
+    { name: "PublicHero stamped on non-public intro", group: "axal-workspace", replace: ['<main data-sanchika-example="synthetic">', '<main data-sanchika-example="synthetic"><header class="sk-pattern-public-hero"></header>'], expected: "must not stamp a generic introduction" },
     { name: "ReviewDeskPreview without human review", group: "axal-workspace", replace: ["sk-pattern-human-review-checkpoint", "missing-human-review-checkpoint"], expected: "sk-pattern-human-review-checkpoint" },
+    { name: "selected WorkQueueRow without visible selection", group: "axal-workspace", replace: ["Selected item · Entity", "Active item · Entity"], expected: "visible selected text" },
+    { name: "checkpoint without required context", group: "axal-workspace", replace: ["Evidence linked · Blocker none · Next safe action open source · History 14 July 2026", "Decision pending"], expected: "HumanReviewCheckpoint must visibly include" },
     { name: "unmarked synthetic data", group: "axal-workspace", replace: [' data-sanchika-example="synthetic"', ""], expected: "mark synthetic exemplar data" },
     { name: "custody stage without custodian", group: "pack-local-utility", replace: ["<dt>Custodian / location</dt><dd>Browser session</dd>", "<dt>Custodian / location</dt><dd></dd>"], expected: "name its current custodian" },
     { name: "permission without denial behavior", group: "pack-local-utility", replace: ["<span>If denied: use manual download</span>", ""], expected: "include If denied" },
@@ -344,9 +372,9 @@ function validProductPatternFixtureMarkup() {
     [
       "public-product",
       `<main data-sanchika-example="synthetic">
-        <section class="sk-pattern-public-hero"><h2>Choose the operating route.</h2><aside class="sk-pattern-public-hero-note">Source-backed proof</aside></section>
+        <section class="sk-pattern-public-hero"><h2>Choose the operating route.</h2><a class="sk-pattern-public-hero__action" href="/route">Choose route</a><aside class="sk-pattern-public-hero-note">Source-backed proof</aside></section>
         <dl class="sk-pattern-proof-strip"><div><dt>Contract</dt><dd><a href="/source">Source</a></dd></div><div><dt>Status</dt><dd><a href="/status">Snapshot</a></dd></div></dl>
-        <aside class="sk-pattern-trust-boundary"><dl><div><dt>Crosses</dt><dd>Chosen data</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div></dl></aside>
+        <aside class="sk-pattern-trust-boundary"><a href="/source">Source</a><dl><div><dt>Crosses</dt><dd>Chosen data</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div><div><dt>Action owner</dt><dd>User</dd></div><div><dt>Safe action</dt><dd>Inspect boundary</dd></div></dl></aside>
         <section class="sk-pattern-product-route-map"><article class="sk-pattern-product-route-map__primary"><h2>Axal</h2></article><div class="sk-pattern-product-route-map__secondary"><article><h2>Pack</h2></article><article><h2>Tools</h2></article></div><footer class="sk-pattern-product-route-map__colophon"><a href="/patterns/">Sanchika pattern contracts</a></footer></section>
         <section class="sk-pattern-source-provenance-strip"><div><a href="/source">Source</a></div><div class="sk-pattern-grammar--quiet-verified-seal">14 July 2026 · S7 validator</div></section>
         <section class="sk-pattern-pricing-block"><p>₹12,500</p></section>
@@ -357,9 +385,9 @@ function validProductPatternFixtureMarkup() {
     [
       "axal-workspace",
       `<main data-sanchika-example="synthetic"><section class="sk-pattern-review-desk-preview">
-        <section><h2>Work queue</h2><article class="sk-pattern-work-queue-row">Selected item · Entity synthetic A · Source linked · Owner AK · Due today · Blocker none · Next safe action open source</article></section>
+        <section><h2>Work queue</h2><article class="sk-pattern-work-queue-row sk-pattern-work-queue-row--state-selected">Selected item · Entity synthetic A · Source linked · Owner AK · Due today · Blocker none · Next safe action open source</article></section>
         <aside class="sk-pattern-evidence-panel">Source evidence · synthetic source</aside>
-        <section class="sk-pattern-human-review-checkpoint">Human approval checkpoint</section>
+        <section class="sk-pattern-human-review-checkpoint">Human approval checkpoint · review needed · Owner AK · Evidence linked · Blocker none · Next safe action open source · History 14 July 2026</section>
         <section class="sk-pattern-audit-trail-preview">Audit trail</section>
       </section></main>`,
     ],

@@ -18,18 +18,20 @@ interface Props {
 }
 
 const { eyebrow, title, lede, primary, secondary, compact = false, headingLevel = "h1" } = Astro.props;
-const heroClass = compact
-  ? productPatternClassName("PublicHero", { variant: "compact" })
-  : productPatternClassName("PublicHero", { variant: "editorial" });
+const isPublicHero = Boolean(primary || secondary) && Astro.slots.has("default");
+const heroClass = isPublicHero
+  ? productPatternClassName("PublicHero", { variant: compact ? "compact" : "editorial" })
+  : `${primitiveClassName("Section", { space: "lg" })} ${primitiveClassName("Stack", { gap: "lg", align: "start" })}`;
+const copyClass = isPublicHero ? "sk-pattern-public-hero__copy" : primitiveClassName("Stack", { gap: "md", align: "start" });
 ---
 
 <header class={heroClass}>
-  <div class="sk-pattern-public-hero__copy">
-    <p class={`sk-pattern-public-hero__eyebrow ${textClassName("eyebrow")}`}>{eyebrow}</p>
+  <div class={copyClass}>
+    <p class={isPublicHero ? `sk-pattern-public-hero__eyebrow ${textClassName("eyebrow")}` : textClassName("eyebrow")}>{eyebrow}</p>
     {headingLevel === "h2"
       ? <h2 class={textClassName("display")}>{title}</h2>
       : <h1 class={textClassName("display")}>{title}</h1>}
-    <p class={`sk-pattern-public-hero__lede ${textClassName("lead")}`}>{lede}</p>
+    <p class={isPublicHero ? `sk-pattern-public-hero__lede ${textClassName("lead")}` : textClassName("lead")}>{lede}</p>
     {(primary || secondary) && (
       <div class={`sk-pattern-public-hero__actions ${primitiveClassName("Cluster", { gap: "md" })}`} aria-label="Reference actions">
         {primary && <a class={`sk-pattern-public-hero__action sk-pattern-public-hero__action--brand ${primitiveClassName("Link")}`} href={primary.href}>{primary.label}</a>}
