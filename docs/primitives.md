@@ -372,9 +372,9 @@ shapes, and byte-equivalent legacy class outputs remain unchanged.
 - Put `aria-busy` on the owning region and hide decorative shapes from
   assistive technology. A truthful textual pending state is safer when layout
   is unknown.
-- The local component pulse uses existing S3 tokens, stops under reduced
-  motion, and yields to a system-color outline in forced colors. It is not an
-  S6 shared motion utility.
+- The shared `skeleton-loading` utility uses existing S3 tokens, stops under
+  reduced motion, and yields to a system-color outline in forced colors. It is
+  the only repeating S6 utility; `.sk-skeleton` remains a compatible trigger.
 
 ### EmptyState and ErrorState
 
@@ -404,7 +404,9 @@ shapes, and byte-equivalent legacy class outputs remain unchanged.
 
 - Disclosure uses native `details`/`summary` for FAQ and simple reveal. It has
   closed, open, long-content, and nesting-guidance proof. No height animation,
-  Tabs, Dialog, Popover, Accordion runtime, or S6 shared motion ships.
+  Tabs, Dialog, Popover, or Accordion runtime ships. The optional S6
+  `disclosure-continuity` utility may animate only the revealed content's
+  opacity and token-bounded transform.
 - CopyButton copies an explicitly named source/reference/version/checksum/ID
   only after user activation. Success and failure are visible and politely
   announced without moving focus; the consumer resets the label after the

@@ -182,6 +182,22 @@ export function assertMotionCss(css, styles, fail) {
   if (!/:where\([^}]*\.sk-motion-skeleton-loading[^}]*\)[^{]*\{[^}]*animation:[^;}]*infinite/s.test(cleanCss)) fail("skeleton utility must be the repeating loading animation");
   if ((cleanCss.match(/var\(--sk-motion-duration-loading\)/g) ?? []).length !== 1) fail("the loading duration token must be used only by Skeleton");
   if (/\.sk-motion-(?:status-highlight|copy-confirmation)[^}]*\{[^}]*animation:[^;}]*infinite/s.test(cleanCss)) fail("status and copy utilities must never repeat");
+  for (const requiredCopySelector of [
+    ".sk-motion-copy-confirmation.sk-copy-button-copied",
+    ".sk-copy-button-copied .sk-motion-copy-confirmation",
+  ]) {
+    if (!cleanCss.includes(requiredCopySelector)) fail(`copy confirmation must preserve the S5 class state selector ${requiredCopySelector}`);
+  }
+  for (const requiredTransitionFragment of [
+    ".sk-button.sk-motion-focus-feedback, .sk-button.sk-motion-press-feedback",
+    "background-color var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), border-color var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), box-shadow var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), color var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard)",
+    ".sk-link.sk-motion-focus-feedback, .sk-link.sk-motion-press-feedback",
+    "color var(--sk-motion-duration-fast) var(--sk-motion-easing-standard), transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard)",
+    ".sk-link-card.sk-motion-focus-feedback, .sk-link-card.sk-motion-press-feedback",
+    "background-color var(--sk-motion-duration-fast) var(--sk-motion-easing-standard), border-color var(--sk-motion-duration-fast) var(--sk-motion-easing-standard), transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard)",
+  ]) {
+    if (!cleanCss.includes(requiredTransitionFragment)) fail("focus and press utilities must preserve existing primitive transitions");
+  }
   if (/@media \(prefers-reduced-motion: reduce\)[\s\S]*?outline\s*:\s*(?:none|0)/.test(cleanCss)) fail("reduced motion must not remove focus outlines");
   if (/@media \(prefers-reduced-motion: reduce\)[\s\S]*?(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0)/.test(cleanCss)) fail("reduced motion must not hide content or state wording");
   if (/(?:^|,)\s*(?:\*|html|body)(?:\s|,|\{)[\s\S]*?(?:animation|transition)/m.test(cleanCss)) fail("motion CSS must not add a global reveal or global motion selector");
@@ -283,6 +299,10 @@ export function runMotionAssistFixtures({ utilities, guidance, css, styles, docs
   expectFailure("prototype helper", (v) => ({ ...v, classNameFor: (key) => key === "constructor" ? "sk-motion-fake" : v.classNameFor(key) }));
   expectFailure("mutable guidance array", (v) => ({ ...v, guidance: [...v.guidance] }));
   expectFailure("mutable guidance entry", (v) => ({ ...v, guidance: Object.freeze(v.guidance.map((item, index) => index === 0 ? { ...item } : item)) }));
+  expectFailure("missing class-based copy confirmation", (v) => ({ ...v, css: v.css.replaceAll(".sk-motion-copy-confirmation.sk-copy-button-copied", ".missing-copy-state") }));
+  expectFailure("missing baseline primitive transitions", (v) => ({ ...v, css: v.css.replace(".sk-button.sk-motion-focus-feedback, .sk-button.sk-motion-press-feedback", ".missing-button-motion-compatibility") }));
+  expectFailure("missing Link baseline transition", (v) => ({ ...v, css: v.css.replace(".sk-link.sk-motion-focus-feedback, .sk-link.sk-motion-press-feedback", ".missing-link-motion-compatibility") }));
+  expectFailure("missing LinkCard baseline transitions", (v) => ({ ...v, css: v.css.replace(".sk-link-card.sk-motion-focus-feedback, .sk-link-card.sk-motion-press-feedback", ".missing-link-card-motion-compatibility") }));
   expectFailure("gallery drift", (v) => ({ ...v, gallery: v.gallery.replace("data-motion-key={utility.key}", "data-motion-key=\"drift\"") }));
   expectFailure("stale output", (v) => ({ ...v, docs: `${v.docs}\nStale.` }));
   fixtureCount += 1;

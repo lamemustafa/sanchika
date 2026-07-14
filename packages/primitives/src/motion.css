@@ -9,6 +9,15 @@
   :where(.sk-motion-press-feedback) {
     transition: transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard);
   }
+  :where(.sk-button.sk-motion-focus-feedback, .sk-button.sk-motion-press-feedback) {
+    transition: background-color var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), border-color var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), box-shadow var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), color var(--sk-motion-duration-standard) var(--sk-motion-easing-standard), transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard);
+  }
+  :where(.sk-link.sk-motion-focus-feedback, .sk-link.sk-motion-press-feedback) {
+    transition: color var(--sk-motion-duration-fast) var(--sk-motion-easing-standard), transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard);
+  }
+  :where(.sk-link-card.sk-motion-focus-feedback, .sk-link-card.sk-motion-press-feedback) {
+    transition: background-color var(--sk-motion-duration-fast) var(--sk-motion-easing-standard), border-color var(--sk-motion-duration-fast) var(--sk-motion-easing-standard), transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard);
+  }
   :where(.sk-motion-press-feedback:active:not(:disabled):not([aria-disabled="true"]):not([data-disabled="true"])) {
     transform: translateY(calc(var(--sk-motion-distance-xs) * 0.5));
   }
@@ -25,7 +34,7 @@
   :where(.sk-motion-status-highlight) {
     animation: sk-motion-status-highlight var(--sk-motion-duration-standard) var(--sk-motion-easing-emphasized) both;
   }
-  :where(.sk-motion-copy-confirmation[data-copy-state="copied"], [data-copy-state="copied"] .sk-motion-copy-confirmation) {
+  :where(.sk-motion-copy-confirmation.sk-copy-button-copied, .sk-copy-button-copied .sk-motion-copy-confirmation, .sk-motion-copy-confirmation[data-copy-state="copied"], [data-copy-state="copied"] .sk-motion-copy-confirmation) {
     animation: sk-motion-copy-confirmation var(--sk-motion-duration-standard) var(--sk-motion-easing-emphasized) both;
   }
   :where(.sk-motion-skeleton-loading, .sk-skeleton) {
@@ -55,7 +64,7 @@
     :where(.sk-button, .sk-link, .sk-link-card, .sk-motion-focus-feedback, .sk-motion-press-feedback) {
       transition: none;
     }
-    :where(.sk-motion-focus-feedback:focus-visible, .sk-motion-press-feedback:active:not(:disabled):not([aria-disabled="true"]):not([data-disabled="true"]), .sk-motion-fade-in, .sk-motion-rise-in, details[open] > .sk-motion-disclosure-continuity, .sk-motion-status-highlight, .sk-motion-copy-confirmation[data-copy-state="copied"], [data-copy-state="copied"] .sk-motion-copy-confirmation, .sk-motion-skeleton-loading, .sk-skeleton) {
+    :where(.sk-motion-focus-feedback:focus-visible, .sk-motion-press-feedback:active:not(:disabled):not([aria-disabled="true"]):not([data-disabled="true"]), .sk-motion-fade-in, .sk-motion-rise-in, details[open] > .sk-motion-disclosure-continuity, .sk-motion-status-highlight, .sk-motion-copy-confirmation.sk-copy-button-copied, .sk-copy-button-copied .sk-motion-copy-confirmation, .sk-motion-copy-confirmation[data-copy-state="copied"], [data-copy-state="copied"] .sk-motion-copy-confirmation, .sk-motion-skeleton-loading, .sk-skeleton) {
       animation: none;
       opacity: 1;
       transform: none;

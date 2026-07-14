@@ -153,7 +153,7 @@ export const motionAssistUtilities = Object.freeze([
     key: "copy-confirmation",
     className: "sk-motion-copy-confirmation",
     purpose: "Reinforces the existing copied state after explicit clipboard activation.",
-    trigger: "data-copy-state=copied",
+    trigger: "copied state class or data-copy-state=copied",
     tokenRoles: ["motion.duration.standard", "motion.easing.emphasized", "motion.distance-xs"],
     properties: ["opacity", "transform"],
     duration: "motion.duration.standard",
