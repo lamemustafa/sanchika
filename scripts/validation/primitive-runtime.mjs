@@ -169,6 +169,7 @@ export function validateIndianFormatting(formatters) {
   } = formatters;
 
   check(formatIndianNumber(0) === "0", "zero must format exactly");
+  check(formatIndianNumber(-0) === "0" && formatIndianNumber("-0.00") === "0.00", "signed zero number inputs must display as unsigned zero");
   check(formatIndianNumber(1.23456) === "1.23456", "default exact number formatting must preserve fractional digits");
   check(formatIndianNumber("1.234567890123456789") === "1.234567890123456789", "decimal strings must retain exact fractional digits");
   check(formatIndianNumber("1.2300") === "1.2300", "decimal strings must retain explicit trailing fractional zeros");
@@ -189,6 +190,7 @@ export function validateIndianFormatting(formatters) {
   check(formatIndianNumber(`${enormousInteger}.${"1".repeat(100)}`).endsWith("1".repeat(100)), "manual exact number path must accept the documented 100-digit fraction boundary");
   check(formatIndianCurrency(`${enormousInteger}.${"1".repeat(100)}`).endsWith("1".repeat(100)), "manual exact INR path must accept the documented 100-digit fraction boundary");
   check(formatIndianCurrency(1234567, { maximumFractionDigits: 0 }) === "₹12,34,567", "INR currency must use Indian grouping");
+  check(formatIndianCurrency(-0) === "₹0.00" && formatIndianCurrency("-0.00") === "₹0.00", "signed zero currency inputs must display as unsigned zero");
   check(formatIndianCurrency("1.23456") === "₹1.23456", "exact INR currency must preserve supplied fractional digits");
   check(formatIndianCurrency(12500000, { display: "compact" }) === "₹1.25 crore", "compact currency must be explicitly labelled");
   check(formatIndianCurrency(-12500000, { display: "compact" }) === "-₹1.25 crore", "compact negative currency must retain locale sign placement");
@@ -216,6 +218,8 @@ export function validateIndianFormatting(formatters) {
     ["overlong manual exact currency fraction", () => formatIndianCurrency(`${enormousInteger}.${"1".repeat(101)}`)],
     ["unknown percentage input mode", () => formatPercentage(18, { input: "percentage" })],
     ["invalid date", () => formatIndianDate("not-a-date")], ["invalid date-only", () => formatIndianDate("2026-02-29")],
+    ["ambiguous local date-time", () => formatIndianDateTime("2026-07-14T00:00:00")], ["date-only passed as date-time", () => formatIndianDateTime("2026-07-14")],
+    ["invalid instant calendar date", () => formatIndianDateTime("2026-02-29T00:00:00Z")], ["invalid instant timezone offset", () => formatIndianDateTime("2026-07-14T00:00:00+25:00")],
     ["null date", () => formatIndianDate(null)], ["boolean date-time", () => formatIndianDateTime(false)],
     ["empty PAN", () => formatPANDisplay(" ")], ["empty GSTIN", () => formatGSTINDisplay("")],
   ]) throwsFormatError(label, operation);

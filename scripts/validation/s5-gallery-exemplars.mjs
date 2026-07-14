@@ -6,8 +6,8 @@ const requirements = {
     filtering: { markup: ['field.dataset.filtering = "true"', 'status.setAttribute("aria-busy", "true")'] },
     results: { markup: ["data-sk-result-status", 'role="status"', 'aria-live="polite"', 'aria-atomic="true"'] },
     "no-results": { markup: ["data-s5-empty", "data-s5-reset", 'data-empty-kind="filtered"'] },
-    disabled: { markup: ['data-disabled="true"', 'aria-label="Clear disabled search" disabled'] },
-    error: { markup: ['data-invalid="true"', 'aria-invalid="true"', "data-sk-search-error"] },
+    disabled: { markup: ['data-disabled="true" data-has-value="true"', 'aria-label="Clear disabled search" disabled'] },
+    error: { markup: ['data-invalid="true"', 'aria-invalid="true"', "data-sk-search-error", "data-s5-error-clear", "clearErrorSearch"] },
   },
   InlineStatus: {
     default: { markup: ["sk-inline-status", "neutral state"] },

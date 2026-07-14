@@ -38,10 +38,10 @@ numeric/date input. Exact Indian grouping is the default and preserves supplied
 fractional digits unless `maximumFractionDigits` explicitly requests rounding;
 lakh/crore output requires `display: "compact"`; bigint and strict decimal
 numeric strings retain exact digits beyond the safe-number range. Date-only ISO
-values preserve their calendar day,
-date-time output defaults to `Asia/Kolkata`, and an explicit `timeZone` may
-override it. PAN and GSTIN helpers group display text only and do not validate
-identity, checksum, registration, or status.
+values preserve their calendar day. Date-time strings require an ISO instant
+with `Z` or an explicit numeric offset; output defaults to `Asia/Kolkata`, and
+an explicit `timeZone` may override it. PAN and GSTIN helpers group display text
+only and do not validate identity, checksum, registration, or status.
 
 ## License And Marks
 

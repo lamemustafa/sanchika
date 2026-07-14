@@ -457,9 +457,11 @@ formatPercentage(value, options?)
   strings beyond the finite `Intl` number range; non-INR or additional formatting
   options on such values are rejected rather than approximated.
 - ISO date-only input preserves its calendar day and defaults to `DD-MM-YYYY`.
-  Date-time output defaults to `Asia/Kolkata`; pass `timeZone` explicitly when a
-  different instant presentation is required. Machine values remain ISO in the
-  consumer data model.
+  Date-time string input must be an ISO instant with `Z` or an explicit numeric
+  offset; offset-less and invalid calendar strings throw `IndianFormatError`.
+  Date-time output defaults to `Asia/Kolkata`; pass `timeZone` explicitly when
+  a different instant presentation is required. Machine values remain ISO in
+  the consumer data model.
 - Percentage input defaults to fractions (`0.18` to `18%`); use
   `input: "percent"` for whole units (`18` to `18%`).
 - PAN and GSTIN values are uppercased/grouped for display only. The helpers do

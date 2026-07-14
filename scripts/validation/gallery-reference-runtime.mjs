@@ -29,6 +29,9 @@ export async function runGalleryReferenceRuntimeFixtures({ searchScript, toolsSc
   firstSearch.input.value = "alpha";
   firstSearch.input.emit("input", { isComposing: false });
   check(searchTimers.activeCount() === 1, "SearchField rapid input must retain only one bounded announcement timer");
+  firstSearch.errorClear.emit("click", {});
+  check(firstSearch.errorInput.value === "" && firstSearch.errorClear.disabled && firstSearch.errorInput.focused && firstSearch.errorField.dataset.hasValue === "false", "SearchField error clear must reset only its local fixture and retain focus");
+  check(secondSearch.errorInput.value === "Synthetic failure" && !secondSearch.errorClear.disabled, "SearchField error clear state must not collide across instances");
 
   const toolsTimers = createTimers();
   const firstTools = createToolsRoot();
@@ -111,13 +114,17 @@ function createSearchRoot(searchValues) {
   const countLabel = createElement({ textContent: "results" });
   const status = createElement();
   const empty = createElement();
+  const errorField = createElement({ dataset: { hasValue: "true" } });
+  const errorInput = createElement({ value: "Synthetic failure" });
+  const errorClear = createElement();
   const items = searchValues.map((search) => createElement({ dataset: { search } }));
   const selectors = new Map([
     ["[data-s5-search-field]", field], ["[data-s5-search]", input], ["[data-s5-clear]", clear],
     ["[data-s5-reset]", reset], ["[data-s5-count]", count], ["[data-s5-count-label]", countLabel],
     ["[data-sk-result-status]", status], ["[data-s5-empty]", empty],
+    ["[data-s5-error-field]", errorField], ["[data-s5-error-search]", errorInput], ["[data-s5-error-clear]", errorClear],
   ]);
-  return { root: { querySelector: (selector) => selectors.get(selector), querySelectorAll: () => items }, field, input, count, countLabel, status, items };
+  return { root: { querySelector: (selector) => selectors.get(selector), querySelectorAll: () => items }, field, input, count, countLabel, status, items, errorField, errorInput, errorClear };
 }
 
 function createToolsRoot() {

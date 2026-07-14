@@ -83,7 +83,7 @@ if (indianFormattingFixtures) console.log(`Sanchika Indian formatting fixtures p
 
 function validateTimezoneProcesses() {
   const moduleUrl = pathToFileURL(join(root, "packages/primitives/dist/index.js")).href;
-  const probe = `import { formatIndianDate, formatIndianDateTime } from ${JSON.stringify(moduleUrl)}; console.log(JSON.stringify({ date: formatIndianDate("2026-07-14"), instant: formatIndianDateTime("2026-07-13T20:00:00Z", { timeZone: "Asia/Kolkata" }) }));`;
+  const probe = `import { formatIndianDate, formatIndianDateTime } from ${JSON.stringify(moduleUrl)}; console.log(JSON.stringify({ date: formatIndianDate("2026-07-14"), instant: formatIndianDateTime("2026-07-13T20:00:00Z", { timeZone: "Asia/Kolkata" }), offsetInstant: formatIndianDateTime("2026-07-14T01:30:00+05:30", { timeZone: "UTC" }) }));`;
   const outputs = ["UTC", "Asia/Kolkata"].map((TZ) => execFileSync(process.execPath, ["--input-type=module", "--eval", probe], { encoding: "utf8", env: { ...process.env, TZ } }).trim());
   if (outputs[0] !== outputs[1]) failures.push("Indian date formatting must be stable across UTC and Asia/Kolkata process timezones when timezone policy is explicit");
 }

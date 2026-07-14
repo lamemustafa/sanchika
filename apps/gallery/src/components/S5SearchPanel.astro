@@ -42,8 +42,8 @@ const errorMessageId = `${instanceId}-search-error-message`;
     </section>
 
     <div class="s5-search-edge-grid">
-      <div class={primitiveClassName("SearchField", { size: "md" })} data-disabled="true"><label for={disabledId}>Disabled search</label><div class="sk-search-field__control"><span class="sk-search-field__icon" aria-hidden="true">⌕</span><input id={disabledId} type="search" value="Locked query" disabled /><button type="button" class="sk-search-field__clear" aria-label="Clear disabled search" disabled>Clear</button></div><p data-sk-search-hint>Clear is inactive whenever search is disabled.</p></div>
-      <div class={primitiveClassName("SearchField", { size: "md" })} data-invalid="true" data-has-value="true"><label for={errorId}>Search error fixture</label><div class="sk-search-field__control"><span class="sk-search-field__icon" aria-hidden="true">⌕</span><input id={errorId} type="search" value="Synthetic failure" aria-invalid="true" aria-describedby={errorMessageId} /><button type="button" class="sk-search-field__clear" aria-label="Clear error search">Clear</button></div><p id={errorMessageId} data-sk-search-error>Local index is unavailable. No query was sent.</p></div>
+      <div class={primitiveClassName("SearchField", { size: "md" })} data-disabled="true" data-has-value="true"><label for={disabledId}>Disabled search</label><div class="sk-search-field__control"><span class="sk-search-field__icon" aria-hidden="true">⌕</span><input id={disabledId} type="search" value="Locked query" disabled /><button type="button" class="sk-search-field__clear" aria-label="Clear disabled search" disabled>Clear</button></div><p data-sk-search-hint>Clear is inactive whenever search is disabled.</p></div>
+      <div class={primitiveClassName("SearchField", { size: "md" })} data-invalid="true" data-has-value="true" data-s5-error-field><label for={errorId}>Search error fixture</label><div class="sk-search-field__control"><span class="sk-search-field__icon" aria-hidden="true">⌕</span><input id={errorId} type="search" value="Synthetic failure" aria-invalid="true" aria-describedby={errorMessageId} data-s5-error-search /><button type="button" class="sk-search-field__clear" aria-label="Clear error search" data-s5-error-clear>Clear</button></div><p id={errorMessageId} data-sk-search-error>Local index is unavailable. No query was sent.</p></div>
     </div>
   </div>
 </section>
@@ -58,6 +58,9 @@ const errorMessageId = `${instanceId}-search-error-message`;
     const countLabel = root.querySelector("[data-s5-count-label]");
     const status = root.querySelector("[data-sk-result-status]");
     const empty = root.querySelector("[data-s5-empty]");
+    const errorField = root.querySelector("[data-s5-error-field]");
+    const errorInput = root.querySelector("[data-s5-error-search]");
+    const errorClear = root.querySelector("[data-s5-error-clear]");
     const items = [...root.querySelectorAll("[data-s5-item]")];
     let announcementTimer;
     let composing = false;
@@ -82,6 +85,7 @@ const errorMessageId = `${instanceId}-search-error-message`;
       } else updateStatus(visible);
     };
     const clearSearch = () => { input.value = ""; apply(); input.focus(); };
+    const clearErrorSearch = () => { errorInput.value = ""; errorField.dataset.hasValue = "false"; errorClear.disabled = true; errorInput.focus(); };
     field.addEventListener("submit", (event) => { event.preventDefault(); });
     input.addEventListener("compositionstart", () => { composing = true; });
     input.addEventListener("compositionend", () => { composing = false; apply(); });
@@ -89,6 +93,7 @@ const errorMessageId = `${instanceId}-search-error-message`;
     input.addEventListener("keydown", (event) => { if (event.key === "Escape" && input.value) { event.preventDefault(); clearSearch(); } });
     clear.addEventListener("click", clearSearch);
     reset.addEventListener("click", clearSearch);
+    errorClear.addEventListener("click", clearErrorSearch);
     apply({ announce: false });
   }
 </script>

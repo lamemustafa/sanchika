@@ -115,13 +115,14 @@ function toFiniteNumber(value: IndianNumericInput, label: string): number {
   if (typeof value === "string" && value.trim() === "") throw new IndianFormatError(`${label} must not be empty`);
   const numeric = typeof value === "bigint" ? Number(value) : typeof value === "string" ? Number(assertDecimalString(value, label)) : value;
   if (!Number.isFinite(numeric)) throw new IndianFormatError(`${label} must be a finite number`);
-  return numeric;
+  return Object.is(numeric, -0) ? 0 : numeric;
 }
 
 function toFiniteNumeric(value: IndianNumericInput, label: string): ExactNumeric {
   if (typeof value === "bigint") return value;
   if (typeof value === "string") {
-    return assertDecimalString(value, label);
+    const decimal = assertDecimalString(value, label);
+    return /^-(?:0+(?:\.0*)?|\.0+)$/.test(decimal) ? decimal.slice(1) : decimal;
   }
   return toFiniteNumber(value, label);
 }
@@ -215,9 +216,28 @@ function toValidDate(value: Date | string | number): Date {
     throw new IndianFormatError("date must be a Date, string, or number");
   }
   if (typeof value === "string" && value.trim() === "") throw new IndianFormatError("date must not be empty");
-  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+  const normalized = typeof value === "string" ? assertExplicitIsoInstant(value) : value;
+  const date = normalized instanceof Date ? new Date(normalized.getTime()) : new Date(normalized);
   if (!Number.isFinite(date.getTime())) throw new IndianFormatError("date must be valid");
   return date;
+}
+
+function assertExplicitIsoInstant(value: string): string {
+  const normalized = value.trim();
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?(Z|[+-]\d{2}:\d{2})$/.exec(normalized);
+  if (!match) throw new IndianFormatError("date-time strings must be ISO instants with Z or an explicit offset");
+  parseIsoDateOnly(`${match[1]}-${match[2]}-${match[3]}`);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6] ?? "0");
+  const offset = match[8] ?? "Z";
+  if (hour > 23 || minute > 59 || second > 59) throw new IndianFormatError("date-time must contain a valid time");
+  if (offset !== "Z") {
+    const offsetHour = Number(offset.slice(1, 3));
+    const offsetMinute = Number(offset.slice(4, 6));
+    if (offsetHour > 23 || offsetMinute > 59) throw new IndianFormatError("date-time must contain a valid timezone offset");
+  }
+  return normalized;
 }
 
 function parseIsoDateOnly(value: string): { year: number; month: number; day: number; date: Date } | null {
