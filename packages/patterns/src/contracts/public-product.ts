@@ -159,7 +159,7 @@ export const publicProductPatterns = Object.freeze([
     ],
     trustBoundaries: trust,
     responsiveBehavior: ["Stack facts after the claim on narrow screens.", "Keep boundary summary before the related action in DOM order."],
-    exemplarRoutes: ["/patterns/public/", "/patterns/pack/", "/patterns/tools/", "/lab/complyeaze-core/", "/lab/axal-review-desk/", "/lab/pack-local-proof/", "/lab/tools-directory/"],
+    exemplarRoutes: ["/patterns/public/", "/patterns/pack/", "/lab/complyeaze-core/", "/lab/axal-review-desk/", "/lab/pack-local-proof/"],
     adopterGuidance: guidance,
     nonGoals: ["privacy-policy substitute", "security certification", "decorative reassurance"],
   }),
