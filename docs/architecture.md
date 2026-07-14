@@ -18,6 +18,9 @@ tokens -> primitives -> patterns
   S5 permits tiny zero-dependency scripts inside gallery examples for
   SearchField and CopyButton progressive enhancement. Those scripts are app
   evidence only and are never exported from `@sanchika/primitives`.
+  S6 adds no package runtime: motion-assist metadata and a finite class-name
+  helper resolve package CSS only, while the `/foundations/motion/` route is
+  statically derived proof.
 - CSS package exports are the only declared package side effects:
   `@sanchika/tokens/theme.css` and `@sanchika/primitives/styles.css` stay
   side-effectful so production bundlers do not prune required styles. Code-only

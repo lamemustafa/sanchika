@@ -233,7 +233,7 @@ function runConsumerProbe() {
     `import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { colorTokens, tokenDefinitions } from "@sanchika/tokens";
-import { formatGSTINDisplay, formatIndianDateTime, formatIndianNumber, formatPercentage, primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
+import { formatGSTINDisplay, formatIndianDateTime, formatIndianNumber, formatPercentage, motionAssistClassName, motionAssistUtilities, primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
 import { patternSpecs } from "@sanchika/patterns";
 
 const require = createRequire(import.meta.url);
@@ -254,6 +254,8 @@ const checks = [
   primitiveSpecs.length === 28,
   primitiveClassName("SearchField", { size: "lg" }) === "sk-search-field sk-size-lg",
   primitiveClassName("CopyButton", { state: "copied", size: "sm" }) === "sk-copy-button sk-copy-button-copied sk-size-sm",
+  motionAssistUtilities.length === 8,
+  motionAssistClassName("skeleton-loading") === "sk-motion-skeleton-loading",
   formatIndianNumber("1.234567890123456789") === "1.234567890123456789",
   formatIndianNumber(10000000, { display: "compact" }) === "1 crore",
   formatPercentage(18, { input: "percent" }) === "18%",

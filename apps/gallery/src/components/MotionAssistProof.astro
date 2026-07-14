@@ -1,0 +1,90 @@
+---
+import {
+  assistGuidanceEntries,
+  motionAssistClassName,
+  motionAssistUtilities,
+  primitiveClassName,
+  textClassName,
+} from "@sanchika/primitives";
+---
+
+<section class={primitiveClassName("Section", { space: "lg", boundary: "bordered" })} aria-labelledby="motion-utility-title">
+  <div class={primitiveClassName("Stack", { gap: "lg" })}>
+    <div>
+      <p class={textClassName("eyebrow")}>Package-owned metadata</p>
+      <h2 id="motion-utility-title" class={textClassName("heading")}>Eight finite assists. One repeating loading signal.</h2>
+      <p>Every row and class below is rendered from the exported utility inventory.</p>
+    </div>
+    <div class="motion-assist-grid" data-motion-utility-count={motionAssistUtilities.length}>
+      {motionAssistUtilities.map((utility) => (
+        <article
+          class={primitiveClassName("Surface", { variant: "raised", padding: "md" })}
+          data-motion-key={utility.key}
+          data-motion-class={utility.className}
+        >
+          <div class={primitiveClassName("Stack", { gap: "sm" })}>
+            <p class={textClassName("eyebrow")}>{utility.iteration} · {utility.duration}</p>
+            <h3>{utility.key}</h3>
+            <code>.{utility.className}</code>
+            <p>{utility.purpose}</p>
+            <dl>
+              <div><dt>Trigger</dt><dd>{utility.trigger}</dd></div>
+              <div><dt>Properties</dt><dd>{utility.properties.join(", ")}</dd></div>
+              <div><dt>Reduced motion</dt><dd>{utility.reducedMotionResult}</dd></div>
+            </dl>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class={primitiveClassName("Section", { space: "lg", boundary: "bordered" })} aria-labelledby="motion-proof-title">
+  <div class={primitiveClassName("Stack", { gap: "lg" })}>
+    <div><p class={textClassName("eyebrow")}>CSS-only proof</p><h2 id="motion-proof-title" class={textClassName("heading")}>State stays truthful when motion disappears.</h2></div>
+    <div class="motion-proof-grid">
+      <article class={primitiveClassName("Surface", { variant: "inset", padding: "md" })}>
+        <h3>Focus and press</h3>
+        <p>Keyboard focus keeps the package outline; enabled press receives a short acknowledgement.</p>
+        <div class={primitiveClassName("Cluster", { gap: "sm" })}>
+          <button class={`${primitiveClassName("Button", "brand", "md")} ${motionAssistClassName("focus-feedback")} ${motionAssistClassName("press-feedback")}`} type="button">Review source</button>
+          <button class={`${primitiveClassName("Button", "neutral", "md")} ${motionAssistClassName("press-feedback")}`} type="button" disabled>Unavailable</button>
+        </div>
+      </article>
+      <article class={`${primitiveClassName("Surface", { variant: "inset", padding: "md" })} ${motionAssistClassName("fade-entrance")}`}>
+        <h3>Fade entrance</h3><p>Supporting content is in the document and visible even when animation is removed.</p>
+      </article>
+      <article class={`${primitiveClassName("Surface", { variant: "inset", padding: "md" })} ${motionAssistClassName("rise-entrance")}`}>
+        <h3>Short rise entrance</h3><p>The maximum travel uses the existing medium distance token.</p>
+      </article>
+      <details class={primitiveClassName("Disclosure")} open>
+        <summary class="sk-disclosure__summary">Synthetic source detail</summary>
+        <div class={`sk-disclosure__content ${motionAssistClassName("disclosure-continuity")}`}><p>Native disclosure state remains the source of truth. No height is animated.</p><a class={primitiveClassName("Link")} href="#motion-guidance-title">Read guidance</a></div>
+      </details>
+      <article class={primitiveClassName("Surface", { variant: "inset", padding: "md" })}>
+        <h3>Settled feedback</h3>
+        <div class={primitiveClassName("Stack", { gap: "sm", align: "start" })}>
+          <span class={`${primitiveClassName("InlineStatus", { tone: "success" })} ${motionAssistClassName("status-highlight")}`}><span class="sk-inline-status__marker" aria-hidden="true">✓</span><span>Synthetic source checked</span></span>
+          <span data-copy-state="copied"><span class={`sk-copy-button__status ${motionAssistClassName("copy-confirmation")}`} role="status" aria-live="polite">Copied to clipboard.</span></span>
+        </div>
+      </article>
+      <article class={primitiveClassName("Surface", { variant: "inset", padding: "md" })} aria-busy="true" aria-labelledby="motion-loading-title">
+        <h3 id="motion-loading-title">Loading synthetic review rows</h3>
+        <p>The owner names loading while decorative shapes stay assistive-hidden.</p>
+        <div class="motion-skeleton-stack" aria-hidden="true"><span class={`${primitiveClassName("Skeleton", { form: "text" })} ${motionAssistClassName("skeleton-loading")}`}></span><span class={`${primitiveClassName("Skeleton", { form: "row" })} ${motionAssistClassName("skeleton-loading")}`}></span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="motion-guidance-title" class={primitiveClassName("Section", { space: "lg", boundary: "bordered" })} aria-labelledby="motion-guidance-heading">
+  <div class={primitiveClassName("Stack", { gap: "md" })}>
+    <div><p class={textClassName("eyebrow")}>Semantic-first guidance</p><h2 id="motion-guidance-heading" class={textClassName("heading")}>The assist is optional; the responsibility is not.</h2></div>
+    <div class="motion-guidance-table-wrap" role="region" aria-labelledby="motion-guidance-heading" tabindex="0">
+      <table class="motion-guidance-table">
+        <thead><tr><th scope="col">Situation</th><th scope="col">Semantic first</th><th scope="col">Optional assist</th><th scope="col">Consumer responsibility</th></tr></thead>
+        <tbody>{assistGuidanceEntries.map((entry) => <tr data-motion-guidance={entry.key}><th scope="row">{entry.situation}</th><td>{entry.semanticFirst}</td><td>{entry.optionalAssist}</td><td>{entry.consumerResponsibility}</td></tr>)}</tbody>
+      </table>
+    </div>
+  </div>
+</section>

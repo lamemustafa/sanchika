@@ -1,0 +1,68 @@
+@layer sanchika-primitives {
+  :where(.sk-motion-focus-feedback) {
+    transition: transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard);
+  }
+  :where(.sk-motion-focus-feedback:focus-visible) {
+    transform: translateY(calc(var(--sk-motion-distance-xs) * -0.5));
+  }
+
+  :where(.sk-motion-press-feedback) {
+    transition: transform var(--sk-motion-duration-instant) var(--sk-motion-easing-standard);
+  }
+  :where(.sk-motion-press-feedback:active:not(:disabled):not([aria-disabled="true"]):not([data-disabled="true"])) {
+    transform: translateY(calc(var(--sk-motion-distance-xs) * 0.5));
+  }
+
+  :where(.sk-motion-fade-in) {
+    animation: sk-motion-fade-in var(--sk-motion-duration-slow) var(--sk-motion-easing-enter) both;
+  }
+  :where(.sk-motion-rise-in) {
+    animation: sk-motion-rise-in var(--sk-motion-duration-slow) var(--sk-motion-easing-enter) both;
+  }
+  :where(details[open] > .sk-motion-disclosure-continuity) {
+    animation: sk-motion-disclosure-continuity var(--sk-motion-duration-fast) var(--sk-motion-easing-enter) both;
+  }
+  :where(.sk-motion-status-highlight) {
+    animation: sk-motion-status-highlight var(--sk-motion-duration-standard) var(--sk-motion-easing-emphasized) both;
+  }
+  :where(.sk-motion-copy-confirmation[data-copy-state="copied"], [data-copy-state="copied"] .sk-motion-copy-confirmation) {
+    animation: sk-motion-copy-confirmation var(--sk-motion-duration-standard) var(--sk-motion-easing-emphasized) both;
+  }
+  :where(.sk-motion-skeleton-loading, .sk-skeleton) {
+    animation: sk-motion-skeleton-loading var(--sk-motion-duration-loading) var(--sk-motion-easing-standard) infinite alternate;
+  }
+
+  @keyframes sk-motion-fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes sk-motion-rise-in {
+    from { opacity: 0; transform: translateY(var(--sk-motion-distance-md)); }
+  }
+  @keyframes sk-motion-disclosure-continuity {
+    from { opacity: 0; transform: translateY(calc(var(--sk-motion-distance-xs) * -1)); }
+  }
+  @keyframes sk-motion-status-highlight {
+    from { background-color: var(--sk-color-surface-raised); border-color: var(--sk-color-border-strong); }
+  }
+  @keyframes sk-motion-copy-confirmation {
+    from { opacity: 0; transform: translateY(var(--sk-motion-distance-xs)); }
+  }
+  @keyframes sk-motion-skeleton-loading {
+    to { opacity: 0.52; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(.sk-button, .sk-link, .sk-link-card, .sk-motion-focus-feedback, .sk-motion-press-feedback) {
+      transition: none;
+    }
+    :where(.sk-motion-focus-feedback:focus-visible, .sk-motion-press-feedback:active:not(:disabled):not([aria-disabled="true"]):not([data-disabled="true"]), .sk-motion-fade-in, .sk-motion-rise-in, details[open] > .sk-motion-disclosure-continuity, .sk-motion-status-highlight, .sk-motion-copy-confirmation[data-copy-state="copied"], [data-copy-state="copied"] .sk-motion-copy-confirmation, .sk-motion-skeleton-loading, .sk-skeleton) {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where(.sk-motion-skeleton-loading, .sk-skeleton) { animation: none; opacity: 1; background: Canvas; border-color: CanvasText; }
+  }
+}

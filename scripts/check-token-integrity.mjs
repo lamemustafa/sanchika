@@ -27,6 +27,9 @@ const primitiveCss = [
   "packages/primitives/src/foundation.css",
   "packages/primitives/src/typography.css",
   "packages/primitives/src/components.css",
+  "packages/primitives/src/search-feedback.css",
+  "packages/primitives/src/process-data.css",
+  "packages/primitives/src/motion.css",
 ].map(read).join("\n");
 const tokenEntrypoint = read("packages/tokens/src/index.ts");
 const failures = validateTokenSource({

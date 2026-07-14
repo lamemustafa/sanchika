@@ -66,6 +66,11 @@ Unknown primitives, option names, and variant values fail type checking and
 throw at runtime. The API does not expose arbitrary spacing, breakpoints,
 columns, colors, font sizes, or utility aliases.
 
+Motion assists remain a separate finite API and are never added to
+`primitiveSpecs`. Use `motionAssistUtilities` for immutable metadata and
+`motionAssistClassName` for the exact eight opt-in class names. See
+[`motion.md`](./motion.md) for semantic-first usage and reduced-motion rules.
+
 ## Foundation inventory
 
 ### Container

@@ -1,0 +1,22 @@
+.motion-assist-masthead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sk-space-3); padding-block: var(--sk-space-4); border-block-end: var(--sk-border-width-default) solid var(--sk-color-border-subtle); }
+.motion-assist-hero { max-inline-size: var(--sk-container-content); }
+.motion-assist-hero h1 { max-inline-size: 13ch; }
+.motion-assist-grid, .motion-proof-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sk-content-gap-md); }
+.motion-assist-grid article { min-inline-size: 0; }
+.motion-assist-grid :is(h3, p), .motion-proof-grid :is(h3, p) { margin-block: 0; }
+.motion-assist-grid code { inline-size: fit-content; max-inline-size: 100%; padding: var(--sk-space-1) var(--sk-space-2); overflow-wrap: anywhere; color: var(--sk-color-ink-primary); background: var(--sk-color-surface-inset); border-radius: var(--sk-radius-sm); }
+.motion-assist-grid dl { display: grid; gap: var(--sk-space-2); margin: 0; }
+.motion-assist-grid dl > div { display: grid; gap: var(--sk-space-1); }
+.motion-assist-grid :is(dt, dd) { margin: 0; }
+.motion-assist-grid dt { color: var(--sk-color-ink-secondary); font-size: var(--sk-font-size-sm); font-weight: var(--sk-font-weight-semibold); }
+.motion-assist-grid dd { overflow-wrap: anywhere; }
+.motion-proof-grid > :where(article, details) { min-inline-size: 0; }
+.motion-skeleton-stack { display: grid; gap: var(--sk-space-3); margin-block-start: var(--sk-space-4); }
+.motion-guidance-table-wrap { max-inline-size: 100%; overflow-x: auto; border: var(--sk-border-width-default) solid var(--sk-color-border-default); border-radius: var(--sk-radius-md); }
+.motion-guidance-table-wrap:focus-visible { outline: var(--sk-focus-outline-width) solid var(--sk-color-focus); outline-offset: var(--sk-focus-outline-offset); }
+.motion-guidance-table { inline-size: 100%; min-inline-size: 54rem; border-collapse: collapse; }
+.motion-guidance-table :is(th, td) { padding: var(--sk-space-3); text-align: start; vertical-align: top; border-block-end: var(--sk-border-width-default) solid var(--sk-color-border-subtle); }
+.motion-guidance-table thead th { background: var(--sk-color-surface-muted); }
+.motion-guidance-table tbody tr:last-child > * { border-block-end: 0; }
+@media (max-width: 47.99rem) { .motion-assist-grid, .motion-proof-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (forced-colors: active) { .motion-guidance-table-wrap, .motion-guidance-table :is(th, td) { border-color: CanvasText; } }

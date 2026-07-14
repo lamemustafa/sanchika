@@ -39,7 +39,7 @@
     "./styles.css": "./dist/styles.css"
   },
   "scripts": {
-    "build": "node ../../scripts/build-package.mjs styles.css foundation.css typography.css components.css search-feedback.css process-data.css",
+    "build": "node ../../scripts/build-package.mjs styles.css foundation.css typography.css components.css search-feedback.css process-data.css motion.css",
     "typecheck": "tsc -p tsconfig.typecheck.json --noEmit"
   },
   "dependencies": {

@@ -83,7 +83,6 @@
   border-radius: var(--sk-radius-sm);
   font-weight: var(--sk-font-weight-bold);
   text-decoration: none;
-  transition: background var(--sk-motion-duration-fast) var(--sk-motion-easing-emphasized);
 }
 
 .lab-motion-card--focus .lab-motion-card__demo a:focus-visible {
@@ -161,8 +160,7 @@
   inset: 0;
   content: "";
   background: var(--sk-color-brand-secondary);
-  transform: translateX(-72%);
-  animation: lab-progress var(--lab-motion-slow) var(--sk-motion-easing-emphasized) infinite alternate;
+  width: 72%;
 }
 
 .lab-assist-note {
@@ -170,7 +168,6 @@
   background: var(--sk-color-surface-raised);
   border: var(--sk-border-width-strong) solid var(--sk-color-brand-secondary);
   border-radius: var(--sk-radius-md);
-  animation: lab-assist-in var(--lab-motion-slow) var(--sk-motion-easing-emphasized) both;
 }
 
 .lab-assist-note > span,
@@ -227,24 +224,6 @@
   color: var(--sk-color-surface-raised);
 }
 
-@keyframes lab-progress {
-  to {
-    transform: translateX(72%);
-  }
-}
-
-@keyframes lab-assist-in {
-  from {
-    opacity: 0;
-    transform: translateY(var(--sk-space-2));
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   html[data-sanchika-lab] {
     scroll-behavior: auto;
@@ -259,13 +238,4 @@
     transition-duration: 0.001ms !important;
   }
 
-  .lab-motion-progress i::after {
-    width: 72%;
-    transform: none;
-  }
-
-  .lab-assist-note {
-    opacity: 1;
-    transform: none;
-  }
 }

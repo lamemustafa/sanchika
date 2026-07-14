@@ -7,15 +7,16 @@ import { runS5GalleryExemplarFixtures, validateS5GalleryExemplars } from "./vali
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertGalleryBuildArtifacts({ root, commandName: "pnpm check:gallery" });
 
-const { primitiveGroups, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
+const { motionAssistUtilities, primitiveGroups, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
 const { patternSpecs } = await import("../packages/patterns/dist/index.js");
 const rootMarkup = readFileSync(new URL("../apps/gallery/dist/index.html", import.meta.url), "utf8");
 const foundationMarkup = readFileSync(new URL("../apps/gallery/dist/primitives/foundations/index.html", import.meta.url), "utf8");
 const s5Markup = readFileSync(new URL("../apps/gallery/dist/primitives/search-state-feedback/index.html", import.meta.url), "utf8");
-const primitiveCss = ["search-feedback.css", "process-data.css"]
+const motionMarkup = readFileSync(new URL("../apps/gallery/dist/foundations/motion/index.html", import.meta.url), "utf8");
+const primitiveCss = ["search-feedback.css", "process-data.css", "motion.css"]
   .map((path) => readFileSync(new URL(`../packages/primitives/src/${path}`, import.meta.url), "utf8"))
   .join("\n");
-const markup = `${rootMarkup}\n${foundationMarkup}\n${s5Markup}`;
+const markup = `${rootMarkup}\n${foundationMarkup}\n${s5Markup}\n${motionMarkup}`;
 const failures = [];
 const exemplarFixtures = runGalleryExemplarFixtures();
 failures.push(...exemplarFixtures.failures.map((failure) => `gallery exemplar fixture ${failure}`));
@@ -27,6 +28,18 @@ assertExactAttributeValues({
   attribute: "data-sk-contract",
   expected: primitiveGroups.legacy.map((primitive) => primitive.name),
   label: "canonical primitive contract inventory",
+});
+assertExactAttributeValues({
+  markup: motionMarkup,
+  attribute: "data-motion-key",
+  expected: motionAssistUtilities.map((utility) => utility.key),
+  label: "motion-assist utility inventory",
+});
+assertExactAttributeValues({
+  markup: motionMarkup,
+  attribute: "data-motion-class",
+  expected: motionAssistUtilities.map((utility) => utility.className),
+  label: "motion-assist class inventory",
 });
 assertExactAttributeValues({
   markup: s5Markup,
@@ -101,7 +114,7 @@ for (const pattern of patternSpecs) {
   }
 }
 
-if (rootMarkup.includes("@sanchika/") || foundationMarkup.includes("@sanchika/") || s5Markup.includes("@sanchika/")) {
+if (rootMarkup.includes("@sanchika/") || foundationMarkup.includes("@sanchika/") || s5Markup.includes("@sanchika/") || motionMarkup.includes("@sanchika/")) {
   failures.push("openable gallery artifact must not contain unresolved @sanchika/* hrefs");
 }
 

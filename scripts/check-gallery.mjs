@@ -42,6 +42,7 @@ const expectedLabDocuments = [
 const tokenProofDocument = "foundations/tokens/index.html";
 const primitiveFoundationDocument = "primitives/foundations/index.html";
 const s5Document = "primitives/search-state-feedback/index.html";
+const motionDocument = "foundations/motion/index.html";
 const stylesheetConsumers = new Set();
 let assetGraph = null;
 const scriptSizes = new Map();
@@ -152,6 +153,22 @@ if (!s5Html) {
   ]) if (!s5Html.includes(required)) failures.push(`${s5Document} must include ${required}`);
 }
 
+const motionHtml = outputFileMap.get(motionDocument) ?? "";
+if (!motionHtml) {
+  failures.push(`${motionDocument} must exist`);
+} else {
+  for (const required of [
+    "<title>Motion and assist foundations | Sanchika</title>",
+    '<link rel="canonical" href="https://sanchika.complyeaze.com/foundations/motion/">',
+    'data-sanchika-gallery="motion-assist"',
+    "Assist the state. Never invent it.",
+    'data-motion-utility-count="8"',
+    'data-motion-key="focus-feedback"',
+    'data-motion-key="skeleton-loading"',
+    "The assist is optional; the responsibility is not.",
+  ]) if (!motionHtml.includes(required)) failures.push(`${motionDocument} must include ${required}`);
+}
+
 const referenceRuntimeFixtures = await runGalleryReferenceRuntimeFixtures({
   searchScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-search-field"),
   copyScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-copy-button"),
@@ -188,6 +205,7 @@ for (const required of [
   "pnpm pages:smoke",
   "docs/adoption-complyeaze.md",
   "Read adoption proof plan",
+  'href="/foundations/motion/"',
   "Current public evidence ledger",
   "Use Sanchika as evidence, not authority.",
   "Pattern state exemplars",
@@ -211,8 +229,8 @@ if (tokenCssIndex === -1 || primitiveCssIndex === -1 || tokenCssIndex > primitiv
 if (generatedCss.includes(":where()")) {
   failures.push("apps/gallery generated CSS must not contain an empty :where() selector");
 }
-if ((generatedCss.match(/:where\([^)]*\.sk-button\[aria-busy=(?:true|"true")\][^)]*\):{1,2}after/g) ?? []).length < 2) {
-  failures.push("apps/gallery generated CSS must preserve loading-button and reduced-motion pseudo-element selectors");
+if ((generatedCss.match(/:where\([^)]*\.sk-button\[aria-busy=(?:true|"true")\][^)]*\):{1,2}after/g) ?? []).length < 1) {
+  failures.push("apps/gallery generated CSS must preserve the static loading-button pseudo-element selector");
 }
 if (!/:where\(\.sk-field :is\(input,textarea,select,\[data-sk-control\]\)\):{1,2}placeholder/.test(generatedCss)) {
   failures.push("apps/gallery generated CSS must preserve the field placeholder selector");

@@ -1,5 +1,5 @@
 ---
-import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import { motionAssistClassName, primitiveClassName, textClassName } from "@sanchika/primitives";
 ---
 
 <section class={primitiveClassName("Section", { space: "lg", boundary: "bordered" })} aria-labelledby="s5-process-title">
@@ -19,11 +19,11 @@ import { primitiveClassName, textClassName } from "@sanchika/primitives";
         </ol>
       </div>
       <div class={primitiveClassName("Stack", { gap: "md" })}>
-        <details class={primitiveClassName("Disclosure")}><summary class="sk-disclosure__summary">Closed source detail</summary><div class="sk-disclosure__content"><p>This content is native and available without JavaScript.</p></div></details>
-        <details class={primitiveClassName("Disclosure")} open><summary class="sk-disclosure__summary">Open long-content guidance</summary><div class="sk-disclosure__content"><p>M/s Shree Venkateshwara Industrial Components and Professional Services Private Limited remains readable without height animation or clipped focusable content.</p><a class={primitiveClassName("Link")} href="#s5-contract-ledger">Read contract responsibilities</a></div></details>
+        <details class={primitiveClassName("Disclosure")}><summary class="sk-disclosure__summary">Closed source detail</summary><div class={`sk-disclosure__content ${motionAssistClassName("disclosure-continuity")}`}><p>This content is native and available without JavaScript.</p></div></details>
+        <details class={primitiveClassName("Disclosure")} open><summary class="sk-disclosure__summary">Open long-content guidance</summary><div class={`sk-disclosure__content ${motionAssistClassName("disclosure-continuity")}`}><p>M/s Shree Venkateshwara Industrial Components and Professional Services Private Limited remains readable without height animation or clipped focusable content.</p><a class={primitiveClassName("Link")} href="#s5-contract-ledger">Read contract responsibilities</a></div></details>
         <p class={textClassName("caption")} data-disclosure-nested-guidance>Keep disclosures as siblings. Do not place an interactive summary inside another summary.</p>
         <div class="s5-copy-fixtures">
-          <div data-copy-fixture><code data-copy-source>sha256:synthetic-s5-proof</code><button class={primitiveClassName("CopyButton", { state: "idle", size: "sm" })} type="button" aria-label="Copy synthetic checksum" data-copy-button><span class="sk-copy-button__label">Copy checksum</span></button><span class="sk-copy-button__status" role="status" aria-live="polite" aria-atomic="true"></span></div>
+          <div data-copy-fixture><code data-copy-source>sha256:synthetic-s5-proof</code><button class={`${primitiveClassName("CopyButton", { state: "idle", size: "sm" })} ${motionAssistClassName("copy-confirmation")}`} type="button" aria-label="Copy synthetic checksum" data-copy-button><span class="sk-copy-button__label">Copy checksum</span></button><span class="sk-copy-button__status" role="status" aria-live="polite" aria-atomic="true"></span></div>
           <div data-copy-fixture><code data-copy-source>S5-FAILURE-FIXTURE</code><button class={primitiveClassName("CopyButton", { state: "idle", size: "sm" })} type="button" aria-label="Exercise denied copy fixture" data-copy-button data-copy-denied><span class="sk-copy-button__label">Try denied copy</span></button><span class="sk-copy-button__status" role="status" aria-live="polite" aria-atomic="true"></span></div>
           <div data-copy-fixture><code data-copy-source></code><button class={primitiveClassName("CopyButton", { state: "idle", size: "sm" })} type="button" aria-label="Copy unavailable value" data-copy-button disabled><span class="sk-copy-button__label">No value to copy</span></button><span class="sk-copy-button__status" role="status" aria-live="polite" aria-atomic="true"></span></div>
         </div>

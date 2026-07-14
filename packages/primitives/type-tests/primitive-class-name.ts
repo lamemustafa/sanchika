@@ -1,5 +1,5 @@
-import { primitiveClassName, textClassName } from "../src/index";
-import type { PrimitiveContract, PrimitiveSpec } from "../src/index";
+import { motionAssistClassName, primitiveClassName, textClassName } from "../src/index";
+import type { MotionAssistKey, PrimitiveContract, PrimitiveSpec } from "../src/index";
 
 const legacyPrimitiveSpec: PrimitiveSpec = {
   name: "Fixture",
@@ -62,6 +62,9 @@ primitiveClassName("Breadcrumb");
 primitiveClassName("Stat", { alignment: "end" });
 primitiveClassName("TableShell", { density: "compact", header: "sticky" });
 textClassName("heading");
+const motionKey: MotionAssistKey = "focus-feedback";
+motionAssistClassName(motionKey);
+motionAssistClassName("skeleton-loading");
 
 // @ts-expect-error Unknown primitives must not produce plausible class names.
 primitiveClassName("Toast", "neutral", "md");
@@ -89,6 +92,12 @@ primitiveClassName("TableShell", { density: "virtualized" });
 
 // @ts-expect-error Text roles are semantic, not arbitrary size aliases.
 textClassName("text-12");
+
+// @ts-expect-error Motion-assist keys are finite and do not accept inherited object keys.
+motionAssistClassName("constructor");
+
+// @ts-expect-error Product patterns are not motion-assist utilities.
+motionAssistClassName("approval-flow");
 
 // @ts-expect-error Rich contracts require S4-only contract fields.
 const incompleteRichPrimitiveContract: PrimitiveContract = legacyPrimitiveSpec;

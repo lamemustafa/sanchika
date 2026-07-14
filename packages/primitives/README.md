@@ -18,6 +18,8 @@ compatibility pass against built artifacts and consumer checks.
 - Indian operational display helpers: `formatIndianNumber`,
   `formatIndianCurrency`, `formatIndianDate`, `formatIndianDateTime`,
   `formatGSTINDisplay`, `formatPANDisplay`, and `formatPercentage`.
+- Motion-assist metadata and `motionAssistClassName` for the eight finite,
+  opt-in CSS utilities documented in `docs/motion.md`.
 
 `styles.css` is declared as the package side effect so production bundlers keep
 primitive styles when the CSS export is imported.
@@ -32,6 +34,12 @@ SearchField and CopyButton export semantic contracts and CSS only. Consumers
 own filtering, settled result announcements, Escape/reset behavior, clipboard
 activation, failure recovery, and feedback reset. The gallery contains tiny
 zero-dependency reference scripts; they are not a universal package runtime.
+
+Motion-assist exports contain metadata, a finite class-name lookup, and CSS
+only. Consumers own state, announcements, timing, async work, native
+interaction, authorization, evidence, and workflow meaning. Skeleton is the
+only repeating package animation; reduced motion preserves settled content,
+focus, and status boundaries.
 
 Indian formatters throw `IndianFormatError` for empty, non-finite, or invalid
 numeric/date input. Exact Indian grouping is the default and preserves supplied
