@@ -185,6 +185,8 @@ export function validateIndianFormatting(formatters) {
   const enormousInteger = `1${"0".repeat(400)}`;
   check(formatIndianNumber(enormousInteger).replaceAll(",", "") === enormousInteger, "numeric strings beyond Number range must remain exact");
   check(formatIndianCurrency(`-${enormousInteger}`).replaceAll(",", "") === `-₹${enormousInteger}.00`, "default INR strings beyond Number range must remain exact");
+  check(formatIndianNumber(`${enormousInteger}.${"1".repeat(100)}`).endsWith("1".repeat(100)), "manual exact number path must accept the documented 100-digit fraction boundary");
+  check(formatIndianCurrency(`${enormousInteger}.${"1".repeat(100)}`).endsWith("1".repeat(100)), "manual exact INR path must accept the documented 100-digit fraction boundary");
   check(formatIndianCurrency(1234567, { maximumFractionDigits: 0 }) === "₹12,34,567", "INR currency must use Indian grouping");
   check(formatIndianCurrency("1.23456") === "₹1.23456", "exact INR currency must preserve supplied fractional digits");
   check(formatIndianCurrency(12500000, { display: "compact" }) === "₹1.25 crore", "compact currency must be explicitly labelled");
@@ -206,7 +208,12 @@ export function validateIndianFormatting(formatters) {
     ["empty numeric string", () => formatIndianNumber("")], ["hex numeric string", () => formatIndianNumber("0x10")],
     ["exponent numeric string", () => formatIndianNumber("1e3")], ["null-like numeric input", () => formatIndianNumber(null)],
     ["overlong exact fraction", () => formatIndianNumber(`1.${"1".repeat(101)}`)],
+    ["overlong rounded exact fraction", () => formatIndianNumber(`1.${"1".repeat(101)}`, { maximumFractionDigits: 2 })],
+    ["overlong manual exact number fraction", () => formatIndianNumber(`${enormousInteger}.${"1".repeat(101)}`)],
+    ["overlong manual exact currency fraction", () => formatIndianCurrency(`${enormousInteger}.${"1".repeat(101)}`)],
+    ["unknown percentage input mode", () => formatPercentage(18, { input: "percentage" })],
     ["invalid date", () => formatIndianDate("not-a-date")], ["invalid date-only", () => formatIndianDate("2026-02-29")],
+    ["null date", () => formatIndianDate(null)], ["boolean date-time", () => formatIndianDateTime(false)],
     ["empty PAN", () => formatPANDisplay(" ")], ["empty GSTIN", () => formatGSTINDisplay("")],
   ]) throwsFormatError(label, operation);
 

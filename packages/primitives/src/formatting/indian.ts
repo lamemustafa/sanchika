@@ -105,6 +105,7 @@ export function formatPANDisplay(value: string): string {
 export function formatPercentage(value: IndianNumericInput, options: PercentageFormatOptions = {}): string {
   const numeric = toFiniteNumber(value, "percentage");
   const { input = "fraction", ...intlOptions } = options;
+  if (input !== "fraction" && input !== "percent") throw new IndianFormatError('percentage input must be "fraction" or "percent"');
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 2, ...intlOptions, style: "percent", notation: "standard" }).format(input === "percent" ? numeric / 100 : numeric);
 }
 
@@ -134,6 +135,7 @@ function requiresManualExact(value: IndianNumericInput): value is string {
 }
 
 function groupExactDecimal(value: string, minimumFractionDigits = 0): string {
+  assertBoundedFractionDigits(value);
   const sign = value.startsWith("-") ? "-" : "";
   const unsigned = value.replace(/^[+-]/, "");
   const [integerSource = "0", fractionSource = ""] = unsigned.split(".");
@@ -156,9 +158,8 @@ function exactFractionOptions(
   options: Omit<Intl.NumberFormatOptions, "style" | "currency" | "unit" | "notation" | "compactDisplay">,
   minimumDefault = 0,
 ): Intl.NumberFormatOptions {
+  const exactDigits = assertBoundedFractionDigits(value);
   if (options.maximumFractionDigits !== undefined) return options;
-  const exactDigits = fractionDigitCount(value);
-  if (exactDigits > 100) throw new IndianFormatError("exact numeric input must contain at most 100 fractional digits");
   const minimumFractionDigits = options.minimumFractionDigits ?? Math.max(minimumDefault, exactDigits);
   return {
     ...options,
@@ -175,6 +176,12 @@ function fractionDigitCount(value: IndianNumericInput): number {
   if (typeof value === "bigint") return 0;
   const source = typeof value === "string" ? value.trim() : expandExponential(String(value));
   return source.split(".")[1]?.length ?? 0;
+}
+
+function assertBoundedFractionDigits(value: IndianNumericInput): number {
+  const exactDigits = fractionDigitCount(value);
+  if (exactDigits > 100) throw new IndianFormatError("exact numeric input must contain at most 100 fractional digits");
+  return exactDigits;
 }
 
 function assertDecimalString(value: string, label: string): string {
@@ -202,6 +209,9 @@ function expandExponential(value: string): string {
 }
 
 function toValidDate(value: Date | string | number): Date {
+  if (!(value instanceof Date) && typeof value !== "string" && typeof value !== "number") {
+    throw new IndianFormatError("date must be a Date, string, or number");
+  }
   if (typeof value === "string" && value.trim() === "") throw new IndianFormatError("date must not be empty");
   const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
   if (!Number.isFinite(date.getTime())) throw new IndianFormatError("date must be valid");
