@@ -202,7 +202,7 @@ export const axalWorkspacePatterns = Object.freeze([
       { name: "blockedReason", purpose: "Why the work cannot advance, or an explicit no-blocker state." },
       { name: "nextSafeAction", purpose: "Review, evidence, or handoff action." },
     ],
-    requiredFields: ["identity", "clientEntity", "dueState", "owner", "sourceState", "reviewState", "blockedReason", "nextSafeAction"],
+    requiredFields: ["identity", "clientEntity", "priority", "dueState", "owner", "sourceState", "reviewState", "blockedReason", "nextSafeAction"],
     variants: [
       { name: "compact", purpose: "Dense queue list row." },
       { name: "card", purpose: "Narrow-screen grouped row." },

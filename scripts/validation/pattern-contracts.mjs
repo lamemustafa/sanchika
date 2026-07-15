@@ -54,10 +54,10 @@ const requiredAnatomyByPattern = new Map([
   ["EvidencePanel", ["sourceList", "checkedAt", "reviewState", "uncertainty", "reviewer", "safeAction"]],
   ["HumanReviewCheckpoint", ["preparationState", "reviewOwner", "sourceReadiness", "blockers", "decisionActions", "nextSafeAction", "timestampHistory"]],
   ["AuditTrailPreview", ["events", "resultingState", "optionalNote"]],
-  ["WorkQueueRow", ["identity", "clientEntity", "dueState", "owner", "sourceState", "reviewState", "blockedReason", "nextSafeAction"]],
+  ["WorkQueueRow", ["identity", "clientEntity", "priority", "dueState", "owner", "sourceState", "reviewState", "blockedReason", "nextSafeAction"]],
   ["LocalArtifactFlow", ["sourceStage", "localActionStage", "destinationStage", "stepCustody", "sourceEvidence", "resultingArtifact"]],
   ["PermissionExplainer", ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy"]],
-  ["CustodyBoundary", ["boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "sourceProof"]],
+  ["CustodyBoundary", ["boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "networkDestination", "sourceProof"]],
   ["ToolDirectory", ["search", "filters", "toolList", "emptyState", "workspaceHandoff"]],
   ["ToolCard", ["category", "title", "input", "output", "review", "boundary", "status", "action"]],
   ["LocalBoundaryBanner", ["processingLocation", "accountFact", "uploadFact", "networkTelemetryFact", "reviewFact", "sourcePolicy"]],
@@ -77,11 +77,13 @@ const requiredStatesByPattern = new Map([
   ["ToolDirectory", ["default", "filtered", "no-results"]],
   ["OutputArtifactSummary", ["generated-draft", "ready-for-review", "copied-downloaded", "failed", "unavailable"]],
 ]);
-const requiredActionFieldsByPattern = new Map([
+const requiredFieldsByPattern = new Map([
   ["PricingBlock", ["action"]],
   ["PermissionExplainer", ["requestAction"]],
   ["HumanReviewCheckpoint", ["evidenceLink"]],
   ["AuditTrailPreview", ["inspectAction"]],
+  ["WorkQueueRow", ["priority"]],
+  ["CustodyBoundary", ["networkDestination"]],
   ["OutputArtifactSummary", ["nextAction"]],
 ]);
 const requiredVisualGrammar = [
@@ -230,7 +232,7 @@ export function validateProductPatternContracts({
   expectRejected(() => className("EvidencePanel", { state: "constructor" }), "inherited state", fail);
 }
 
-export function runProductPatternContractFixtures({ contracts }) {
+export function runProductPatternContractFixtures({ contracts, css = null }) {
   const cases = [
     { name: "valid inventory", mutate: () => {}, expected: null },
     { name: "duplicate name", mutate: (items) => { items[1].name = items[0].name; }, expected: "exact canonical order" },
@@ -251,6 +253,9 @@ export function runProductPatternContractFixtures({ contracts }) {
     { name: "PermissionExplainer missing request action", mutate: (items) => { const contract = items.find((item) => item.name === "PermissionExplainer"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "requestAction"); }, expected: "PermissionExplainer requiredFields must include requestAction" },
     { name: "HumanReviewCheckpoint missing evidence link", mutate: (items) => { const contract = items.find((item) => item.name === "HumanReviewCheckpoint"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "evidenceLink"); }, expected: "HumanReviewCheckpoint requiredFields must include evidenceLink" },
     { name: "AuditTrailPreview missing inspect action", mutate: (items) => { const contract = items.find((item) => item.name === "AuditTrailPreview"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "inspectAction"); }, expected: "AuditTrailPreview requiredFields must include inspectAction" },
+    { name: "WorkQueueRow missing priority", mutate: (items) => { const contract = items.find((item) => item.name === "WorkQueueRow"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "priority"); }, expected: "WorkQueueRow requiredFields must include priority" },
+    { name: "CustodyBoundary missing network destination", mutate: (items) => { const contract = items.find((item) => item.name === "CustodyBoundary"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "networkDestination"); }, expected: "CustodyBoundary requiredFields must include networkDestination" },
+    { name: "ToolCard hidden state missing CSS suppression", mutate: () => {}, mutateCss: (value) => value?.replace(/\.sk-pattern-tool-card\[hidden\],[\s\S]*?display:\s*none;\s*}/, ""), expected: "ToolCard hidden state must suppress author display" },
     { name: "missing copy obligation", mutate: (items) => { items[0].copyObligations = []; }, expected: "copyObligations must be a non-empty array" },
     { name: "missing reduced motion", mutate: (items) => { items[0].reducedMotionBehavior = []; }, expected: "reducedMotionBehavior must be a non-empty array" },
     { name: "missing forced colors", mutate: (items) => { items[0].forcedColorsBehavior = []; }, expected: "forcedColorsBehavior must be a non-empty array" },
@@ -262,7 +267,8 @@ export function runProductPatternContractFixtures({ contracts }) {
   for (const fixture of cases) {
     const candidate = structuredClone(contracts);
     fixture.mutate(candidate);
-    const issues = collectProductPatternIssues({ contracts: candidate, groups: null, css: null, exemplarRoutes: null });
+    const candidateCss = fixture.mutateCss ? fixture.mutateCss(css) : css;
+    const issues = collectProductPatternIssues({ contracts: candidate, groups: null, css: candidateCss, exemplarRoutes: null });
     const passed = fixture.expected ? issues.some((issue) => issue.includes(fixture.expected)) : issues.length === 0;
     if (!passed) failures.push(`${fixture.name}: expected ${fixture.expected ?? "success"}; found ${issues.join("; ") || "success"}`);
   }
@@ -309,8 +315,8 @@ function collectProductPatternIssues({ contracts, groups, css, exemplarRoutes })
       if (!anatomyNames.has(requiredAnatomy)) issues.push(`${contract.name} must include required anatomy ${requiredAnatomy}`);
     }
     const requiredFieldNames = new Set(contract.requiredFields ?? []);
-    for (const requiredActionField of requiredActionFieldsByPattern.get(contract.name) ?? []) {
-      if (!requiredFieldNames.has(requiredActionField)) issues.push(`${contract.name} requiredFields must include ${requiredActionField}`);
+    for (const requiredField of requiredFieldsByPattern.get(contract.name) ?? []) {
+      if (!requiredFieldNames.has(requiredField)) issues.push(`${contract.name} requiredFields must include ${requiredField}`);
     }
     const stateNames = new Set((contract.states ?? []).map((state) => state.name));
     for (const requiredState of requiredStatesByPattern.get(contract.name) ?? []) {
@@ -336,6 +342,9 @@ function collectProductPatternIssues({ contracts, groups, css, exemplarRoutes })
   }
 
   if (css) {
+    if (!/\[data-tool-card\]\[hidden\]\s*\{[^}]*display:\s*none\s*;/i.test(css)) {
+      issues.push("ToolCard hidden state must suppress author display");
+    }
     if (/--lab-|\.lab-/.test(css)) issues.push("pattern CSS must not retain lab variables or selectors");
     if (/^\s*(?:html|body|main|#gallery|\.sk-gallery|\.pattern-reference|\[data-sanchika)[^{]*\{/gm.test(css)) {
       issues.push("pattern CSS must not own page, route, gallery, or reference-shell selectors");

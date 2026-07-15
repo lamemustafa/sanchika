@@ -57,9 +57,6 @@ function fail(message) {
 
 const buildArtifactFixtures = runBuildArtifactFixtures();
 for (const fixtureFailure of buildArtifactFixtures.failures) fail(`build artifact fixture ${fixtureFailure}`);
-const productPatternFixtures = runProductPatternContractFixtures({ contracts: productPatternContracts });
-for (const fixtureFailure of productPatternFixtures.failures) fail(`product pattern fixture ${fixtureFailure}`);
-
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
 }
@@ -689,6 +686,8 @@ const patternSource = readText("packages/patterns/src/index.ts");
 const patternCss = ["styles.css", "visual-grammar.css", "public.css", "axal.css", "pack.css", "tools.css", "responsive.css"]
   .map((path) => readText(`packages/patterns/src/${path}`))
   .join("\n");
+const productPatternFixtures = runProductPatternContractFixtures({ contracts: productPatternContracts, css: patternCss });
+for (const fixtureFailure of productPatternFixtures.failures) fail(`product pattern fixture ${fixtureFailure}`);
 const productPatternExemplarRoutes = new Set([
   "/patterns/",
   "/patterns/public/",

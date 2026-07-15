@@ -125,7 +125,7 @@ export const packLocalUtilityPatterns = Object.freeze([
       { name: "networkDestination", purpose: "Observed destination or no-network statement." },
       { name: "sourceProof", purpose: "Public source and release inspection paths." },
     ],
-    requiredFields: ["boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "sourceProof"],
+    requiredFields: ["boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "networkDestination", "sourceProof"],
     variants: [
       { name: "ledger", purpose: "Dense custody fact strip." },
       { name: "banner", purpose: "Short pre-action custody summary." },

@@ -102,6 +102,11 @@
   padding: var(--sk-space-6) clamp(1.5rem, 3vw, 3rem);
 }
 
+.sk-pattern-tool-card[hidden],
+.sk-pattern-tool-directory__results [data-tool-card][hidden] {
+  display: none;
+}
+
 .sk-pattern-tool-directory__results [data-tool-card] + [data-tool-card] {
   border-top: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
 }
