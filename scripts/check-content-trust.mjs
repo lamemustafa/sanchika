@@ -21,8 +21,13 @@ const galleryDocuments = readdirSync(galleryDir, { recursive: true })
 for (const documentPath of galleryDocuments) {
   const galleryHtml = readFileSync(join(galleryDir, documentPath), "utf8");
   const visibleText = stripTags(galleryHtml);
-  for (const finding of lintTrustCopy(visibleText)) {
+  const planningReference = visibleText.match(/\b(?:S\d+|C\d+|North Star(?:s)?)\b/);
+  if (planningReference) failures.push(`apps/gallery/dist/${documentPath} exposes internal planning vocabulary: ${planningReference[0]}`);
+  for (const finding of lintTrustCopy(visibleText, { requireBoundaryDisclosure: false })) {
     failures.push(`apps/gallery/dist/${documentPath} ${finding.reason}: ${finding.match}`);
+  }
+  if (!visibleText.includes("All gallery records are synthetic")) {
+    failures.push(`apps/gallery/dist/${documentPath} must expose the synthetic-data boundary`);
   }
   validateProductionPathTrust({ documentPath, visibleText, failures });
 }
@@ -35,7 +40,7 @@ if (failures.length > 0) {
 
 console.log(`Sanchika content trust check passed (${invalidTrustCopyFixtures.length} negative fixtures; ${galleryDocuments.length} gallery documents).`);
 
-function lintTrustCopy(text) {
+function lintTrustCopy(text, { requireBoundaryDisclosure = true } = {}) {
   const findings = [];
   const checks = [
     { reason: "unsupported trust claim", pattern: /\b(bank-grade|audit-proof|government-official|CA-verified|filing-ready|production-ready)\b/i },
@@ -70,7 +75,7 @@ function lintTrustCopy(text) {
     findings.push({ reason: "missing provenance cue", match: text.match(/\b(?:verified|source-backed|current)\b/i)?.[0] ?? "claim" });
   }
 
-  if (/\b(?:browser-local|local utility)\b/i.test(text)) {
+  if (requireBoundaryDisclosure && /\b(?:browser-local|local utility)\b/i.test(text)) {
     const hasAccount = /\b(?:account|not required)\b/i.test(text);
     const hasUpload = /\b(?:upload|nothing is uploaded|handoff)\b/i.test(text);
     const hasReview = /\b(?:review|draft|human)\b/i.test(text);
@@ -85,14 +90,12 @@ function lintTrustCopy(text) {
 
 function validateProductionPathTrust({ documentPath, visibleText, failures }) {
   const requirements = new Map([
-    ["patterns/public/index.html", ["Source", "Checked", "Limitation", "Human-owned"]],
-    ["patterns/axal/index.html", ["Synthetic workspace boundary", "Draft, never approval", "Named reviewer", "Source evidence"]],
-    ["patterns/pack/index.html", ["Local-first boundary", "Account", "Upload", "Telemetry", "Review permission"]],
-    ["patterns/tools/index.html", ["Browser-local boundary", "Account", "Upload", "Review", "outputs remain drafts"]],
-    ["lab/complyeaze-core/index.html", ["account, upload, and review boundaries", "Workspace account", "no file upload"]],
-    ["lab/axal-review-desk/index.html", ["Synthetic workspace boundary", "Draft, never approval", "Named human reviewer"]],
-    ["lab/pack-local-proof/index.html", ["Local-first boundary", "No ComplyEaze account", "No extension file handoff"]],
-    ["lab/tools-directory/index.html", ["Browser-local boundary", "Not required", "None", "Named on every tool"]],
+    ["index.html", ["No model runtime", "No automated compliance judgment", "Synthetic examples", "v0.1.0 is planned, not released"]],
+    ["modes/complyeaze/index.html", ["Product-family boundary", "Credentials or artifacts", "person choosing the route"]],
+    ["modes/axal/index.html", ["Saved synthetic context", "judgment stays human", "Source evidence", "CA decision required"]],
+    ["modes/pack/index.html", ["Credentials, session cookies, and downloaded files", "No ComplyEaze account", "Inspect permission contract", "manual download path"]],
+    ["modes/tools/index.html", ["Search and entered work stay in the browser", "Nothing is uploaded", "Professional review", "outputs remain drafts"]],
+    ["adoption/index.html", ["Consumers own product copy, authorization", "Real consumer adoption remains incomplete", "rollback"]],
   ]);
   for (const required of requirements.get(documentPath) ?? []) {
     if (!visibleText.includes(required)) failures.push(`apps/gallery/dist/${documentPath} missing trust disclosure: ${required}`);

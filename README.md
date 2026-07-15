@@ -107,9 +107,10 @@ apps/gallery/dist/_astro/*.css
 
 Run `pnpm gallery:check` to fail unresolved `@sanchika/*` CSS references,
 confirm token CSS precedes primitive and pattern CSS, and reject unintended
-client JavaScript. The gallery remains a static app with one canonical root and
-package-driven `/patterns/*` references; it is not a server, Storybook
-replacement, framework adapter, runtime shell, or the S8 showcase rebuild.
+client JavaScript. The S8 gallery remains a static showcase with package-driven
+primitive and pattern detail routes, local documentation search, and distinct
+product-mode proofs; it is not a server, Storybook replacement, framework
+adapter, runtime shell, or consumer package.
 
 ## Status
 

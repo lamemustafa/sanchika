@@ -1,0 +1,99 @@
+---
+import { primitiveClassName } from "@sanchika/primitives";
+import type { ProductPatternContract } from "@sanchika/patterns";
+import BoundaryBanner from "./showcase/BoundaryBanner.astro";
+import CustodyFlow from "./showcase/CustodyFlow.astro";
+import PermissionExplainer from "./showcase/PermissionExplainer.astro";
+import ProductRouteArtifact from "./showcase/ProductRouteArtifact.astro";
+import PublicHero from "./showcase/PublicHero.astro";
+import ReviewDeskPreview from "./showcase/ReviewDeskPreview.astro";
+import ToolDirectory from "./showcase/ToolDirectory.astro";
+import { currentStableRelease, plannedRelease, sourceRepository } from "../content/site";
+import { auditTrail, custodyFacts, custodyStages, modeRoutePaths, productRoutes, reviewEvidence, reviewQueue, showcaseTools } from "../content/showcase";
+
+interface Props { contract: ProductPatternContract; }
+const { contract } = Astro.props;
+const firstVariant = contract.variants[0]?.name;
+const firstState = contract.states[0]?.name;
+const className = [contract.css.baseClass, firstVariant && `${contract.css.variantClassPrefix}${firstVariant}`, firstState && `${contract.css.stateClassPrefix}${firstState}`].filter(Boolean).join(" ");
+const supportedPatterns = new Set([
+  "PublicHero", "ProductRouteMap", "ProofStrip", "TrustBoundary", "SourceProvenanceStrip", "PricingBlock", "FAQAccordion", "ReleaseStatusBanner",
+  "ReviewDeskPreview", "EvidencePanel", "HumanReviewCheckpoint", "AuditTrailPreview", "WorkQueueRow",
+  "LocalArtifactFlow", "PermissionExplainer", "CustodyBoundary",
+  "ToolDirectory", "ToolCard", "LocalBoundaryBanner", "OutputArtifactSummary",
+]);
+if (!supportedPatterns.has(contract.name)) throw new Error(`No production exemplar is defined for ${contract.name}`);
+const selected = reviewQueue[0];
+const tool = showcaseTools[1];
+---
+
+<div class="pattern-exemplar" data-pattern-exemplar={contract.name}>
+  {contract.name === "PublicHero" && (
+    <PublicHero eyebrow="Evidence contract · synthetic proof" title="Make the boundary visible before the action." lede="A public product introduction names the job, the proof, and the limit without pretending to make the professional decision." primary={{ label: "Inspect source", href: sourceRepository }} secondary={{ label: "Read adoption limits", href: "/adoption/" }} compact headingLevel="h2">
+      <aside class="sk-pattern-public-hero-note"><span>Declared limit</span><strong>Interface contract only; no compliance judgment.</strong></aside>
+    </PublicHero>
+  )}
+  {contract.name === "ProductRouteMap" && <ProductRouteArtifact routes={productRoutes} queue={reviewQueue} />}
+  {contract.name === "ProofStrip" && (
+    <dl class={className} aria-label="Synthetic proof strip">
+      <div><dt>Source</dt><dd>Package metadata</dd></div><div><dt>Release</dt><dd>v{currentStableRelease} stable</dd></div><div><dt>Example</dt><dd>Synthetic</dd></div><div><dt>Limit</dt><dd>No runtime judgment</dd></div>
+    </dl>
+  )}
+  {contract.name === "TrustBoundary" && <BoundaryBanner pattern="TrustBoundary" label="Synthetic trust boundary" statement="The source, crossing, reviewer, and safe action remain visible before action." facts={[{ label: "Source", value: "Synthetic package evidence" }]} neverCrosses="Credentials or private consumer data" actionOwner="Named human reviewer" safeAction="Inspect source before deciding" sourceLink={{ label: "Open pattern source", href: `${sourceRepository}/tree/master/packages/patterns` }} />}
+  {contract.name === "SourceProvenanceStrip" && (
+    <dl class={className} aria-label="Synthetic source provenance">
+      <div><dt>Claim</dt><dd>The synthetic reference demonstrates provenance anatomy only.</dd></div><div><dt>Source type</dt><dd>Package contract</dd></div><div><dt>Source</dt><dd><a class={primitiveClassName("Link")} href={`${sourceRepository}/blob/master/packages/patterns/src/contracts/public-product.ts`}>Inspect pattern source</a></dd></div><div><dt>Release</dt><dd>v{currentStableRelease}</dd></div><div><dt>Checked</dt><dd>14 July 2026</dd></div><div><dt>Reviewer</dt><dd>AK · assigned CA</dd></div><div><dt>Status</dt><dd>Limited synthetic reference</dd></div><div><dt>Limitation</dt><dd>Interpretation under review</dd></div>
+    </dl>
+  )}
+  {contract.name === "PricingBlock" && (
+    <section class={className} aria-labelledby="pricing-proof-title">
+      <div><span class="eyebrow">Current acquisition</span><h3 id="pricing-proof-title">Evaluate the artifact before commercial claims.</h3><p class="sk-pattern-pricing-block__price">Local link or tarball</p><p>No public registry price or universal production-readiness claim is made.</p></div>
+      <div class="sk-pattern-pricing-block__scope"><div><strong>Included in proof</strong><p>Tokens, primitives, patterns, static documentation, and consumer fixtures.</p></div><div><strong>Consumer owns</strong><p>Integration, product behavior, authorization, real data, support, and rollback.</p></div></div>
+      <a class={primitiveClassName("Link")} href="/adoption/">Review the acquisition and adoption path</a>
+    </section>
+  )}
+  {contract.name === "FAQAccordion" && (
+    <div class={className}>
+      <details open><summary>Does Sanchika make compliance decisions?</summary><p>No. It supplies interface contracts that keep sources, uncertainty, and human review visible.</p></details>
+      <details><summary>Are the records on this page real?</summary><p>No. Every gallery record is synthetic and exists only to demonstrate the package contract.</p></details>
+      <details><summary>Can a consumer skip its own accessibility testing?</summary><p>No. Package evidence is a starting point; the composed consumer workflow still requires testing.</p></details>
+    </div>
+  )}
+  {contract.name === "ReleaseStatusBanner" && (
+    <aside class={className} aria-label="Release status proof"><strong>v{currentStableRelease} is stable</strong><span>v{plannedRelease} remains planned and unreleased; consumer adoption evidence is incomplete.</span><a href={`${sourceRepository}/releases`}>Inspect releases</a></aside>
+  )}
+  {contract.name === "ReviewDeskPreview" && <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />}
+  {contract.name === "EvidencePanel" && (
+    <aside class={`${className} pattern-compact-panel`} aria-labelledby="evidence-panel-proof-title">
+      <div class="sk-pattern-pane-title"><h3 id="evidence-panel-proof-title">Source evidence</h3><span>{reviewEvidence.length} records</span></div>
+      <div class="sk-pattern-evidence-panel__items">{reviewEvidence.map((item, index) => <details open={index === 0}><summary><span>{item.label}</span><strong>{item.state}</strong></summary><p>{item.value} · synthetic reference only.</p></details>)}</div>
+    </aside>
+  )}
+  {contract.name === "HumanReviewCheckpoint" && selected && (
+    <section class={`${className} pattern-compact-panel`} aria-labelledby="checkpoint-proof-title"><span>Human review checkpoint</span><h3 id="checkpoint-proof-title">CA decision required before AX-031 advances.</h3><p>Open the linked synthetic source, record the reasoning, then approve, return for evidence, or hold.</p><dl class="checkpoint-facts"><div><dt>Owner</dt><dd>{selected.owner}</dd></div><div><dt>Source</dt><dd>{selected.source}</dd></div><div><dt>Amount</dt><dd>{selected.amount}</dd></div><div><dt>Due</dt><dd>{selected.due}</dd></div></dl><div class="sk-pattern-checkpoint-actions"><a href="/patterns/evidencepanel/" data-action="primary">Inspect source contract</a></div></section>
+  )}
+  {contract.name === "AuditTrailPreview" && (
+    <section class={`${className} pattern-compact-panel`} aria-labelledby="audit-proof-title"><h3 id="audit-proof-title">AX-031 audit trail</h3><p>This bounded preview omits the permanent system trail and remains synthetic.</p><ol class="sk-pattern-grammar--ledger-rail">{auditTrail.map((item) => <li><time datetime={`${item.date}T${item.time}:00`}>{item.dateLabel} · {item.time}</time><span><strong>{item.event}</strong><small>{item.actor} · {item.resultingState}</small><small>{item.note}</small></span></li>)}</ol><a class={primitiveClassName("Link")} href={`${sourceRepository}/blob/master/packages/patterns/src/contracts/axal-workspace.ts`}>Inspect the authoritative audit-trail contract</a></section>
+  )}
+  {contract.name === "WorkQueueRow" && selected && (
+    <article class={`${className} pattern-queue-row`} data-tone={selected.tone}><div class="sk-pattern-work-queue__identity"><span>{selected.id}</span><strong>{selected.title}</strong></div><p>{selected.state}</p><div class="sk-pattern-work-queue__meta"><span>{selected.entity}</span><span>{selected.amount}</span><span>Owner {selected.owner}</span><span>{selected.due}</span><span>Next: open source before deciding</span></div></article>
+  )}
+  {contract.name === "LocalArtifactFlow" && <CustodyFlow stages={custodyStages} facts={custodyFacts} />}
+  {contract.name === "PermissionExplainer" && <PermissionExplainer />}
+  {contract.name === "CustodyBoundary" && <BoundaryBanner label="Local custody receipt" statement="The returned file remains in user-controlled Chrome Downloads." facts={[{ label: "Current custodian", value: "User on this device" }, { label: "Never transferred", value: "Credentials, session cookies, or file content to ComplyEaze" }, { label: "Fallback", value: "Use the portal manual download path" }]} tone="local" />}
+  {contract.name === "ToolDirectory" && <ToolDirectory tools={showcaseTools} axalHref={modeRoutePaths.axal.path} instanceId="pattern-tool-directory" />}
+  {contract.name === "ToolCard" && tool && (
+    <article class={`${className} pattern-tool-card`}><span class="sk-pattern-tool-card__index">02</span><div class="sk-pattern-tool-card__main"><span>{tool.category}</span><h3>{tool.name}</h3><p>{tool.job}</p></div><dl><div><dt>Input</dt><dd>{tool.input}</dd></div><div><dt>Output</dt><dd>{tool.output}</dd></div><div><dt>Review</dt><dd>{tool.review}</dd></div></dl><a class="sk-pattern-tool-card__action" href="/modes/tools/">Open bounded tool mode</a></article>
+  )}
+  {contract.name === "LocalBoundaryBanner" && <BoundaryBanner pattern="LocalBoundaryBanner" label="Browser-local draft boundary" statement="Entered work stays in this browser and every output remains a draft." facts={[{ label: "Account", value: "Not required" }, { label: "Upload", value: "None" }, { label: "Review", value: "Professional review required" }]} tone="draft" sourceLink={{ label: "Inspect source", href: sourceRepository }} />}
+  {contract.name === "OutputArtifactSummary" && (
+    <section class={className} aria-labelledby="output-proof-title"><div><span class="eyebrow">Generated draft</span><h3 id="output-proof-title">Notice response outline</h3><p>Built from user-entered synthetic facts and source references. No filing or approval occurred.</p></div><a class={primitiveClassName("Link")} href="/patterns/outputartifactsummary/">Inspect output contract</a><dl class="sk-pattern-output-artifact-summary__meta"><div><dt>Destination</dt><dd>Browser download</dd></div><div><dt>Review</dt><dd>CA review required</dd></div><div><dt>Next</dt><dd>Open and verify sources</dd></div></dl></section>
+  )}
+
+  <section class="pattern-state-proof" aria-labelledby="pattern-state-proof-title">
+    <div><p class="eyebrow">State coverage</p><h3 id="pattern-state-proof-title">Default and consequential edges remain inspectable.</h3></div>
+    <div class="pattern-state-proof__grid">
+      {contract.states.map((state) => <article data-pattern={contract.name} data-pattern-state={state.name}><strong>{state.name.replaceAll("-", " ")}</strong><span>{state.purpose}</span><small>{state.requiredVisibleSignals.slice(0, 2).join(" · ")}</small></article>)}
+    </div>
+  </section>
+</div>

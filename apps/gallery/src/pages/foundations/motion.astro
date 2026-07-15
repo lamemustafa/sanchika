@@ -1,26 +1,13 @@
 ---
-import GalleryLayout from "../../layouts/GalleryLayout.astro";
+import { motionAssistUtilities } from "@sanchika/primitives";
 import MotionAssistProof from "../../components/MotionAssistProof.astro";
-import { motionAssistUtilities, primitiveClassName, textClassName } from "@sanchika/primitives";
-import "../../styles/motion-assist.css";
-
-const title = "Motion and assist foundations | Sanchika";
-const description = "S6 CSS-first motion-assist utilities, semantic guidance, reduced-motion behavior, and package-owned metadata proof.";
-const canonical = "https://sanchika.complyeaze.com/foundations/motion/";
+import PageIntro from "../../components/PageIntro.astro";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
 ---
-
-<GalleryLayout {title} {description} {canonical} dataFavicon>
-  <main id="gallery-content" class={primitiveClassName("Container", { width: "wide" })} data-sanchika-gallery="motion-assist" data-sanchika-example="synthetic">
-    <header class="motion-assist-masthead"><a class={primitiveClassName("Link", { variant: "quiet" })} href="/">← Sanchika gallery</a><span class={textClassName("eyebrow")}>S6 / motion and assist</span></header>
-    <section class={`${primitiveClassName("Section", { space: "lg" })} motion-assist-hero`} aria-labelledby="motion-assist-title">
-      <div class={primitiveClassName("Stack", { gap: "md", align: "start" })}>
-        <p class={textClassName("eyebrow")}>CSS-first · semantic-first · reduced-safe</p>
-        <h1 id="motion-assist-title" class={textClassName("display")}>Assist the state. Never invent it.</h1>
-        <p class={textClassName("lead")}>S6 exposes {motionAssistUtilities.length} finite, opt-in utility contracts. Motion clarifies interaction and settled state while product workflows, evidence, announcements, and timing remain consumer-owned.</p>
-        <span class={primitiveClassName("InlineStatus", { tone: "info" })}><span class="sk-inline-status__marker" aria-hidden="true">i</span><span>All examples remain understandable with motion removed.</span><span class="sk-inline-status__meta">Synthetic proof</span></span>
-      </div>
-    </section>
+<GalleryLayout title="Motion | Sanchika" description="Sanchika CSS-first motion-assist utilities and reduced-motion behavior.">
+  <main id="main-content" class="site-main docs-page" tabindex="-1">
+    <PageIntro eyebrow="Foundations / motion" title="Motion confirms state. It never supplies meaning." description="Finite CSS-first utilities acknowledge focus, press, disclosure, status, and loading while the settled text, source, and boundary remain authoritative." meta={`${motionAssistUtilities.length} package utilities · prefers-reduced-motion covered`} />
     <MotionAssistProof />
-    <footer class={primitiveClassName("Section", { space: "md", boundary: "bordered" })}><p class={textClassName("caption")}>Static Sanchika evidence. No JavaScript animation runtime, telemetry, product pattern, or approval behavior is exported.</p></footer>
+    <section class="doc-section" aria-labelledby="motion-use-title"><h2 id="motion-use-title">Use and avoid</h2><div class="doc-grid doc-grid--2"><article class="doc-card"><span>Use</span><p>Short, one-pass acknowledgement where spatial continuity or settled status benefits comprehension.</p></article><article class="doc-card"><span>Avoid</span><p>Whole-page reveals, ambient loops, large travel, critical-action choreography, or movement as the only focus/status cue.</p></article></div></section>
   </main>
 </GalleryLayout>

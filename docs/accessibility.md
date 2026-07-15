@@ -1,5 +1,11 @@
 # Accessibility
 
+## Generated gallery browser evidence
+
+The private gallery app pins `@axe-core/playwright` as its only S8 browser-accessibility development dependency. It is used only by `pnpm gallery:browser` against generated static output; no axe code or Playwright runtime ships to gallery visitors or package consumers.
+
+The focused lane scans the landing page, a foundation route, an interactive primitive route, a pattern route, Axal and Pack mode routes, and adoption with WCAG 2.2 AA-oriented axe tags. It also checks one main and H1, heading order, duplicate IDs, named controls, visible first-Tab focus, touch targets, clipping, overflow, broken images, JavaScript-disabled navigation, reduced motion, forced colors, LCP, CLS, and unexpected request origins. Any axe violation fails the lane; there are no blanket rule disables or accepted lower-severity exceptions.
+
 Sanchika provides WCAG 2.2 AA-oriented token, primitive, and pattern contracts
 and WAI-ARIA APG-informed behavior guidance for applicable interactive
 primitives. It does not make page-level WCAG conformance claims; consumer

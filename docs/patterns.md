@@ -98,10 +98,11 @@ override package internals or invent private implementation variables.
   `SourceEvidenceSummary` are not exported because no repository or consumer
   evidence requires them.
 
-Rendered package references live at `/patterns/`, `/patterns/public/`,
-`/patterns/axal/`, `/patterns/pack/`, and `/patterns/tools/`. The existing
-`/lab/*` North Stars remain noindex comparison evidence. Rebuilding the
-canonical gallery is S8, not S7.
+Rendered package references live at `/patterns/` and at package-derived detail
+routes such as `/patterns/publichero/`, `/patterns/reviewdeskpreview/`,
+`/patterns/localartifactflow/`, and `/patterns/tooldirectory/`. S8 retired the
+temporary `/lab/*` North Stars after final comparison; they do not ship or
+remain as public compatibility routes.
 
 ## Required Fields
 

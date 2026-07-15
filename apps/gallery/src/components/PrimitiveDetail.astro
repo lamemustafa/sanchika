@@ -1,0 +1,31 @@
+---
+import type { PrimitiveContract } from "@sanchika/primitives";
+import PrimitiveStateProof from "./PrimitiveStateProof.astro";
+import { publicCopy } from "../content/site";
+
+interface Props { contract: PrimitiveContract; }
+const { contract } = Astro.props;
+const entrypoint = "@sanchika/primitives";
+const contractLookup = `primitiveSpecs.find((contract) => contract.name === "${contract.name}")`;
+---
+
+<section class="contract-detail__summary doc-section" aria-labelledby="purpose-title">
+  <div><h2 id="purpose-title">Purpose and semantics</h2><p>{publicCopy(contract.purpose)}</p><p><strong>Recommended semantic:</strong> {publicCopy(contract.semanticElement)}</p></div>
+  <aside><strong>{publicCopy(contract.role)}</strong><p>Use when: {publicCopy(contract.whenToUse.join("; "))}.</p><p>Avoid: {publicCopy(contract.whenNotToUse.join("; "))}.</p></aside>
+</section>
+<section class="doc-section" aria-labelledby="anatomy-title"><h2 id="anatomy-title">Anatomy</h2><div class="doc-grid">{contract.anatomy.map((item) => <article class="doc-card"><span>{item.name}</span><p>{publicCopy(item.purpose)}</p></article>)}</div></section>
+<section class="doc-section" aria-labelledby="states-title"><h2 id="states-title">Finite variants and important states</h2><dl class="contract-detail__ledger">
+  {contract.variants.map((variant) => <div><dt>Variant · {variant.name}</dt><dd>{variant.values.join(", ")}</dd></div>)}
+  <div><dt>Required states</dt><dd>{contract.requiredStates.join(", ")}</dd></div>
+  <div><dt>Class hooks</dt><dd><code>{contract.classHooks.join(" · ")}</code></dd></div>
+</dl></section>
+<section class="doc-section" aria-labelledby="example-title"><h2 id="example-title">Composed synthetic exemplar</h2><div class="contract-example" data-sanchika-example="synthetic"><PrimitiveStateProof {contract} /></div></section>
+<section class="doc-section" aria-labelledby="responsibility-title"><h2 id="responsibility-title">Accessibility and consumer responsibility</h2><div class="doc-grid doc-grid--2">
+  <article class="doc-card"><span>Keyboard and screen reader</span><ul>{[...contract.keyboardObligations, ...contract.screenReaderObligations].map((item) => <li>{publicCopy(item)}</li>)}</ul></article>
+  <article class="doc-card"><span>Consumer owns</span><ul>{contract.consumerResponsibilities.map((item) => <li>{publicCopy(item)}</li>)}</ul></article>
+  <article class="doc-card"><span>Mobile</span><ul>{contract.mobileBehavior.map((item) => <li>{publicCopy(item)}</li>)}</ul></article>
+  <article class="doc-card"><span>Reduced motion and forced colors</span><p>{publicCopy(contract.motion.reducedMotion)}</p><ul>{contract.forcedColorsBehavior.map((item) => <li>{publicCopy(item)}</li>)}</ul></article>
+</div></section>
+<section class="doc-section" aria-labelledby="api-title"><h2 id="api-title">Compact API reference</h2><dl class="contract-detail__ledger">
+  <div><dt>Package</dt><dd><code>{entrypoint}</code></dd></div><div><dt>CSS</dt><dd><code>@sanchika/primitives/styles.css</code></dd></div><div><dt>Contract</dt><dd><code>{contractLookup}</code></dd></div><div><dt>Primary class</dt><dd><code>{contract.classHooks[0]}</code></dd></div>
+</dl></section>

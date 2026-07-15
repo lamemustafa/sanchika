@@ -1,0 +1,103 @@
+---
+import { primitiveClassName } from "@sanchika/primitives";
+import { searchEntries } from "../content/site";
+
+interface Props { instanceId: string; compact?: boolean; }
+const { instanceId, compact = false } = Astro.props;
+const labelId = `${instanceId}-label`;
+const inputId = `${instanceId}-input`;
+const hintId = `${instanceId}-hint`;
+const statusId = `${instanceId}-status`;
+---
+
+<section id={instanceId} class:list={["docs-search", compact && "docs-search--compact"]} data-docs-search aria-labelledby={labelId}>
+  <div class="section-heading">
+    <div><p class="eyebrow">Local index</p><h2 id={labelId}>Find the contract behind the interface.</h2></div>
+    <p>Generated from routes and package metadata. No request, tracking, or external index.</p>
+  </div>
+  <form class={primitiveClassName("SearchField", { size: "lg" })} role="search" data-docs-search-form hidden>
+    <label for={inputId}>Search Sanchika documentation</label>
+    <div class="sk-search-field__control">
+      <span class="sk-search-field__icon" aria-hidden="true">⌕</span>
+      <input id={inputId} type="search" autocomplete="off" placeholder="Try review, custody, SearchField…" aria-describedby={`${hintId} ${statusId}`} data-docs-search-input />
+      <button class="sk-search-field__clear" type="button" aria-label="Clear documentation search" data-docs-search-clear hidden>Clear</button>
+    </div>
+    <p id={hintId} data-sk-search-hint>Filtering stays in this page. Press Escape to clear and keep focus.</p>
+  </form>
+  <p id={statusId} class="docs-search__status" role="status" aria-live="polite" aria-atomic="true"><strong data-docs-search-count>{searchEntries.length}</strong> <span data-docs-search-count-label>routes</span></p>
+  <div class="docs-search__index" data-docs-search-results data-collapsed={compact ? "true" : undefined}>
+    {searchEntries.map((entry) => (
+      <a class={primitiveClassName("LinkCard", { variant: "default" })} href={entry.route} data-docs-search-item data-search={entry.search}>
+        <span>{entry.kind}</span><strong>{entry.label}</strong><small>{entry.productMode ?? "Sanchika contract"}</small>
+      </a>
+    ))}
+  </div>
+  {compact && <button class={`${primitiveClassName("Button", "neutral", "md")} docs-search__expand`} type="button" aria-expanded="false" data-docs-search-expand hidden>Show all {searchEntries.length} routes</button>}
+  <div class={primitiveClassName("EmptyState", { kind: "filtered" })} data-docs-search-empty hidden>
+    <span>0 routes</span><h3>No contract matches that search.</h3><p>Try a product mode, component, state, or boundary.</p>
+    <div class="sk-empty-state__actions"><button class={primitiveClassName("Button", "neutral", "md")} type="button" data-docs-search-reset>Reset search</button></div>
+  </div>
+</section>
+
+<script is:inline data-sanchika-gallery-script="docs-search">
+  for (const root of document.querySelectorAll("[data-docs-search]")) {
+    if (root.dataset.docsSearchReady === "true") continue;
+    root.dataset.docsSearchReady = "true";
+    const form = root.querySelector("[data-docs-search-form]");
+    const input = root.querySelector("[data-docs-search-input]");
+    const clear = root.querySelector("[data-docs-search-clear]");
+    const reset = root.querySelector("[data-docs-search-reset]");
+    const items = [...root.querySelectorAll("[data-docs-search-item]")];
+    const count = root.querySelector("[data-docs-search-count]");
+    const countLabel = root.querySelector("[data-docs-search-count-label]");
+    const status = count.parentElement;
+    const empty = root.querySelector("[data-docs-search-empty]");
+    const results = root.querySelector("[data-docs-search-results]");
+    const expand = root.querySelector("[data-docs-search-expand]");
+    let timer;
+    let composing = false;
+    form.hidden = false;
+    if (expand) expand.hidden = false;
+    const apply = ({ announce = true } = {}) => {
+      const query = input.value.trim().toLowerCase();
+      const terms = query.split(/\s+/).filter(Boolean);
+      let visible = 0;
+      clear.hidden = query.length === 0;
+      if (expand) expand.hidden = query.length > 0;
+      if (results) results.dataset.searching = query.length > 0 ? "true" : "false";
+      for (const item of items) {
+        item.hidden = terms.length > 0 && !terms.every((term) => item.dataset.search.includes(term));
+        if (!item.hidden) visible += 1;
+      }
+      empty.hidden = visible !== 0;
+      if (!announce) { count.textContent = String(visible); countLabel.textContent = visible === 1 ? "route" : "routes"; return; }
+      clearTimeout(timer);
+      status.setAttribute("aria-busy", "true");
+      timer = setTimeout(() => {
+        count.textContent = String(visible);
+        countLabel.textContent = visible === 1 ? "route" : "routes";
+        status.removeAttribute("aria-busy");
+      }, 180);
+    };
+    const resetSearch = () => { input.value = ""; apply(); input.focus(); };
+    form.addEventListener("submit", (event) => event.preventDefault());
+    input.addEventListener("compositionstart", () => { composing = true; clearTimeout(timer); status.removeAttribute("aria-busy"); });
+    input.addEventListener("compositionend", () => { composing = false; apply(); });
+    input.addEventListener("input", (event) => { if (!composing && !event.isComposing) apply(); });
+    input.addEventListener("keydown", (event) => { if (event.key === "Escape" && input.value) { event.preventDefault(); resetSearch(); } });
+    clear.addEventListener("click", resetSearch);
+    reset.addEventListener("click", resetSearch);
+    expand?.addEventListener("click", () => {
+      const collapsed = results.dataset.collapsed === "true";
+      results.dataset.collapsed = collapsed ? "false" : "true";
+      expand.textContent = collapsed ? "Show starter routes" : `Show all ${items.length} routes`;
+      expand.setAttribute("aria-expanded", String(collapsed));
+    });
+    apply({ announce: false });
+    if (window.location.hash === `#${root.id}`) {
+      const focusTargetedSearch = () => input.focus();
+      if (document.readyState === "complete") requestAnimationFrame(focusTargetedSearch);
+      else window.addEventListener("load", focusTargetedSearch, { once: true });
+    }
+  }
+</script>

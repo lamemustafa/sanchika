@@ -1,0 +1,39 @@
+---
+import { primitiveClassName } from "@sanchika/primitives";
+import { productPatternClassName } from "@sanchika/patterns";
+import { modes } from "../content/site";
+---
+
+<section class="mode-comparison" aria-labelledby="mode-comparison-title">
+  <div class="section-heading">
+    <div><p class="eyebrow">Four operating modes</p><h2 id="mode-comparison-title">Related by evidence. Different by work.</h2></div>
+    <p>Sanchika holds typography, boundaries, source grammar, and focus behavior steady while density and proof objects change with the product.</p>
+  </div>
+  <div class="mode-comparison__stage">
+    <article class={`${productPatternClassName("ProductRouteMap", { variant: "family", state: "default" })} mode-panel mode-panel--core`}>
+      <p class="eyebrow">{modes[0].label}</p><h3>{modes[0].title}</h3><p>{modes[0].intent}</p>
+      <dl><div><dt>Boundary</dt><dd>{modes[0].boundary}</dd></div><div><dt>Proof</dt><dd>{modes[0].proof}</dd></div></dl>
+      <a class={primitiveClassName("Link")} href="/modes/complyeaze/">Inspect the route system <span aria-hidden="true">→</span></a>
+    </article>
+    <article class={`${productPatternClassName("ReviewDeskPreview", { variant: "three-pane", state: "ca-review-needed" })} mode-panel mode-panel--axal`}>
+      <div><p class="eyebrow">{modes[1].label}</p><h3>{modes[1].title}</h3></div>
+      <div class="mode-panel__queue" aria-label="Synthetic Axal queue">
+        <span><strong>AX-031</strong> CA review needed</span><span><strong>AX-047</strong> Evidence requested</span><span><strong>AX-052</strong> Ready</span>
+      </div>
+      <p><strong>Owner AK</strong> · source linked · blocker none · next: open source</p>
+      <a class={primitiveClassName("Link")} href="/modes/axal/">Open the workspace proof <span aria-hidden="true">→</span></a>
+    </article>
+    <article class={`${productPatternClassName("LocalArtifactFlow", { variant: "three-stage", state: "complete" })} mode-panel mode-panel--pack`}>
+      <p class="eyebrow">{modes[2].label}</p><h3>{modes[2].title}</h3>
+      <ol class="mode-panel__custody"><li>GST Portal session</li><li>Pack local action</li><li>Chrome Downloads</li></ol>
+      <p><strong>No handoff:</strong> {modes[2].boundary}</p>
+      <a class={primitiveClassName("Link")} href="/modes/pack/">Trace local custody <span aria-hidden="true">→</span></a>
+    </article>
+    <article class={`${productPatternClassName("ToolDirectory", { variant: "rows", state: "default" })} mode-panel mode-panel--tools`}>
+      <div><p class="eyebrow">{modes[3].label}</p><h3>{modes[3].title}</h3></div>
+      <ul><li>Notice response outline <small>Drafting</small></li><li>Evidence index <small>Documents</small></li><li>Due-date sheet <small>Dates</small></li></ul>
+      <p><strong>Edge:</strong> no match → clear filters; output fails → retain input and retry safely.</p>
+      <a class={primitiveClassName("Link")} href="/modes/tools/">Find the local tool contract <span aria-hidden="true">→</span></a>
+    </article>
+  </div>
+</section>

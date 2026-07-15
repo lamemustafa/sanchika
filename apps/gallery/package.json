@@ -10,6 +10,9 @@
   "type": "module",
   "scripts": {
     "build": "astro build && node ../../scripts/write-gallery-build-metadata.mjs",
+    "browser:check": "node scripts/check-browser.mjs",
+    "evidence:check": "node scripts/write-evidence-manifest.mjs --check",
+    "evidence:manifest": "node scripts/write-evidence-manifest.mjs",
     "typecheck": "astro check"
   },
   "dependencies": {
@@ -19,6 +22,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.9",
-    "astro": "7.0.7"
+    "@axe-core/playwright": "4.12.1",
+    "astro": "7.0.7",
+    "playwright-core": "1.55.1"
   }
 }

@@ -85,7 +85,7 @@ try {
     className: patterns.patternClassName,
     resolve: patterns.resolveProductPatternContract,
     css: patternCss,
-    exemplarRoutes: new Set(["/patterns/", "/patterns/public/", "/patterns/axal/", "/patterns/pack/", "/patterns/tools/", "/lab/complyeaze-core/", "/lab/axal-review-desk/", "/lab/pack-local-proof/", "/lab/tools-directory/"]),
+    exemplarRoutes: new Set(patterns.productPatternContracts.map((contract) => `/patterns/${contract.name.toLowerCase()}/`)),
     fail: (message) => failures.push(`built pattern runtime ${message}`),
   });
   productPatternRuntimeCount = patterns.productPatternContracts.length;

@@ -1,0 +1,172 @@
+---
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import { productPatternClassName } from "@sanchika/patterns";
+
+interface QueueItem {
+  readonly id: string;
+  readonly title: string;
+  readonly entity: string;
+  readonly state: string;
+  readonly source: string;
+  readonly owner: string;
+  readonly due: string;
+  readonly amount: string;
+  readonly tone: string;
+}
+
+interface EvidenceItem {
+  readonly label: string;
+  readonly value: string;
+  readonly state: string;
+}
+
+interface AuditItem {
+  readonly date: string;
+  readonly dateLabel: string;
+  readonly time: string;
+  readonly event: string;
+  readonly actor: string;
+  readonly reference: string;
+  readonly resultingState: string;
+  readonly note: string;
+}
+
+interface Props {
+  queue: readonly QueueItem[];
+  evidence: readonly EvidenceItem[];
+  audit: readonly AuditItem[];
+}
+
+const { queue, evidence, audit } = Astro.props;
+const selected = queue[0];
+const linkedSourceCount = evidence.filter((item) => item.state === "Linked").length;
+---
+
+<section class={productPatternClassName("ReviewDeskPreview", { variant: "three-pane", state: "ca-review-needed" })} aria-labelledby="review-desk-title">
+  <div class={`sk-pattern-review-desk-preview__topbar ${primitiveClassName("Cluster", { gap: "lg", justify: "between" })}`}>
+    <div>
+      <span>Axal review desk</span>
+      <strong id="review-desk-title">Work requiring judgment</strong>
+    </div>
+    <div class={`sk-pattern-review-desk-preview__summary ${primitiveClassName("Cluster", { gap: "lg" })}`} aria-label="Queue summary">
+      <span><strong>{queue.length}</strong> open</span>
+      <span><strong>{selected ? 1 : 0}</strong> CA checkpoint</span>
+      <span><strong>{linkedSourceCount}</strong> {linkedSourceCount === 1 ? "source" : "sources"} linked</span>
+    </div>
+  </div>
+
+  <div class="sk-pattern-review-desk-preview__body sk-pattern-grammar--evidence-aperture">
+    <section class="sk-pattern-work-queue" aria-labelledby="work-queue-title">
+      <div class={`sk-pattern-pane-title ${primitiveClassName("Cluster", { gap: "sm", align: "start", justify: "between" })}`}>
+        <h2 id="work-queue-title">Work queue</h2>
+        <span>Priority order</span>
+      </div>
+      <div class={`sk-pattern-work-queue__list ${primitiveClassName("Stack", { gap: "sm" })}`}>
+        {queue.map((item, index) => (
+          <article
+            class={productPatternClassName("WorkQueueRow", { variant: "card", state: index === 0 ? "selected" : item.tone === "waiting" ? "waiting" : "ready" })}
+            data-tone={item.tone}
+            data-selected={index === 0 ? "true" : undefined}
+          >
+            <div class={`sk-pattern-work-queue__identity ${primitiveClassName("Cluster", { gap: "sm", align: "center", justify: "between" })}`}>
+              <span>{item.id}</span>
+              <strong>{item.title}</strong>
+            </div>
+            <p>{index === 0 ? `Selected · ${item.state}` : item.tone === "waiting" ? `Waiting · ${item.state}` : `Ready · Source linked · ${item.state}`}</p>
+            <div class="sk-pattern-work-queue__meta">
+              <span>Priority {index + 1} of {queue.length}</span>
+              <span>Entity {item.entity}</span>
+              <span>Source {item.source}</span>
+              <span>Owner {item.owner}</span>
+              <span>Review owner {item.owner}</span>
+              <span>Due {item.due}</span>
+              <span>Dependency {item.tone === "waiting" ? item.source : "None"}</span>
+              <span>Blocker {item.tone === "waiting" ? "Evidence requested" : "None recorded"}</span>
+              <span>Next {item.tone === "waiting" ? "Request client evidence" : "Open source for review"}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    {selected && (
+      <article class="sk-pattern-selected-case" aria-labelledby="selected-case-title">
+        <div class={`sk-pattern-pane-title ${primitiveClassName("Cluster", { gap: "sm", align: "start", justify: "between" })}`}>
+          <div>
+            <span>{selected.id} · Selected item</span>
+            <span class="sk-pattern-grammar--file-tab-label">NOTICE</span>
+            <h2 id="selected-case-title">{selected.title}</h2>
+          </div>
+          <div><span class={primitiveClassName("Badge", "neutral", "sm")}>{selected.state}</span></div>
+        </div>
+        <div class="sk-pattern-selected-case__question">
+          <span>Decision to make</span>
+          <strong>Does the synthetic source support the proposed response position?</strong>
+          <p>The extracted difference is visible, but interpretation remains with the assigned CA reviewer.</p>
+        </div>
+        <dl class="sk-pattern-selected-case__facts">
+          <div><dt>Owner</dt><dd>{selected.owner} · CA reviewer</dd></div>
+          <div><dt>Due</dt><dd>{selected.due}</dd></div>
+          <div><dt>Source state</dt><dd>{selected.source}</dd></div>
+          <div><dt>Synthetic exposure</dt><dd>{selected.amount}</dd></div>
+          <div><dt>Automation</dt><dd>Draft assistance only</dd></div>
+          <div><dt>Blocker</dt><dd>None recorded for the selected synthetic item</dd></div>
+          <div><dt>Next safe action</dt><dd>Open the linked source before deciding</dd></div>
+        </dl>
+        <section id="human-checkpoint" class={productPatternClassName("HumanReviewCheckpoint", { variant: "inverse", state: "review-needed" })} aria-labelledby="human-checkpoint-title">
+          <span>Human approval checkpoint</span>
+          <h3 id="human-checkpoint-title">CA decision required before the response advances.</h3>
+          <p>Approve, revise, or request evidence only after opening the linked synthetic source.</p>
+          <dl class="checkpoint-facts">
+            <div><dt>Preparation</dt><dd>Draft assistance only · review needed</dd></div>
+            <div><dt>Owner</dt><dd>{selected.owner} · CA reviewer</dd></div>
+            <div><dt>Evidence</dt><dd>{selected.source} · open before deciding</dd></div>
+            <div><dt>Blocker</dt><dd>None recorded; hold if the source cannot be opened</dd></div>
+            <div><dt>Next safe action</dt><dd>Open the linked synthetic source</dd></div>
+            <div><dt>History</dt><dd>{audit[0]?.time ?? "Not recorded"} · audit trail retained below</dd></div>
+          </dl>
+          <div class={`sk-pattern-checkpoint-actions ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Illustrative checkpoint actions">
+            <a href="#evidence-rail-title" data-action="primary">Open source before deciding</a>
+            <a href="/patterns/humanreviewcheckpoint/" data-action="secondary">Inspect request-evidence contract</a>
+          </div>
+        </section>
+      </article>
+    )}
+
+    <aside class={productPatternClassName("EvidencePanel", { variant: "rail", state: "under-review" })} aria-labelledby="evidence-rail-title">
+      <div class={`sk-pattern-pane-title ${primitiveClassName("Cluster", { gap: "sm", align: "start", justify: "between" })}`}>
+        <h2 id="evidence-rail-title">Source evidence</h2>
+        <span>{evidence.length} records</span>
+      </div>
+      <div class={`sk-pattern-evidence-panel__items ${primitiveClassName("Stack", { gap: "sm" })}`}>
+        {evidence.map((item, index) => (
+          <details open={index === 0}>
+            <summary>
+              <span class={textClassName("caption")}>{item.label}</span>
+              <strong>{item.state}</strong>
+            </summary>
+            <p>{item.value}</p>
+          </details>
+        ))}
+      </div>
+      <dl class="sk-pattern-selected-case__facts">
+        <div><dt>Reviewed</dt><dd>14 July 2026 · synthetic reference</dd></div>
+        <div><dt>Reviewer</dt><dd>Assigned CA reviewer AK</dd></div>
+        <div><dt>Limitation</dt><dd>Source interpretation remains under review</dd></div>
+        <div><dt>Action</dt><dd><a class={primitiveClassName("Link")} href="#human-checkpoint">Open the source checkpoint</a></dd></div>
+      </dl>
+      <section class={productPatternClassName("AuditTrailPreview", { variant: "rail", state: "compact" })} aria-labelledby="audit-title">
+        <h3 id="audit-title">Audit trail excerpt</h3>
+        <ol class="sk-pattern-grammar--ledger-rail">
+          {audit.map((item) => (
+            <li>
+              <time datetime={`${item.date}T${item.time}:00`}>{item.dateLabel} · {item.time}</time>
+              <span><strong>{item.event}</strong><small>{item.actor} · {item.reference} · {item.resultingState}</small><small>{item.note}</small></span>
+            </li>
+          ))}
+        </ol>
+        <a class={primitiveClassName("Link")} href="/patterns/audittrailpreview/">Inspect the audit-trail contract</a>
+      </section>
+    </aside>
+  </div>
+</section>

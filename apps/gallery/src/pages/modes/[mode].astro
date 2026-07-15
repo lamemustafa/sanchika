@@ -1,0 +1,22 @@
+---
+import { productPatternGroups } from "@sanchika/patterns";
+import ModeProof from "../../components/ModeProof.astro";
+import PageIntro from "../../components/PageIntro.astro";
+import { modes, slugForContract } from "../../content/site";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+
+export function getStaticPaths() { return modes.map((mode) => ({ params: { mode: mode.id }, props: { mode } })); }
+interface Props { mode: (typeof modes)[number]; }
+const { mode } = Astro.props;
+const group = productPatternGroups.find((candidate) => candidate.name === mode.group)!;
+---
+<GalleryLayout title={`${mode.label} mode | Sanchika`} description={mode.intent}>
+  <main id="main-content" class="site-main docs-page mode-page" tabindex="-1">
+    <PageIntro eyebrow="Product mode" title={mode.label} description={mode.intent} meta={`${mode.density} · ${mode.proof}`} />
+    <section class="contract-detail__summary doc-section" aria-labelledby="mode-character-title"><div><h2 id="mode-character-title">Character and boundary</h2><p>{mode.title}</p><p>{mode.boundary}</p></div><aside><strong>Typography and data treatment</strong><p>{mode.dataTreatment}</p></aside></section>
+    <section class="doc-section" aria-labelledby="mode-proof-title"><h2 id="mode-proof-title">Dominant synthetic proof object</h2><ModeProof {mode} /></section>
+    <section class="doc-section" aria-labelledby="mode-edge-title"><h2 id="mode-edge-title">Meaningful edge state</h2><div class="mode-page__edge"><strong>{mode.edgeState}</strong><p>The state remains visible in text, preserves source or fallback, and never advances a consequential action without the named owner.</p></div></section>
+    <section class="doc-section" aria-labelledby="mode-patterns-title"><h2 id="mode-patterns-title">Relevant package patterns</h2><div class="contract-index">{group.patterns.map((pattern) => <a href={`/patterns/${slugForContract(pattern.name)}/`}><span>{pattern.group}</span><strong>{pattern.name}</strong><p>{pattern.userJob}</p></a>)}</div></section>
+    <section class="doc-section" aria-labelledby="mode-use-title"><h2 id="mode-use-title">Use and avoid</h2><div class="doc-grid doc-grid--2"><article class="doc-card"><span>Use</span><p>{mode.use}</p></article><article class="doc-card"><span>Avoid</span><p>{mode.avoid}</p></article></div></section>
+  </main>
+</GalleryLayout>

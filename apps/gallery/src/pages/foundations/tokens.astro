@@ -1,99 +1,16 @@
 ---
 import { tokenDefinitions, tokenGroupDefinitions } from "@sanchika/tokens";
+import PageIntro from "../../components/PageIntro.astro";
 import GalleryLayout from "../../layouts/GalleryLayout.astro";
-import "../../styles/token-proof.css";
-
-const groups = tokenGroupDefinitions.map((group) => ({
-  ...group,
-  tokens: tokenDefinitions.filter((token) => token.group === group.id),
-}));
-const title = "Token foundations | Sanchika";
-const description = "Generated Sanchika v0.1 token metadata, visual examples, usage boundaries, C1 sources, and v0.0.2 compatibility aliases.";
+import { publicCopy } from "../../content/site";
 ---
-
-<GalleryLayout title={title} description={description} canonical="https://sanchika.complyeaze.com/foundations/tokens/" dataFavicon>
-  <main id="gallery-content" class="sk-token-proof">
-    <header class="sk-token-proof__intro">
-      <a href="/">Sanchika gallery</a>
-      <p>Generated foundation proof · C1 extraction</p>
-      <h1>One source. Every token decision inspectable.</h1>
-      <p>
-        These examples render from generated package metadata. C1 approves the direction and extraction basis;
-        brand memorability, emotional impact, product character, workflow depth, and edge-state completeness remain open.
-      </p>
-      <dl>
-        <div><dt>Authoring source</dt><dd><code>packages/tokens/src/tokens.ts</code></dd></div>
-        <div><dt>Public CSS</dt><dd><code>@sanchika/tokens/theme.css</code></dd></div>
-        <div><dt>Theme</dt><dd>Canonical light only</dd></div>
-        <div><dt>Runtime font request</dt><dd>None</dd></div>
-      </dl>
-    </header>
-
-    {groups.map((group) => (
-      <section class="sk-token-group" aria-labelledby={`token-group-${group.id}`}>
-        <header>
-          <p>{group.tokens.length} generated roles</p>
-          <h2 id={`token-group-${group.id}`}>{group.title}</h2>
-          <p>{group.description}</p>
-        </header>
-        <div class="sk-token-ledger">
-          {group.tokens.map((token) => (
-            <article
-              class="sk-token-row"
-              data-token-type={token.type}
-              data-token-deprecated={token.deprecated ? "true" : undefined}
-              style={`--token-value: var(${token.cssVariable})`}
-            >
-              <div class="sk-token-row__identity">
-                <span class="sk-token-row__index" aria-hidden="true"></span>
-                <div>
-                  <h3>{token.id}</h3>
-                  <code>{token.cssVariable}</code>
-                </div>
-              </div>
-              <div class="sk-token-row__proof" aria-label={`${token.id} visual example`}>
-                {token.type === "color" && <span class="sk-token-swatch" aria-hidden="true"></span>}
-                {token.type === "font-family" && <span class="sk-token-font-family">Source · GSTIN · ₹12,34,567</span>}
-                {token.type === "font-size" && <span class="sk-token-font-size">Review state</span>}
-                {token.type === "font-weight" && <span class="sk-token-font-weight">Evidence linked</span>}
-                {token.type === "line-height" && <span class="sk-token-line-height">Source visible.<br />Human review required.</span>}
-                {token.type === "letter-spacing" && <span class="sk-token-letter-spacing">SOURCE RECORD</span>}
-                {token.type === "shadow" && <span class="sk-token-shadow">Raised evidence plane</span>}
-                {token.type === "dimension" && <span class="sk-token-measure"><i aria-hidden="true"></i>Measured rhythm</span>}
-                {(token.type === "duration" || token.type === "easing") && (
-                  <span
-                    class="sk-token-motion"
-                    tabindex="0"
-                    aria-label={`${token.id} motion preview. Hover or focus to inspect its timing.`}
-                  >
-                    Hover or focus to inspect timing
-                  </span>
-                )}
-                <code>{token.alias ? `alias → ${token.alias}` : token.resolvedValue}</code>
-              </div>
-              <dl class="sk-token-row__guidance">
-                <div><dt>Use</dt><dd>{token.usage}</dd></div>
-                <div><dt>Do not use</dt><dd>{token.avoid}</dd></div>
-                <div><dt>Source</dt><dd>{token.source}</dd></div>
-                {(token.legacyAliases.length > 0 || token.deprecated) && (
-                  <div>
-                    <dt>Compatibility</dt>
-                    <dd>
-                      {token.legacyAliases.map((item) => <span><code>{item.cssVariable}</code> — {item.note}</span>)}
-                      {token.deprecated && <span>Deprecated; use <code>{token.replacement}</code>.</span>}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </article>
-          ))}
-        </div>
-      </section>
-    ))}
-
-    <aside class="sk-token-proof__boundary" aria-label="S3 boundary">
-      <strong>Extraction is not visual completion.</strong>
-      <p>The five C1 reservations remain open. S4 is the next phase: foundation and layout primitives.</p>
-    </aside>
+<GalleryLayout title="Tokens | Sanchika" description="Generated Sanchika token groups, visual proof, usage guidance, and compatibility notes.">
+  <main id="main-content" class="site-main docs-page" tabindex="-1">
+    <PageIntro eyebrow="Foundations / tokens" title="Semantic roles before product paint." description="OKLCH CSS variables are generated from package-owned metadata. The gallery shows representative roles and their intent, not a duplicate token source." meta={`${tokenDefinitions.length} generated tokens · @sanchika/tokens/theme.css`} />
+    <section class="doc-section" aria-labelledby="token-groups-title"><h2 id="token-groups-title">Generated groups and visual proof</h2><div class="token-ledger">{tokenGroupDefinitions.map((group) => {
+      const tokens = tokenDefinitions.filter((token) => token.group === group.id);
+      return <details open={group.id === "color-surfaces"}><summary>{group.title} · {tokens.length} roles</summary><p>{publicCopy(group.description)}</p><div class="token-proof-grid">{tokens.map((token) => <article data-token-proof={token.id} data-token-type={token.type} style={`--gallery-token-proof: var(${token.cssVariable})`}><span class="token-proof-grid__sample" aria-hidden="true"></span><div><strong>{token.id}</strong><code>{token.cssVariable}</code><p>{publicCopy(token.description)}</p><small>{token.resolvedValue}</small></div></article>)}</div></details>;
+    })}</div></section>
+    <section class="doc-section" aria-labelledby="token-guidance-title"><h2 id="token-guidance-title">Usage, contrast, and compatibility</h2><div class="doc-grid doc-grid--2"><article class="doc-card"><span>Use</span><p>Import the theme CSS before primitive and pattern CSS. Choose semantic roles by job, not by sampled color.</p></article><article class="doc-card"><span>Accessibility</span><p>Repository contrast fixtures validate the required foreground/background and focus pairs. Consumers still test composed content and real states.</p></article><article class="doc-card"><span>Legacy aliases</span><p>One-release compatibility aliases remain only where they preserve v0.0.2 behavior. New work uses current semantic names.</p></article><article class="doc-card"><span>Avoid</span><p>Do not override package-internal variables, copy resolved OKLCH values into application CSS, or create product palette rails without meaning.</p></article></div></section>
   </main>
 </GalleryLayout>

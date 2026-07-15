@@ -1,0 +1,18 @@
+---
+import { primitiveClassName } from "@sanchika/primitives";
+import PageIntro from "../../components/PageIntro.astro";
+import { tokenGroupDefinitions } from "@sanchika/tokens";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+const pages = [
+  ["Tokens", "Generated semantic roles across six source-owned groups.", "/foundations/tokens/"],
+  ["Typography", "Editorial display, UI body, and mono evidence roles.", "/foundations/typography/"],
+  ["Motion", "CSS-first assist utilities with explicit reduced-motion results.", "/foundations/motion/"],
+] as const;
+---
+<GalleryLayout title="Foundations | Sanchika" description="Sanchika foundations for tokens, typography, motion, focus, and Evidence Modernism.">
+  <main id="main-content" class="site-main docs-page" tabindex="-1">
+    <PageIntro eyebrow="Foundations" title="A cool-mineral canvas for evidence, not decoration." description="Generated tokens establish the shared surface, type, rhythm, focus, and motion roles. Application composition may change; foundational values stay package-owned." meta={`${tokenGroupDefinitions.length} generated token groups · WCAG 2.2 AA target`} />
+    <section class="doc-section" aria-labelledby="foundation-routes-title"><h2 id="foundation-routes-title">Foundation routes</h2><div class="doc-grid">{pages.map(([label, purpose, href]) => <a class={`${primitiveClassName("LinkCard", { variant: "default" })} doc-card`} href={href}><span>Foundation</span><h3>{label}</h3><p>{purpose}</p></a>)}</div></section>
+    <section class="doc-section" aria-labelledby="grammar-title"><h2 id="grammar-title">Evidence Modernism grammar</h2><div class="doc-grid doc-grid--2"><article class="doc-card"><span>Structure</span><p>Ledger rails, evidence apertures, custody lines, file labels with real record meaning, and quiet provenance seals.</p></article><article class="doc-card"><span>Restraint</span><p>Deep navy and teal establish hierarchy. Oxidized brass appears only where a source, checkpoint, or identity signal earns it.</p></article><article class="doc-card"><span>Accessibility</span><p>Visible text carries every state. Focus and structural boundaries remain legible in forced colors.</p></article><article class="doc-card"><span>Portability</span><p>Tokens are platform-portable; CSS and contracts are package entrypoints. Consumers retain runtime ownership.</p></article></div></section>
+  </main>
+</GalleryLayout>

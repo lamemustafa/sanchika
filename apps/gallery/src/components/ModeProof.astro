@@ -1,0 +1,21 @@
+---
+import BoundaryBanner from "./showcase/BoundaryBanner.astro";
+import CustodyFlow from "./showcase/CustodyFlow.astro";
+import PermissionExplainer from "./showcase/PermissionExplainer.astro";
+import ProductRouteArtifact from "./showcase/ProductRouteArtifact.astro";
+import ReviewDeskPreview from "./showcase/ReviewDeskPreview.astro";
+import ToolDirectory from "./showcase/ToolDirectory.astro";
+import { modes } from "../content/site";
+import { auditTrail, custodyFacts, custodyStages, modeRoutePaths, productRoutes, reviewEvidence, reviewQueue, showcaseTools } from "../content/showcase";
+
+interface Props { mode: (typeof modes)[number]; }
+const { mode } = Astro.props;
+---
+
+<div class="mode-page__proof" data-mode={mode.id}>
+  {mode.id === "complyeaze" && <><BoundaryBanner pattern="TrustBoundary" label="Product-family boundary" statement="Choose workspace, local utility, or browser-local work before data moves." facts={[{ label: "System", value: "Sanchika contract evidence" }, { label: "Data", value: "Synthetic only" }]} neverCrosses="Credentials or artifacts between product modes by default" actionOwner="The person choosing the route" safeAction="Inspect the route boundary" sourceLink={{ label: "Open TrustBoundary contract", href: "/patterns/trustboundary/" }} /><ProductRouteArtifact routes={productRoutes} queue={reviewQueue} /></>}
+  {mode.id === "axal" && <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />}
+  {mode.id === "pack" && <><BoundaryBanner label="Local utility boundary" statement="No ComplyEaze account, extension upload, or remote file handoff is required." facts={[{ label: "Account", value: "Not required" }, { label: "Upload", value: "None" }, { label: "Review", value: "User confirms permission and destination" }]} /><PermissionExplainer /><CustodyFlow stages={custodyStages} facts={custodyFacts} /></>}
+  {mode.id === "tools" && <><BoundaryBanner pattern="LocalBoundaryBanner" label="Browser-local boundary" statement="Search and entered work stay in this browser; outputs remain drafts." facts={[{ label: "Account", value: "Not required" }, { label: "Upload", value: "None" }, { label: "Review", value: "Professional review remains required" }]} /><ToolDirectory tools={showcaseTools} axalHref={modeRoutePaths.axal.path} instanceId="mode-tools-directory" /></>}
+  {mode.id === "axal" && <section class="mode-outcome-proof" aria-labelledby="mode-outcome-proof-title"><div><p class="eyebrow">Decision progression</p><h3 id="mode-outcome-proof-title">A review can advance, return, or stop without losing its source.</h3></div><ol><li data-outcome="approved"><span>AX-018</span><strong>Approved 14 July 2026</strong><small>CA RK · decision reference DEC-018 retained</small></li><li data-outcome="returned"><span>AX-047</span><strong>Returned for evidence</strong><small>Client input requested · prior draft retained</small></li><li data-outcome="held"><span>AX-061</span><strong>Held: source unavailable</strong><small>No consequential action available · owner notified</small></li></ol></section>}
+</div>
