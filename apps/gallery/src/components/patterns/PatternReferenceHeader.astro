@@ -1,0 +1,27 @@
+---
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  description: string;
+}
+
+const { eyebrow, title, description } = Astro.props;
+---
+
+<header class="pattern-reference-header">
+  <div>
+    <span class={textClassName("eyebrow")}>{eyebrow}</span>
+    <h1>{title}</h1>
+    <p class={textClassName("lead")}>{description}</p>
+  </div>
+  <nav aria-label="Pattern reference groups">
+    <a class={primitiveClassName("Link")} href="/patterns/">All patterns</a>
+    <a class={primitiveClassName("Link")} href="/patterns/public/">Public</a>
+    <a class={primitiveClassName("Link")} href="/patterns/axal/">Axal</a>
+    <a class={primitiveClassName("Link")} href="/patterns/pack/">Pack</a>
+    <a class={primitiveClassName("Link")} href="/patterns/tools/">Tools</a>
+    <a class={primitiveClassName("Link")} href="/">Gallery home</a>
+  </nav>
+</header>

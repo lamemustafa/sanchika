@@ -39,6 +39,21 @@ comments only and must not be copied into package or app code.
 Spacing uses a base-8 scale. Motion uses 150-200ms ease-out transitions. Do not
 use spring or bounce motion on critical filing, review, or proof actions.
 
+## S7 Product Pattern Grammar
+
+The pattern layer owns reusable composition for advisory publication,
+professional workspaces, local utilities, source/provenance, dense data, action
+hierarchy, trust boundaries, and restrained motion. Use
+`@sanchika/patterns/styles.css` and finite `patternClassName` hooks. Consumers
+keep runtime behavior, authorization, persistence, real data, and
+product-specific copy.
+
+The four canonical groups are public/product, Axal workspace, Pack local
+utility, and Tools local artifact. Their examples keep source, uncertainty,
+review, account, upload, custody, permission, and output boundaries visible
+where applicable. Do not replace those workflows with equal-card SaaS grids or
+override undocumented pattern descendants.
+
 ## Definition Of Done For Reusable UI
 
 1. Token-only styling.

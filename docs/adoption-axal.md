@@ -5,6 +5,14 @@ Axal is the second Sanchika consumer.
 Axal needs dense operational patterns: review queues, evidence panels, source
 metadata, task tables, timelines, and human-review checkpoints.
 
+The S7 candidates are `ReviewDeskPreview`, `EvidencePanel`,
+`HumanReviewCheckpoint`, `AuditTrailPreview`, and `WorkQueueRow`. The package
+owns their shared evidence hierarchy, state text hooks, responsive collapse,
+and forced-colors treatment. Axal owns tenant authorization, real sources,
+assignment, persistence, audit storage, queue mutation, decision effects, and
+all route behavior. Pattern adoption is not permission to move those concerns
+into Sanchika.
+
 ## Entry Criteria
 
 - ComplyEaze completion evidence exists for a narrow public/product adoption.

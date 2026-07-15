@@ -33,6 +33,78 @@ const ariaLiveByRole = new Map([
   ["alert", "assertive"],
 ]);
 
+const expectedProductPatternGroups = [
+  ["public-product", ["PublicHero", "ProductRouteMap", "ProofStrip", "TrustBoundary", "SourceProvenanceStrip", "PricingBlock", "FAQAccordion", "ReleaseStatusBanner"]],
+  ["axal-workspace", ["ReviewDeskPreview", "EvidencePanel", "HumanReviewCheckpoint", "AuditTrailPreview", "WorkQueueRow"]],
+  ["pack-local-utility", ["LocalArtifactFlow", "PermissionExplainer", "CustodyBoundary"]],
+  ["tools-local-artifact", ["ToolDirectory", "ToolCard", "LocalBoundaryBanner", "OutputArtifactSummary"]],
+];
+
+const expectedProductPatternNames = expectedProductPatternGroups.flatMap(([, names]) => names);
+const requiredAnatomyByPattern = new Map([
+  ["PublicHero", ["eyebrow", "title", "lede", "actions", "proof", "boundaryStatement"]],
+  ["ProductRouteMap", ["routeSummary", "primaryRoute", "secondaryRoutes", "boundaryLabels", "currentStatus", "routeActions", "proofOrSource", "colophon"]],
+  ["ProofStrip", ["proofItems", "checkedAt"]],
+  ["TrustBoundary", ["boundarySummary", "boundaryFacts", "neverCrosses", "actionOwner", "sourceEvidence", "safeAction"]],
+  ["SourceProvenanceStrip", ["claim", "sourceType", "sources", "releaseVersion", "checksumReference", "checkedAt", "reviewOwner", "visibleStatus", "limitation"]],
+  ["PricingBlock", ["offerName", "price", "status", "effectiveAt", "inclusions", "exclusions", "reviewBoundary", "action", "sourceOwner"]],
+  ["FAQAccordion", ["question", "answer", "source"]],
+  ["ReleaseStatusBanner", ["status", "productPackage", "releaseVersion", "scope", "effectiveAt", "source", "supportedScope", "knownLimitation", "safeAction"]],
+  ["ReviewDeskPreview", ["deskHeader", "syntheticMarker", "workQueue", "selectedWork", "evidence", "ownerDueReview", "blockedReason", "nextSafeAction", "checkpoint", "auditTrail"]],
+  ["EvidencePanel", ["sourceList", "checkedAt", "reviewState", "uncertainty", "reviewer", "safeAction"]],
+  ["HumanReviewCheckpoint", ["checkpointLabel", "preparationState", "reviewOwner", "sourceReadiness", "blockers", "decisionQuestion", "evidenceLink", "decisionActions", "nextSafeAction", "timestampHistory"]],
+  ["AuditTrailPreview", ["events", "resultingState", "optionalNote", "scope", "inspectAction"]],
+  ["WorkQueueRow", ["identity", "clientEntity", "priority", "dueState", "owner", "sourceState", "reviewState", "blockedReason", "nextSafeAction"]],
+  ["LocalArtifactFlow", ["sourceStage", "localActionStage", "destinationStage", "stepCustody", "sourceEvidence", "resultingArtifact", "custodyFacts", "artifactReceipt"]],
+  ["PermissionExplainer", ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy", "fallback", "requestAction"]],
+  ["CustodyBoundary", ["boundaryClaim", "boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "custodyFacts", "networkDestination", "sourceProof"]],
+  ["ToolDirectory", ["directoryHeader", "resultStatus", "search", "filters", "toolList", "emptyState", "workspaceHandoff"]],
+  ["ToolCard", ["category", "title", "summary", "input", "output", "review", "boundary", "status", "action"]],
+  ["LocalBoundaryBanner", ["boundaryClaim", "processingLocation", "accountFact", "uploadFact", "networkTelemetryFact", "reviewFact", "sourcePolicy"]],
+  ["OutputArtifactSummary", ["artifactType", "artifactName", "generatedFrom", "generatedOutput", "destination", "draftReviewStatus", "reviewRequirement", "limitations", "nextAction"]],
+]);
+const requiredStatesByPattern = new Map([
+  ["PublicHero", ["default", "with-proof-artifact", "compact-mobile"]],
+  ["ProductRouteMap", ["default", "compact", "limited", "unavailable", "colophon"]],
+  ["SourceProvenanceStrip", ["current", "stale", "unavailable", "limited", "unverified"]],
+  ["ReleaseStatusBanner", ["current", "alpha", "stale", "limited", "planned", "unavailable"]],
+  ["ReviewDeskPreview", ["ca-review-needed", "client-input-pending", "evidence-requested", "source-unavailable", "ready-for-reviewer", "blocked"]],
+  ["EvidencePanel", ["available", "requested", "missing", "stale", "disputed", "under-review"]],
+  ["HumanReviewCheckpoint", ["preparation", "review-needed", "held", "approved", "rejected-returned", "blocked"]],
+  ["AuditTrailPreview", ["compact", "expanded"]],
+  ["PermissionExplainer", ["required", "optional", "denied", "unavailable", "not-requested"]],
+  ["CustodyBoundary", ["local-only", "workspace-scoped", "public-metadata-only", "transfer-pending", "no-transfer"]],
+  ["ToolDirectory", ["default", "filtered", "no-results"]],
+  ["OutputArtifactSummary", ["generated-draft", "ready-for-review", "copied-downloaded", "failed", "unavailable"]],
+]);
+const requiredVisualGrammar = [
+  ["ledgerRail", "sk-pattern-grammar--ledger-rail"],
+  ["fileTabLabel", "sk-pattern-grammar--file-tab-label"],
+  ["provenanceStrip", "sk-pattern-grammar--provenance-strip"],
+  ["evidenceAperture", "sk-pattern-grammar--evidence-aperture"],
+  ["custodyLine", "sk-pattern-grammar--custody-line"],
+  ["quietVerifiedSeal", "sk-pattern-grammar--quiet-verified-seal"],
+];
+const requiredContractArrays = [
+  "intendedProducts",
+  "anatomy",
+  "requiredFields",
+  "variants",
+  "states",
+  "copyObligations",
+  "prohibitedClaims",
+  "nonColorRules",
+  "trustBoundaries",
+  "responsiveBehavior",
+  "reducedMotionBehavior",
+  "forcedColorsBehavior",
+  "consumerResponsibilities",
+  "exemplarRoutes",
+  "adopterGuidance",
+  "nonGoals",
+];
+const requiredAccessibilityHooks = ["semantics", "keyboard", "announcements", "focusOrder"];
+
 export function validatePatternContracts({ patternSource, patternDocs, fail }) {
   for (const requiredPatternContract of requiredPatternContracts) {
     if (!patternSource.includes(requiredPatternContract)) {
@@ -72,6 +144,237 @@ export function validatePatternContracts({ patternSource, patternDocs, fail }) {
       fail(`docs/patterns.md must document ${requiredDocFragment}`);
     }
   }
+}
+
+export function validateProductPatternContracts({
+  contracts,
+  groups,
+  aliases,
+  visualGrammar,
+  retainedLegacyPatternNames,
+  className,
+  resolve,
+  css,
+  exemplarRoutes,
+  fail,
+}) {
+  for (const issue of collectProductPatternIssues({ contracts, groups, css, exemplarRoutes })) fail(issue);
+
+  if (!Object.isFrozen(visualGrammar)) fail("productVisualGrammar must be immutable");
+  if (JSON.stringify(Object.keys(visualGrammar ?? {})) !== JSON.stringify(requiredVisualGrammar.map(([name]) => name))) {
+    fail(`productVisualGrammar must expose only ${requiredVisualGrammar.map(([name]) => name).join(", ")}`);
+  }
+  for (const [name, classNameValue] of requiredVisualGrammar) {
+    const hook = visualGrammar?.[name];
+    if (!hook || hook.className !== classNameValue || !hook.principle?.trim()) fail(`productVisualGrammar.${name} must define ${classNameValue}`);
+    if (!Object.isFrozen(hook)) fail(`productVisualGrammar.${name} must be immutable`);
+    if (css && !css.includes(`.${classNameValue}`)) fail(`${classNameValue} must exist in package CSS`);
+  }
+
+  if (!Object.isFrozen(contracts)) fail("productPatternContracts must be immutable");
+  for (const contract of contracts) {
+    if (!Object.isFrozen(contract)) fail(`${contract.name} contract must be immutable`);
+    for (const field of requiredContractArrays) {
+      if (!Object.isFrozen(contract[field])) fail(`${contract.name}.${field} must be immutable`);
+    }
+    for (const state of contract.states) {
+      if (!Object.isFrozen(state) || !Object.isFrozen(state.requiredVisibleSignals)) {
+        fail(`${contract.name}.${state.name}.requiredVisibleSignals must be deeply immutable`);
+      }
+    }
+  }
+  if (!Object.isFrozen(groups) || groups.some((group) => !Object.isFrozen(group) || !Object.isFrozen(group.patterns))) {
+    fail("productPatternGroups and their pattern collections must be immutable");
+  }
+
+  if (JSON.stringify(Object.keys(aliases)) !== JSON.stringify(["ProductFamilyRouter"])) {
+    fail("patternAliases must contain only the approved ProductFamilyRouter compatibility alias");
+  }
+  const routeMap = contracts.find((contract) => contract.name === "ProductRouteMap");
+  if (aliases.ProductFamilyRouter !== routeMap) {
+    fail("ProductFamilyRouter alias must point to the canonical ProductRouteMap contract by identity");
+  }
+  if (JSON.stringify(retainedLegacyPatternNames) !== JSON.stringify(["ProductFamilyRouter", "ServiceSection"])) {
+    fail("retainedLegacyPatternNames must preserve ProductFamilyRouter and ServiceSection in order");
+  }
+
+  for (const contract of contracts) {
+    const variant = contract.variants[0]?.name;
+    const state = contract.states[0]?.name;
+    const expectedClasses = [
+      contract.css.baseClass,
+      `${contract.css.variantClassPrefix}${kebabCase(variant)}`,
+      `${contract.css.stateClassPrefix}${kebabCase(state)}`,
+    ].join(" ");
+    try {
+      if (className(contract.name, { variant, state }) !== expectedClasses) {
+        fail(`${contract.name} class helper must emit base, finite variant, and finite state classes in order`);
+      }
+    } catch (error) {
+      fail(`${contract.name} class helper failed: ${String(error)}`);
+    }
+  }
+
+  for (const inheritedKey of ["toString", "constructor", "__proto__", "prototype", "hasOwnProperty"]) {
+    expectRejected(() => className(inheritedKey), inheritedKey, fail);
+    if (resolve(inheritedKey) !== undefined) fail(`resolveProductPatternContract must reject inherited key ${inheritedKey}`);
+  }
+  expectRejected(() => className("PublicHero", { variant: "__proto__" }), "inherited variant", fail);
+  expectRejected(() => className("EvidencePanel", { state: "constructor" }), "inherited state", fail);
+}
+
+export function runProductPatternContractFixtures({ contracts, css = null }) {
+  const cases = [
+    { name: "valid inventory", mutate: () => {}, expected: null },
+    { name: "duplicate name", mutate: (items) => { items[1].name = items[0].name; }, expected: "exact canonical order" },
+    { name: "missing anatomy", mutate: (items) => { items[0].anatomy = []; }, expected: "anatomy must be a non-empty array" },
+    { name: "missing required anatomy field", mutate: (items) => { items[0].anatomy = items[0].anatomy.filter((item) => item.name !== "boundaryStatement"); }, expected: "required anatomy boundaryStatement" },
+    { name: "missing required state", mutate: (items) => { items[0].states = items[0].states.filter((state) => state.name !== "with-proof-artifact"); }, expected: "required state with-proof-artifact" },
+    { name: "missing state signals", mutate: (items) => { items[0].states[0].requiredVisibleSignals = []; }, expected: "requiredVisibleSignals" },
+    { name: "missing trust boundary", mutate: (items) => { items[0].trustBoundaries = []; }, expected: "trustBoundaries must be a non-empty array" },
+    { name: "invalid CSS class", mutate: (items) => { items[0].css.baseClass = "card"; }, expected: "baseClass must be" },
+    { name: "invalid route", mutate: (items) => { items[0].exemplarRoutes = ["https://example.com"]; }, expected: "must be a local static route" },
+    { name: "unknown maturity", mutate: (items) => { items[0].maturity = "finished"; }, expected: "unknown maturity" },
+    { name: "missing accessibility hook", mutate: (items) => { items[0].accessibilityHooks.keyboard = ""; }, expected: "accessibilityHooks.keyboard" },
+    { name: "missing user job", mutate: (items) => { items[0].userJob = ""; }, expected: "userJob must be specific" },
+    { name: "missing semantic root", mutate: (items) => { items[0].semanticRoot = ""; }, expected: "semanticRoot must be specific" },
+    { name: "missing required fields", mutate: (items) => { items[0].requiredFields = []; }, expected: "requiredFields must be a non-empty array" },
+    { name: "unknown required field", mutate: (items) => { items[0].requiredFields = ["inventedField"]; }, expected: "required field inventedField" },
+    { name: "PricingBlock missing required action", mutate: (items) => { const contract = items.find((item) => item.name === "PricingBlock"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "action"); }, expected: "PricingBlock requiredFields must include action" },
+    { name: "PermissionExplainer missing request action", mutate: (items) => { const contract = items.find((item) => item.name === "PermissionExplainer"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "requestAction"); }, expected: "PermissionExplainer requiredFields must include requestAction" },
+    { name: "HumanReviewCheckpoint missing evidence link", mutate: (items) => { const contract = items.find((item) => item.name === "HumanReviewCheckpoint"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "evidenceLink"); }, expected: "HumanReviewCheckpoint requiredFields must include evidenceLink" },
+    { name: "AuditTrailPreview missing inspect action", mutate: (items) => { const contract = items.find((item) => item.name === "AuditTrailPreview"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "inspectAction"); }, expected: "AuditTrailPreview requiredFields must include inspectAction" },
+    { name: "WorkQueueRow missing priority", mutate: (items) => { const contract = items.find((item) => item.name === "WorkQueueRow"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "priority"); }, expected: "WorkQueueRow requiredFields must include priority" },
+    { name: "CustodyBoundary missing network destination", mutate: (items) => { const contract = items.find((item) => item.name === "CustodyBoundary"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "networkDestination"); }, expected: "CustodyBoundary requiredFields must include networkDestination" },
+    { name: "LocalArtifactFlow missing artifact receipt", mutate: (items) => { const contract = items.find((item) => item.name === "LocalArtifactFlow"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "artifactReceipt"); }, expected: "LocalArtifactFlow requiredFields must include artifactReceipt" },
+    { name: "PermissionExplainer missing fallback", mutate: (items) => { const contract = items.find((item) => item.name === "PermissionExplainer"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "fallback"); }, expected: "PermissionExplainer requiredFields must include fallback" },
+    { name: "ToolDirectory missing result status", mutate: (items) => { const contract = items.find((item) => item.name === "ToolDirectory"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "resultStatus"); }, expected: "ToolDirectory requiredFields must include resultStatus" },
+    { name: "ToolCard missing summary", mutate: (items) => { const contract = items.find((item) => item.name === "ToolCard"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "summary"); }, expected: "ToolCard requiredFields must include summary" },
+    { name: "non-optional anatomy omitted from required fields", mutate: (items) => { const contract = items.find((item) => item.name === "PublicHero"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "eyebrow"); }, expected: "PublicHero requiredFields must include eyebrow" },
+    { name: "ToolCard hidden state missing CSS suppression", mutate: () => {}, mutateCss: (value) => value?.replace(/\.sk-pattern-tool-card\[hidden\],[\s\S]*?display:\s*none;\s*}/, ""), expected: "ToolCard hidden state must suppress author display" },
+    { name: "missing copy obligation", mutate: (items) => { items[0].copyObligations = []; }, expected: "copyObligations must be a non-empty array" },
+    { name: "missing reduced motion", mutate: (items) => { items[0].reducedMotionBehavior = []; }, expected: "reducedMotionBehavior must be a non-empty array" },
+    { name: "missing forced colors", mutate: (items) => { items[0].forcedColorsBehavior = []; }, expected: "forcedColorsBehavior must be a non-empty array" },
+    { name: "missing synthetic requirement", mutate: (items) => { items[0].syntheticRequirement = ""; }, expected: "syntheticRequirement must be specific" },
+    { name: "missing consumer responsibility", mutate: (items) => { items[0].consumerResponsibilities = []; }, expected: "consumerResponsibilities must be a non-empty array" },
+  ];
+  const failures = [];
+
+  for (const fixture of cases) {
+    const candidate = structuredClone(contracts);
+    fixture.mutate(candidate);
+    const candidateCss = fixture.mutateCss ? fixture.mutateCss(css) : css;
+    const issues = collectProductPatternIssues({ contracts: candidate, groups: null, css: candidateCss, exemplarRoutes: null });
+    const passed = fixture.expected ? issues.some((issue) => issue.includes(fixture.expected)) : issues.length === 0;
+    if (!passed) failures.push(`${fixture.name}: expected ${fixture.expected ?? "success"}; found ${issues.join("; ") || "success"}`);
+  }
+  return { count: cases.length, failures };
+}
+
+function collectProductPatternIssues({ contracts, groups, css, exemplarRoutes }) {
+  const issues = [];
+  if (!Array.isArray(contracts)) return ["productPatternContracts must be an array"];
+  if (JSON.stringify(contracts.map((contract) => contract.name)) !== JSON.stringify(expectedProductPatternNames)) {
+    issues.push(`productPatternContracts must preserve the exact canonical order: ${expectedProductPatternNames.join(", ")}`);
+  }
+  if (new Set(contracts.map((contract) => contract.name)).size !== contracts.length) issues.push("product pattern names must be unique");
+
+  if (groups !== null) {
+    if (JSON.stringify(groups.map((group) => group.name)) !== JSON.stringify(expectedProductPatternGroups.map(([name]) => name))) {
+      issues.push("productPatternGroups must preserve the exact four-group order");
+    }
+    for (const [index, [, expectedNames]] of expectedProductPatternGroups.entries()) {
+      const group = groups[index];
+      if (!group || JSON.stringify(group.patterns.map((contract) => contract.name)) !== JSON.stringify(expectedNames)) {
+        issues.push(`product pattern group ${index} must preserve ${expectedNames.join(", ")}`);
+      }
+    }
+  }
+
+  for (const contract of contracts) {
+    if (!expectedProductPatternGroups.some(([group]) => group === contract.group)) issues.push(`${contract.name} uses unknown group ${contract.group}`);
+    if (!contract.purpose?.trim()) issues.push(`${contract.name}.purpose must be specific`);
+    if (!contract.primaryProductMode?.trim() || contract.intendedProducts?.[0] !== contract.primaryProductMode) issues.push(`${contract.name}.primaryProductMode must be the first intended product`);
+    for (const field of ["userJob", "semanticRoot", "syntheticRequirement"]) {
+      if (!contract[field]?.trim()) issues.push(`${contract.name}.${field} must be specific`);
+    }
+    if (!['candidate', 'adoption-ready'].includes(contract.maturity)) issues.push(`${contract.name} uses unknown maturity ${contract.maturity}`);
+    if (!['synthetic-reference', 'browser-verified', 'consumer-verified'].includes(contract.evidenceStatus)) issues.push(`${contract.name} uses unknown evidenceStatus ${contract.evidenceStatus}`);
+    for (const field of requiredContractArrays) {
+      if (!Array.isArray(contract[field]) || contract[field].length === 0) issues.push(`${contract.name}.${field} must be a non-empty array`);
+    }
+    const anatomyNames = new Set((contract.anatomy ?? []).map((part) => part.name));
+    for (const requiredField of contract.requiredFields ?? []) {
+      if (!anatomyNames.has(requiredField)) issues.push(`${contract.name} required field ${requiredField} must reference declared anatomy`);
+    }
+    for (const requiredAnatomy of requiredAnatomyByPattern.get(contract.name) ?? []) {
+      if (!anatomyNames.has(requiredAnatomy)) issues.push(`${contract.name} must include required anatomy ${requiredAnatomy}`);
+    }
+    const requiredFieldNames = new Set(contract.requiredFields ?? []);
+    for (const anatomyPart of contract.anatomy ?? []) {
+      const explicitlyOptional = anatomyPart.name.startsWith("optional") || /\boptional\b|\bwhen (?:one )?(?:exists|present|applicable)\b/i.test(anatomyPart.purpose);
+      if (!explicitlyOptional && !requiredFieldNames.has(anatomyPart.name)) {
+        issues.push(`${contract.name} requiredFields must include ${anatomyPart.name}`);
+      }
+    }
+    const stateNames = new Set((contract.states ?? []).map((state) => state.name));
+    for (const requiredState of requiredStatesByPattern.get(contract.name) ?? []) {
+      if (!stateNames.has(requiredState)) issues.push(`${contract.name} must include required state ${requiredState}`);
+    }
+    for (const state of contract.states ?? []) {
+      if (!state.name?.trim() || !state.purpose?.trim()) issues.push(`${contract.name} states must include name and purpose`);
+      if (!Array.isArray(state.requiredVisibleSignals) || state.requiredVisibleSignals.length === 0) issues.push(`${contract.name}.${state.name}.requiredVisibleSignals must be non-empty`);
+    }
+    for (const hook of requiredAccessibilityHooks) {
+      if (!contract.accessibilityHooks?.[hook]?.trim()) issues.push(`${contract.name}.accessibilityHooks.${hook} must be specific`);
+    }
+    const slug = kebabCase(contract.name);
+    if (contract.css?.entrypoint !== "@sanchika/patterns/styles.css") issues.push(`${contract.name}.css.entrypoint must use the public stylesheet`);
+    if (contract.css?.baseClass !== `sk-pattern-${slug}`) issues.push(`${contract.name}.css.baseClass must be sk-pattern-${slug}`);
+    if (contract.css?.variantClassPrefix !== `sk-pattern-${slug}--`) issues.push(`${contract.name}.css.variantClassPrefix must match the base class`);
+    if (contract.css?.stateClassPrefix !== `sk-pattern-${slug}--state-`) issues.push(`${contract.name}.css.stateClassPrefix must match the base class`);
+    for (const route of contract.exemplarRoutes ?? []) {
+      if (!/^\/[a-z0-9-/]+\/$/.test(route)) issues.push(`${contract.name} exemplar route ${route} must be a local static route`);
+      if (exemplarRoutes && !exemplarRoutes.has(route)) issues.push(`${contract.name} exemplar route ${route} has no gallery source`);
+    }
+    if (css && !css.includes(`.${contract.css?.baseClass}`)) issues.push(`${contract.name} base class must exist in package CSS`);
+  }
+
+  if (css) {
+    if (!/\[data-tool-card\]\[hidden\]\s*\{[^}]*display:\s*none\s*;/i.test(css)) {
+      issues.push("ToolCard hidden state must suppress author display");
+    }
+    if (/--lab-|\.lab-/.test(css)) issues.push("pattern CSS must not retain lab variables or selectors");
+    if (/^\s*(?:html|body|main|#gallery|\.sk-gallery|\.pattern-reference|\[data-sanchika)[^{]*\{/gm.test(css)) {
+      issues.push("pattern CSS must not own page, route, gallery, or reference-shell selectors");
+    }
+    if (/(^|[;{]\s*)--sk-[\w-]+\s*:/m.test(css)) issues.push("pattern CSS must not author new --sk-* variables");
+    if (/#[0-9a-f]{3,8}\b|\b(?:rgb|rgba|hsl|hsla|oklch|lab|lch)\(/i.test(css)) issues.push("pattern CSS must not contain raw color values");
+    for (const property of ["font-family", "font-size", "font-weight", "line-height", "letter-spacing", "border-radius", "box-shadow", "animation-duration"]) {
+      const raw = new RegExp(`${property}\\s*:(?!\\s*(?:var\\(|inherit|initial|unset|normal|none))[^;]+;`, "i");
+      if (raw.test(css)) issues.push(`pattern CSS ${property} values must use existing tokens`);
+    }
+    for (const match of css.matchAll(/transition\s*:\s*([^;]+);/gi)) {
+      if (!match[1].includes("var(--sk-motion-")) issues.push("pattern CSS transition values must use existing motion tokens");
+    }
+  }
+  return issues;
+}
+
+function expectRejected(operation, label, fail) {
+  try {
+    operation();
+    fail(`product pattern class helper must reject ${label}`);
+  } catch (error) {
+    if (!/Unknown/.test(String(error))) fail(`product pattern class helper rejected ${label} with unexpected error: ${String(error)}`);
+  }
+}
+
+function kebabCase(value) {
+  return String(value)
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .toLowerCase();
 }
 
 function validateA11yChecks({ pattern, state, topLevelSlots, fail }) {

@@ -78,11 +78,16 @@ Load token variables before primitive styles:
 ```css
 @import "@sanchika/tokens/theme.css";
 @import "@sanchika/primitives/styles.css";
+@import "@sanchika/patterns/styles.css";
 ```
 
 Primitive styles consume Sanchika CSS variables and do not define product colors.
 Use `primitiveClassName(...)` or equivalent class composition to apply
 `sk-button`, `sk-card`, `sk-badge`, and `sk-field` contracts.
+Use `patternClassName(...)` for the finite S7 product pattern variants and
+states. The package exports 20 canonical patterns across public/product, Axal,
+Pack, and Tools groups while preserving the legacy four-entry `patternSpecs`
+shape.
 
 ## Gallery Application
 
@@ -101,9 +106,10 @@ apps/gallery/dist/_astro/*.css
 ```
 
 Run `pnpm gallery:check` to fail unresolved `@sanchika/*` CSS references,
-confirm token CSS precedes primitive CSS, and reject unintended client
-JavaScript. The gallery remains a static app with one canonical root route; it
-is not a server, Storybook replacement, framework adapter, or runtime shell.
+confirm token CSS precedes primitive and pattern CSS, and reject unintended
+client JavaScript. The gallery remains a static app with one canonical root and
+package-driven `/patterns/*` references; it is not a server, Storybook
+replacement, framework adapter, runtime shell, or the S8 showcase rebuild.
 
 ## Status
 

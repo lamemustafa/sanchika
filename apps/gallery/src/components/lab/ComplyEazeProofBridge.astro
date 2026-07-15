@@ -1,0 +1,55 @@
+---
+import { productPatternClassName } from "@sanchika/patterns";
+import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import BoundaryBanner from "./BoundaryBanner.astro";
+
+interface Props {
+  readonly axalHref: string;
+}
+
+const { axalHref } = Astro.props;
+---
+
+<dl class={productPatternClassName("ProofStrip", { variant: "inline", state: "verified" })} aria-label="ComplyEaze product proof">
+  <div><dt>Evidence state</dt><dd>Verified in the S7 build · <a href="/patterns/">source</a> · local reference only</dd></div>
+  <div><dt>Source</dt><dd><a href="https://github.com/lamemustafa/sanchika/tree/master/packages/patterns">Package contracts</a> · static exemplars · unreleased</dd></div>
+  <div><dt>Checked</dt><dd>14 July 2026 · <a href="/patterns/">local verification source</a> · no runtime adoption</dd></div>
+  <div><dt>Limitation</dt><dd>Consumer adoption remains separate · <a href="/patterns/#pattern-contract-ledger-title">inspect contract</a></dd></div>
+</dl>
+
+<BoundaryBanner
+  pattern="TrustBoundary"
+  label="Product-family trust boundary"
+  statement="Saved workspace context, portal-local downloads, and browser-local drafts keep distinct account, upload, custody, and review rules."
+  facts={[
+    { label: "Workspace", value: "Account and human review" },
+    { label: "Pack", value: "Portal session to this device" },
+    { label: "Tools", value: "Browser-local draft only" },
+  ]}
+  neverCrosses="Credentials or artifacts across product modes by default"
+  actionOwner="The user choosing a route and the named reviewer for decisions"
+  safeAction="Inspect the selected route boundary before data moves"
+  sourceLink={{ label: "Inspect the public boundary contract", href: "/patterns/public/#pattern-contract-ledger-title" }}
+/>
+
+<article class={productPatternClassName("ReviewDeskPreview", { variant: "stacked", state: "ca-review-needed" })} aria-labelledby="complyeaze-review-excerpt-title">
+  <div class={`sk-pattern-review-desk-preview__topbar ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
+    <div>
+      <span>Compact Axal proof</span>
+      <strong id="complyeaze-review-excerpt-title">Evidence before a professional decision.</strong>
+    </div>
+    <div class={`sk-pattern-review-desk-preview__summary ${primitiveClassName("Cluster", { gap: "sm" })}`}>
+      <span>CA review needed</span>
+      <strong>Selected work · Synthetic</strong>
+    </div>
+  </div>
+  <section class={primitiveClassName("Surface", { variant: "default", padding: "lg" })} aria-label="Synthetic review excerpt">
+    <p class={textClassName("eyebrow")}>Named human checkpoint</p>
+    <div class="sk-pattern-selected-case__question">
+      <span>Decision question</span>
+      <strong>Does the linked source support the proposed response?</strong>
+      <p>Source state: linked package contract available; human verification pending. The excerpt demonstrates workflow hierarchy only. It does not perform analysis, approval, or submission.</p>
+    </div>
+    <a class={primitiveClassName("Link")} href={axalHref}>Open the complete Axal North Star <span aria-hidden="true">→</span></a>
+  </section>
+</article>

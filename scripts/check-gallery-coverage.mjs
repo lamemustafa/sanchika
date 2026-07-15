@@ -1,18 +1,47 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
-import { runGalleryExemplarFixtures, validateGalleryExemplars } from "./validation/gallery-exemplars.mjs";
+import {
+  runGalleryExemplarFixtures,
+  runProductPatternExemplarFixtures,
+  validateGalleryExemplars,
+  validateProductPatternExemplars,
+} from "./validation/gallery-exemplars.mjs";
 import { runS5GalleryExemplarFixtures, validateS5GalleryExemplars } from "./validation/s5-gallery-exemplars.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertGalleryBuildArtifacts({ root, commandName: "pnpm check:gallery" });
 
 const { motionAssistUtilities, primitiveGroups, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
-const { patternSpecs } = await import("../packages/patterns/dist/index.js");
+const { patternSpecs, productPatternContracts, productPatternGroups } = await import("../packages/patterns/dist/index.js");
 const rootMarkup = readFileSync(new URL("../apps/gallery/dist/index.html", import.meta.url), "utf8");
 const foundationMarkup = readFileSync(new URL("../apps/gallery/dist/primitives/foundations/index.html", import.meta.url), "utf8");
 const s5Markup = readFileSync(new URL("../apps/gallery/dist/primitives/search-state-feedback/index.html", import.meta.url), "utf8");
 const motionMarkup = readFileSync(new URL("../apps/gallery/dist/foundations/motion/index.html", import.meta.url), "utf8");
+const patternMarkupByGroup = new Map([
+  ["public-product", readFileSync(new URL("../apps/gallery/dist/patterns/public/index.html", import.meta.url), "utf8")],
+  ["axal-workspace", readFileSync(new URL("../apps/gallery/dist/patterns/axal/index.html", import.meta.url), "utf8")],
+  ["pack-local-utility", readFileSync(new URL("../apps/gallery/dist/patterns/pack/index.html", import.meta.url), "utf8")],
+  ["tools-local-artifact", readFileSync(new URL("../apps/gallery/dist/patterns/tools/index.html", import.meta.url), "utf8")],
+]);
+const northStarMarkupByProduct = new Map([
+  ["complyeaze", readFileSync(new URL("../apps/gallery/dist/lab/complyeaze-core/index.html", import.meta.url), "utf8")],
+  ["axal", readFileSync(new URL("../apps/gallery/dist/lab/axal-review-desk/index.html", import.meta.url), "utf8")],
+  ["pack", readFileSync(new URL("../apps/gallery/dist/lab/pack-local-proof/index.html", import.meta.url), "utf8")],
+  ["tools", readFileSync(new URL("../apps/gallery/dist/lab/tools-directory/index.html", import.meta.url), "utf8")],
+]);
+const northStarSources = [
+  "LabShell.astro",
+  "LabIntro.astro",
+  "BoundaryBanner.astro",
+  "ComplyEazeProofBridge.astro",
+  "PermissionExplainer.astro",
+  "ProductRouteArtifact.astro",
+  "ReviewDesk.astro",
+  "CustodyFlow.astro",
+  "ToolDirectory.astro",
+].map((path) => readFileSync(new URL(`../apps/gallery/src/components/lab/${path}`, import.meta.url), "utf8")).join("\n");
+const motionSpecimenSource = readFileSync(new URL("../apps/gallery/src/components/lab/MotionSpecimens.astro", import.meta.url), "utf8");
 const primitiveCss = ["search-feedback.css", "process-data.css", "motion.css"]
   .map((path) => readFileSync(new URL(`../packages/primitives/src/${path}`, import.meta.url), "utf8"))
   .join("\n");
@@ -22,6 +51,9 @@ const exemplarFixtures = runGalleryExemplarFixtures();
 failures.push(...exemplarFixtures.failures.map((failure) => `gallery exemplar fixture ${failure}`));
 const s5ExemplarFixtures = runS5GalleryExemplarFixtures();
 failures.push(...s5ExemplarFixtures.failures.map((failure) => `S5 gallery exemplar fixture ${failure}`));
+const productPatternExemplarFixtures = runProductPatternExemplarFixtures();
+failures.push(...productPatternExemplarFixtures.failures.map((failure) => `product pattern exemplar fixture ${failure}`));
+validateProductPatternExemplars({ markupByGroup: patternMarkupByGroup, contracts: productPatternContracts, fail: (message) => failures.push(message) });
 
 assertExactAttributeValues({
   markup: rootMarkup,
@@ -29,6 +61,60 @@ assertExactAttributeValues({
   expected: primitiveGroups.legacy.map((primitive) => primitive.name),
   label: "canonical primitive contract inventory",
 });
+
+for (const group of productPatternGroups) {
+  const groupMarkup = patternMarkupByGroup.get(group.name) ?? "";
+  assertExactAttributeValues({
+    markup: groupMarkup,
+    attribute: "data-pattern-contract",
+    expected: group.patterns.map((contract) => contract.name),
+    label: `${group.name} product pattern contract inventory`,
+  });
+  if (!groupMarkup.includes(`data-sanchika-pattern-group="${group.name}"`)) failures.push(`${group.name} reference must identify its package group`);
+  for (const contract of group.patterns) {
+    if (!groupMarkup.includes(contract.css.baseClass)) failures.push(`${group.name} reference must render ${contract.css.baseClass}`);
+  }
+}
+const renderedProductPatternNames = [...patternMarkupByGroup.values()].flatMap((groupMarkup) => [...groupMarkup.matchAll(/data-pattern-contract="([^"]+)"/g)].map((match) => match[1]));
+if (JSON.stringify(renderedProductPatternNames) !== JSON.stringify(productPatternContracts.map((contract) => contract.name))) {
+  failures.push("rendered product pattern inventory must exactly match package order");
+}
+
+if (northStarSources.includes("styles/lab/index.css") || northStarSources.includes("--lab-") || /class=(?:\{|["'`])[^\n>]*\blab-/.test(northStarSources)) {
+  failures.push("shipping North Star components must not depend on lab CSS variables or lab class hooks");
+}
+const retainedLabStyles = readdirSync(new URL("../apps/gallery/src/styles/lab/", import.meta.url)).sort();
+if (JSON.stringify(retainedLabStyles) !== JSON.stringify(["motion.css"])) {
+  failures.push(`unused S2 lab styles must be deleted; found ${retainedLabStyles.join(", ")}`);
+}
+for (const required of ["@sanchika/patterns/styles.css", "productPatternClassName", "ProductRouteMap", "ReviewDeskPreview", "LocalArtifactFlow", "ToolDirectory"]) {
+  if (!northStarSources.includes(required)) failures.push(`North Star package integration must include ${required}`);
+}
+for (const legacyHook of ["lab-artifact-bar", "lab-status-mark"]) {
+  if (motionSpecimenSource.includes(legacyHook)) failures.push(`motion reference must not retain undefined ${legacyHook}`);
+}
+for (const packageHook of ["sk-pattern-artifact-bar", "sk-pattern-status-mark"]) {
+  if (!motionSpecimenSource.includes(packageHook) || !northStarSources.includes(packageHook)) failures.push(`motion and North Star artifacts must share ${packageHook}`);
+}
+
+for (const [groupName, requiredFragments] of [
+  ["public-product", ["sk-pattern-proof-strip", "sk-pattern-source-provenance-strip", "sk-pattern-grammar--provenance-strip", "sk-pattern-grammar--quiet-verified-seal", "<details open", "₹12,500", "Consumer adoption not yet claimed"]],
+  ["axal-workspace", ["sk-pattern-review-desk-preview", "sk-pattern-evidence-panel", "sk-pattern-human-review-checkpoint", "sk-pattern-audit-trail-preview", "sk-pattern-work-queue-row", "sk-pattern-grammar--evidence-aperture", "sk-pattern-grammar--ledger-rail", "sk-pattern-grammar--file-tab-label"]],
+  ["pack-local-utility", ["sk-pattern-permission-explainer", "sk-pattern-local-artifact-flow", "sk-pattern-custody-boundary", "sk-pattern-grammar--custody-line", "sk-pattern-grammar--provenance-strip", "sk-pattern-grammar--quiet-verified-seal", "Review permission"]],
+  ["tools-local-artifact", ["sk-pattern-tool-directory", "sk-pattern-tool-card", "sk-pattern-local-boundary-banner", "sk-pattern-output-artifact-summary"]],
+]) {
+  const groupMarkup = patternMarkupByGroup.get(groupName) ?? "";
+  for (const fragment of requiredFragments) if (!groupMarkup.includes(fragment)) failures.push(`${groupName} reference must include ${fragment}`);
+}
+for (const [product, requiredFragments] of [
+  ["complyeaze", ["sk-pattern-public-hero", "sk-pattern-product-route-map", "sk-pattern-proof-strip", "sk-pattern-trust-boundary", "sk-pattern-review-desk-preview", "Sanchika North Star lab"]],
+  ["axal", ["sk-pattern-review-desk-preview", "sk-pattern-work-queue-row", "sk-pattern-evidence-panel", "sk-pattern-human-review-checkpoint", "sk-pattern-audit-trail-preview"]],
+  ["pack", ["sk-pattern-local-artifact-flow", "sk-pattern-custody-boundary", "sk-pattern-permission-explainer", "sk-pattern-source-provenance-strip", "sk-pattern-release-status-banner"]],
+  ["tools", ["sk-pattern-tool-directory", "sk-pattern-tool-card", "sk-pattern-local-boundary-banner", "sk-search-field", "sk-inline-status", "sk-empty-state"]],
+]) {
+  const northStarMarkup = northStarMarkupByProduct.get(product) ?? "";
+  for (const fragment of requiredFragments) if (!northStarMarkup.includes(fragment)) failures.push(`${product} North Star must include ${fragment}`);
+}
 assertExactAttributeValues({
   markup: motionMarkup,
   attribute: "data-motion-key",
@@ -127,6 +213,7 @@ if (failures.length > 0) {
 console.log("Sanchika gallery coverage check passed.");
 console.log(`Sanchika gallery exemplar fixtures passed (${exemplarFixtures.count} cases).`);
 console.log(`Sanchika S5 gallery exemplar fixtures passed (${s5ExemplarFixtures.count} cases).`);
+console.log(`Sanchika product pattern exemplar fixtures passed (${productPatternExemplarFixtures.count} cases).`);
 
 function assertExactAttributeValues({ markup, attribute, expected, label }) {
   const actual = [...markup.matchAll(new RegExp(`${attribute}="([^"]+)"`, "g"))].map((match) => match[1]);

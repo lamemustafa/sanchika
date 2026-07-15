@@ -1,0 +1,113 @@
+.sk-pattern-page {
+  margin: 0;
+  min-width: 20rem;
+  color: var(--sk-color-ink-primary);
+  background: var(--sk-color-canvas);
+  font-family: var(--sk-font-body);
+  font-size: var(--sk-font-size-lg);
+  line-height: var(--sk-line-height-body);
+  text-rendering: optimizeLegibility;
+}
+
+.sk-pattern-page--axal {
+  background: color-mix(in oklch, var(--sk-color-canvas) 82%, var(--sk-color-info-bg));
+}
+
+.sk-pattern-page--pack {
+  background: color-mix(in oklch, var(--sk-color-canvas) 88%, var(--sk-color-surface));
+}
+
+.sk-pattern-page--tools {
+  background: color-mix(in oklch, var(--sk-color-canvas) 84%, var(--sk-color-success-bg));
+}
+
+html[data-sanchika-pattern-reference] {
+  min-width: 20rem;
+  background: var(--sk-color-canvas);
+  scroll-behavior: smooth;
+}
+
+html[data-sanchika-pattern-reference] *,
+html[data-sanchika-pattern-reference] *::before,
+html[data-sanchika-pattern-reference] *::after {
+  box-sizing: border-box;
+}
+
+html[data-sanchika-pattern-reference] [hidden] {
+  display: none !important;
+}
+
+html[data-sanchika-pattern-reference] ::selection {
+  color: var(--sk-color-brand-primary);
+  background: var(--sk-color-accent-seal);
+}
+
+.sk-pattern-page :where(h1, h2, h3, p, dl, dd, ol, ul) {
+  margin: 0;
+}
+
+.sk-pattern-page :where(h1, h2, h3, strong) {
+  text-wrap: balance;
+}
+
+.sk-pattern-page :where(a, button, input, summary) {
+  font: inherit;
+}
+
+.sk-pattern-page :where(a, button, input, summary):focus-visible {
+  outline: var(--sk-focus-outline-width) solid var(--sk-color-focus);
+  outline-offset: var(--sk-focus-outline-offset);
+}
+
+.sk-pattern-skip-link {
+  position: fixed;
+  z-index: 100;
+  inset: var(--sk-space-3) auto auto var(--sk-space-3);
+  padding: var(--sk-space-3) var(--sk-space-4);
+  color: var(--sk-color-surface-raised);
+  background: var(--sk-color-brand-primary);
+  border-radius: var(--sk-radius-sm);
+  transform: translateY(-180%);
+  transition: transform var(--sk-motion-duration-fast) var(--sk-motion-easing-emphasized);
+}
+
+.sk-pattern-skip-link:focus {
+  transform: translateY(0);
+}
+
+.sk-pattern-stage {
+  padding-block: var(--sk-page-gutter) var(--sk-space-16);
+}
+
+.sk-pattern-colophon {
+  padding-block: var(--sk-space-6);
+  border-top: var(--sk-border-width-default) solid var(--sk-color-border-subtle);
+  color: var(--sk-color-ink-muted);
+}
+
+.sk-pattern-colophon strong {
+  color: var(--sk-color-ink-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-sanchika-pattern-reference] {
+    scroll-behavior: auto;
+  }
+
+  .sk-pattern-page *,
+  .sk-pattern-page *::before,
+  .sk-pattern-page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .sk-pattern-stage {
+    padding-bottom: var(--sk-space-8);
+  }
+
+  .sk-pattern-colophon {
+    display: grid;
+  }
+}

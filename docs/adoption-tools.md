@@ -10,6 +10,14 @@ Expected surfaces:
 - Source and provenance strips.
 - Handoff prompts into ComplyEaze where appropriate.
 
+The S7 candidates are `ToolDirectory`, `ToolCard`, `LocalBoundaryBanner`, and
+`OutputArtifactSummary`. The package owns job-led composition, visible
+input/output/review anatomy, local-boundary presentation, empty/error state
+hooks, and responsive layout. Tools owns each product specification, tool
+runtime, user inputs, source mapping, draft generation, export behavior,
+storage, and any workspace handoff. Do not treat the reference directory as a
+generic route generator.
+
 Current non-goal: do not implement `apps/tools`, route templates, tool-specific
 package APIs, or product UI before the first Tools product spec exists.
 

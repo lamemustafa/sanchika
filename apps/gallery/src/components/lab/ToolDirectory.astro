@@ -1,6 +1,7 @@
 ---
 import type { LabTool, ToolCategory } from "../../content/lab/references";
 import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import { productPatternClassName } from "@sanchika/patterns";
 
 interface Props {
   tools: readonly LabTool[];
@@ -17,8 +18,8 @@ const noteId = `${instanceId}-note`;
 const escalationId = `${instanceId}-escalation-title`;
 ---
 
-<section class={`lab-directory ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby={titleId} data-tool-directory data-tool-instance={instanceId}>
-  <div class={`lab-directory__head ${primitiveClassName("Cluster", { gap: "lg", align: "end", justify: "between" })}`}>
+<section class={`${productPatternClassName("ToolDirectory", { variant: "rows", state: "default" })} ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby={titleId} data-tool-directory data-tool-instance={instanceId}>
+  <div class={`sk-pattern-tool-directory__head ${primitiveClassName("Cluster", { gap: "lg", align: "end", justify: "between" })}`}>
     <div>
       <span>Local tool index</span>
       <h2 id={titleId} class={textClassName("heading")}>Search by the work on your desk.</h2>
@@ -26,9 +27,9 @@ const escalationId = `${instanceId}-escalation-title`;
     <p id={statusId} data-sk-result-status role="status" aria-live="polite" aria-atomic="true"><strong data-tool-count>{tools.length}</strong> draft tools</p>
   </div>
 
-  <form class={`lab-directory__search ${primitiveClassName("SearchField", { size: "lg" })}`} role="search" data-tool-search-form data-has-value="false">
+  <form class={`sk-pattern-tool-directory__search ${primitiveClassName("SearchField", { size: "lg" })}`} role="search" data-tool-search-form data-has-value="false">
     <label for={searchId}>What do you need to prepare?</label>
-    <div class="lab-directory__search-control sk-search-field__control">
+    <div class="sk-pattern-tool-directory__search-control sk-search-field__control">
       <span class="sk-search-field__icon" aria-hidden="true">⌕</span>
       <input
         id={searchId}
@@ -44,24 +45,31 @@ const escalationId = `${instanceId}-escalation-title`;
     <p id={noteId} data-sk-search-hint>Filtering happens only in this browser. Nothing is uploaded.</p>
   </form>
 
-  <div class={`lab-directory__filters ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Tool categories" data-tool-filters hidden>
+  <div class={`sk-pattern-tool-directory__filters ${primitiveClassName("Cluster", { gap: "sm" })}`} aria-label="Tool categories" data-tool-filters hidden>
     <button type="button" aria-pressed="true" data-tool-category="all">All work</button>
     {categories.map((category) => (
       <button type="button" aria-pressed="false" data-tool-category={category}>{category}</button>
     ))}
   </div>
 
-  <noscript><p class={`lab-directory__noscript ${primitiveClassName("InlineStatus", { tone: "info" })}`}><span class="sk-inline-status__marker" aria-hidden="true">i</span><span>JavaScript is off, so the complete tool list remains visible.</span></p></noscript>
+  <noscript>
+    <style>[data-tool-directory] [data-tool-search-form], [data-tool-directory] [data-tool-filters], [data-tool-directory] [data-tool-empty] { display: none !important; }</style>
+    <p class={`sk-pattern-tool-directory__noscript ${primitiveClassName("InlineStatus", { tone: "info" })}`}><span class="sk-inline-status__marker" aria-hidden="true">i</span><span>Search and category filters need JavaScript. The complete tool list remains visible.</span></p>
+  </noscript>
 
-  <div class="lab-directory__results" data-tool-results>
+  <div class="sk-pattern-tool-directory__results" data-tool-results>
     {tools.map((tool, index) => (
-      <article
+      <a
+        class={`${productPatternClassName("ToolCard", { variant: "row", state: "available" })} ${primitiveClassName("LinkCard", { variant: "default" })}`}
+        href="/patterns/tools/#pattern-contract-ledger-title"
+        data-sk-primitive="LinkCard"
+        data-sk-state="default"
         data-tool-card
         data-category={tool.category}
         data-search={[tool.name, tool.category, tool.job, ...tool.keywords].join(" ").toLowerCase()}
       >
-        <div class="lab-tool-card__index">{String(index + 1).padStart(2, "0")}</div>
-        <div class="lab-tool-card__main">
+        <div class="sk-pattern-tool-card__index">{String(index + 1).padStart(2, "0")}</div>
+        <div class="sk-pattern-tool-card__main">
           <span>{tool.category}</span>
           <h3>{tool.name}</h3>
           <p>{tool.job}</p>
@@ -70,19 +78,22 @@ const escalationId = `${instanceId}-escalation-title`;
           <div><dt>Input</dt><dd>{tool.input}</dd></div>
           <div><dt>Output</dt><dd>{tool.output}</dd></div>
           <div><dt>Review</dt><dd>{tool.review}</dd></div>
+          <div><dt>Boundary</dt><dd>Browser-local draft; no directory upload</dd></div>
+          <div><dt>Status</dt><dd>Available synthetic reference</dd></div>
         </dl>
-      </article>
+        <span class="sk-pattern-tool-card__action">Inspect tool contract</span>
+      </a>
     ))}
   </div>
 
-  <div class={`lab-directory__empty ${primitiveClassName("EmptyState", { kind: "filtered" })}`} data-empty-kind="filtered" data-tool-empty hidden>
+  <div class={`sk-pattern-tool-directory__empty ${primitiveClassName("EmptyState", { kind: "filtered" })}`} data-empty-kind="filtered" data-tool-empty hidden>
     <span>0 matches</span>
     <h3>No local draft tool matches that work.</h3>
     <p>Clear the search or choose another category. The query never leaves this browser.</p>
     <div class="sk-empty-state__actions"><button class={primitiveClassName("Button", "neutral", "md")} type="button" data-tool-reset>Reset directory</button></div>
   </div>
 
-  <aside class="lab-directory__escalation" aria-labelledby={escalationId}>
+  <aside class="sk-pattern-tool-directory__escalation" aria-labelledby={escalationId}>
     <span>Recurring or saved work</span>
     <h3 id={escalationId}>Move continuing review into Axal.</h3>
     <p>Use a local tool for a bounded draft. Use Axal when evidence, ownership, review state, or a continuing client record must remain visible.</p>
@@ -90,7 +101,7 @@ const escalationId = `${instanceId}-escalation-title`;
   </aside>
 </section>
 
-<script is:inline data-sanchika-lab-script="tool-filter">
+<script is:inline data-sanchika-pattern-script="tool-filter">
   for (const directory of document.querySelectorAll("[data-tool-directory]")) {
     const form = directory.querySelector("[data-tool-search-form]");
     const input = directory.querySelector("[data-tool-search]");
@@ -108,10 +119,11 @@ const escalationId = `${instanceId}-escalation-title`;
 
     const applyFilters = ({ announce = true } = {}) => {
       const query = input.value.trim().toLowerCase();
+      const hasActiveFilter = query.length > 0 || category !== "all";
       let visible = 0;
 
-      clear.hidden = query.length === 0;
-      form.dataset.hasValue = String(query.length > 0);
+      clear.hidden = !hasActiveFilter;
+      form.dataset.hasValue = String(hasActiveFilter);
 
       for (const card of cards) {
         const categoryMatches = category === "all" || card.dataset.category === category;
@@ -144,8 +156,8 @@ const escalationId = `${instanceId}-escalation-title`;
     input.addEventListener("compositionstart", () => { composing = true; });
     input.addEventListener("compositionend", () => { composing = false; applyFilters(); });
     input.addEventListener("input", (event) => { if (!composing && !event.isComposing) applyFilters(); });
-    input.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || input.value.length === 0) return;
+    directory.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || (input.value.length === 0 && category === "all")) return;
       event.preventDefault();
       resetDirectory();
     });

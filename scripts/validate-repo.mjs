@@ -19,7 +19,20 @@ import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
 import { validatePagesSmokeWorkflow } from "./validation/pages-smoke-workflow.mjs";
 import { expectedGithubLabels } from "./validation/github-labels.mjs";
 import { validatePackageManifest } from "./validation/package-manifests.mjs";
-import { validatePatternContracts } from "./validation/pattern-contracts.mjs";
+import {
+  runProductPatternContractFixtures,
+  validatePatternContracts,
+  validateProductPatternContracts,
+} from "./validation/pattern-contracts.mjs";
+import {
+  patternAliases,
+  patternClassName,
+  productPatternContracts,
+  productPatternGroups,
+  resolveProductPatternContract,
+  retainedLegacyPatternNames,
+} from "../packages/patterns/src/product-pattern-registry.ts";
+import { productVisualGrammar } from "../packages/patterns/src/visual-grammar.ts";
 import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
 import { runMotionAssistFixtures } from "./validation/motion-assist.mjs";
 import {
@@ -44,7 +57,6 @@ function fail(message) {
 
 const buildArtifactFixtures = runBuildArtifactFixtures();
 for (const fixtureFailure of buildArtifactFixtures.failures) fail(`build artifact fixture ${fixtureFailure}`);
-
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
 }
@@ -671,6 +683,22 @@ const primitiveCss = [
 const motionCss = readText("packages/primitives/src/motion.css");
 const primitiveStylesEntrypoint = readText("packages/primitives/src/styles.css");
 const patternSource = readText("packages/patterns/src/index.ts");
+const patternCss = ["styles.css", "visual-grammar.css", "public.css", "axal.css", "pack.css", "tools.css", "responsive.css"]
+  .map((path) => readText(`packages/patterns/src/${path}`))
+  .join("\n");
+const productPatternFixtures = runProductPatternContractFixtures({ contracts: productPatternContracts, css: patternCss });
+for (const fixtureFailure of productPatternFixtures.failures) fail(`product pattern fixture ${fixtureFailure}`);
+const productPatternExemplarRoutes = new Set([
+  "/patterns/",
+  "/patterns/public/",
+  "/patterns/axal/",
+  "/patterns/pack/",
+  "/patterns/tools/",
+  "/lab/complyeaze-core/",
+  "/lab/axal-review-desk/",
+  "/lab/pack-local-proof/",
+  "/lab/tools-directory/",
+]);
 const gallerySource = readText("apps/gallery/src/components/PatternContracts.astro");
 const galleryPrimitiveMatrixSource = readText("apps/gallery/src/components/PrimitiveStateMatrix.astro");
 const galleryPrimitiveSummarySource = readText("apps/gallery/src/components/PrimitiveSummary.astro");
@@ -800,7 +828,24 @@ if (tokenManifest.exports?.["./theme.css"] !== "./dist/theme.css") {
   fail("@sanchika/tokens must export ./theme.css");
 }
 
+const patternManifest = readJson("packages/patterns/package.json");
+if (patternManifest.exports?.["./styles.css"] !== "./dist/styles.css") {
+  fail("@sanchika/patterns must export ./styles.css");
+}
+
 validatePatternContracts({ patternSource, patternDocs, fail });
+validateProductPatternContracts({
+  contracts: productPatternContracts,
+  groups: productPatternGroups,
+  aliases: patternAliases,
+  visualGrammar: productVisualGrammar,
+  retainedLegacyPatternNames,
+  className: patternClassName,
+  resolve: resolveProductPatternContract,
+  css: patternCss,
+  exemplarRoutes: productPatternExemplarRoutes,
+  fail,
+});
 validateTrustBriefContracts({ patternSource, patternDocs, aiNativeToolingDocs, fail });
 
 for (const requiredConsumerModeFragment of [
@@ -1971,6 +2016,7 @@ if (failures.length > 0) {
 }
 
 console.log(`Sanchika build artifact fixtures passed (${buildArtifactFixtures.count} cases).`);
+console.log(`Sanchika product pattern fixtures passed (${productPatternFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
 console.log(`Sanchika motion-assist fixtures passed (${motionFixtureCount} cases).`);
 console.log("Sanchika repo validation passed.");

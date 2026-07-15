@@ -6,6 +6,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -17,7 +18,21 @@ const metadataDirectory = ".sanchika-build";
 const requiredArtifactsByPackage = new Map([
   ["tokens", ["dist/index.js", "dist/index.d.ts", "dist/generated.js", "dist/generated.d.ts", "dist/theme.css"]],
   ["primitives", ["dist/index.js", "dist/index.d.ts", "dist/styles.css", "dist/motion-assist.js", "dist/motion-assist.d.ts", "dist/motion.css"]],
-  ["patterns", ["dist/index.js", "dist/index.d.ts", "dist/evidence-loop.js", "dist/evidence-loop.d.ts"]],
+  ["patterns", [
+    "dist/index.js",
+    "dist/index.d.ts",
+    "dist/evidence-loop.js",
+    "dist/evidence-loop.d.ts",
+    "dist/product-pattern-registry.js",
+    "dist/product-pattern-registry.d.ts",
+    "dist/styles.css",
+    "dist/visual-grammar.css",
+    "dist/public.css",
+    "dist/axal.css",
+    "dist/pack.css",
+    "dist/tools.css",
+    "dist/responsive.css",
+  ]],
 ]);
 
 export function writePackageBuildMetadata({ root, packageName }) {
@@ -142,6 +157,7 @@ export function assertGalleryBuildArtifacts({ root, commandName }) {
 
 export function runBuildArtifactFixtures() {
   const fixtureRoot = mkdtempSync(join(tmpdir(), "sanchika-build-artifacts-"));
+  const equivalentRoot = mkdtempSync(join(tmpdir(), "sanchika-build-artifacts-equivalent-"));
   const failures = [];
   let count = 0;
 
@@ -190,6 +206,29 @@ export function runBuildArtifactFixtures() {
       }
     });
 
+    createFixtureTree(equivalentRoot);
+    const distinctMtime = new Date("2001-01-01T00:00:00.000Z");
+    utimesSync(join(equivalentRoot, "packages", "primitives", "src", "index.ts"), distinctMtime, distinctMtime);
+    const originalUser = process.env.USER;
+    process.env.USER = "sanchika-fingerprint-fixture";
+    try {
+      for (const packageName of requiredArtifactsByPackage.keys()) writePackageBuildMetadata({ root: equivalentRoot, packageName });
+      writeGalleryBuildMetadata({ root: equivalentRoot });
+    } finally {
+      if (originalUser === undefined) delete process.env.USER;
+      else process.env.USER = originalUser;
+    }
+    expectPass("fingerprints ignore absolute root, mtime, clock time, and username", () => {
+      for (const packageName of requiredArtifactsByPackage.keys()) {
+        if (readFileSync(packageMetadataPath(equivalentRoot, packageName), "utf8") !== readFileSync(packageMetadataPath(fixtureRoot, packageName), "utf8")) {
+          throw new Error(`@sanchika/${packageName} metadata changed across equivalent roots`);
+        }
+      }
+      if (readFileSync(galleryMetadataPath(equivalentRoot), "utf8") !== firstGalleryMetadata) {
+        throw new Error("gallery metadata changed across equivalent roots");
+      }
+    });
+
     const primitiveSourcePath = join(fixtureRoot, "packages", "primitives", "src", "index.ts");
     writeFileSync(primitiveSourcePath, "export const fixture = 2;\n");
     expectFailure("stale package source", "@sanchika/primitives source", () =>
@@ -217,6 +256,20 @@ export function runBuildArtifactFixtures() {
       assertBuiltPackageArtifacts({ root: fixtureRoot, commandName: "fixture check", packageNames: ["primitives"] }),
     );
     writeFileSync(motionSourcePath, "export const fixture = 1;\n");
+
+    const productPatternSourcePath = join(fixtureRoot, "packages", "patterns", "src", "contracts", "public-product.ts");
+    writeFileSync(productPatternSourcePath, "export const fixture = 2;\n");
+    expectFailure("stale S7 product pattern contract source", "@sanchika/patterns source", () =>
+      assertBuiltPackageArtifacts({ root: fixtureRoot, commandName: "fixture check", packageNames: ["patterns"] }),
+    );
+    writeFileSync(productPatternSourcePath, "export const fixture = 1;\n");
+
+    const productPatternCssPath = join(fixtureRoot, "packages", "patterns", "src", "styles.css");
+    writeFileSync(productPatternCssPath, "@import './visual-grammar.css';\n");
+    expectFailure("stale S7 product pattern CSS source", "@sanchika/patterns source", () =>
+      assertBuiltPackageArtifacts({ root: fixtureRoot, commandName: "fixture check", packageNames: ["patterns"] }),
+    );
+    writeFileSync(productPatternCssPath, ":root {}\n");
 
     const primitiveOutputPath = join(fixtureRoot, "packages", "primitives", "dist", "index.js");
     writeFileSync(primitiveOutputPath, "export const fixture = 2;\n");
@@ -246,6 +299,13 @@ export function runBuildArtifactFixtures() {
     );
     writeFileSync(motionGalleryPath, "<main>fixture</main>\n");
 
+    const productPatternGalleryPath = join(fixtureRoot, "apps", "gallery", "src", "pages", "patterns", "public.astro");
+    writeFileSync(productPatternGalleryPath, "<main>changed</main>\n");
+    expectFailure("stale S7 product pattern gallery route", "gallery source", () =>
+      assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
+    );
+    writeFileSync(productPatternGalleryPath, "<main>fixture</main>\n");
+
     const galleryOutputPath = join(fixtureRoot, "apps", "gallery", "dist", "index.html");
     writeFileSync(galleryOutputPath, "<main>changed</main>\n");
     expectFailure("stale gallery output", "gallery output", () =>
@@ -271,12 +331,30 @@ export function runBuildArtifactFixtures() {
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
 
+    writeFileSync(primitiveOutputPath, "export const fixture = 1;\n");
+    writePackageBuildMetadata({ root: fixtureRoot, packageName: "primitives" });
+    writeGalleryBuildMetadata({ root: fixtureRoot });
+    expectPass("clean primitive rebuild restores a fresh gallery check", () =>
+      assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
+    );
+
+    const patternOutputPath = join(fixtureRoot, "packages", "patterns", "dist", "index.js");
+    writeFileSync(patternOutputPath, "export const fixture = 2;\n");
+    writePackageBuildMetadata({ root: fixtureRoot, packageName: "patterns" });
+    expectFailure("gallery built against older S7 pattern output", "gallery consumption of @sanchika/patterns", () =>
+      assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
+    );
+
+    writeFileSync(patternOutputPath, "export const fixture = 1;\n");
+    writePackageBuildMetadata({ root: fixtureRoot, packageName: "patterns" });
+
     writeGalleryBuildMetadata({ root: fixtureRoot });
     expectPass("rebuilt metadata restores a fresh check", () =>
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
   } finally {
     rmSync(fixtureRoot, { recursive: true, force: true });
+    rmSync(equivalentRoot, { recursive: true, force: true });
   }
 
   return { count, failures };
@@ -314,6 +392,11 @@ function createFixtureTree(root) {
       writeFileSync(join(packageDir, "src", "formatting", "indian.ts"), "export const fixture = 1;\n");
       writeFileSync(join(packageDir, "src", "motion-assist.ts"), "export const fixture = 1;\n");
     }
+    if (packageName === "patterns") {
+      mkdirSync(join(packageDir, "src", "contracts"), { recursive: true });
+      writeFileSync(join(packageDir, "src", "contracts", "public-product.ts"), "export const fixture = 1;\n");
+      writeFileSync(join(packageDir, "src", "styles.css"), ":root {}\n");
+    }
     for (const artifact of requiredArtifacts) {
       const artifactPath = join(packageDir, artifact);
       mkdirSync(join(artifactPath, ".."), { recursive: true });
@@ -323,10 +406,12 @@ function createFixtureTree(root) {
   const galleryDir = join(root, "apps", "gallery");
   mkdirSync(join(galleryDir, "src"), { recursive: true });
   mkdirSync(join(galleryDir, "src", "components"), { recursive: true });
+  mkdirSync(join(galleryDir, "src", "pages", "patterns"), { recursive: true });
   mkdirSync(join(galleryDir, "dist"), { recursive: true });
   writeFileSync(join(galleryDir, "src", "index.astro"), "<main>fixture</main>\n");
   writeFileSync(join(galleryDir, "src", "components", "S5SearchPanel.astro"), "<script>fixture</script>\n");
   writeFileSync(join(galleryDir, "src", "components", "MotionAssistProof.astro"), "<main>fixture</main>\n");
+  writeFileSync(join(galleryDir, "src", "pages", "patterns", "public.astro"), "<main>fixture</main>\n");
   writeFileSync(join(galleryDir, "package.json"), `${JSON.stringify({ name: "@sanchika/gallery-app" })}\n`);
   writeFileSync(join(galleryDir, "dist", "index.html"), "<main>fixture</main>\n");
 }

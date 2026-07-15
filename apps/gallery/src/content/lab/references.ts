@@ -67,6 +67,7 @@ export const reviewQueue = [
   {
     id: "AX-031",
     title: "GST notice",
+    entity: "Synthetic entity A",
     state: "CA review needed",
     source: "Source linked",
     owner: "AK",
@@ -76,6 +77,7 @@ export const reviewQueue = [
   {
     id: "AX-047",
     title: "GSTR-2B variance",
+    entity: "Synthetic entity B",
     state: "Evidence requested",
     source: "Client input pending",
     owner: "RS",
@@ -85,6 +87,7 @@ export const reviewQueue = [
   {
     id: "AX-052",
     title: "TDS obligation",
+    entity: "Synthetic entity C",
     state: "Due soon",
     source: "Reviewer handoff ready",
     owner: "MK",
@@ -100,9 +103,9 @@ export const reviewEvidence = [
 ] as const;
 
 export const auditTrail = [
-  { time: "09:42", event: "Source linked", actor: "System evidence" },
-  { time: "10:06", event: "Owner assigned", actor: "Review coordinator" },
-  { time: "10:18", event: "CA checkpoint opened", actor: "AK" },
+  { time: "09:42", event: "Source linked", actor: "System evidence", reference: "SRC-01", resultingState: "Available", note: "Synthetic notice reference only" },
+  { time: "10:06", event: "Owner assigned", actor: "Review coordinator", reference: "AX-031", resultingState: "CA review needed", note: "Assigned to synthetic reviewer AK" },
+  { time: "10:18", event: "CA checkpoint opened", actor: "AK", reference: "CHK-01", resultingState: "Under review", note: "No approval recorded" },
 ] as const;
 
 export const custodyStages = [
@@ -111,27 +114,47 @@ export const custodyStages = [
     title: "GST Portal session",
     detail: "The user signs in and opens a supported filed return on the government portal.",
     boundary: "Credentials remain on GST Portal",
+    custodian: "User in the GST Portal browser tab",
+    data: "Credentials and the selected filed-return request",
+    crosses: "The request and response stay within the portal session",
+    neverCrosses: "Credentials or session cookies to ComplyEaze",
+    source: "Current supported GST Portal page",
+    result: "Supported portal response ready for the browser action",
   },
   {
     step: "02",
     title: "Pack local browser action",
     detail: "The extension initiates the supported download inside the user's browser session.",
     boundary: "Session and cookies are not handed to ComplyEaze",
+    custodian: "User's browser and local Pack extension",
+    data: "Supported portal response and local download instruction",
+    crosses: "A supported request goes only to the GST Portal destination",
+    neverCrosses: "Session cookies, credentials, or file content to ComplyEaze",
+    source: "Public Pack source and the active portal response",
+    result: "Browser-managed download begins",
   },
   {
     step: "03",
     title: "Chrome Downloads",
     detail: "The browser saves the returned file into the user's Downloads on this device.",
     boundary: "File remains user-controlled and local",
+    custodian: "User on this device in Chrome Downloads",
+    data: "The supported filed-return artifact",
+    crosses: "The file moves from the portal response into local Downloads",
+    neverCrosses: "The downloaded file to ComplyEaze",
+    source: "Browser download receipt and public Pack release evidence",
+    result: "User-controlled local file",
   },
 ] as const;
 
 export const custodyFacts = [
-  { label: "Credentials", value: "Remain on GST Portal" },
-  { label: "Session / cookies", value: "Not handed to ComplyEaze" },
-  { label: "Filed-return file", value: "Saved locally" },
-  { label: "Extension telemetry", value: "None from this workflow" },
-  { label: "Source / release", value: "Inspectable before use" },
+  { label: "Current custodian", value: "User on this device" },
+  { label: "What moves", value: "Supported portal response into Chrome Downloads" },
+  { label: "What never moves", value: "Credentials, session cookies, or downloaded file to ComplyEaze" },
+  { label: "Credentials / session", value: "Remain in the GST Portal browser session" },
+  { label: "Local destination", value: "User-controlled Chrome Downloads" },
+  { label: "Source / release", value: "Public source and selected release remain inspectable" },
+  { label: "User control", value: "User chooses permission, destination, and later file handling" },
 ] as const;
 
 export type ToolCategory = "Reconciliation" | "Drafting" | "Dates" | "Documents";

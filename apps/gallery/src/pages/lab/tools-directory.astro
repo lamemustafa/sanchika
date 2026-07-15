@@ -13,11 +13,15 @@ const route = labRoutes.tools;
     label="Browser-local boundary"
     statement="Search terms and entered work stay in this browser; outputs remain drafts."
     tone="draft"
+    pattern="LocalBoundaryBanner"
     facts={[
       { label: "Account", value: "Not required" },
       { label: "Upload", value: "None" },
+      { label: "Processing", value: "This browser" },
+      { label: "Network / telemetry", value: "None from the directory" },
       { label: "Review", value: "Named on every tool" },
     ]}
+    sourceLink={{ label: "Inspect the Tools boundary contract", href: "/patterns/tools/#pattern-contract-ledger-title" }}
   />
   <LabIntro
     eyebrow={route.eyebrow}

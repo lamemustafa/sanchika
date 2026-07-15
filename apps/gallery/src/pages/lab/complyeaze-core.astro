@@ -1,6 +1,7 @@
 ---
 import LabIntro from "../../components/lab/LabIntro.astro";
 import LabShell from "../../components/lab/LabShell.astro";
+import ComplyEazeProofBridge from "../../components/lab/ComplyEazeProofBridge.astro";
 import ProductRouteArtifact from "../../components/lab/ProductRouteArtifact.astro";
 import { labRoutes, productRoutes, reviewQueue } from "../../content/lab/references";
 
@@ -15,10 +16,11 @@ const route = labRoutes.complyeaze;
     primary={{ label: "Inspect the Axal desk", href: labRoutes.axal.path }}
     secondary={{ label: "Compare product routes", href: "#product-routes" }}
   >
-    <aside class="lab-intro-note" aria-label="ComplyEaze operating promise">
+    <aside class="sk-pattern-public-hero-note" aria-label="ComplyEaze operating promise">
       <span>One family, three operating modes</span>
       <strong>Workspace when context must persist. Local when custody must not move.</strong>
     </aside>
   </LabIntro>
+  <ComplyEazeProofBridge axalHref={labRoutes.axal.path} />
   <ProductRouteArtifact routes={productRoutes} queue={reviewQueue} />
 </LabShell>

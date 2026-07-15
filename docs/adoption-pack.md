@@ -9,6 +9,14 @@ Pack remains its own browser-extension repository. Consume Sanchika through a
 published package, reviewed local package link, or copied design guidance. Do
 not import Sanchika source by parent-relative path.
 
+The S7 candidates are `LocalArtifactFlow`, `PermissionExplainer`, and
+`CustodyBoundary`, with shared `TrustBoundary` support. The package owns the
+visible custody sequence, permission explanation anatomy, non-color states,
+responsive collapse, and CSS grammar. Pack owns portal behavior, permissions,
+network requests, downloads, extension policy, release evidence, and the truth
+of every privacy or telemetry statement. Package copy cannot substitute for
+runtime proof.
+
 ## Entry Criteria
 
 - ComplyEaze completion evidence and Axal completion evidence both exist.

@@ -9,7 +9,7 @@ const failures = [];
 for (const fixture of invalidTrustCopyFixtures) {
   const findings = lintTrustCopy(fixture.text);
   if (!findings.some((finding) => finding.reason === fixture.expected)) {
-    failures.push(`fixture "${fixture.name}" must trigger ${fixture.expected}`);
+    failures.push(`fixture "${fixture.name}" modeled on ${fixture.productionPath} must trigger ${fixture.expected}`);
   }
 }
 
@@ -20,9 +20,11 @@ const galleryDocuments = readdirSync(galleryDir, { recursive: true })
 
 for (const documentPath of galleryDocuments) {
   const galleryHtml = readFileSync(join(galleryDir, documentPath), "utf8");
-  for (const finding of lintTrustCopy(stripTags(galleryHtml))) {
+  const visibleText = stripTags(galleryHtml);
+  for (const finding of lintTrustCopy(visibleText)) {
     failures.push(`apps/gallery/dist/${documentPath} ${finding.reason}: ${finding.match}`);
   }
+  validateProductionPathTrust({ documentPath, visibleText, failures });
 }
 
 if (failures.length > 0) {
@@ -31,27 +33,70 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Sanchika content trust check passed.");
+console.log(`Sanchika content trust check passed (${invalidTrustCopyFixtures.length} negative fixtures; ${galleryDocuments.length} gallery documents).`);
 
 function lintTrustCopy(text) {
   const findings = [];
   const checks = [
     { reason: "unsupported trust claim", pattern: /\b(bank-grade|audit-proof|government-official|CA-verified|filing-ready|production-ready)\b/i },
-    { reason: "multiple rupee/year prices", pattern: /₹[\d,.]+\/year[\s\S]*₹[\d,.]+\/year/i },
+    { reason: "government affiliation claim", pattern: /\b(?:(?:government|GSTN|tax authority)[ -](?:affiliated|approved|endorsed|official)|official (?:government|GSTN) (?:partner|product|service))\b/i },
+    { reason: "multiple rupee/year prices", pattern: /₹\s?[\d,.]+(?:\s*(?:\/\s*year|per year|annual(?:ly)?))[\s\S]*₹\s?[\d,.]+(?:\s*(?:\/\s*year|per year|annual(?:ly)?))/i },
+    { reason: "unsupported price claim", pattern: /\b(?:guaranteed lowest|lowest guaranteed|best price guaranteed|price will never change)\b/i },
+    { reason: "guaranteed outcome claim", pattern: /\bguarante(?:e|ed|es)\b[\s\S]{0,64}\b(?:approval|acceptance|compliance|filing|outcome|refund|result|accuracy)\b/i, allowNegated: true },
     { reason: "placeholder metric", pattern: /(?:^|[^\d])0(?:\+|%)(?=$|[^\w])/ },
+    { reason: "unsupported metric", pattern: /\b\d+(?:\.\d+)?(?:%|x|\+)\s*(?:accuracy|clients?|customers?|faster|filings?|matches?|users?)\b/i },
+    { reason: "stale cohort claim", pattern: /\b(?:trusted|used|chosen|adopted) by\b[\s\S]{0,48}\b(?:clients?|customers?|firms?|professionals?|users?)\b/i },
     { reason: "AI completion claim", pattern: /\bAI\b[\s\S]{0,80}\b(all returns reconciled|done for the month|completed automatically|ready to file)\b/i },
+    { reason: "autonomous filing or reply claim", pattern: /\b(?:AI|system|agent|product|tool)\b\s+(?:(?:autonomously|automatically)\s+|without human review\s+)?(?:files?|filed|submits?|submitted|replies?|replied|responds?|responded)\b/i },
+    { reason: "unsupported production domain", pattern: /\b(?:tool\.complyeaze\.com|shanchika\.complyeaze\.com)\b/i },
+    { reason: "unsupported approval claim", pattern: /\b(?:AI|generated (?:artifact|output)|draft (?:artifact|output)|filing|response)\b[\s\S]{0,48}\b(?:is |has been |successfully )?(?:professionally )?approved\b/i },
     {
-      reason: "stale month-year reference",
-      pattern: /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+2026\b/,
+      reason: "stale status reference",
+      pattern: /\b(?:current|latest|status|launch(?:ed)?)\b[\s\S]{0,48}\b(?:January|February|March|April|May|June)\s+2026\b/i,
     },
+    { reason: "color-only state copy", pattern: /\b(?:green|red|amber|orange)\s+(?:means|indicates|shows)\s+(?:reviewed|ready|blocked|pending|error)\b/i },
+    { reason: "benchmark rule overextension", pattern: /\b(?:guarantees?|always achieves?|must achieve)\b[\s\S]{0,80}\b(?:WCAG|Lighthouse\s*100|perfect accessibility|zero violations)\b/i },
   ];
 
   for (const check of checks) {
     const match = text.match(check.pattern);
-    if (match) findings.push({ reason: check.reason, match: match[0] });
+    if (!match) continue;
+    const prefix = text.slice(Math.max(0, match.index - 96), match.index);
+    if (check.allowNegated && /(?:do not|does not|must not|never|no)\b[^.!?]*$/i.test(prefix)) continue;
+    findings.push({ reason: check.reason, match: match[0] });
   }
 
+  if (/\b(?:verified|source-backed|current)\b/i.test(text) && !/\b(?:source|evidence|checked|reviewer|limitation)\b/i.test(text)) {
+    findings.push({ reason: "missing provenance cue", match: text.match(/\b(?:verified|source-backed|current)\b/i)?.[0] ?? "claim" });
+  }
+
+  if (/\b(?:browser-local|local utility)\b/i.test(text)) {
+    const hasAccount = /\b(?:account|not required)\b/i.test(text);
+    const hasUpload = /\b(?:upload|nothing is uploaded|handoff)\b/i.test(text);
+    const hasReview = /\b(?:review|draft|human)\b/i.test(text);
+    if (!hasAccount || !hasUpload || !hasReview) findings.push({ reason: "missing boundary disclosure", match: "local/account/upload/review" });
+  }
+
+  const genericPhrases = text.match(/\b(?:unlock insights|streamline your workflow|boost productivity|all-in-one platform|seamless experience)\b/gi) ?? [];
+  if (genericPhrases.length >= 3) findings.push({ reason: "excessive generic card copy", match: genericPhrases.join(", ") });
+
   return findings;
+}
+
+function validateProductionPathTrust({ documentPath, visibleText, failures }) {
+  const requirements = new Map([
+    ["patterns/public/index.html", ["Source", "Checked", "Limitation", "Human-owned"]],
+    ["patterns/axal/index.html", ["Synthetic workspace boundary", "Draft, never approval", "Named reviewer", "Source evidence"]],
+    ["patterns/pack/index.html", ["Local-first boundary", "Account", "Upload", "Telemetry", "Review permission"]],
+    ["patterns/tools/index.html", ["Browser-local boundary", "Account", "Upload", "Review", "outputs remain drafts"]],
+    ["lab/complyeaze-core/index.html", ["account, upload, and review boundaries", "Workspace account", "no file upload"]],
+    ["lab/axal-review-desk/index.html", ["Synthetic workspace boundary", "Draft, never approval", "Named human reviewer"]],
+    ["lab/pack-local-proof/index.html", ["Local-first boundary", "No ComplyEaze account", "No extension file handoff"]],
+    ["lab/tools-directory/index.html", ["Browser-local boundary", "Not required", "None", "Named on every tool"]],
+  ]);
+  for (const required of requirements.get(documentPath) ?? []) {
+    if (!visibleText.includes(required)) failures.push(`apps/gallery/dist/${documentPath} missing trust disclosure: ${required}`);
+  }
 }
 
 function stripTags(html) {

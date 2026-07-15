@@ -1,5 +1,5 @@
 ---
-import { patternSpecs } from "@sanchika/patterns";
+import { patternSpecs, productPatternContracts } from "@sanchika/patterns";
 import { kebabCase, patternStateSlotCopy } from "../content/pattern-state-copy";
 
 const patterns = patternSpecs.map((pattern) => ({
@@ -13,6 +13,10 @@ const patterns = patternSpecs.map((pattern) => ({
 
 <section class="sk-gallery-section" aria-labelledby="pattern-contracts">
   <h2 id="pattern-contracts">Pattern contracts</h2>
+  <p>
+    The legacy contract matrix remains here for compatibility. S7 adds
+    <a href="/patterns/"> {productPatternContracts.length} package-driven product patterns across four rendered reference groups</a>.
+  </p>
   {patterns.map((pattern) => (
     <details class="sk-pattern-contract sk-gallery-contract" data-pattern={pattern.name}>
       <summary><span>{pattern.name}</span><strong>{pattern.purpose}</strong></summary>

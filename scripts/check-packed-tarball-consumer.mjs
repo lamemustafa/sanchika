@@ -234,11 +234,13 @@ function runConsumerProbe() {
 import { readFileSync } from "node:fs";
 import { colorTokens, tokenDefinitions } from "@sanchika/tokens";
 import { formatGSTINDisplay, formatIndianDateTime, formatIndianNumber, formatPercentage, motionAssistClassName, motionAssistUtilities, primitiveClassName, primitiveSpecs, textClassName } from "@sanchika/primitives";
-import { patternSpecs } from "@sanchika/patterns";
+import { patternAliases, patternClassName, patternSpecs, productPatternContracts, productPatternGroups, productVisualGrammar, resolveProductPatternContract, retainedLegacyPatternNames } from "@sanchika/patterns";
 
 const require = createRequire(import.meta.url);
 const themePath = require.resolve("@sanchika/tokens/theme.css");
 const themeCss = readFileSync(themePath, "utf8");
+const patternCssPath = require.resolve("@sanchika/patterns/styles.css");
+const patternCss = readFileSync(patternCssPath, "utf8");
 const legacyCss = readFileSync(new URL("./legacy-token.css", import.meta.url), "utf8");
 const legacyColorTokenKeys = ["bgBase", "bgSurface", "inkPrimary", "inkMuted", "borderControl", "brandPrimary", "accent", "success", "warning", "danger", "info"];
 const checks = [
@@ -263,8 +265,19 @@ const checks = [
   formatIndianDateTime("2026-07-14T00:00:00Z", { timeZone: "Asia/Kolkata" }).includes("14 Jul 2026"),
   new Set(primitiveSpecs.map((primitive) => primitive.name)).size === primitiveSpecs.length,
   patternSpecs.some((pattern) => pattern.name === "EvidencePanel"),
+  productPatternContracts.length === 20,
+  productPatternGroups.length === 4,
+  JSON.stringify(Object.keys(patternAliases)) === JSON.stringify(["ProductFamilyRouter"]),
+  patternAliases.ProductFamilyRouter === resolveProductPatternContract("ProductRouteMap"),
+  resolveProductPatternContract("ProductFamilyRouter") === resolveProductPatternContract("ProductRouteMap"),
+  JSON.stringify(retainedLegacyPatternNames) === JSON.stringify(["ProductFamilyRouter", "ServiceSection"]),
+  Object.keys(productVisualGrammar).join(",") === "ledgerRail,fileTabLabel,provenanceStrip,evidenceAperture,custodyLine,quietVerifiedSeal",
+  patternClassName("ProductFamilyRouter", { variant: "family", state: "default" }) === "sk-pattern-product-route-map sk-pattern-product-route-map--family sk-pattern-product-route-map--state-default",
   themePath.endsWith("/dist/theme.css"),
   require.resolve("@sanchika/primitives/styles.css").endsWith("/dist/styles.css"),
+  patternCssPath.endsWith("/dist/styles.css"),
+  patternCss.includes('@import "./visual-grammar.css";'),
+  patternCss.includes('@import "./public.css";'),
   themeCss.includes("--sk-color-bg-base: var(--sk-color-canvas);"),
   themeCss.includes("--sk-color-border-control: var(--sk-color-border-default);"),
   legacyCss.includes("var(--sk-color-bg-base)"),
@@ -286,6 +299,14 @@ const inheritedRuntimeKeys = ["toString", "constructor", "__proto__", "prototype
 const legacyNames = ["Button", "Card", "Badge", "Field"];
 const appendedNames = ["Container", "Section", "Stack", "Cluster", "Grid", "Split", "Surface", "Divider", "VisuallyHidden", "Text", "Link", "LinkCard", "SearchField", "InlineStatus", "Skeleton", "EmptyState", "ErrorState", "Progress", "Stepper", "Disclosure", "CopyButton", "Breadcrumb", "Stat", "TableShell"];
 const expectedButtonStandards = [{ id: "WAI-ARIA APG Button Pattern", sourceUrl: "https://www.w3.org/WAI/ARIA/apg/patterns/button/", requirements: ["Prefer native <button> elements for command actions.", 'If a non-button element uses role="button", the consumer must provide Space and Enter activation.', "Toggle buttons use aria-pressed without changing the visible label.", "Consumers must define focus after activation according to the resulting workflow."] }];
+const expectedLegacyPatternNames = ["EvidencePanel", "TrustBoundary", "ProductFamilyRouter", "ServiceSection"];
+const expectedLegacyPatternKeys = ["name", "consumerModes", "purpose", "requiredSlots", "requiredStates", "semanticObligations", "nonGoals"];
+if (patternSpecs.map((pattern) => pattern.name).join(",") !== expectedLegacyPatternNames.join(",")) {
+  throw new Error("Sanchika packed consumer lost the exact legacy patternSpecs order");
+}
+if (patternSpecs.some((pattern) => Object.keys(pattern).join(",") !== expectedLegacyPatternKeys.join(","))) {
+  throw new Error("Sanchika packed consumer changed the legacy patternSpecs enumerable shape");
+}
 if (primitiveSpecs.slice(0, legacyNames.length).map((primitive) => primitive.name).join(",") !== legacyNames.join(",")) {
   throw new Error("Sanchika packed consumer lost the legacy primitiveSpecs prefix");
 }
@@ -312,12 +333,18 @@ for (const inheritedKey of inheritedRuntimeKeys) {
   }
 }
 expectInvalid("inherited SearchField size", () => primitiveClassName("SearchField", Object.create({ size: "lg" })));
+for (const inheritedKey of inheritedRuntimeKeys) {
+  expectInvalid("product pattern " + inheritedKey, () => patternClassName(inheritedKey));
+  if (resolveProductPatternContract(inheritedKey) !== undefined) throw new Error("Sanchika packed consumer resolved inherited product pattern " + inheritedKey);
+}
+expectInvalid("inherited PublicHero variant", () => patternClassName("PublicHero", Object.create({ variant: "editorial" })));
+expectInvalid("unknown PublicHero variant", () => patternClassName("PublicHero", { variant: "three-pane" }));
 
 function expectInvalid(label, operation) {
   try {
     operation();
   } catch (error) {
-    if (/Unknown primitive|Unsupported/.test(String(error))) return;
+    if (/Unknown .+|Unsupported/.test(String(error))) return;
     throw error;
   }
   throw new Error(label + " was accepted");

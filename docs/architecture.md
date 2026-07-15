@@ -12,6 +12,9 @@ tokens -> primitives -> patterns
 - `tokens` has no package dependencies.
 - `primitives` depends on token names and shared type contracts only.
 - `patterns` composes primitives into compliance-interface structures.
+  S7 adds an immutable 20-contract product registry, four product groups, a
+  finite class-name helper, and package-owned visual grammar CSS. It still does
+  not ship components, routes, framework adapters, or product behavior.
 - `apps/gallery` is a private Astro static application. It renders package
   contract exports and CSS into the canonical gallery site without exposing a
   consumer runtime package, framework adapter, or client island by default.
@@ -22,9 +25,9 @@ tokens -> primitives -> patterns
   helper resolve package CSS only, while the `/foundations/motion/` route is
   statically derived proof.
 - CSS package exports are the only declared package side effects:
-  `@sanchika/tokens/theme.css` and `@sanchika/primitives/styles.css` stay
-  side-effectful so production bundlers do not prune required styles. Code-only
-  packages declare `sideEffects: false`.
+  `@sanchika/tokens/theme.css`, `@sanchika/primitives/styles.css`, and
+  `@sanchika/patterns/styles.css` stay side-effectful so production bundlers do
+  not prune required styles.
 
 Parent applications should consume published packages or reviewed local package
 links. They should not import source files from this repository by path.

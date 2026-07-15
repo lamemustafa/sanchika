@@ -1,11 +1,18 @@
 ---
 import { primitiveClassName, textClassName } from "@sanchika/primitives";
+import { productPatternClassName } from "@sanchika/patterns";
 
 interface CustodyStage {
   readonly step: string;
   readonly title: string;
   readonly detail: string;
   readonly boundary: string;
+  readonly custodian: string;
+  readonly data: string;
+  readonly crosses: string;
+  readonly neverCrosses: string;
+  readonly source: string;
+  readonly result: string;
 }
 
 interface CustodyFact {
@@ -21,19 +28,19 @@ interface Props {
 const { stages, facts } = Astro.props;
 ---
 
-<section class={`lab-custody ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby="custody-title">
-  <div class={`lab-artifact-bar lab-artifact-bar--dark ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
+<section class={`${productPatternClassName("LocalArtifactFlow", { variant: "three-stage", state: "complete" })} ${primitiveClassName("Surface", { variant: "default", padding: "none" })}`} aria-labelledby="custody-title">
+  <div class={`sk-pattern-artifact-bar sk-pattern-artifact-bar--dark ${primitiveClassName("Cluster", { gap: "md", justify: "between" })}`}>
     <div>
       <span>Local custody trace</span>
       <strong id="custody-title">From portal session to this device.</strong>
     </div>
-    <span class="lab-status-mark">No ComplyEaze handoff</span>
+    <span class="sk-pattern-status-mark">No ComplyEaze handoff</span>
   </div>
 
-  <ol class="lab-custody__stages">
+  <ol class="sk-pattern-local-artifact-flow__stages sk-pattern-grammar--custody-line">
     {stages.map((stage) => (
       <li>
-        <div class="lab-custody__step">
+        <div class="sk-pattern-local-artifact-flow__step">
           <span>{stage.step}</span>
           <span aria-hidden="true"></span>
         </div>
@@ -41,12 +48,21 @@ const { stages, facts } = Astro.props;
           <h2 class={textClassName("heading")}>{stage.title}</h2>
           <p>{stage.detail}</p>
           <strong>{stage.boundary}</strong>
+          <dl class="sk-pattern-local-artifact-flow__stage-facts">
+            <div><dt>Custodian / location</dt><dd>{stage.custodian}</dd></div>
+            <div><dt>Data / action</dt><dd>{stage.data}</dd></div>
+            <div><dt>Crosses</dt><dd>{stage.crosses}</dd></div>
+            <div><dt>Never crosses</dt><dd>{stage.neverCrosses}</dd></div>
+            <div><dt>Source</dt><dd>{stage.source}</dd></div>
+            <div><dt>Result</dt><dd>{stage.result}</dd></div>
+          </dl>
         </div>
       </li>
     ))}
   </ol>
 
-  <dl class="lab-custody__facts">
+  <dl class={`sk-pattern-local-artifact-flow__facts ${productPatternClassName("CustodyBoundary", { variant: "ledger", state: "local-only" })}`}>
+    <div><dt>State</dt><dd>Local only · destination: user-controlled Chrome Downloads · no handoff to ComplyEaze</dd></div>
     {facts.map((fact) => (
       <div>
         <dt>{fact.label}</dt>
@@ -55,7 +71,7 @@ const { stages, facts } = Astro.props;
     ))}
   </dl>
 
-  <div class="lab-custody__receipt" aria-label="Synthetic local download receipt">
+  <div class="sk-pattern-local-artifact-flow__receipt" aria-label="Synthetic local download receipt">
     <div>
       <span>Local result</span>
       <strong>supported-return-example.pdf</strong>
@@ -69,10 +85,23 @@ const { stages, facts } = Astro.props;
     <div>
       <span>Proof available</span>
       <strong>Source and release inspectable</strong>
-      <p class="lab-custody__links">
+      <p class="sk-pattern-local-artifact-flow__links">
         <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/pack">Inspect public source</a>
         <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/pack/releases">Review release artifacts</a>
       </p>
     </div>
   </div>
+
+  <dl class={`${productPatternClassName("SourceProvenanceStrip", { variant: "ledger", state: "current" })} sk-pattern-grammar--provenance-strip`} aria-label="Pack source provenance">
+    <div><dt>Claim</dt><dd>Supported portal response to a local file</dd></div>
+    <div><dt>Source / release</dt><dd><a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/pack">Repository: public Pack source</a> · release artifact selected by consumer</dd></div>
+    <div class="sk-pattern-grammar--quiet-verified-seal"><dt>Status / checked</dt><dd>Current synthetic reference · 14 July 2026 · S7 validator</dd></div>
+    <div><dt>Reference / limitation</dt><dd>Checksum comes from the selected release artifact; runtime proof is a separate gate</dd></div>
+  </dl>
+
+  <aside class={productPatternClassName("ReleaseStatusBanner", { variant: "notice", state: "planned" })} aria-label="Pack release proof status">
+    <strong>Pack · S7 pattern adoption planned</strong>
+    <span>Planned · no release claim for S7 adoption · reviewed 14 July 2026 · static composition only · public Pack release artifacts remain the runtime source of truth.</span>
+    <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/pack/releases">Review Pack releases</a>
+  </aside>
 </section>
