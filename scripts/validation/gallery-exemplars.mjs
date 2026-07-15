@@ -216,6 +216,7 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
   if (pricing) {
     const prices = [...new Set(visibleText(pricing).match(/₹\s?[\d,.]+/g) ?? [])];
     if (prices.length !== 1) fail(`PricingBlock must render one unambiguous public price; found ${prices.length}`);
+    if (!descendantElements(pricing).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) fail("PricingBlock must include a native action");
   }
 
   const faq = requireClassElement(publicMarkup, "sk-pattern-faq-accordion", fail, "FAQAccordion");
@@ -261,6 +262,14 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
       if (hasClass(row, "sk-pattern-work-queue-row--state-selected") && !/\bselected\b/i.test(rowText)) {
         fail(`WorkQueueRow ${index + 1} selected state must include visible selected text`);
       }
+      for (const [stateClass, signals] of [
+        ["sk-pattern-work-queue-row--state-waiting", ["waiting", "dependency", "owner"]],
+        ["sk-pattern-work-queue-row--state-ready", ["ready", "source linked", "review owner"]],
+      ]) {
+        if (hasClass(row, stateClass)) {
+          for (const signal of signals) if (!new RegExp(`\\b${signal}\\b`, "i").test(rowText)) fail(`WorkQueueRow ${index + 1} ${stateClass.split("--state-")[1]} state must include ${signal}`);
+        }
+      }
     }
     const checkpoint = descendantElements(reviewDesk).find((element) => hasClass(element, "sk-pattern-human-review-checkpoint"));
     if (checkpoint) {
@@ -271,6 +280,10 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
       if (!descendantElements(checkpoint).some((element) => ["a", "button"].includes(element.tag) && (element.tag === "button" || getAttribute(element.attrs, "href")))) {
         fail("HumanReviewCheckpoint must expose a native operable action");
       }
+    }
+    const auditTrail = descendantElements(reviewDesk).find((element) => hasClass(element, "sk-pattern-audit-trail-preview"));
+    if (auditTrail && !descendantElements(auditTrail).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) {
+      fail("AuditTrailPreview must include a native inspect action");
     }
     if (!/synthetic/i.test(text)) fail("ReviewDeskPreview must visibly mark synthetic data");
     if (/\bAI (?:approved|filed|submitted|replied|decided)\b/i.test(text)) fail("ReviewDeskPreview must not present AI output as final or autonomous");
@@ -314,6 +327,14 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
       }
     }
   }
+  const packReleaseBanner = requireClassElement(packMarkup, "sk-pattern-release-status-banner", fail, "Pack ReleaseStatusBanner");
+  if (packReleaseBanner && hasClass(packReleaseBanner, "sk-pattern-release-status-banner--state-planned")) {
+    const releaseText = visibleText(packReleaseBanner);
+    for (const signal of ["planned", "no release claim", "source"]) {
+      if (!new RegExp(`\\b${signal}\\b`, "i").test(releaseText)) fail(`Pack ReleaseStatusBanner planned state must visibly include ${signal}`);
+    }
+    if (!descendantElements(packReleaseBanner).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) fail("Pack ReleaseStatusBanner must include a source link");
+  }
   validateProvenanceStructure({ markup: packMarkup, label: "Pack SourceProvenanceStrip", fail });
 
   const toolsMarkup = markupByGroup.get("tools-local-artifact") ?? "";
@@ -344,6 +365,11 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
       if (!text.includes(signal)) fail(`OutputArtifactSummary must include ${signal}`);
     }
     if (/\b(?:professionally\s+)?approved\b|\bapproval complete\b/i.test(text)) fail("OutputArtifactSummary must not imply generated output is approved");
+    const nextActionTerm = descendantElements(output).find((element) => element.tag === "dt" && visibleText(element) === "Next action");
+    const nextActionDefinition = nextActionTerm && descendantElements(output).find((element) => element.tag === "dd" && element.openEnd > nextActionTerm.openEnd);
+    if (!nextActionDefinition || !descendantElements(nextActionDefinition).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) {
+      fail("OutputArtifactSummary next action must use a native link");
+    }
   }
 
   for (const contract of contracts) {
@@ -362,6 +388,7 @@ export function runProductPatternExemplarFixtures() {
     { name: "ProductRouteMap without colophon", group: "public-product", replace: ['<footer class="sk-pattern-product-route-map__colophon"><a href="/patterns/">Sanchika pattern contracts</a></footer>', ""], expected: "linked colophon" },
     { name: "Sanchika as peer route", group: "public-product", replace: ["<h2>Tools</h2>", "<h2>Tools</h2><p>Sanchika</p>"], expected: "peer product route" },
     { name: "conflicting annual prices", group: "public-product", replace: ["₹12,500", "₹12,500 annual · ₹10,000 annual"], expected: "one unambiguous public price" },
+    { name: "PricingBlock without native action", group: "public-product", replace: ['<a href="/consult">Consult</a>', ""], expected: "native action" },
     { name: "FAQ JSON-LD mismatch", group: "public-product", replace: ['"Does this submit?"', '"Different question"'], expected: "JSON-LD questions must match" },
     { name: "limited ProofStrip without missing-proof context", group: "public-product", replace: ["Missing proof", "Pending artifact"], expected: "limited state must visibly include missing proof" },
     { name: "planned ReleaseStatusBanner without source evidence", group: "public-product", replace: ['<a href="/release-source">Source evidence</a>', ""], expected: "planned state must include an evidence link" },
@@ -369,17 +396,22 @@ export function runProductPatternExemplarFixtures() {
     { name: "PublicHero stamped on non-public intro", group: "axal-workspace", replace: ['<main data-sanchika-example="synthetic">', '<main data-sanchika-example="synthetic"><header class="sk-pattern-public-hero"></header>'], expected: "must not stamp a generic introduction" },
     { name: "ReviewDeskPreview without human review", group: "axal-workspace", replace: ["sk-pattern-human-review-checkpoint", "missing-human-review-checkpoint"], expected: "sk-pattern-human-review-checkpoint" },
     { name: "selected WorkQueueRow without visible selection", group: "axal-workspace", replace: ["Selected item · Entity", "Active item · Entity"], expected: "visible selected text" },
+    { name: "waiting WorkQueueRow without dependency", group: "axal-workspace", replace: ["Waiting · Dependency evidence · Entity synthetic B", "Waiting · Evidence pending · Entity synthetic B"], expected: "waiting state must include dependency" },
+    { name: "ready WorkQueueRow without source signal", group: "axal-workspace", replace: ["Ready · Source linked · Review owner MK · Entity synthetic C · Source linked", "Ready · Evidence available · Review owner MK · Entity synthetic C · Source available"], expected: "ready state must include source linked" },
     { name: "checkpoint without required context", group: "axal-workspace", replace: ["Evidence linked · Blocker none · Next safe action open source · History 14 July 2026", "Decision pending"], expected: "HumanReviewCheckpoint must visibly include" },
     { name: "checkpoint without native action", group: "axal-workspace", replace: ['<a href="/evidence">Open evidence</a>', "Open evidence"], expected: "native operable action" },
+    { name: "AuditTrailPreview without inspect action", group: "axal-workspace", replace: ['<a href="/audit">Inspect trail</a>', ""], expected: "native inspect action" },
     { name: "unmarked synthetic data", group: "axal-workspace", replace: [' data-sanchika-example="synthetic"', ""], expected: "mark synthetic exemplar data" },
     { name: "custody stage without custodian", group: "pack-local-utility", replace: ["<dt>Custodian / location</dt><dd>Browser session</dd>", "<dt>Custodian / location</dt><dd></dd>"], expected: "name its current custodian" },
     { name: "local CustodyBoundary without visible state", group: "pack-local-utility", replace: ["Local only · destination · no handoff · ", ""], expected: "local-only state must visibly include local only" },
+    { name: "Pack planned banner without no-release claim", group: "pack-local-utility", replace: ["Planned · no release claim · Source", "Planned · Source"], expected: "planned state must visibly include no release claim" },
     { name: "permission without denial behavior", group: "pack-local-utility", replace: ["<span>If denied: use manual download</span>", ""], expected: "include If denied" },
     { name: "ToolDirectory missing no-results", group: "tools-local-artifact", replace: ['<div data-tool-empty hidden>No results</div>', ""], expected: "data-tool-empty" },
     { name: "ToolCard nested button", group: "tools-local-artifact", replace: ["Inspect tool contract</a>", "Inspect tool contract<button>Run</button></a>"], expected: "nested interactive <button>" },
     { name: "provenance without source link", group: "public-product", replace: ['<a href="/source">Source</a>', "Source"], expected: "source link" },
     { name: "quiet seal without verifier and time", group: "public-product", replace: ["14 July 2026 · S7 validator", "Current"], expected: "verifier and checked time" },
     { name: "generated output implying approval", group: "tools-local-artifact", replace: ["Ready for review", "Professionally approved"], expected: "must not imply generated output is approved" },
+    { name: "OutputArtifactSummary without linked next action", group: "tools-local-artifact", replace: ['<a href="/draft">Inspect draft</a>', "Inspect draft"], expected: "next action must use a native link" },
   ];
   const failures = [];
   for (const fixture of cases) {
@@ -403,7 +435,7 @@ function validProductPatternFixtureMarkup() {
         <aside class="sk-pattern-trust-boundary"><a href="/source">Source</a><dl><div><dt>Crosses</dt><dd>Chosen data</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div><div><dt>Action owner</dt><dd>User</dd></div><div><dt>Safe action</dt><dd>Inspect boundary</dd></div></dl></aside>
         <section class="sk-pattern-product-route-map"><article class="sk-pattern-product-route-map__primary"><h2>Axal</h2></article><div class="sk-pattern-product-route-map__secondary"><article><h2>Pack</h2></article><article><h2>Tools</h2></article></div><footer class="sk-pattern-product-route-map__colophon"><a href="/patterns/">Sanchika pattern contracts</a></footer></section>
         <section class="sk-pattern-source-provenance-strip"><div><a href="/source">Source</a></div><div class="sk-pattern-grammar--quiet-verified-seal">14 July 2026 · S7 validator</div></section>
-        <section class="sk-pattern-pricing-block"><p>₹12,500</p></section>
+        <section class="sk-pattern-pricing-block"><p>₹12,500</p><a href="/consult">Consult</a></section>
         <section class="sk-pattern-faq-accordion"><details><summary>Does this submit?</summary><p>No.</p></details><script type="application/ld+json" data-pattern-faq-jsonld>{"mainEntity":[{"name":"Does this submit?"}]}</script></section>
         <aside class="sk-pattern-release-status-banner sk-pattern-release-status-banner--state-planned">Planned status · no release claim · reviewed 14 July 2026 · adoption unproven · <a href="/release-source">Source evidence</a></aside>
       </main>`,
@@ -411,10 +443,10 @@ function validProductPatternFixtureMarkup() {
     [
       "axal-workspace",
       `<main data-sanchika-example="synthetic"><section class="sk-pattern-review-desk-preview">
-        <section><h2>Work queue</h2><article class="sk-pattern-work-queue-row sk-pattern-work-queue-row--state-selected">Selected item · Entity synthetic A · Source linked · Owner AK · Due today · Blocker none · Next safe action open source</article></section>
+        <section><h2>Work queue</h2><article class="sk-pattern-work-queue-row sk-pattern-work-queue-row--state-selected">Selected item · Entity synthetic A · Source linked · Owner AK · Due today · Blocker none · Next safe action open source</article><article class="sk-pattern-work-queue-row sk-pattern-work-queue-row--state-waiting">Waiting · Dependency evidence · Entity synthetic B · Source requested · Owner RS · Due pending · Blocker evidence · Next request evidence</article><article class="sk-pattern-work-queue-row sk-pattern-work-queue-row--state-ready">Ready · Source linked · Review owner MK · Entity synthetic C · Source linked · Owner MK · Due today · Blocker none · Next open source</article></section>
         <aside class="sk-pattern-evidence-panel">Source evidence · synthetic source</aside>
         <section class="sk-pattern-human-review-checkpoint">Human approval checkpoint · review needed · Owner AK · Evidence linked · Blocker none · Next safe action open source · History 14 July 2026 · <a href="/evidence">Open evidence</a></section>
-        <section class="sk-pattern-audit-trail-preview">Audit trail</section>
+        <section class="sk-pattern-audit-trail-preview">Audit trail · <a href="/audit">Inspect trail</a></section>
       </section></main>`,
     ],
     [
@@ -424,6 +456,7 @@ function validProductPatternFixtureMarkup() {
         <section class="sk-pattern-local-artifact-flow"><ol class="sk-pattern-local-artifact-flow__stages"><li><dl><div><dt>Custodian / location</dt><dd>Browser session</dd></div><div><dt>Data / action</dt><dd>Portal response</dd></div><div><dt>Crosses</dt><dd>Portal to browser</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div><div><dt>Source</dt><dd>Portal</dd></div><div><dt>Result</dt><dd>Local file</dd></div></dl></li></ol>
           <dl class="sk-pattern-custody-boundary sk-pattern-custody-boundary--state-local-only"><div>Local only · destination · no handoff · Current custodian</div><div>What moves</div><div>What never moves</div><div>Credentials</div><div>Local destination</div><div>User control</div></dl>
           <section class="sk-pattern-source-provenance-strip"><a href="/source">Source</a><div class="sk-pattern-grammar--quiet-verified-seal">14 July 2026 · S7 validator</div></section>
+          <aside class="sk-pattern-release-status-banner sk-pattern-release-status-banner--state-planned">Planned · no release claim · Source · <a href="/releases">Review releases</a></aside>
         </section>
       </main>`,
     ],
@@ -432,7 +465,7 @@ function validProductPatternFixtureMarkup() {
       `<main data-sanchika-example="synthetic">
         <aside class="sk-pattern-local-boundary-banner"><a href="/source">Source</a></aside>
         <section class="sk-pattern-tool-directory"><p role="status">1 result</p><input data-tool-search><div data-tool-filters></div><div data-tool-results><a class="sk-pattern-tool-card" href="/tool" data-sk-primitive="LinkCard" data-sk-state="default"><dl><div><dt>Input</dt><dd>Facts</dd></div><div><dt>Output</dt><dd>Draft</dd></div><div><dt>Review</dt><dd>CA</dd></div><div><dt>Boundary</dt><dd>Local</dd></div><div><dt>Status</dt><dd>Available</dd></div></dl>Inspect tool contract</a></div><div data-tool-empty hidden>No results</div></section>
-        <aside class="sk-pattern-output-artifact-summary">Draft output · Artifact type · Status / reviewer · Ready for review · Limitation · Next action</aside>
+        <aside class="sk-pattern-output-artifact-summary">Draft output · Artifact type · Status / reviewer · Ready for review · Limitation · <dl><div><dt>Next action</dt><dd><a href="/draft">Inspect draft</a></dd></div></dl></aside>
       </main>`,
     ],
   ]);

@@ -77,6 +77,12 @@ const requiredStatesByPattern = new Map([
   ["ToolDirectory", ["default", "filtered", "no-results"]],
   ["OutputArtifactSummary", ["generated-draft", "ready-for-review", "copied-downloaded", "failed", "unavailable"]],
 ]);
+const requiredActionFieldsByPattern = new Map([
+  ["PricingBlock", ["action"]],
+  ["PermissionExplainer", ["requestAction"]],
+  ["AuditTrailPreview", ["inspectAction"]],
+  ["OutputArtifactSummary", ["nextAction"]],
+]);
 const requiredVisualGrammar = [
   ["ledgerRail", "sk-pattern-grammar--ledger-rail"],
   ["fileTabLabel", "sk-pattern-grammar--file-tab-label"],
@@ -240,6 +246,9 @@ export function runProductPatternContractFixtures({ contracts }) {
     { name: "missing semantic root", mutate: (items) => { items[0].semanticRoot = ""; }, expected: "semanticRoot must be specific" },
     { name: "missing required fields", mutate: (items) => { items[0].requiredFields = []; }, expected: "requiredFields must be a non-empty array" },
     { name: "unknown required field", mutate: (items) => { items[0].requiredFields = ["inventedField"]; }, expected: "required field inventedField" },
+    { name: "PricingBlock missing required action", mutate: (items) => { const contract = items.find((item) => item.name === "PricingBlock"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "action"); }, expected: "PricingBlock requiredFields must include action" },
+    { name: "PermissionExplainer missing request action", mutate: (items) => { const contract = items.find((item) => item.name === "PermissionExplainer"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "requestAction"); }, expected: "PermissionExplainer requiredFields must include requestAction" },
+    { name: "AuditTrailPreview missing inspect action", mutate: (items) => { const contract = items.find((item) => item.name === "AuditTrailPreview"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "inspectAction"); }, expected: "AuditTrailPreview requiredFields must include inspectAction" },
     { name: "missing copy obligation", mutate: (items) => { items[0].copyObligations = []; }, expected: "copyObligations must be a non-empty array" },
     { name: "missing reduced motion", mutate: (items) => { items[0].reducedMotionBehavior = []; }, expected: "reducedMotionBehavior must be a non-empty array" },
     { name: "missing forced colors", mutate: (items) => { items[0].forcedColorsBehavior = []; }, expected: "forcedColorsBehavior must be a non-empty array" },
@@ -296,6 +305,10 @@ function collectProductPatternIssues({ contracts, groups, css, exemplarRoutes })
     }
     for (const requiredAnatomy of requiredAnatomyByPattern.get(contract.name) ?? []) {
       if (!anatomyNames.has(requiredAnatomy)) issues.push(`${contract.name} must include required anatomy ${requiredAnatomy}`);
+    }
+    const requiredFieldNames = new Set(contract.requiredFields ?? []);
+    for (const requiredActionField of requiredActionFieldsByPattern.get(contract.name) ?? []) {
+      if (!requiredFieldNames.has(requiredActionField)) issues.push(`${contract.name} requiredFields must include ${requiredActionField}`);
     }
     const stateNames = new Set((contract.states ?? []).map((state) => state.name));
     for (const requiredState of requiredStatesByPattern.get(contract.name) ?? []) {

@@ -85,7 +85,7 @@ export const packLocalUtilityPatterns = Object.freeze([
       { name: "fallback", purpose: "Manual or reduced-capability path." },
       { name: "requestAction", purpose: "Permission request control." },
     ],
-    requiredFields: ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy"],
+    requiredFields: ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy", "requestAction"],
     variants: [
       { name: "inline", purpose: "Explanation adjacent to the request action." },
       { name: "panel", purpose: "Detailed pre-permission review." },

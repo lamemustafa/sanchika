@@ -217,7 +217,7 @@ export const publicProductPatterns = Object.freeze([
       { name: "action", purpose: "Consult or purchase action." },
       { name: "sourceOwner", purpose: "Consumer-owned authoritative pricing source." },
     ],
-    requiredFields: ["price", "status", "effectiveAt", "inclusions", "exclusions", "reviewBoundary", "sourceOwner"],
+    requiredFields: ["price", "status", "effectiveAt", "inclusions", "exclusions", "reviewBoundary", "action", "sourceOwner"],
     variants: [{ name: "single-offer", purpose: "One clearly bounded offer." }],
     states: [{ name: "available", purpose: "Price and scope are current.", requiredVisibleSignals: ["price", "cadence", "inclusions", "exclusions"] }],
     accessibilityHooks: accessibilityHooks("Use a labelled section; express price, cadence, tax qualification, inclusions, and exclusions as text.", "Read price status and effective date before inclusions, exclusions, review boundary, and action."),

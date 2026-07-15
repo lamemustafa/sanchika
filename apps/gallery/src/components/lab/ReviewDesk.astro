@@ -69,12 +69,14 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
               <span>{item.id}</span>
               <strong>{item.title}</strong>
             </div>
-            <p>{index === 0 ? `Selected · ${item.state}` : item.state}</p>
+            <p>{index === 0 ? `Selected · ${item.state}` : item.tone === "waiting" ? `Waiting · ${item.state}` : `Ready · Source linked · ${item.state}`}</p>
             <div class="sk-pattern-work-queue__meta">
               <span>Entity {item.entity}</span>
               <span>Source {item.source}</span>
               <span>Owner {item.owner}</span>
+              <span>Review owner {item.owner}</span>
               <span>Due {item.due}</span>
+              <span>Dependency {item.tone === "waiting" ? item.source : "None"}</span>
               <span>Blocker {item.tone === "waiting" ? "Evidence requested" : "None recorded"}</span>
               <span>Next {item.tone === "waiting" ? "Request client evidence" : "Open source for review"}</span>
             </div>
@@ -158,6 +160,7 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
             </li>
           ))}
         </ol>
+        <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/sanchika/blob/feat/product-patterns-v0-1/apps/gallery/src/content/lab/references.ts">Inspect the synthetic audit-trail source</a>
       </section>
     </aside>
   </div>

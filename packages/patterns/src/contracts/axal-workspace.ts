@@ -166,7 +166,7 @@ export const axalWorkspacePatterns = Object.freeze([
       { name: "scope", purpose: "What the preview includes and omits." },
       { name: "inspectAction", purpose: "Route to the authoritative trail." },
     ],
-    requiredFields: ["events", "resultingState"],
+    requiredFields: ["events", "resultingState", "inspectAction"],
     variants: [
       { name: "rail", purpose: "Compact chronological evidence rail." },
       { name: "list", purpose: "Standalone audit event list." },
