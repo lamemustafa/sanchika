@@ -337,6 +337,10 @@ function collectProductPatternIssues({ contracts, groups, css, exemplarRoutes })
       if (!/^\/[a-z0-9-/]+\/$/.test(route)) issues.push(`${contract.name} exemplar route ${route} must be a local static route`);
       if (exemplarRoutes && !exemplarRoutes.has(route)) issues.push(`${contract.name} exemplar route ${route} has no gallery source`);
     }
+    const expectedExemplarRoute = `/patterns/${contract.name.toLowerCase()}/`;
+    if (contract.exemplarRoutes?.length !== 1 || contract.exemplarRoutes[0] !== expectedExemplarRoute) {
+      issues.push(`${contract.name} exemplarRoutes must contain only ${expectedExemplarRoute}`);
+    }
     if (css && !css.includes(`.${contract.css?.baseClass}`)) issues.push(`${contract.name} base class must exist in package CSS`);
   }
 

@@ -42,13 +42,14 @@ const tool = showcaseTools[1];
   {contract.name === "TrustBoundary" && <BoundaryBanner pattern="TrustBoundary" label="Synthetic trust boundary" statement="The source, crossing, reviewer, and safe action remain visible before action." facts={[{ label: "Source", value: "Synthetic package evidence" }]} neverCrosses="Credentials or private consumer data" actionOwner="Named human reviewer" safeAction="Inspect source before deciding" sourceLink={{ label: "Open pattern source", href: `${sourceRepository}/tree/master/packages/patterns` }} />}
   {contract.name === "SourceProvenanceStrip" && (
     <dl class={className} aria-label="Synthetic source provenance">
-      <div><dt>Authority</dt><dd>Illustrative notice PDF</dd></div><div><dt>Checked</dt><dd>14 July 2026</dd></div><div><dt>Reviewer</dt><dd>AK · assigned CA</dd></div><div><dt>Limitation</dt><dd>Interpretation under review</dd></div>
+      <div><dt>Claim</dt><dd>The synthetic reference demonstrates provenance anatomy only.</dd></div><div><dt>Source type</dt><dd>Package contract</dd></div><div><dt>Source</dt><dd><a class={primitiveClassName("Link")} href={`${sourceRepository}/blob/master/packages/patterns/src/contracts/public-product.ts`}>Inspect pattern source</a></dd></div><div><dt>Release</dt><dd>v{currentStableRelease}</dd></div><div><dt>Checked</dt><dd>14 July 2026</dd></div><div><dt>Reviewer</dt><dd>AK · assigned CA</dd></div><div><dt>Status</dt><dd>Limited synthetic reference</dd></div><div><dt>Limitation</dt><dd>Interpretation under review</dd></div>
     </dl>
   )}
   {contract.name === "PricingBlock" && (
     <section class={className} aria-labelledby="pricing-proof-title">
       <div><span class="eyebrow">Current acquisition</span><h3 id="pricing-proof-title">Evaluate the artifact before commercial claims.</h3><p class="sk-pattern-pricing-block__price">Local link or tarball</p><p>No public registry price or universal production-readiness claim is made.</p></div>
       <div class="sk-pattern-pricing-block__scope"><div><strong>Included in proof</strong><p>Tokens, primitives, patterns, static documentation, and consumer fixtures.</p></div><div><strong>Consumer owns</strong><p>Integration, product behavior, authorization, real data, support, and rollback.</p></div></div>
+      <a class={primitiveClassName("Link")} href="/adoption/">Review the acquisition and adoption path</a>
     </section>
   )}
   {contract.name === "FAQAccordion" && (
@@ -72,7 +73,7 @@ const tool = showcaseTools[1];
     <section class={`${className} pattern-compact-panel`} aria-labelledby="checkpoint-proof-title"><span>Human review checkpoint</span><h3 id="checkpoint-proof-title">CA decision required before AX-031 advances.</h3><p>Open the linked synthetic source, record the reasoning, then approve, return for evidence, or hold.</p><dl class="checkpoint-facts"><div><dt>Owner</dt><dd>{selected.owner}</dd></div><div><dt>Source</dt><dd>{selected.source}</dd></div><div><dt>Amount</dt><dd>{selected.amount}</dd></div><div><dt>Due</dt><dd>{selected.due}</dd></div></dl><div class="sk-pattern-checkpoint-actions"><a href="/patterns/evidencepanel/" data-action="primary">Inspect source contract</a></div></section>
   )}
   {contract.name === "AuditTrailPreview" && (
-    <section class={`${className} pattern-compact-panel`} aria-labelledby="audit-proof-title"><h3 id="audit-proof-title">AX-031 audit trail</h3><ol class="sk-pattern-grammar--ledger-rail">{auditTrail.map((item) => <li><time datetime={`${item.date}T${item.time}:00`}>{item.dateLabel} · {item.time}</time><span><strong>{item.event}</strong><small>{item.actor} · {item.resultingState}</small><small>{item.note}</small></span></li>)}</ol></section>
+    <section class={`${className} pattern-compact-panel`} aria-labelledby="audit-proof-title"><h3 id="audit-proof-title">AX-031 audit trail</h3><p>This bounded preview omits the permanent system trail and remains synthetic.</p><ol class="sk-pattern-grammar--ledger-rail">{auditTrail.map((item) => <li><time datetime={`${item.date}T${item.time}:00`}>{item.dateLabel} · {item.time}</time><span><strong>{item.event}</strong><small>{item.actor} · {item.resultingState}</small><small>{item.note}</small></span></li>)}</ol><a class={primitiveClassName("Link")} href={`${sourceRepository}/blob/master/packages/patterns/src/contracts/axal-workspace.ts`}>Inspect the authoritative audit-trail contract</a></section>
   )}
   {contract.name === "WorkQueueRow" && selected && (
     <article class={`${className} pattern-queue-row`} data-tone={selected.tone}><div class="sk-pattern-work-queue__identity"><span>{selected.id}</span><strong>{selected.title}</strong></div><p>{selected.state}</p><div class="sk-pattern-work-queue__meta"><span>{selected.entity}</span><span>{selected.amount}</span><span>Owner {selected.owner}</span><span>{selected.due}</span><span>Next: open source before deciding</span></div></article>

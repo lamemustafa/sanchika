@@ -700,17 +700,9 @@ const patternCss = ["styles.css", "visual-grammar.css", "public.css", "axal.css"
   .join("\n");
 const productPatternFixtures = runProductPatternContractFixtures({ contracts: productPatternContracts, css: patternCss });
 for (const fixtureFailure of productPatternFixtures.failures) fail(`product pattern fixture ${fixtureFailure}`);
-const productPatternExemplarRoutes = new Set([
-  "/patterns/",
-  "/patterns/public/",
-  "/patterns/axal/",
-  "/patterns/pack/",
-  "/patterns/tools/",
-  "/lab/complyeaze-core/",
-  "/lab/axal-review-desk/",
-  "/lab/pack-local-proof/",
-  "/lab/tools-directory/",
-]);
+const productPatternExemplarRoutes = new Set(
+  productPatternContracts.map((contract) => `/patterns/${contract.name.toLowerCase()}/`),
+);
 const gallerySiteSource = readText("apps/gallery/src/content/site.ts");
 const galleryGeneratedDocumentsSource = readText("apps/gallery/src/content/generated-documents.ts");
 const galleryPrimitiveDetailSource = readText("apps/gallery/src/components/PrimitiveDetail.astro");

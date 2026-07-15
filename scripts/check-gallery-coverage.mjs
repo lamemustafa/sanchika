@@ -38,6 +38,12 @@ for (const contract of productPatternContracts) {
   }
   for (const state of contract.states) if (!markup.includes(`data-pattern-state="${state.name}"`)) failures.push(`${route} must render pattern state ${state.name}`);
   if (/Visible synthetic/i.test(markup)) failures.push(`${route} must not use field-name placeholder exemplars`);
+  const requiredAction = {
+    SourceProvenanceStrip: "packages/patterns/src/contracts/public-product.ts",
+    PricingBlock: 'href="/adoption/"',
+    AuditTrailPreview: "packages/patterns/src/contracts/axal-workspace.ts",
+  }[contract.name];
+  if (requiredAction && !markup.includes(requiredAction)) failures.push(`${route} must render its required native source or action link`);
   if (!rootMarkup.includes(`href="${route}"`)) failures.push(`landing search must index ${route}`);
 }
 
