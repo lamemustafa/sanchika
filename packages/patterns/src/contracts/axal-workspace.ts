@@ -131,7 +131,7 @@ export const axalWorkspacePatterns = Object.freeze([
       { name: "nextSafeAction", purpose: "Consumer-owned action that can safely advance the review." },
       { name: "timestampHistory", purpose: "Recorded time or history reference when present." },
     ],
-    requiredFields: ["preparationState", "reviewOwner", "sourceReadiness", "blockers", "decisionActions", "nextSafeAction", "timestampHistory"],
+    requiredFields: ["preparationState", "reviewOwner", "sourceReadiness", "blockers", "evidenceLink", "decisionActions", "nextSafeAction", "timestampHistory"],
     variants: [
       { name: "inverse", purpose: "High-emphasis checkpoint inside a review desk." },
       { name: "inline", purpose: "Checkpoint attached to a work record." },

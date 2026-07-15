@@ -47,12 +47,12 @@ const group = productPatternGroups[0];
 
       <div id="public-route-map"><ProductRouteArtifact routes={productRoutes} queue={reviewQueue} /></div>
 
-      <section class={`${productPatternClassName("SourceProvenanceStrip", { variant: "ledger", state: "current" })} sk-pattern-grammar--provenance-strip`} aria-label="Source provenance">
-        <div><span>Claim / type</span><strong>Package-owned pattern grammar · repository source</strong></div>
-        <div><span>Source / release</span><strong><a href="https://github.com/lamemustafa/sanchika">Sanchika source</a> · unreleased S7 candidate</strong></div>
-        <div class="sk-pattern-grammar--quiet-verified-seal"><span>Status / Checked</span><strong>Current local build · 14 July 2026 · S7 validator</strong></div>
-        <div><span>Reference / limitation</span><strong>No published checksum · Consumer adoption not yet claimed</strong></div>
-      </section>
+      <dl class={`${productPatternClassName("SourceProvenanceStrip", { variant: "ledger", state: "current" })} sk-pattern-grammar--provenance-strip`} aria-label="Source provenance">
+        <div><dt>Claim / type</dt><dd>Package-owned pattern grammar · repository source</dd></div>
+        <div><dt>Source / release</dt><dd><a href="https://github.com/lamemustafa/sanchika">Sanchika source</a> · unreleased S7 candidate</dd></div>
+        <div class="sk-pattern-grammar--quiet-verified-seal"><dt>Status / Checked</dt><dd>Current local build · 14 July 2026 · S7 validator</dd></div>
+        <div><dt>Reference / limitation</dt><dd>No published checksum · Consumer adoption not yet claimed</dd></div>
+      </dl>
 
       <section class={productPatternClassName("PricingBlock", { variant: "single-offer", state: "available" })} aria-labelledby="pricing-example-title">
         <div>

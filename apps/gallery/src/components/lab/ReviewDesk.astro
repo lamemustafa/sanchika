@@ -71,6 +71,7 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
             </div>
             <p>{index === 0 ? `Selected · ${item.state}` : item.tone === "waiting" ? `Waiting · ${item.state}` : `Ready · Source linked · ${item.state}`}</p>
             <div class="sk-pattern-work-queue__meta">
+              <span>Priority {index + 1} of {queue.length}</span>
               <span>Entity {item.entity}</span>
               <span>Source {item.source}</span>
               <span>Owner {item.owner}</span>
@@ -160,7 +161,7 @@ const linkedSourceCount = evidence.filter((item) => item.state === "Linked").len
             </li>
           ))}
         </ol>
-        <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/sanchika/blob/feat/product-patterns-v0-1/apps/gallery/src/content/lab/references.ts">Inspect the synthetic audit-trail source</a>
+        <a class={primitiveClassName("Link")} href="https://github.com/lamemustafa/sanchika/blob/master/apps/gallery/src/content/lab/references.ts">Inspect the synthetic audit-trail source</a>
       </section>
     </aside>
   </div>

@@ -80,6 +80,7 @@ const requiredStatesByPattern = new Map([
 const requiredActionFieldsByPattern = new Map([
   ["PricingBlock", ["action"]],
   ["PermissionExplainer", ["requestAction"]],
+  ["HumanReviewCheckpoint", ["evidenceLink"]],
   ["AuditTrailPreview", ["inspectAction"]],
   ["OutputArtifactSummary", ["nextAction"]],
 ]);
@@ -248,6 +249,7 @@ export function runProductPatternContractFixtures({ contracts }) {
     { name: "unknown required field", mutate: (items) => { items[0].requiredFields = ["inventedField"]; }, expected: "required field inventedField" },
     { name: "PricingBlock missing required action", mutate: (items) => { const contract = items.find((item) => item.name === "PricingBlock"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "action"); }, expected: "PricingBlock requiredFields must include action" },
     { name: "PermissionExplainer missing request action", mutate: (items) => { const contract = items.find((item) => item.name === "PermissionExplainer"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "requestAction"); }, expected: "PermissionExplainer requiredFields must include requestAction" },
+    { name: "HumanReviewCheckpoint missing evidence link", mutate: (items) => { const contract = items.find((item) => item.name === "HumanReviewCheckpoint"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "evidenceLink"); }, expected: "HumanReviewCheckpoint requiredFields must include evidenceLink" },
     { name: "AuditTrailPreview missing inspect action", mutate: (items) => { const contract = items.find((item) => item.name === "AuditTrailPreview"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "inspectAction"); }, expected: "AuditTrailPreview requiredFields must include inspectAction" },
     { name: "missing copy obligation", mutate: (items) => { items[0].copyObligations = []; }, expected: "copyObligations must be a non-empty array" },
     { name: "missing reduced motion", mutate: (items) => { items[0].reducedMotionBehavior = []; }, expected: "reducedMotionBehavior must be a non-empty array" },
