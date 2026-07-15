@@ -1,0 +1,27 @@
+---
+import type { ProductPatternContract } from "@sanchika/patterns";
+import PatternExemplar from "./PatternExemplar.astro";
+
+interface Props { contract: ProductPatternContract; }
+const { contract } = Astro.props;
+---
+
+<section class="contract-detail__summary doc-section" aria-labelledby="pattern-purpose-title">
+  <div><h2 id="pattern-purpose-title">Product job</h2><p>{contract.userJob}</p><p>{contract.purpose}</p></div>
+  <aside><strong>{contract.primaryProductMode}</strong><p>{contract.semanticRoot}</p><p>Evidence: {contract.evidenceStatus}; maturity: {contract.maturity}.</p></aside>
+</section>
+<section class="doc-section" aria-labelledby="pattern-anatomy-title"><h2 id="pattern-anatomy-title">Anatomy and required fields</h2><div class="doc-grid">
+  {contract.anatomy.map((item) => <article class="doc-card"><span>{item.name}</span><p>{item.purpose}</p></article>)}
+  <article class="doc-card"><span>Required fields</span><ul>{contract.requiredFields.map((field) => <li>{field}</li>)}</ul></article>
+</div></section>
+<section class="doc-section" aria-labelledby="pattern-states-title"><h2 id="pattern-states-title">Default and edge states</h2><div class="doc-grid">{contract.states.map((state) => <article class="doc-card"><span>{state.name}</span><p>{state.purpose}</p><ul>{state.requiredVisibleSignals.map((signal) => <li>{signal}</li>)}</ul></article>)}</div></section>
+<section class="doc-section" aria-labelledby="pattern-example-title"><h2 id="pattern-example-title">Composed synthetic exemplar</h2><div class="contract-example" data-sanchika-example="synthetic"><PatternExemplar {contract} /></div></section>
+<section class="doc-section" aria-labelledby="pattern-trust-title"><h2 id="pattern-trust-title">Trust, source, and consumer obligations</h2><div class="doc-grid doc-grid--2">
+  <article class="doc-card"><span>Trust boundaries</span><ul>{contract.trustBoundaries.map((item) => <li>{item}</li>)}</ul></article>
+  <article class="doc-card"><span>Consumer owns</span><ul>{contract.consumerResponsibilities.map((item) => <li>{item}</li>)}</ul></article>
+  <article class="doc-card"><span>Responsive behavior</span><ul>{contract.responsiveBehavior.map((item) => <li>{item}</li>)}</ul></article>
+  <article class="doc-card"><span>Forced colors and reduced motion</span><ul>{[...contract.forcedColorsBehavior, ...contract.reducedMotionBehavior].map((item) => <li>{item}</li>)}</ul></article>
+</div></section>
+<section class="doc-section" aria-labelledby="pattern-api-title"><h2 id="pattern-api-title">Compact API reference</h2><dl class="contract-detail__ledger">
+  <div><dt>Package</dt><dd><code>@sanchika/patterns</code></dd></div><div><dt>CSS</dt><dd><code>{contract.css.entrypoint}</code></dd></div><div><dt>Base class</dt><dd><code>{contract.css.baseClass}</code></dd></div><div><dt>Group</dt><dd><code>{contract.group}</code></dd></div>
+</dl></section>

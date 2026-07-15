@@ -1,223 +1,97 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
-import {
-  runGalleryExemplarFixtures,
-  runProductPatternExemplarFixtures,
-  validateGalleryExemplars,
-  validateProductPatternExemplars,
-} from "./validation/gallery-exemplars.mjs";
-import { runS5GalleryExemplarFixtures, validateS5GalleryExemplars } from "./validation/s5-gallery-exemplars.mjs";
+import { runGalleryExemplarFixtures, runProductPatternExemplarFixtures } from "./validation/gallery-exemplars.mjs";
+import { runS5GalleryExemplarFixtures } from "./validation/s5-gallery-exemplars.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertGalleryBuildArtifacts({ root, commandName: "pnpm check:gallery" });
-
-const { motionAssistUtilities, primitiveGroups, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
-const { patternSpecs, productPatternContracts, productPatternGroups } = await import("../packages/patterns/dist/index.js");
-const rootMarkup = readFileSync(new URL("../apps/gallery/dist/index.html", import.meta.url), "utf8");
-const foundationMarkup = readFileSync(new URL("../apps/gallery/dist/primitives/foundations/index.html", import.meta.url), "utf8");
-const s5Markup = readFileSync(new URL("../apps/gallery/dist/primitives/search-state-feedback/index.html", import.meta.url), "utf8");
-const motionMarkup = readFileSync(new URL("../apps/gallery/dist/foundations/motion/index.html", import.meta.url), "utf8");
-const patternMarkupByGroup = new Map([
-  ["public-product", readFileSync(new URL("../apps/gallery/dist/patterns/public/index.html", import.meta.url), "utf8")],
-  ["axal-workspace", readFileSync(new URL("../apps/gallery/dist/patterns/axal/index.html", import.meta.url), "utf8")],
-  ["pack-local-utility", readFileSync(new URL("../apps/gallery/dist/patterns/pack/index.html", import.meta.url), "utf8")],
-  ["tools-local-artifact", readFileSync(new URL("../apps/gallery/dist/patterns/tools/index.html", import.meta.url), "utf8")],
-]);
-const northStarMarkupByProduct = new Map([
-  ["complyeaze", readFileSync(new URL("../apps/gallery/dist/lab/complyeaze-core/index.html", import.meta.url), "utf8")],
-  ["axal", readFileSync(new URL("../apps/gallery/dist/lab/axal-review-desk/index.html", import.meta.url), "utf8")],
-  ["pack", readFileSync(new URL("../apps/gallery/dist/lab/pack-local-proof/index.html", import.meta.url), "utf8")],
-  ["tools", readFileSync(new URL("../apps/gallery/dist/lab/tools-directory/index.html", import.meta.url), "utf8")],
-]);
-const northStarSources = [
-  "LabShell.astro",
-  "LabIntro.astro",
-  "BoundaryBanner.astro",
-  "ComplyEazeProofBridge.astro",
-  "PermissionExplainer.astro",
-  "ProductRouteArtifact.astro",
-  "ReviewDesk.astro",
-  "CustodyFlow.astro",
-  "ToolDirectory.astro",
-].map((path) => readFileSync(new URL(`../apps/gallery/src/components/lab/${path}`, import.meta.url), "utf8")).join("\n");
-const motionSpecimenSource = readFileSync(new URL("../apps/gallery/src/components/lab/MotionSpecimens.astro", import.meta.url), "utf8");
-const primitiveCss = ["search-feedback.css", "process-data.css", "motion.css"]
-  .map((path) => readFileSync(new URL(`../packages/primitives/src/${path}`, import.meta.url), "utf8"))
-  .join("\n");
-const markup = `${rootMarkup}\n${foundationMarkup}\n${s5Markup}\n${motionMarkup}`;
+const { motionAssistUtilities, primitiveSpecs } = await import("../packages/primitives/dist/index.js");
+const { productPatternContracts, productVisualGrammar } = await import("../packages/patterns/dist/index.js");
+const { tokenDefinitions } = await import("../packages/tokens/dist/index.js");
 const failures = [];
+const rootMarkup = readOutput("index.html");
+const motionMarkup = readOutput("foundations/motion/index.html");
+
 const exemplarFixtures = runGalleryExemplarFixtures();
+const s5Fixtures = runS5GalleryExemplarFixtures();
+const productFixtures = runProductPatternExemplarFixtures();
 failures.push(...exemplarFixtures.failures.map((failure) => `gallery exemplar fixture ${failure}`));
-const s5ExemplarFixtures = runS5GalleryExemplarFixtures();
-failures.push(...s5ExemplarFixtures.failures.map((failure) => `S5 gallery exemplar fixture ${failure}`));
-const productPatternExemplarFixtures = runProductPatternExemplarFixtures();
-failures.push(...productPatternExemplarFixtures.failures.map((failure) => `product pattern exemplar fixture ${failure}`));
-validateProductPatternExemplars({ markupByGroup: patternMarkupByGroup, contracts: productPatternContracts, fail: (message) => failures.push(message) });
+failures.push(...s5Fixtures.failures.map((failure) => `S5 gallery exemplar fixture ${failure}`));
+failures.push(...productFixtures.failures.map((failure) => `product pattern exemplar fixture ${failure}`));
 
-assertExactAttributeValues({
-  markup: rootMarkup,
-  attribute: "data-sk-contract",
-  expected: primitiveGroups.legacy.map((primitive) => primitive.name),
-  label: "canonical primitive contract inventory",
-});
-
-for (const group of productPatternGroups) {
-  const groupMarkup = patternMarkupByGroup.get(group.name) ?? "";
-  assertExactAttributeValues({
-    markup: groupMarkup,
-    attribute: "data-pattern-contract",
-    expected: group.patterns.map((contract) => contract.name),
-    label: `${group.name} product pattern contract inventory`,
-  });
-  if (!groupMarkup.includes(`data-sanchika-pattern-group="${group.name}"`)) failures.push(`${group.name} reference must identify its package group`);
-  for (const contract of group.patterns) {
-    if (!groupMarkup.includes(contract.css.baseClass)) failures.push(`${group.name} reference must render ${contract.css.baseClass}`);
+for (const contract of primitiveSpecs) {
+  const route = `/primitives/${contract.name.toLowerCase()}/`;
+  const markup = readOutput(`${route.slice(1)}index.html`);
+  for (const required of [contract.name, publicCopy(contract.purpose), "Composed synthetic exemplar", "@sanchika/primitives"]) {
+    if (!markup.includes(required)) failures.push(`${route} must derive ${required} from the primitive contract`);
   }
-}
-const renderedProductPatternNames = [...patternMarkupByGroup.values()].flatMap((groupMarkup) => [...groupMarkup.matchAll(/data-pattern-contract="([^"]+)"/g)].map((match) => match[1]));
-if (JSON.stringify(renderedProductPatternNames) !== JSON.stringify(productPatternContracts.map((contract) => contract.name))) {
-  failures.push("rendered product pattern inventory must exactly match package order");
+  for (const state of contract.requiredStates) if (!markup.includes(`data-primitive-state="${state}"`)) failures.push(`${route} must render primitive state ${state}`);
+  if (!rootMarkup.includes(`href="${route}"`)) failures.push(`landing search must index ${route}`);
 }
 
-if (northStarSources.includes("styles/lab/index.css") || northStarSources.includes("--lab-") || /class=(?:\{|["'`])[^\n>]*\blab-/.test(northStarSources)) {
-  failures.push("shipping North Star components must not depend on lab CSS variables or lab class hooks");
-}
-const retainedLabStyles = readdirSync(new URL("../apps/gallery/src/styles/lab/", import.meta.url)).sort();
-if (JSON.stringify(retainedLabStyles) !== JSON.stringify(["motion.css"])) {
-  failures.push(`unused S2 lab styles must be deleted; found ${retainedLabStyles.join(", ")}`);
-}
-for (const required of ["@sanchika/patterns/styles.css", "productPatternClassName", "ProductRouteMap", "ReviewDeskPreview", "LocalArtifactFlow", "ToolDirectory"]) {
-  if (!northStarSources.includes(required)) failures.push(`North Star package integration must include ${required}`);
-}
-for (const legacyHook of ["lab-artifact-bar", "lab-status-mark"]) {
-  if (motionSpecimenSource.includes(legacyHook)) failures.push(`motion reference must not retain undefined ${legacyHook}`);
-}
-for (const packageHook of ["sk-pattern-artifact-bar", "sk-pattern-status-mark"]) {
-  if (!motionSpecimenSource.includes(packageHook) || !northStarSources.includes(packageHook)) failures.push(`motion and North Star artifacts must share ${packageHook}`);
+for (const contract of productPatternContracts) {
+  const route = `/patterns/${contract.name.toLowerCase()}/`;
+  const markup = readOutput(`${route.slice(1)}index.html`);
+  for (const required of [contract.name, contract.purpose, contract.css.baseClass, "Composed synthetic exemplar", "@sanchika/patterns", `data-pattern-exemplar="${contract.name}"`]) {
+    if (!markup.includes(required)) failures.push(`${route} must derive ${required} from the product pattern contract`);
+  }
+  for (const state of contract.states) if (!markup.includes(`data-pattern-state="${state.name}"`)) failures.push(`${route} must render pattern state ${state.name}`);
+  if (/Visible synthetic/i.test(markup)) failures.push(`${route} must not use field-name placeholder exemplars`);
+  if (!rootMarkup.includes(`href="${route}"`)) failures.push(`landing search must index ${route}`);
 }
 
-for (const [groupName, requiredFragments] of [
-  ["public-product", ["sk-pattern-proof-strip", "sk-pattern-source-provenance-strip", "sk-pattern-grammar--provenance-strip", "sk-pattern-grammar--quiet-verified-seal", "<details open", "₹12,500", "Consumer adoption not yet claimed"]],
-  ["axal-workspace", ["sk-pattern-review-desk-preview", "sk-pattern-evidence-panel", "sk-pattern-human-review-checkpoint", "sk-pattern-audit-trail-preview", "sk-pattern-work-queue-row", "sk-pattern-grammar--evidence-aperture", "sk-pattern-grammar--ledger-rail", "sk-pattern-grammar--file-tab-label"]],
-  ["pack-local-utility", ["sk-pattern-permission-explainer", "sk-pattern-local-artifact-flow", "sk-pattern-custody-boundary", "sk-pattern-grammar--custody-line", "sk-pattern-grammar--provenance-strip", "sk-pattern-grammar--quiet-verified-seal", "Review permission"]],
-  ["tools-local-artifact", ["sk-pattern-tool-directory", "sk-pattern-tool-card", "sk-pattern-local-boundary-banner", "sk-pattern-output-artifact-summary"]],
-]) {
-  const groupMarkup = patternMarkupByGroup.get(groupName) ?? "";
-  for (const fragment of requiredFragments) if (!groupMarkup.includes(fragment)) failures.push(`${groupName} reference must include ${fragment}`);
+for (const utility of motionAssistUtilities) {
+  if (!motionMarkup.includes(utility.key) || !motionMarkup.includes(utility.className) || !motionMarkup.includes(utility.reducedMotionResult)) failures.push(`motion route must derive ${utility.key} from package metadata`);
+  if (!new RegExp(`class="[^"]*\\b${utility.className}\\b`).test(motionMarkup)) failures.push(`motion route must apply emitted utility class ${utility.className}`);
 }
-for (const [product, requiredFragments] of [
-  ["complyeaze", ["sk-pattern-public-hero", "sk-pattern-product-route-map", "sk-pattern-proof-strip", "sk-pattern-trust-boundary", "sk-pattern-review-desk-preview", "Sanchika North Star lab"]],
+
+const tokenMarkup = readOutput("foundations/tokens/index.html");
+for (const token of tokenDefinitions) if (!tokenMarkup.includes(`data-token-proof="${token.id}"`)) failures.push(`token route must render visual proof for ${token.id}`);
+
+const modeMarkup = new Map([
+  ["complyeaze", readOutput("modes/complyeaze/index.html")],
+  ["axal", readOutput("modes/axal/index.html")],
+  ["pack", readOutput("modes/pack/index.html")],
+  ["tools", readOutput("modes/tools/index.html")],
+]);
+for (const [mode, required] of [
+  ["complyeaze", ["sk-pattern-trust-boundary", "sk-pattern-product-route-map", "Your work decides the route"]],
   ["axal", ["sk-pattern-review-desk-preview", "sk-pattern-work-queue-row", "sk-pattern-evidence-panel", "sk-pattern-human-review-checkpoint", "sk-pattern-audit-trail-preview"]],
-  ["pack", ["sk-pattern-local-artifact-flow", "sk-pattern-custody-boundary", "sk-pattern-permission-explainer", "sk-pattern-source-provenance-strip", "sk-pattern-release-status-banner"]],
-  ["tools", ["sk-pattern-tool-directory", "sk-pattern-tool-card", "sk-pattern-local-boundary-banner", "sk-search-field", "sk-inline-status", "sk-empty-state"]],
-]) {
-  const northStarMarkup = northStarMarkupByProduct.get(product) ?? "";
-  for (const fragment of requiredFragments) if (!northStarMarkup.includes(fragment)) failures.push(`${product} North Star must include ${fragment}`);
+  ["pack", ["sk-pattern-permission-explainer", "sk-pattern-local-artifact-flow", "sk-pattern-custody-boundary", "manual download path"]],
+  ["tools", ["sk-pattern-tool-directory", "sk-pattern-tool-card", "sk-search-field", "data-tool-search", "data-tool-empty"]],
+]) for (const fragment of required) if (!modeMarkup.get(mode)?.includes(fragment)) failures.push(`${mode} production mode must render ${fragment}`);
+
+const combinedModes = [...modeMarkup.values()].join("\n");
+for (const hook of Object.values(productVisualGrammar)) {
+  if (!combinedModes.includes(hook.className)) failures.push(`production modes must render visual grammar hook ${hook.className}`);
 }
-assertExactAttributeValues({
-  markup: motionMarkup,
-  attribute: "data-motion-key",
-  expected: motionAssistUtilities.map((utility) => utility.key),
-  label: "motion-assist utility inventory",
-});
-assertExactAttributeValues({
-  markup: motionMarkup,
-  attribute: "data-motion-class",
-  expected: motionAssistUtilities.map((utility) => utility.className),
-  label: "motion-assist class inventory",
-});
-assertExactAttributeValues({
-  markup: s5Markup,
-  attribute: "data-sk-contract",
-  expected: primitiveGroups.searchStateFeedback.map((primitive) => primitive.name),
-  label: "S5 primitive contract inventory",
-});
-assertExactAttributeValues({
-  markup: rootMarkup,
-  attribute: "data-sk-primitive-summary",
-  expected: primitiveGroups.legacy.map((primitive) => primitive.name),
-  label: "canonical primitive summary inventory",
-});
-assertExactAttributeValues({
-  markup: foundationMarkup,
-  attribute: "data-sk-contract",
-  expected: primitiveGroups.foundation.map((primitive) => primitive.name),
-  label: "foundation primitive contract inventory",
-});
-
-const surfaceSpec = primitiveGroups.foundation.find((primitive) => primitive.name === "Surface");
-const textSpec = primitiveGroups.foundation.find((primitive) => primitive.name === "Text");
-assertExactAttributeValues({
-  markup: foundationMarkup,
-  attribute: "data-sk-surface-variant",
-  expected: surfaceSpec?.variants.find((variant) => variant.name === "variant")?.values ?? [],
-  label: "Surface variant inventory",
-});
-assertExactAttributeValues({
-  markup: foundationMarkup,
-  attribute: "data-sk-text-role",
-  expected: textSpec?.variants.find((variant) => variant.name === "role")?.values ?? [],
-  label: "Text role inventory",
-});
-
-validateGalleryExemplars({
-  markup,
-  primitiveSpecs,
-  patternSpecs,
-  validateUniqueDocumentIds: false,
-  stateMarkerExclusions: primitiveGroups.searchStateFeedback.map((primitive) => primitive.name),
-  fail: (message) => failures.push(message),
-});
-validateS5GalleryExemplars({
-  markup: s5Markup,
-  primitiveCss,
-  primitiveSpecs: primitiveGroups.searchStateFeedback,
-  fail: (message) => failures.push(message),
-});
-
-for (const pattern of patternSpecs) {
-  for (const state of pattern.requiredStates) {
-    const label = `${pattern.name}.${state.name}`;
-    const marker = `data-sk-pattern="${pattern.name}" data-sk-state="${state.name}"`;
-    if (!markup.includes(marker)) failures.push(`gallery must render ${label}`);
-    for (const slotName of state.requiredSlots ?? pattern.requiredSlots.map((slot) => slot.name)) {
-      if (!markup.includes(`data-sk-slot="${slotName}"`)) {
-        failures.push(`gallery must render ${label} slot ${slotName}`);
-      }
-    }
-    if (state.programmaticStatus) {
-      const statusFragments = [
-        "data-sk-programmatic-status",
-        `role="${state.programmaticStatus.role}"`,
-        `aria-live="${state.programmaticStatus.ariaLive}"`,
-        'aria-atomic="true"',
-      ];
-      for (const fragment of statusFragments) {
-        if (!markup.includes(fragment)) failures.push(`gallery must render ${label} status fragment ${fragment}`);
-      }
-    }
-  }
+for (const required of ["primitiveSpecs", "productPatternContracts", "tokenDefinitions", "productionRoutes", "searchEntries"]) {
+  const source = readFileSync(new URL("../apps/gallery/src/content/site.ts", import.meta.url), "utf8");
+  if (!source.includes(required)) failures.push(`canonical gallery metadata must derive ${required}`);
 }
-
-if (rootMarkup.includes("@sanchika/") || foundationMarkup.includes("@sanchika/") || s5Markup.includes("@sanchika/") || motionMarkup.includes("@sanchika/")) {
-  failures.push("openable gallery artifact must not contain unresolved @sanchika/* hrefs");
+for (const required of ["productPatternClassName", "primitiveClassName", "@sanchika/patterns", "@sanchika/primitives"]) {
+  const sources = ["ReviewDeskPreview.astro", "CustodyFlow.astro", "ProductRouteArtifact.astro", "ToolDirectory.astro", "BoundaryBanner.astro"]
+    .map((path) => readFileSync(new URL(`../apps/gallery/src/components/showcase/${path}`, import.meta.url), "utf8")).join("\n");
+  if (!sources.includes(required)) failures.push(`production showcase components must include ${required}`);
 }
+if (/\/lab\/|--lab-/.test(`${rootMarkup}\n${combinedModes}`)) failures.push("production gallery must not retain lab routes or variables");
 
-if (failures.length > 0) {
+if (failures.length) {
   console.error("Sanchika gallery coverage check failed:");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
-
-console.log("Sanchika gallery coverage check passed.");
+console.log(`Sanchika gallery coverage check passed (${primitiveSpecs.length} primitives; ${productPatternContracts.length} patterns; 4 modes).`);
 console.log(`Sanchika gallery exemplar fixtures passed (${exemplarFixtures.count} cases).`);
-console.log(`Sanchika S5 gallery exemplar fixtures passed (${s5ExemplarFixtures.count} cases).`);
-console.log(`Sanchika product pattern exemplar fixtures passed (${productPatternExemplarFixtures.count} cases).`);
+console.log(`Sanchika S5 gallery exemplar fixtures passed (${s5Fixtures.count} cases).`);
+console.log(`Sanchika product pattern exemplar fixtures passed (${productFixtures.count} cases).`);
 
-function assertExactAttributeValues({ markup, attribute, expected, label }) {
-  const actual = [...markup.matchAll(new RegExp(`${attribute}="([^"]+)"`, "g"))].map((match) => match[1]);
-  if (JSON.stringify(actual) !== JSON.stringify([...expected])) {
-    failures.push(`${label} must exactly match package contracts: expected ${[...expected].join(", ")}; found ${actual.join(", ")}`);
-  }
+function readOutput(path) { return readFileSync(new URL(`../apps/gallery/dist/${path}`, import.meta.url), "utf8"); }
+function publicCopy(value) {
+  return value
+    .replace(/\bS\d+\b/g, "package")
+    .replace(/\bC\d+\b/g, "reference composition")
+    .replace(/\bNorth Stars\b/g, "reference compositions")
+    .replace(/\bNorth Star\b/g, "reference composition");
 }

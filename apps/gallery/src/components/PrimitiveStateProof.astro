@@ -1,0 +1,100 @@
+---
+import type { PrimitiveContract } from "@sanchika/primitives";
+
+interface Props { contract: PrimitiveContract; }
+const { contract } = Astro.props;
+
+const stateCopy: Record<string, string> = {
+  default: "Settled and available for its documented job.",
+  hover: "Pointer acknowledgement; the label and action stay unchanged.",
+  "focus-visible": "Keyboard focus remains explicit and independent of motion.",
+  pressed: "Activation is acknowledged without implying success.",
+  disabled: "Unavailable with its reason preserved in nearby text.",
+  loading: "The owner exposes busy state while geometry stays stable.",
+  error: "The failure and recovery path remain visible together.",
+  "no-results": "The entered filter remains visible with a direct reset path.",
+  blocked: "Progress stops and the named dependency stays inspectable.",
+  "forced-colors": "System colors retain boundaries and focus semantics.",
+  "reduced-motion": "The same settled state remains without movement.",
+  open: "Native disclosure semantics expose the supporting content.",
+  closed: "The summary remains descriptive while detail stays collapsed.",
+  copied: "Visible confirmation reinforces the announced result.",
+  failed: "The original value remains available for manual recovery.",
+  complete: "Completion is named in text and does not rely on color.",
+  unavailable: "The missing capability includes a safe alternative.",
+};
+
+function addUniqueIds(markup: string, suffix: string) {
+  const ids = [...markup.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
+  let unique = markup;
+  for (const id of ids) {
+    unique = unique.replaceAll(`id="${id}"`, `id="${id}-${suffix}"`);
+    unique = unique.replaceAll(`for="${id}"`, `for="${id}-${suffix}"`);
+    unique = unique.replaceAll(`href="#${id}"`, `href="#${id}-${suffix}"`);
+    unique = unique.replaceAll(`aria-controls="${id}"`, `aria-controls="${id}-${suffix}"`);
+  }
+  unique = unique.replace(/(aria-(?:describedby|labelledby)="?)([^">]+)("?)/g, (_match, start, values, end) =>
+    `${start}${String(values).split(/\s+/).map((value) => ids.includes(value) ? `${value}-${suffix}` : value).join(" ")}${end}`,
+  );
+  return unique;
+}
+
+function statefulMarkup(state: string) {
+  const source = contract.examples[0]?.markup ?? `<div class="${contract.classHooks[0]?.replace(/^\./, "") ?? ""}">${contract.name} proof</div>`;
+  const suffix = `${contract.name}-${state}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  let markup = addUniqueIds(source, suffix)
+    .replaceAll("<main", "<div")
+    .replaceAll("</main>", "</div>")
+    .replace(/href="\/[^"]+"/g, 'href="#primitive-state-title"');
+
+  if (contract.name === "Button") {
+    const attributes = state === "disabled" ? "disabled aria-describedby=\"primitive-state-title\""
+      : state === "loading" ? "aria-busy=\"true\" data-loading=\"true\""
+        : state === "pressed" ? "aria-pressed=\"true\"" : "";
+    markup = markup.replace("<button ", `<button ${attributes} `);
+  }
+  if (["Field", "SearchField"].includes(contract.name) && state === "disabled") markup = markup.replaceAll("<input ", "<input disabled ");
+  if (contract.name === "SearchField" && ["has-value", "filtering", "results", "no-results"].includes(state)) {
+    markup = markup.replace("<input ", `<input value="${state === "no-results" ? "missing source" : "audit trail"}" `);
+  }
+  if (contract.name === "Disclosure") {
+    markup = state === "open" || state === "long-content" || state === "nested-guidance"
+      ? markup.replace("<details", "<details open")
+      : markup.replace("<details open", "<details");
+  }
+  if (contract.name === "CopyButton") {
+    if (state === "disabled") markup = markup.replace("<button ", "<button disabled ");
+    if (state === "copied") markup = markup.replace("<button ", '<button data-copy-state="copied" ');
+  }
+  if (contract.name === "Progress") {
+    const modifier = state === "determinate" ? "" : ` sk-progress-${state}`;
+    markup = markup.replace('class="sk-progress"', `class="sk-progress${modifier}"`);
+    if (state === "indeterminate") markup = markup.replace(/ value="[^"]+"/, "");
+    if (state === "complete") markup = markup.replace(/value="[^"]+"/, 'value="5"');
+  }
+  if (contract.name === "Skeleton" && !markup.includes("aria-busy")) markup = `<section aria-busy="true" aria-label="Loading synthetic evidence">${markup}</section>`;
+  return markup.replace(/^<(\w+)([^>]*)>/, `<$1$2 data-specimen-state="${state}">`);
+}
+
+const specimens = contract.requiredStates.map((state) => ({
+  state,
+  markup: statefulMarkup(state),
+  description: stateCopy[state] ?? `The ${state.replaceAll("-", " ")} contract remains visible and inspectable.`,
+}));
+---
+
+<div class="primitive-state-proof" aria-labelledby="primitive-state-title">
+  <div class="primitive-state-proof__intro">
+    <p class="eyebrow">Rendered state matrix</p>
+    <h3 id="primitive-state-title">{contract.name}: {specimens.length} required {specimens.length === 1 ? "state" : "states"}</h3>
+    <p>Each specimen starts from the package-owned example and contract state inventory. Simulated pointer and focus frames are labelled; consumers still verify real interaction in context.</p>
+  </div>
+  <div class="primitive-state-proof__grid">
+    {specimens.map(({ state, markup, description }) => (
+      <article class="primitive-state-proof__item" data-primitive={contract.name} data-primitive-state={state}>
+        <header><span>{state.replaceAll("-", " ")}</span><small>{description}</small></header>
+        <div class="primitive-state-proof__specimen" set:html={markup} />
+      </article>
+    ))}
+  </div>
+</div>

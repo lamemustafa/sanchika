@@ -3,296 +3,150 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
-import {
-  findUnresolvedGalleryVariables,
-  runGalleryVariableFixtures,
-} from "./validation/gallery-css-variables.mjs";
-import {
-  findCanonicalLabRouteLinks,
-  inspectGalleryAssetGraph,
-  runGalleryOutputFixtures,
-} from "./validation/gallery-output.mjs";
-import { runGalleryReferenceRuntimeFixtures } from "./validation/gallery-reference-runtime.mjs";
+import { findUnresolvedGalleryVariables, runGalleryVariableFixtures } from "./validation/gallery-css-variables.mjs";
+import { inspectGalleryAssetGraph, runGalleryOutputFixtures } from "./validation/gallery-output.mjs";
+import { runGalleryProductionFixtures, validateGalleryProduction } from "./validation/gallery-production.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertGalleryBuildArtifacts({ root, commandName: "pnpm gallery:check" });
 const galleryDir = join(root, "apps", "gallery", "dist");
-const indexPath = join(galleryDir, "index.html");
 const failures = [];
-
-if (!existsSync(indexPath)) {
-  failures.push(`${relative(indexPath)} must exist`);
+const outputFiles = new Map(
+  readdirSync(galleryDir, { recursive: true })
+    .filter((path) => typeof path === "string" && statSync(join(galleryDir, path)).isFile())
+    .map((path) => [path.replaceAll("\\", "/"), readOutput(path)]),
+);
+const primitives = await import("../packages/primitives/dist/index.js");
+const patterns = await import("../packages/patterns/dist/index.js");
+const release = JSON.parse(readFileSync(join(root, "release.json"), "utf8"));
+const packageEntrypoints = Object.fromEntries(
+  ["tokens", "primitives", "patterns"].map((packageName) => {
+    const manifest = JSON.parse(readFileSync(join(root, "packages", packageName, "package.json"), "utf8"));
+    return [
+      manifest.name,
+      Object.keys(manifest.exports).map((entrypoint) =>
+        entrypoint === "." ? manifest.name : `${manifest.name}/${entrypoint.replace(/^\.\//, "")}`,
+      ),
+    ];
+  }),
+);
+const staticDocuments = [
+  "index.html", "foundations/index.html", "foundations/tokens/index.html", "foundations/typography/index.html", "foundations/motion/index.html",
+  "primitives/index.html", "patterns/index.html", "modes/index.html", "modes/complyeaze/index.html", "modes/axal/index.html", "modes/pack/index.html", "modes/tools/index.html", "adoption/index.html",
+];
+const primitiveDocuments = primitives.primitiveSpecs.map((contract) => `primitives/${contract.name.toLowerCase()}/index.html`);
+const patternDocuments = patterns.productPatternContracts.map((contract) => `patterns/${contract.name.toLowerCase()}/index.html`);
+const expectedDocumentPaths = [...staticDocuments, ...primitiveDocuments, ...patternDocuments].sort();
+const actualDocumentPaths = [...outputFiles.keys()].filter((path) => path.endsWith(".html")).sort();
+if (JSON.stringify(actualDocumentPaths) !== JSON.stringify(expectedDocumentPaths)) failures.push(`shipping HTML route set must be exact; expected ${expectedDocumentPaths.length}, found ${actualDocumentPaths.length}`);
+for (const contract of patterns.productPatternContracts) {
+  const expectedRoute = `/patterns/${contract.name.toLowerCase()}/`;
+  const target = `${expectedRoute.replace(/^\//, "").replace(/\/$/, "")}/index.html`;
+  if (!outputFiles.has(target)) failures.push(`${contract.name} production detail route is missing shipping output: ${expectedRoute}`);
 }
 
-const html = existsSync(indexPath) ? readFileSync(indexPath, "utf8") : "";
-const outputFiles = existsSync(galleryDir)
-  ? readdirSync(galleryDir, { recursive: true })
-      .filter((path) => typeof path === "string" && statSync(join(galleryDir, path)).isFile())
-      .map((path) => [path.replaceAll("\\", "/"), readOutputFile(path)])
-  : [];
-const outputFileMap = new Map(outputFiles);
-const htmlOutputs = outputFiles.filter(([path]) => path.endsWith(".html"));
-const expectedLabDocuments = [
-  "lab/axal-review-desk/index.html",
-  "lab/complyeaze-core/index.html",
-  "lab/motion-and-assist/index.html",
-  "lab/pack-local-proof/index.html",
-  "lab/tools-directory/index.html",
-];
-const expectedPatternDocuments = [
-  "patterns/index.html",
-  "patterns/public/index.html",
-  "patterns/axal/index.html",
-  "patterns/pack/index.html",
-  "patterns/tools/index.html",
-];
-const toolDirectoryDocuments = new Set(["lab/tools-directory/index.html", "patterns/tools/index.html"]);
-const tokenProofDocument = "foundations/tokens/index.html";
-const primitiveFoundationDocument = "primitives/foundations/index.html";
-const s5Document = "primitives/search-state-feedback/index.html";
-const motionDocument = "foundations/motion/index.html";
 const stylesheetConsumers = new Set();
-let assetGraph = null;
-const scriptSizes = new Map();
-
-for (const [path, documentHtml] of htmlOutputs) {
-  const graph = inspectGalleryAssetGraph({
-    html: documentHtml,
-    outputFiles: outputFileMap,
-    allowUnreferencedStylesheets: true,
-    allowedInlineScriptMarker: toolDirectoryDocuments.has(path) ? "tool-filter" : null,
-    allowedInlineScriptMarkers: path === s5Document ? ["s5-search-field", "s5-copy-button"] : [],
-  });
-  if (path === "index.html") assetGraph = graph;
-  for (const stylesheetPath of graph.stylesheetPaths) stylesheetConsumers.add(stylesheetPath);
+const inlineScripts = [];
+for (const path of actualDocumentPaths) {
+  const html = outputFiles.get(path) ?? "";
+  const graph = inspectGalleryAssetGraph({ html, outputFiles, allowUnreferencedStylesheets: true, allowedInlineScriptMarkers: ["docs-search", "tool-filter", "site-search-shortcut"] });
+  for (const stylesheet of graph.stylesheetPaths) stylesheetConsumers.add(stylesheet);
   for (const failure of graph.failures) failures.push(`${path}: ${failure}`);
-  for (const unresolved of findUnresolvedGalleryVariables({ html: documentHtml, copiedCss: graph.stylesheets })) {
-    failures.push(
-      `${path} references undefined ${unresolved.variable} in ${unresolved.locations.join(", ")}`,
-    );
-  }
-
-  if (path.startsWith("lab/") && !documentHtml.includes('<meta name="robots" content="noindex,nofollow">')) {
-    failures.push(`${path} must declare noindex,nofollow`);
-  }
-  if (toolDirectoryDocuments.has(path) && graph.allowedInlineScriptInventory.length !== 1) {
-    failures.push(`${path} must contain exactly one named tool-filter enhancement script`);
-  }
-  if (toolDirectoryDocuments.has(path) && graph.allowedInlineScriptInventory.length === 1) {
-    const match = /<script[^>]*data-sanchika-pattern-script="tool-filter"[^>]*>([\s\S]*?)<\/script>/i.exec(documentHtml);
-    if (match) {
-      const raw = Buffer.byteLength(match[1]);
-      const gzip = gzipSync(match[1]).byteLength;
-      scriptSizes.set(`${path}:tool-filter`, { raw, gzip });
-      if (raw > 6144) failures.push(`${path} tool-filter script must stay at or below 6144 raw bytes; found ${raw}`);
-    }
-  }
-  if (path === s5Document) {
-    const expectedMarkers = ["s5-search-field", "s5-copy-button"];
-    if (JSON.stringify(graph.allowedInlineScriptInventory) !== JSON.stringify(expectedMarkers)) failures.push(`${path} must contain exactly the named S5 SearchField and CopyButton scripts`);
-    for (const marker of expectedMarkers) {
-      const match = new RegExp(`<script[^>]*data-sanchika-gallery-script="${marker}"[^>]*>([\\s\\S]*?)<\\/script>`, "i").exec(documentHtml);
-      if (!match) continue;
-      const raw = Buffer.byteLength(match[1]);
-      const gzip = gzipSync(match[1]).byteLength;
-      scriptSizes.set(`${path}:${marker}`, { raw, gzip });
-      if (raw > 6144) failures.push(`${path} ${marker} script must stay at or below 6144 raw bytes; found ${raw}`);
-    }
+  for (const unresolved of findUnresolvedGalleryVariables({ html, copiedCss: graph.stylesheets })) failures.push(`${path} references undefined ${unresolved.variable} in ${unresolved.locations.join(", ")}`);
+  validateDocument(path, html);
+  validateLinks(path, html);
+  for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    const marker = match[1].match(/data-sanchika-(?:gallery|pattern)-script="([^"]+)"/)?.[1];
+    if (!marker) continue;
+    const record = { path, marker, raw: Buffer.byteLength(match[2]), gzip: gzipSync(match[2]).byteLength };
+    inlineScripts.push(record);
+    if (record.gzip > 6144) failures.push(`${path} ${marker} enhancement exceeds 6 KB gzip: ${record.gzip}`);
   }
 }
 
-for (const path of expectedLabDocuments) {
-  if (!outputFileMap.has(path)) failures.push(`${path} must exist`);
+for (const path of [...outputFiles.keys()].filter((path) => path.endsWith(".css"))) {
+  if (!stylesheetConsumers.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any shipping document`);
 }
-for (const path of expectedPatternDocuments) {
-  if (!outputFileMap.has(path)) failures.push(`${path} must exist`);
-}
+const landingHtml = outputFiles.get("index.html") ?? "";
+const landingGraph = inspectGalleryAssetGraph({ html: landingHtml, outputFiles, allowUnreferencedStylesheets: true, allowedInlineScriptMarkers: ["docs-search", "site-search-shortcut"] });
+const landingCss = landingGraph.stylesheetPaths.map((path) => ({ path, raw: Buffer.byteLength(outputFiles.get(path) ?? ""), gzip: gzipSync(outputFiles.get(path) ?? "").byteLength }));
+const landingCssGzip = landingCss.reduce((sum, asset) => sum + asset.gzip, 0);
+const landingJs = inlineScripts.filter((script) => script.path === "index.html");
+const landingJsGzip = landingJs.reduce((sum, script) => sum + script.gzip, 0);
+if (landingCssGzip > 70 * 1024) failures.push(`landing CSS exceeds 70 KB gzip: ${landingCssGzip}`);
+if (landingJsGzip > 15 * 1024) failures.push(`landing client JavaScript exceeds 15 KB gzip: ${landingJsGzip}`);
+const landingWords = visibleText(landingHtml).split(/\s+/).filter(Boolean).length;
+if (landingWords > 1800) failures.push(`landing visible copy exceeds 1,800 words: ${landingWords}`);
 
-const patternIndexHtml = outputFileMap.get("patterns/index.html") ?? "";
-for (const required of ["20 patterns. Four product modes.", "/patterns/public/", "/patterns/axal/", "/patterns/pack/", "/patterns/tools/"]) {
-  if (!patternIndexHtml.includes(required)) failures.push(`patterns/index.html must include ${required}`);
-}
-for (const [path, required] of [
-  ["patterns/public/index.html", ["PublicHero", "ProductRouteMap", "ProofStrip", "TrustBoundary", "SourceProvenanceStrip", "PricingBlock", "FAQAccordion", "ReleaseStatusBanner"]],
-  ["patterns/axal/index.html", ["ReviewDeskPreview", "EvidencePanel", "HumanReviewCheckpoint", "AuditTrailPreview", "WorkQueueRow"]],
-  ["patterns/pack/index.html", ["LocalArtifactFlow", "PermissionExplainer", "CustodyBoundary"]],
-  ["patterns/tools/index.html", ["ToolDirectory", "ToolCard", "LocalBoundaryBanner", "OutputArtifactSummary"]],
-]) {
-  const documentHtml = outputFileMap.get(path) ?? "";
-  for (const patternName of required) {
-    if (!documentHtml.includes(`data-pattern-contract="${patternName}"`)) failures.push(`${path} must render package contract ${patternName}`);
-  }
-}
-
-const tokenProofHtml = outputFileMap.get(tokenProofDocument) ?? "";
-if (!tokenProofHtml) {
-  failures.push(`${tokenProofDocument} must exist`);
-} else {
-  for (const required of [
-    "<title>Token foundations | Sanchika</title>",
-    '<link rel="canonical" href="https://sanchika.complyeaze.com/foundations/tokens/">',
-    "One source. Every token decision inspectable.",
-    "Extraction is not visual completion.",
-    "data-token-type=",
-    "--sk-color-canvas",
-    "--sk-motion-duration-fast",
-  ]) {
-    if (!tokenProofHtml.includes(required)) failures.push(`${tokenProofDocument} must include ${required}`);
-  }
-}
-
-const primitiveFoundationHtml = outputFileMap.get(primitiveFoundationDocument) ?? "";
-if (!primitiveFoundationHtml) {
-  failures.push(`${primitiveFoundationDocument} must exist`);
-} else {
-  for (const required of [
-    "<title>Foundation primitives | Sanchika</title>",
-    '<link rel="canonical" href="https://sanchika.complyeaze.com/primitives/foundations/">',
-    'data-sanchika-gallery="foundation-primitives"',
-    "Layout is a contract, not a screenshot.",
-    "Link is navigation. Button is action.",
-    "Never nest interactive controls inside LinkCard.",
-    'data-sk-primitive="Container"',
-    'data-sk-primitive="VisuallyHidden"',
-    'data-sk-primitive="LinkCard"',
-  ]) {
-    if (!primitiveFoundationHtml.includes(required)) failures.push(`${primitiveFoundationDocument} must include ${required}`);
-  }
-}
-
-const s5Html = outputFileMap.get(s5Document) ?? "";
-if (!s5Html) {
-  failures.push(`${s5Document} must exist`);
-} else {
-  for (const required of [
-    "<title>Search, state, and feedback primitives | Sanchika</title>",
-    '<link rel="canonical" href="https://sanchika.complyeaze.com/primitives/search-state-feedback/">',
-    'data-sanchika-gallery="search-state-feedback"',
-    "Make the next state legible.",
-    'data-sk-contract="SearchField"',
-    'data-sk-contract="TableShell"',
-    'type="search"',
-    'aria-current="step"',
-    '<details class="sk-disclosure"',
-    'aria-live="polite"',
-    'data-empty-kind="filtered"',
-    "PAN and GSTIN helpers group display text only",
-  ]) if (!s5Html.includes(required)) failures.push(`${s5Document} must include ${required}`);
-}
-
-const motionHtml = outputFileMap.get(motionDocument) ?? "";
-if (!motionHtml) {
-  failures.push(`${motionDocument} must exist`);
-} else {
-  for (const required of [
-    "<title>Motion and assist foundations | Sanchika</title>",
-    '<link rel="canonical" href="https://sanchika.complyeaze.com/foundations/motion/">',
-    'data-sanchika-gallery="motion-assist"',
-    "Assist the state. Never invent it.",
-    'data-motion-utility-count="8"',
-    'data-motion-key="focus-feedback"',
-    'data-motion-key="skeleton-loading"',
-    "The assist is optional; the responsibility is not.",
-  ]) if (!motionHtml.includes(required)) failures.push(`${motionDocument} must include ${required}`);
-}
-
-const referenceRuntimeFixtures = await runGalleryReferenceRuntimeFixtures({
-  searchScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-search-field"),
-  copyScript: extractInlineScript(s5Html, "data-sanchika-gallery-script", "s5-copy-button"),
-  toolsScript: extractInlineScript(outputFileMap.get("lab/tools-directory/index.html") ?? "", "data-sanchika-pattern-script", "tool-filter"),
+const productionFailures = validateGalleryProduction({
+  outputFiles,
+  expectedDocumentPaths,
+  stableRelease: release.version,
+  packageEntrypoints,
 });
-for (const failure of referenceRuntimeFixtures.failures) failures.push(`gallery reference runtime fixture ${failure}`);
+failures.push(...productionFailures);
 
-for (const [path] of outputFiles.filter(([path]) => path.endsWith(".css"))) {
-  if (!stylesheetConsumers.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any gallery document`);
-}
-
-if (findCanonicalLabRouteLinks({ html, expectedLabDocuments }).length > 0) {
-  failures.push("canonical gallery navigation must not link to noindex lab routes");
-}
-
-const copiedCss = assetGraph?.stylesheets ?? [];
-
-if (!assetGraph) failures.push("apps/gallery/dist/index.html asset graph must be inspectable");
-
-for (const required of [
-  "<!DOCTYPE html>",
-  "<title>Sanchika | Design evidence system</title>",
-  '<meta name="description"',
-  '<link rel="canonical" href="https://sanchika.complyeaze.com/">',
-  '<meta property="og:title" content="Sanchika | Design evidence system">',
-  '<link rel="stylesheet" href="/_astro/',
-  'data-sanchika-gallery-document="primitive"',
-  'data-sanchika-gallery="primitive"',
-  "Interfaces that survive compliance review.",
-  "One design language, different trust boundaries.",
-  "Sanchika product adoption map",
-  "pnpm build",
-  "pnpm gallery:check",
-  "pnpm pages:smoke",
-  "docs/adoption-complyeaze.md",
-  "Read adoption proof plan",
-  'href="/foundations/motion/"',
-  "Current public evidence ledger",
-  "Use Sanchika as evidence, not authority.",
-  "Pattern state exemplars",
-]) {
-  if (!html.includes(required)) {
-    failures.push(`apps/gallery/dist/index.html must include ${required}`);
+const appSources = readdirSync(join(root, "apps/gallery/src"), { recursive: true })
+  .filter((path) => typeof path === "string" && statSync(join(root, "apps/gallery/src", path)).isFile())
+  .map((path) => [path.replaceAll("\\", "/"), readFileSync(join(root, "apps/gallery/src", path), "utf8")]);
+for (const [path, source] of appSources) {
+  if (/(^|\/)lab(\/|$)/i.test(path) || /--lab-/.test(source)) failures.push(`retired lab source remains at ${path}`);
+  if (path.endsWith(".css")) {
+    if (/--sk-[a-z0-9-]+\s*:/.test(source)) failures.push(`${path} must not author --sk-* variables`);
+    if (/oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(source)) failures.push(`${path} must not contain raw foundation colors`);
+    for (const match of source.matchAll(/font-family\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package typography tokens`);
+    for (const match of source.matchAll(/box-shadow\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package elevation tokens`);
   }
 }
 
-if (html.includes("@sanchika/")) {
-  failures.push("apps/gallery/dist/index.html must not contain unresolved @sanchika/* CSS hrefs");
-}
+const generatedCss = landingGraph.stylesheets.map(({ css }) => css).join("\n");
+if (generatedCss.indexOf("--sk-color-canvas:") > generatedCss.indexOf(".sk-button")) failures.push("generated CSS must load tokens before primitives");
+if (generatedCss.includes(":where()")) failures.push("generated CSS must not contain an empty :where() selector");
 
-const generatedCss = copiedCss.map(({ css }) => css).join("\n");
-const tokenCssIndex = generatedCss.indexOf("--sk-color-bg-base:");
-const primitiveCssIndex = generatedCss.indexOf(".sk-button");
-if (tokenCssIndex === -1 || primitiveCssIndex === -1 || tokenCssIndex > primitiveCssIndex) {
-  failures.push("apps/gallery generated CSS must load token CSS before primitive CSS");
-}
+for (const [label, fixtures] of [
+  ["gallery variable", runGalleryVariableFixtures()],
+  ["gallery output", runGalleryOutputFixtures()],
+  ["gallery production", runGalleryProductionFixtures()],
+]) for (const failure of fixtures.failures) failures.push(`${label} fixture ${failure}`);
 
-if (generatedCss.includes(":where()")) {
-  failures.push("apps/gallery generated CSS must not contain an empty :where() selector");
-}
-if ((generatedCss.match(/:where\([^)]*\.sk-button\[aria-busy=(?:true|"true")\][^)]*\):{1,2}after/g) ?? []).length < 1) {
-  failures.push("apps/gallery generated CSS must preserve the static loading-button pseudo-element selector");
-}
-if (!/:where\(\.sk-field :is\(input,textarea,select,\[data-sk-control\]\)\):{1,2}placeholder/.test(generatedCss)) {
-  failures.push("apps/gallery generated CSS must preserve the field placeholder selector");
-}
-
-const variableFixtures = runGalleryVariableFixtures();
-for (const failure of variableFixtures.failures) {
-  failures.push(`gallery variable fixture ${failure}`);
-}
-
-const outputFixtures = runGalleryOutputFixtures();
-for (const failure of outputFixtures.failures) {
-  failures.push(`gallery output fixture ${failure}`);
-}
-
-if (failures.length > 0) {
+if (failures.length) {
   console.error("Sanchika gallery artifact check failed:");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
+console.log(`Sanchika gallery artifact check passed (${expectedDocumentPaths.length} HTML routes; ${landingWords} landing words).`);
+console.log(`Sanchika gallery CSS: ${landingCss.map((asset) => `${asset.path} ${asset.raw} raw/${asset.gzip} gzip`).join(", ")}.`);
+for (const script of inlineScripts) console.log(`Sanchika client script ${script.path}:${script.marker}: ${script.raw} raw bytes; ${script.gzip} gzip bytes.`);
+console.log(`Sanchika gallery production fixtures passed (${runGalleryProductionFixtures().count} cases).`);
 
-console.log("Sanchika gallery artifact check passed.");
-console.log(`Sanchika gallery variable fixtures passed (${variableFixtures.count} cases).`);
-console.log(`Sanchika gallery output fixtures passed (${outputFixtures.count} cases).`);
-console.log(`Sanchika gallery reference runtime fixtures passed (${referenceRuntimeFixtures.count} cases).`);
-for (const [label, size] of scriptSizes) console.log(`Sanchika client script ${label}: ${size.raw} raw bytes; ${size.gzip} gzip bytes.`);
-
-function relative(path) {
-  return path.replace(`${root}/`, "");
+function validateDocument(path, html) {
+  if ((html.match(/<main\b/g) ?? []).length !== 1) failures.push(`${path} must contain exactly one main`);
+  if ((html.match(/<h1\b/g) ?? []).length !== 1) failures.push(`${path} must contain exactly one h1`);
+  if (!/<link rel="canonical" href="https:\/\/sanchika\.complyeaze\.com\//.test(html)) failures.push(`${path} must declare a canonical Sanchika URL`);
+  const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
+  if (new Set(ids).size !== ids.length) failures.push(`${path} must not contain duplicate IDs`);
+  const headings = [...html.matchAll(/<h([1-6])\b/g)].map((match) => Number(match[1]));
+  for (let index = 1; index < headings.length; index += 1) if (headings[index] > headings[index - 1] + 1) failures.push(`${path} skips heading levels from h${headings[index - 1]} to h${headings[index]}`);
+  if (/\/lab\//.test(html)) failures.push(`${path} must not link or refer to retired lab routes`);
 }
 
-function readOutputFile(path) {
-  return /\.(?:css|html)$/i.test(path) ? readFileSync(join(galleryDir, path), "utf8") : "";
+function validateLinks(path, html) {
+  for (const match of html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)) {
+    const href = match[1];
+    if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("https://")) continue;
+    const url = new URL(href, "https://sanchika.complyeaze.com/");
+    if (url.origin !== "https://sanchika.complyeaze.com") continue;
+    if (["/sanchika-manifest.json", "/llms.txt", "/sitemap.xml"].includes(url.pathname)) continue;
+    const target = url.pathname === "/" ? "index.html" : `${url.pathname.replace(/^\//, "").replace(/\/$/, "")}/index.html`;
+    if (!outputFiles.has(target)) failures.push(`${path} links missing shipping target ${href}`);
+  }
 }
 
-function extractInlineScript(html, markerAttribute, marker) {
-  return new RegExp(`<script[^>]*${markerAttribute}="${marker}"[^>]*>([\\s\\S]*?)<\\/script>`, "i").exec(html)?.[1] ?? "";
+function visibleText(html) {
+  return html.replace(/<script\b[\s\S]*?<\/script>/gi, " ").replace(/<style\b[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z0-9#]+;/gi, " ").replace(/\s+/g, " ").trim();
+}
+
+function readOutput(path) {
+  const file = join(galleryDir, path);
+  return /\.(?:html|css|js|mjs|cjs|json|txt|xml)$/i.test(path) ? readFileSync(file, "utf8") : readFileSync(file);
 }

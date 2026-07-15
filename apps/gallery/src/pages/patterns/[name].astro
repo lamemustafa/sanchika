@@ -1,0 +1,19 @@
+---
+import type { ProductPatternContract } from "@sanchika/patterns";
+import PageIntro from "../../components/PageIntro.astro";
+import PatternDetail from "../../components/PatternDetail.astro";
+import { patternRoutes } from "../../content/site";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+
+export function getStaticPaths() {
+  return patternRoutes.map((entry) => ({ params: { name: entry.route.split("/")[2] }, props: { contract: entry.contract } }));
+}
+interface Props { contract: ProductPatternContract; }
+const { contract } = Astro.props;
+---
+<GalleryLayout title={`${contract.name} pattern | Sanchika`} description={contract.purpose}>
+  <main id="main-content" class="site-main docs-page" tabindex="-1">
+    <PageIntro eyebrow={`${contract.group} pattern`} title={contract.name} description={contract.purpose} meta={`${contract.primaryProductMode} · ${contract.maturity} · @sanchika/patterns`} />
+    <PatternDetail {contract} />
+  </main>
+</GalleryLayout>

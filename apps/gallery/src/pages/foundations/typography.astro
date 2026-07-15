@@ -1,0 +1,17 @@
+---
+import { tokenDefinitions } from "@sanchika/tokens";
+import PageIntro from "../../components/PageIntro.astro";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+const typeTokens = tokenDefinitions.filter((token) => token.group === "typography");
+---
+<GalleryLayout title="Typography | Sanchika" description="Sanchika editorial, interface, and evidence-data typography roles.">
+  <main id="main-content" class="site-main docs-page" tabindex="-1">
+    <PageIntro eyebrow="Foundations / typography" title="Editorial confidence. Operational legibility. Data precision." description="Three runtime-safe roles keep product voice distinct without external font requests: display for decisive hierarchy, body for sustained reading, and mono for evidence facts." meta={`${typeTokens.length} generated typography roles · no uncontrolled font request`} />
+    <section class="doc-section" aria-labelledby="type-proof-title"><h2 id="type-proof-title">Role proof</h2><div class="doc-grid">
+      <article class="doc-card"><span>Display</span><h3 style="font-family: var(--sk-font-display); font-size: var(--sk-font-size-3xl); line-height: var(--sk-line-height-display);">The evidence is ready. Judgment is not delegated.</h3><p>Use for page and proof-object hierarchy, not every label.</p></article>
+      <article class="doc-card"><span>UI body</span><h3 style="font-family: var(--sk-font-body);">Open the linked source before recording the Chartered Accountant (CA) decision.</h3><p>Use for instructions, controls, explanations, and working records.</p></article>
+      <article class="doc-card"><span>Mono / data</span><h3 style="font-family: var(--sk-font-mono);">AX-031 · 14 JUL 2026 · SOURCE LINKED</h3><p>Use for IDs, dates, versions, package names, and checksums.</p></article>
+    </div></section>
+    <section class="doc-section" aria-labelledby="type-guidance-title"><h2 id="type-guidance-title">Reading and accessibility</h2><p>Line height, measure, and contrast come from tokens. Product pages keep expressive display copy short; dense workspace records prioritize scan order; mobile compositions preserve labels and avoid truncating source or boundary text.</p></section>
+  </main>
+</GalleryLayout>

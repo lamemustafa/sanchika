@@ -278,33 +278,50 @@ export function runBuildArtifactFixtures() {
     );
     writeFileSync(primitiveOutputPath, "export const fixture = 1;\n");
 
-    const gallerySourcePath = join(fixtureRoot, "apps", "gallery", "src", "index.astro");
+    const gallerySourcePath = join(fixtureRoot, "apps", "gallery", "src", "pages", "index.astro");
     writeFileSync(gallerySourcePath, "<main>changed</main>\n");
     expectFailure("stale gallery source", "gallery source", () =>
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
     writeFileSync(gallerySourcePath, "<main>fixture</main>\n");
 
-    const galleryReferencePath = join(fixtureRoot, "apps", "gallery", "src", "components", "S5SearchPanel.astro");
+    const galleryReferencePath = join(fixtureRoot, "apps", "gallery", "src", "components", "SearchDirectory.astro");
     writeFileSync(galleryReferencePath, "<script>changed</script>\n");
-    expectFailure("stale S5 gallery reference behavior", "gallery source", () =>
+    expectFailure("stale search index", "gallery source", () =>
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
     writeFileSync(galleryReferencePath, "<script>fixture</script>\n");
 
-    const motionGalleryPath = join(fixtureRoot, "apps", "gallery", "src", "components", "MotionAssistProof.astro");
-    writeFileSync(motionGalleryPath, "<main>changed</main>\n");
-    expectFailure("stale motion gallery inventory", "gallery source", () =>
+    const routeMetadataPath = join(fixtureRoot, "apps", "gallery", "src", "content", "site.ts");
+    writeFileSync(routeMetadataPath, "export const fixture = 2;\n");
+    expectFailure("stale route metadata", "gallery source", () =>
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
-    writeFileSync(motionGalleryPath, "<main>fixture</main>\n");
+    writeFileSync(routeMetadataPath, "export const fixture = 1;\n");
 
-    const productPatternGalleryPath = join(fixtureRoot, "apps", "gallery", "src", "pages", "patterns", "public.astro");
+    const galleryStylePath = join(fixtureRoot, "apps", "gallery", "src", "styles", "index.css");
+    writeFileSync(galleryStylePath, ".fixture { display: block; }\n");
+    expectFailure("stale gallery application CSS", "gallery source", () =>
+      assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
+    );
+    writeFileSync(galleryStylePath, ".fixture {}\n");
+
+    const productPatternGalleryPath = join(fixtureRoot, "apps", "gallery", "src", "pages", "patterns", "[name].astro");
     writeFileSync(productPatternGalleryPath, "<main>changed</main>\n");
-    expectFailure("stale S7 product pattern gallery route", "gallery source", () =>
+    expectFailure("stale generated contract route", "gallery source", () =>
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
     writeFileSync(productPatternGalleryPath, "<main>fixture</main>\n");
+
+    const manifestSourcePath = join(fixtureRoot, "apps", "gallery", "src", "pages", "sanchika-manifest.json.ts");
+    writeFileSync(manifestSourcePath, "export const fixture = 2;\n");
+    expectFailure("stale manifest", "gallery source", () => assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }));
+    writeFileSync(manifestSourcePath, "export const fixture = 1;\n");
+
+    const llmsSourcePath = join(fixtureRoot, "apps", "gallery", "src", "pages", "llms.txt.ts");
+    writeFileSync(llmsSourcePath, "export const fixture = 2;\n");
+    expectFailure("stale llms.txt", "gallery source", () => assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }));
+    writeFileSync(llmsSourcePath, "export const fixture = 1;\n");
 
     const galleryOutputPath = join(fixtureRoot, "apps", "gallery", "dist", "index.html");
     writeFileSync(galleryOutputPath, "<main>changed</main>\n");
@@ -312,6 +329,16 @@ export function runBuildArtifactFixtures() {
       assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }),
     );
     writeFileSync(galleryOutputPath, "<main>fixture</main>\n");
+
+    const manifestOutputPath = join(fixtureRoot, "apps", "gallery", "dist", "sanchika-manifest.json");
+    writeFileSync(manifestOutputPath, "{\"fixture\":2}\n");
+    expectFailure("stale generated manifest output", "gallery output", () => assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }));
+    writeFileSync(manifestOutputPath, "{\"fixture\":1}\n");
+
+    const llmsOutputPath = join(fixtureRoot, "apps", "gallery", "dist", "llms.txt");
+    writeFileSync(llmsOutputPath, "changed\n");
+    expectFailure("stale generated llms output", "gallery output", () => assertGalleryBuildArtifacts({ root: fixtureRoot, commandName: "fixture check" }));
+    writeFileSync(llmsOutputPath, "fixture\n");
 
     rmSync(packageMetadataPath(fixtureRoot, "tokens"));
     expectFailure("missing metadata", "build metadata is missing", () =>
@@ -404,16 +431,22 @@ function createFixtureTree(root) {
     }
   }
   const galleryDir = join(root, "apps", "gallery");
-  mkdirSync(join(galleryDir, "src"), { recursive: true });
+  mkdirSync(join(galleryDir, "src", "content"), { recursive: true });
   mkdirSync(join(galleryDir, "src", "components"), { recursive: true });
   mkdirSync(join(galleryDir, "src", "pages", "patterns"), { recursive: true });
+  mkdirSync(join(galleryDir, "src", "styles"), { recursive: true });
   mkdirSync(join(galleryDir, "dist"), { recursive: true });
-  writeFileSync(join(galleryDir, "src", "index.astro"), "<main>fixture</main>\n");
-  writeFileSync(join(galleryDir, "src", "components", "S5SearchPanel.astro"), "<script>fixture</script>\n");
-  writeFileSync(join(galleryDir, "src", "components", "MotionAssistProof.astro"), "<main>fixture</main>\n");
-  writeFileSync(join(galleryDir, "src", "pages", "patterns", "public.astro"), "<main>fixture</main>\n");
+  writeFileSync(join(galleryDir, "src", "pages", "index.astro"), "<main>fixture</main>\n");
+  writeFileSync(join(galleryDir, "src", "components", "SearchDirectory.astro"), "<script>fixture</script>\n");
+  writeFileSync(join(galleryDir, "src", "content", "site.ts"), "export const fixture = 1;\n");
+  writeFileSync(join(galleryDir, "src", "pages", "patterns", "[name].astro"), "<main>fixture</main>\n");
+  writeFileSync(join(galleryDir, "src", "pages", "sanchika-manifest.json.ts"), "export const fixture = 1;\n");
+  writeFileSync(join(galleryDir, "src", "pages", "llms.txt.ts"), "export const fixture = 1;\n");
+  writeFileSync(join(galleryDir, "src", "styles", "index.css"), ".fixture {}\n");
   writeFileSync(join(galleryDir, "package.json"), `${JSON.stringify({ name: "@sanchika/gallery-app" })}\n`);
   writeFileSync(join(galleryDir, "dist", "index.html"), "<main>fixture</main>\n");
+  writeFileSync(join(galleryDir, "dist", "sanchika-manifest.json"), "{\"fixture\":1}\n");
+  writeFileSync(join(galleryDir, "dist", "llms.txt"), "fixture\n");
 }
 
 function fingerprintTree(directory, { excludedDirectories = new Set() } = {}) {

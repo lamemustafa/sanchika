@@ -1,0 +1,14 @@
+---
+import { primitiveSpecs } from "@sanchika/primitives";
+import PageIntro from "../../components/PageIntro.astro";
+import SearchDirectory from "../../components/SearchDirectory.astro";
+import { publicCopy, slugForContract } from "../../content/site";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+---
+<GalleryLayout title="Primitives | Sanchika" description="Sanchika semantic primitive contracts, finite states, examples, and consumer responsibilities.">
+  <main id="main-content" class="site-main docs-page" tabindex="-1">
+    <PageIntro eyebrow="Primitives" title="Finite semantics for real interface states." description="Primitive contracts define purpose, anatomy, states, accessibility, mobile behavior, and consumer ownership. They ship CSS and metadata—not a hidden runtime." meta={`${primitiveSpecs.length} authoritative package contracts · @sanchika/primitives`} />
+    <section class="doc-section" aria-labelledby="primitive-index-title"><h2 id="primitive-index-title">Contract index</h2><div class="contract-index">{primitiveSpecs.map((contract) => <a href={`/primitives/${slugForContract(contract.name)}/`}><span>{publicCopy(contract.role)}</span><strong>{contract.name}</strong><p>{publicCopy(contract.purpose)}</p><small>{contract.requiredStates.length} states · {publicCopy(contract.accessibility.join(" · "))}</small></a>)}</div></section>
+    <SearchDirectory instanceId="primitive-docs" compact />
+  </main>
+</GalleryLayout>

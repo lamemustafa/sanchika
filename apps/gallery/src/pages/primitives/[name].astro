@@ -1,0 +1,19 @@
+---
+import type { PrimitiveContract } from "@sanchika/primitives";
+import PageIntro from "../../components/PageIntro.astro";
+import PrimitiveDetail from "../../components/PrimitiveDetail.astro";
+import { primitiveRoutes, publicCopy } from "../../content/site";
+import GalleryLayout from "../../layouts/GalleryLayout.astro";
+
+export function getStaticPaths() {
+  return primitiveRoutes.map((entry) => ({ params: { name: entry.route.split("/")[2] }, props: { contract: entry.contract } }));
+}
+interface Props { contract: PrimitiveContract; }
+const { contract } = Astro.props;
+---
+<GalleryLayout title={`${contract.name} primitive | Sanchika`} description={publicCopy(contract.purpose)}>
+  <main id="main-content" class="site-main docs-page" tabindex="-1">
+    <PageIntro eyebrow="Primitive contract" title={contract.name} description={publicCopy(contract.purpose)} meta={`${publicCopy(contract.role)} · @sanchika/primitives`} />
+    <PrimitiveDetail {contract} />
+  </main>
+</GalleryLayout>

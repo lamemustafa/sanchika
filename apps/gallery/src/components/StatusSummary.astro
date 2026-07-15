@@ -1,0 +1,21 @@
+---
+import { productPatternClassName } from "@sanchika/patterns";
+import { currentStableRelease, plannedRelease, sourceRepository } from "../content/site";
+---
+
+<section class="status-summary" aria-labelledby="status-title">
+  <div class="section-heading">
+    <div><p class="eyebrow">Current truth</p><h2 id="status-title">Proven, limited, planned.</h2></div>
+    <p>Evidence is useful only when its boundary is as visible as its result.</p>
+  </div>
+  <div class="status-summary__grid">
+    <article data-status="proven"><span>Proven</span><h3>Contracts build and travel.</h3><ul><li>Deterministic tokens</li><li>Three package artifacts</li><li>Static gallery and consumer checks</li><li>Four synthetic reference compositions</li></ul></article>
+    <article data-status="limited"><span>Limited</span><h3>Proof is deliberately bounded.</h3><ul><li>Synthetic examples</li><li>No universal framework runtime</li><li>Consumer adoption remains incomplete</li><li>Physical assistive-technology testing still required</li></ul></article>
+    <article data-status="planned"><span>Planned</span><h3>Release follows independent review.</h3><ul><li>v{plannedRelease} remains pending and unreleased</li><li>Public-site consumer migration</li><li>Adapters only when real consumers justify them</li></ul></article>
+  </div>
+  <aside class={productPatternClassName("ReleaseStatusBanner", { variant: "notice", state: "planned" })} aria-label="Release status">
+    <strong>Current stable release: v{currentStableRelease}</strong>
+    <span>v{plannedRelease} is planned, not released. Package contracts remain experimental until a separate release process and consumer evidence complete.</span>
+    <a href={`${sourceRepository}/releases`}>Inspect release evidence</a>
+  </aside>
+</section>

@@ -1,18 +1,27 @@
 ---
 import "../styles/index.css";
+import { currentStableRelease, sourceRepository } from "../content/site";
 
 interface Props {
   title: string;
   description: string;
-  canonical: string;
+  canonical?: string;
   dataFavicon?: boolean;
 }
 
-const { title, description, canonical, dataFavicon = false } = Astro.props;
+const { title, description, canonical = new URL(Astro.url.pathname, "https://sanchika.complyeaze.com").href, dataFavicon = true } = Astro.props;
+const path = Astro.url.pathname;
+const nav = [
+  ["Foundations", "/foundations/"],
+  ["Primitives", "/primitives/"],
+  ["Patterns", "/patterns/"],
+  ["Modes", "/modes/"],
+  ["Adoption", "/adoption/"],
+] as const;
 ---
 
 <!doctype html>
-<html lang="en" data-sanchika-gallery-document="primitive">
+<html lang="en" data-sanchika-gallery-document="production">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -29,7 +38,48 @@ const { title, description, canonical, dataFavicon = false } = Astro.props;
     {dataFavicon && <link rel="icon" href="data:," />}
   </head>
   <body>
-    <a class="sk-gallery-skip-link" href="#gallery-content">Skip to gallery content</a>
+    <a class="site-skip" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-brand" href="/" aria-label="Sanchika home">
+          <span aria-hidden="true">S</span>
+          <span><strong>Sanchika</strong><small>Evidence contracts</small></span>
+        </a>
+        <nav aria-label="Primary navigation">
+          {nav.map(([label, href]) => <a href={href} aria-current={path.startsWith(href) ? "page" : undefined}>{label}</a>)}
+        </nav>
+        <div class="site-header__actions">
+          <a class="site-header__search" href="/#landing-docs" aria-keyshortcuts="/">Search <kbd aria-hidden="true">/</kbd></a>
+          <a class="site-header__source" href={sourceRepository}>Source <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </header>
     <slot />
+    <footer class="site-footer">
+      <div>
+        <p><strong>Sanchika</strong> gives teams typed, inspectable contracts for evidence-first compliance interfaces.</p>
+        <p>Design contracts, not compliance judgment. All gallery records are synthetic.</p>
+      </div>
+      <nav aria-label="Repository and governance">
+        <a href={`${sourceRepository}/releases`}>Release v{currentStableRelease}</a>
+        <a href={`${sourceRepository}/blob/master/CONTRIBUTING.md`}>Contribute</a>
+        <a href={`${sourceRepository}/blob/master/SUPPORT.md`}>Support</a>
+        <a href={`${sourceRepository}/blob/master/SECURITY.md`}>Security</a>
+        <a href={`${sourceRepository}/blob/master/LICENSE.brand.md`}>License &amp; trademark</a>
+        <a href="/sanchika-manifest.json">Manifest</a>
+        <a href="/llms.txt">llms.txt</a>
+      </nav>
+    </footer>
   </body>
+  <script is:inline data-sanchika-gallery-script="site-search-shortcut">
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || (target instanceof HTMLElement && target.isContentEditable)) return;
+      event.preventDefault();
+      const input = document.querySelector("[data-docs-search-input]");
+      if (input instanceof HTMLInputElement) input.focus();
+      else window.location.assign("/#landing-docs");
+    });
+  </script>
 </html>

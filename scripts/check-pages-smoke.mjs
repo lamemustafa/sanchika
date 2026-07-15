@@ -6,24 +6,18 @@ const controller = new AbortController();
 const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
 const requiredFragments = [
-  '<html lang="en" data-sanchika-gallery-document="primitive">',
-  "<title>Sanchika | Design evidence system</title>",
+  '<html lang="en" data-sanchika-gallery-document="production">',
+  "<title>Sanchika | Evidence-first interface contracts</title>",
   '<meta name="description"',
   '<link rel="canonical" href="https://sanchika.complyeaze.com/">',
-  "data-sanchika-gallery=\"primitive\"",
-  "data-sk-synthetic-disclaimer",
-  "Interfaces that survive compliance review.",
-  "One design language, different trust boundaries.",
-  "Sanchika product adoption map",
-  "pnpm build",
-  "pnpm gallery:check",
-  "pnpm pages:smoke",
-  "docs/adoption-complyeaze.md",
-  "Read adoption proof plan",
-  "A design system that can defend itself.",
-  "Current public evidence ledger",
-  "Static HTML, CSS, and package contracts",
-  "Use Sanchika as evidence, not authority.",
+  "Build compliance interfaces that show their evidence.",
+  "Composed package proof",
+  "Related by evidence. Different by work.",
+  "Find the contract behind the interface.",
+  "Proven, limited, planned.",
+  "Current stable release: v0.0.2",
+  'href="/sanchika-manifest.json"',
+  'href="/llms.txt"',
   '<link rel="stylesheet" href="/_astro/',
 ];
 
@@ -32,6 +26,7 @@ const staleFragments = [
   "<p class=\"sk-gallery-section-kicker\">Harness loop</p>",
   "11 color roles loaded.",
   "Package contracts are visible. Product readiness still requires consumer evidence.",
+  "/lab/",
 ];
 
 try {
@@ -61,6 +56,17 @@ try {
   if (staleMatches.length > 0) {
     throw new Error(`Sanchika Pages response still contains stale fragments: ${staleMatches.join(", ")}`);
   }
+
+  const origin = new URL(targetUrl).origin;
+  const [manifestResponse, llmsResponse] = await Promise.all([
+    fetch(`${origin}/sanchika-manifest.json`, { signal: controller.signal }),
+    fetch(`${origin}/llms.txt`, { signal: controller.signal }),
+  ]);
+  if (!manifestResponse.ok || !llmsResponse.ok) throw new Error("Expected generated manifest and llms.txt endpoints to return HTTP 2xx");
+  const manifest = await manifestResponse.json();
+  const llms = await llmsResponse.text();
+  if (manifest.releases?.currentStable?.version !== "0.0.2" || manifest.releases?.planned?.status === "released") throw new Error("Generated manifest release state is not truthful");
+  if (!llms.includes("v0.1.0 is planned and is not released")) throw new Error("Generated llms.txt release boundary is missing");
 
   console.log(`Sanchika Pages smoke check passed for ${targetUrl}`);
 } catch (error) {

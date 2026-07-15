@@ -1,32 +1,98 @@
 ---
-import EvidenceJourney from "../components/EvidenceJourney.astro";
-import EvidenceLoop from "../components/EvidenceLoop.astro";
-import GalleryFooter from "../components/GalleryFooter.astro";
-import GalleryHeader from "../components/GalleryHeader.astro";
-import GalleryHero from "../components/GalleryHero.astro";
-import PatternContracts from "../components/PatternContracts.astro";
-import PrimitiveContractList from "../components/PrimitiveContractList.astro";
-import PrimitiveStateMatrix from "../components/PrimitiveStateMatrix.astro";
-import PrimitiveSummary from "../components/PrimitiveSummary.astro";
-import ProductFamilySection from "../components/ProductFamilySection.astro";
+import { primitiveClassName } from "@sanchika/primitives";
+import ModeComparison from "../components/ModeComparison.astro";
+import ProofStrip from "../components/ProofStrip.astro";
+import SearchDirectory from "../components/SearchDirectory.astro";
+import StatusSummary from "../components/StatusSummary.astro";
+import PublicHero from "../components/showcase/PublicHero.astro";
+import ReviewDeskPreview from "../components/showcase/ReviewDeskPreview.astro";
+import { auditTrail, reviewEvidence, reviewQueue } from "../content/showcase";
 import GalleryLayout from "../layouts/GalleryLayout.astro";
 
-const title = "Sanchika | Design evidence system";
-const description = "Sanchika is an AI-native design-system SDK for compliance-grade interfaces, with synthetic proof artifacts, primitive contracts, pattern states, and clear adoption boundaries.";
-const canonical = "https://sanchika.complyeaze.com/";
+const title = "Sanchika | Evidence-first interface contracts";
+const description = "Sanchika is a typed, inspectable design contract for evidence-first compliance interfaces, with static proof across ComplyEaze, Axal, Pack, and Tools.";
+const navigation = [
+  ["Foundations", "Tokens, typography, motion", "/foundations/"],
+  ["Primitives", "28 semantic contracts", "/primitives/"],
+  ["Patterns", "20 product patterns", "/patterns/"],
+  ["Product modes", "Four distinct operating boundaries", "/modes/"],
+  ["Adoption", "Artifacts, consumers, rollback", "/adoption/"],
+] as const;
+const sectionJumps = [
+  ["Proof", "#hero-proof"],
+  ["System", "#system-definition"],
+  ["Modes", "#mode-comparison-title"],
+  ["Search", "#landing-docs"],
+  ["Status", "#status-title"],
+] as const;
 ---
 
-<GalleryLayout {title} {description} {canonical} dataFavicon>
-  <main id="gallery-content" class="sk-gallery-page" data-sanchika-gallery="primitive" data-sanchika-example="synthetic">
-    <GalleryHeader />
-    <GalleryHero />
-    <ProductFamilySection />
-    <EvidenceJourney />
-    <EvidenceLoop />
-    <PrimitiveSummary />
-    <PrimitiveContractList />
-    <PrimitiveStateMatrix />
-    <PatternContracts />
-    <GalleryFooter />
+<GalleryLayout {title} {description} canonical="https://sanchika.complyeaze.com/">
+  <main id="main-content" class="site-main landing" data-sanchika-example="synthetic" tabindex="-1">
+    <section class="landing-hero" aria-label="Sanchika introduction and review proof">
+      <nav class="landing-jumps" aria-label="Landing page sections">
+        {sectionJumps.map(([label, href]) => <a href={href}>{label}</a>)}
+      </nav>
+      <PublicHero
+        eyebrow="Typed contracts · human judgment visible"
+        title="Build compliance interfaces that show their evidence."
+        lede="Sanchika is an AI-native design-system SDK for Indian compliance teams. Its typed, inspectable contracts keep Chartered Accountant (CA) judgment visible."
+        primary={{ label: "Inspect the proof", href: "#hero-proof" }}
+        secondary={{ label: "Browse contracts", href: "/primitives/" }}
+      >
+        <aside class="sk-pattern-public-hero-note" aria-label="Sanchika boundary">
+          <span>What Sanchika does not do</span>
+          <strong>No model runtime. No automated compliance judgment.</strong>
+        </aside>
+      </PublicHero>
+      <div id="hero-proof" class="landing-hero__proof">
+        <div class="landing-hero__proof-label">
+          <span>Composed package proof</span>
+          <strong>One record. One accountable decision.</strong>
+          <span>Source → blocker → owner → review → next safe action</span>
+        </div>
+        <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />
+      </div>
+    </section>
+
+    <section id="system-definition" class="definition" aria-labelledby="definition-title">
+      <div><p class="eyebrow">The system, briefly</p><h2 id="definition-title">Typed foundations. Portable contracts. Product-shaped proof.</h2></div>
+      <div class="definition__ledger">
+        <p><strong>Tokens</strong><span>Generated semantic roles for color, typography, spacing, focus, and motion.</span></p>
+        <p><strong>Contracts</strong><span>Framework-agnostic behavior with React-ready primitive APIs.</span></p>
+        <p><strong>Package CSS</strong><span>Stable entrypoints for tokens, primitives, and product patterns.</span></p>
+        <p><strong>Gallery proof</strong><span>Static, synthetic compositions that expose source and limitations.</span></p>
+      </div>
+    </section>
+
+    <ModeComparison />
+
+    <section class="contract-navigation" aria-labelledby="contract-navigation-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">System map</p><h2 id="contract-navigation-title">Start from the decision you need to make.</h2></div>
+        <p>Detailed contracts live on generated routes, not in an endless landing-page ledger.</p>
+      </div>
+      <nav aria-label="Sanchika contract areas">
+        {navigation.map(([label, detail, href], index) => (
+          <a class={primitiveClassName("LinkCard", { variant: "default" })} href={href}>
+            <span>{String(index + 1).padStart(2, "0")}</span><strong>{label}</strong><small>{detail}</small><em aria-hidden="true">↗</em>
+          </a>
+        ))}
+      </nav>
+    </section>
+
+    <SearchDirectory instanceId="landing-docs" compact />
+    <ProofStrip />
+    <StatusSummary />
+
+    <section class="source-coda" aria-labelledby="source-coda-title">
+      <div><p class="eyebrow">Open evidence</p><h2 id="source-coda-title">Inspect before you adopt.</h2><p>Source, entrypoints, release evidence, adoption boundaries, support, security, and trademark terms remain public and linked. The gallery demonstrates contracts; consumers still own authorization, real data, runtime behavior, and professional review.</p></div>
+      <div class="source-coda__links">
+        <a href="https://github.com/lamemustafa/sanchika">GitHub source</a>
+        <a href="https://github.com/lamemustafa/sanchika/releases">Release evidence</a>
+        <a href="/adoption/">Adoption boundary</a>
+        <a href="/sanchika-manifest.json">Machine-readable manifest</a>
+      </div>
+    </section>
   </main>
 </GalleryLayout>

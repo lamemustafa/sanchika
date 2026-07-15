@@ -15,6 +15,7 @@ import {
 import { renderTokenArtifacts, validateTokenSource } from "./token-generation.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
 import { runBuildArtifactFixtures } from "./validation/build-artifacts.mjs";
+import { runGalleryProductionFixtures } from "./validation/gallery-production.mjs";
 import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
 import { validatePagesSmokeWorkflow } from "./validation/pages-smoke-workflow.mjs";
 import { expectedGithubLabels } from "./validation/github-labels.mjs";
@@ -57,6 +58,8 @@ function fail(message) {
 
 const buildArtifactFixtures = runBuildArtifactFixtures();
 for (const fixtureFailure of buildArtifactFixtures.failures) fail(`build artifact fixture ${fixtureFailure}`);
+const galleryProductionFixtures = runGalleryProductionFixtures();
+for (const fixtureFailure of galleryProductionFixtures.failures) fail(`gallery production fixture ${fixtureFailure}`);
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
 }
@@ -110,6 +113,12 @@ if (galleryAppPackage.name !== "@sanchika/gallery-app" || galleryAppPackage.priv
 }
 if (galleryAppPackage.devDependencies?.astro !== "7.0.7") {
   fail("@sanchika/gallery-app must pin Astro 7.0.7 exactly");
+}
+if (galleryAppPackage.devDependencies?.["@axe-core/playwright"] !== "4.12.1") {
+  fail("@sanchika/gallery-app must pin the browser-only @axe-core/playwright 4.12.1 dev dependency");
+}
+if (galleryAppPackage.devDependencies?.["playwright-core"] !== "1.55.1") {
+  fail("@sanchika/gallery-app must pin the browser-only playwright-core 1.55.1 dependency used by its evidence lane");
 }
 if (galleryAppPackage.scripts?.build !== "astro build && node ../../scripts/write-gallery-build-metadata.mjs") {
   fail("@sanchika/gallery-app build must write deterministic gallery build metadata after Astro output");
@@ -306,9 +315,12 @@ if (rootPackage.scripts?.["typecheck:api"] !== "node scripts/check-package-api-t
 
 if (
   rootPackage.scripts?.["smoke:check"] !==
-  "pnpm gallery:check && pnpm check:tokens && pnpm check:gallery && pnpm check:content && node scripts/smoke-gallery.mjs"
+  "pnpm gallery:check && pnpm check:tokens && pnpm check:gallery && pnpm check:content && pnpm gallery:browser && node scripts/smoke-gallery.mjs"
 ) {
   fail("root package must expose smoke:check as the check-only gallery smoke lane");
+}
+if (rootPackage.scripts?.["gallery:browser"] !== "pnpm --filter @sanchika/gallery-app browser:check") {
+  fail("root package must expose the focused generated-gallery browser and axe lane");
 }
 if (rootPackage.scripts?.smoke !== "pnpm build && pnpm gallery:build && pnpm smoke:check") {
   fail("root smoke command must build packages and the gallery once before smoke:check");
@@ -699,11 +711,12 @@ const productPatternExemplarRoutes = new Set([
   "/lab/pack-local-proof/",
   "/lab/tools-directory/",
 ]);
-const gallerySource = readText("apps/gallery/src/components/PatternContracts.astro");
-const galleryPrimitiveMatrixSource = readText("apps/gallery/src/components/PrimitiveStateMatrix.astro");
-const galleryPrimitiveSummarySource = readText("apps/gallery/src/components/PrimitiveSummary.astro");
-const galleryPrimitiveContractListSource = readText("apps/gallery/src/components/PrimitiveContractList.astro");
-const galleryFoundationProofSource = readText("apps/gallery/src/components/FoundationPrimitiveProof.astro");
+const gallerySiteSource = readText("apps/gallery/src/content/site.ts");
+const galleryGeneratedDocumentsSource = readText("apps/gallery/src/content/generated-documents.ts");
+const galleryPrimitiveDetailSource = readText("apps/gallery/src/components/PrimitiveDetail.astro");
+const galleryPrimitiveStateProofSource = readText("apps/gallery/src/components/PrimitiveStateProof.astro");
+const galleryPatternDetailSource = readText("apps/gallery/src/components/PatternDetail.astro");
+const gallerySearchSource = readText("apps/gallery/src/components/SearchDirectory.astro");
 const galleryStyleSources = readdirSync(join(root, "apps/gallery/src/styles"), { recursive: true })
   .filter((path) => typeof path === "string" && path.endsWith(".css"))
   .map((path) => [`apps/gallery/src/styles/${path.replaceAll("\\", "/")}`, readText(`apps/gallery/src/styles/${path}`)]);
@@ -712,7 +725,7 @@ const primitiveDocs = requireText("docs/primitives.md");
 const patternDocs = readText("docs/patterns.md");
 const accessibilityDocs = readText("docs/accessibility.md");
 const motionDocs = requireText("docs/motion.md");
-const motionGallerySource = requireText("apps/gallery/src/components/MotionAssistProof.astro");
+const motionGallerySource = `${requireText("apps/gallery/src/pages/foundations/motion.astro")}\n${requireText("apps/gallery/src/components/MotionAssistProof.astro")}`;
 const ciWorkflow = requireText(".github/workflows/ci.yml");
 const pagesWorkflow = requireText(".github/workflows/pages.yml");
 const pagesSmokeWorkflow = requireText(".github/workflows/pages-smoke.yml");
@@ -910,51 +923,28 @@ for (const requiredPatternDocFragment of [
   }
 }
 
-for (const requiredGalleryStatusFragment of [
-  "pattern.states.map",
-  "state.requiredVisibleSignals",
-  "state.programmaticStatus",
-  "data-sk-visible-signal",
-  "data-sk-slot",
-]) {
-  if (!gallerySource.includes(requiredGalleryStatusFragment)) {
-    fail(`gallery source must implement ${requiredGalleryStatusFragment}`);
-  }
-}
+for (const requiredSiteMetadataFragment of [
+  "primitiveSpecs.map",
+  "productPatternContracts.map",
+  "tokenGroupDefinitions",
+  "motionAssistUtilities",
+  "productionRoutes",
+  "searchEntries",
+]) if (!gallerySiteSource.includes(requiredSiteMetadataFragment)) fail(`canonical gallery metadata must include ${requiredSiteMetadataFragment}`);
 
-for (const [path, source] of [
-  ["apps/gallery/src/components/PrimitiveStateMatrix.astro", galleryPrimitiveMatrixSource],
-]) {
-  if (!source.includes("primitiveSpecs")) {
-    fail(`${path} must derive primitive contract enumerations from primitiveSpecs`);
-  }
-}
-for (const [path, source] of [
-  ["apps/gallery/src/components/PrimitiveSummary.astro", galleryPrimitiveSummarySource],
-  ["apps/gallery/src/components/PrimitiveContractList.astro", galleryPrimitiveContractListSource],
-  ["apps/gallery/src/components/FoundationPrimitiveProof.astro", galleryFoundationProofSource],
-]) {
-  if (!source.includes("primitiveGroups")) {
-    fail(`${path} must derive its primitive inventory from package-owned primitiveGroups`);
-  }
-}
-for (const duplicatedInventory of [
-  /const\s+s4Names\s*=/,
-  /const\s+legacyPrimitiveNames\s*=/,
-  /const\s+surfaceVariants\s*=\s*\[/,
-  /const\s+textRoles\s*=\s*\[/,
-]) {
-  if (duplicatedInventory.test(`${galleryPrimitiveSummarySource}\n${galleryPrimitiveContractListSource}\n${galleryFoundationProofSource}`)) {
-    fail(`gallery primitive inventories must not duplicate package-owned contracts with ${duplicatedInventory}`);
-  }
+for (const [path, source, requiredFragments] of [
+  ["apps/gallery/src/components/PrimitiveDetail.astro and PrimitiveStateProof.astro", `${galleryPrimitiveDetailSource}\n${galleryPrimitiveStateProofSource}`, ["contract.anatomy.map", "contract.requiredStates", "contract.consumerResponsibilities.map", "contract.examples[0]", "data-primitive-state", "@sanchika/primitives"]],
+  ["apps/gallery/src/components/PatternDetail.astro", galleryPatternDetailSource, ["contract.anatomy.map", "contract.states.map", "contract.trustBoundaries.map", "contract.consumerResponsibilities.map", "@sanchika/patterns"]],
+  ["apps/gallery/src/components/SearchDirectory.astro", gallerySearchSource, ["searchEntries.map", "data-docs-search", "data-docs-search-clear", "Escape", "aria-live=\"polite\""]],
+  ["apps/gallery/src/content/generated-documents.ts", galleryGeneratedDocumentsSource, ["manifestSource.primitiveSpecs.map", "manifestSource.productPatternContracts.map", "createSanchikaManifest", "createLlmsText"]],
+]) for (const fragment of requiredFragments) if (!source.includes(fragment)) fail(`${path} must include ${fragment}`);
+
+for (const duplicatedInventory of [/const\s+primitiveNames\s*=/, /const\s+patternNames\s*=/, /const\s+searchRoutes\s*=\s*\[/]) {
+  if (duplicatedInventory.test(`${gallerySiteSource}\n${galleryPrimitiveDetailSource}\n${galleryPatternDetailSource}\n${gallerySearchSource}`)) fail(`gallery inventories must not duplicate package metadata with ${duplicatedInventory}`);
 }
 for (const [path, source] of galleryStyleSources) {
-  for (const match of source.matchAll(/--sk-(?:stack|grid)-gap\s*:/g)) {
-    fail(`${path} must not override primitive-internal ${match[0].slice(0, -1).trim()}`);
-  }
-}
-if (/const\s+badgeTones\s*=\s*\[/.test(galleryPrimitiveMatrixSource)) {
-  fail("PrimitiveStateMatrix must not duplicate Badge tones in an app-local array");
+  if (/--sk-[a-z0-9-]+\s*:/.test(source)) fail(`${path} must not author or override --sk-* variables`);
+  if (/--lab-|oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(source)) fail(`${path} must not contain retired lab values or raw foundation colors`);
 }
 
 for (const sourceUrl of [
@@ -2016,6 +2006,7 @@ if (failures.length > 0) {
 }
 
 console.log(`Sanchika build artifact fixtures passed (${buildArtifactFixtures.count} cases).`);
+console.log(`Sanchika gallery production fixtures passed (${galleryProductionFixtures.count} cases).`);
 console.log(`Sanchika product pattern fixtures passed (${productPatternFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
 console.log(`Sanchika motion-assist fixtures passed (${motionFixtureCount} cases).`);
