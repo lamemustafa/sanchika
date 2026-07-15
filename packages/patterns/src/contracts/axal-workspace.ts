@@ -55,7 +55,7 @@ export const axalWorkspacePatterns = Object.freeze([
       { name: "checkpoint", purpose: "Named human review requirement and safe actions." },
       { name: "auditTrail", purpose: "Recent traceable events." },
     ],
-    requiredFields: ["syntheticMarker", "workQueue", "selectedWork", "evidence", "ownerDueReview", "blockedReason", "nextSafeAction", "checkpoint", "auditTrail"],
+    requiredFields: ["deskHeader", "syntheticMarker", "workQueue", "selectedWork", "evidence", "ownerDueReview", "blockedReason", "nextSafeAction", "checkpoint", "auditTrail"],
     variants: [
       { name: "three-pane", purpose: "Queue, selected case, and evidence rail." },
       { name: "stacked", purpose: "Priority-ordered narrow-screen composition." },
@@ -131,7 +131,7 @@ export const axalWorkspacePatterns = Object.freeze([
       { name: "nextSafeAction", purpose: "Consumer-owned action that can safely advance the review." },
       { name: "timestampHistory", purpose: "Recorded time or history reference when present." },
     ],
-    requiredFields: ["preparationState", "reviewOwner", "sourceReadiness", "blockers", "evidenceLink", "decisionActions", "nextSafeAction", "timestampHistory"],
+    requiredFields: ["checkpointLabel", "preparationState", "reviewOwner", "sourceReadiness", "blockers", "decisionQuestion", "evidenceLink", "decisionActions", "nextSafeAction", "timestampHistory"],
     variants: [
       { name: "inverse", purpose: "High-emphasis checkpoint inside a review desk." },
       { name: "inline", purpose: "Checkpoint attached to a work record." },
@@ -166,7 +166,7 @@ export const axalWorkspacePatterns = Object.freeze([
       { name: "scope", purpose: "What the preview includes and omits." },
       { name: "inspectAction", purpose: "Route to the authoritative trail." },
     ],
-    requiredFields: ["events", "resultingState", "inspectAction"],
+    requiredFields: ["events", "resultingState", "scope", "inspectAction"],
     variants: [
       { name: "rail", purpose: "Compact chronological evidence rail." },
       { name: "list", purpose: "Standalone audit event list." },

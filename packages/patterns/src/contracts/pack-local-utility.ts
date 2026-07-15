@@ -48,7 +48,7 @@ export const packLocalUtilityPatterns = Object.freeze([
       { name: "custodyFacts", purpose: "Credentials, cookies, file, telemetry, and source facts." },
       { name: "artifactReceipt", purpose: "Filename, destination, source, and release inspection links." },
     ],
-    requiredFields: ["sourceStage", "localActionStage", "destinationStage", "stepCustody", "sourceEvidence", "resultingArtifact"],
+    requiredFields: ["sourceStage", "localActionStage", "destinationStage", "stepCustody", "sourceEvidence", "resultingArtifact", "custodyFacts", "artifactReceipt"],
     variants: [
       { name: "three-stage", purpose: "Source, local action, and destination trace." },
       { name: "compact", purpose: "Narrow-screen sequential trace." },
@@ -85,7 +85,7 @@ export const packLocalUtilityPatterns = Object.freeze([
       { name: "fallback", purpose: "Manual or reduced-capability path." },
       { name: "requestAction", purpose: "Permission request control." },
     ],
-    requiredFields: ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy", "requestAction"],
+    requiredFields: ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy", "fallback", "requestAction"],
     variants: [
       { name: "inline", purpose: "Explanation adjacent to the request action." },
       { name: "panel", purpose: "Detailed pre-permission review." },
@@ -125,7 +125,7 @@ export const packLocalUtilityPatterns = Object.freeze([
       { name: "networkDestination", purpose: "Observed destination or no-network statement." },
       { name: "sourceProof", purpose: "Public source and release inspection paths." },
     ],
-    requiredFields: ["boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "networkDestination", "sourceProof"],
+    requiredFields: ["boundaryClaim", "boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "custodyFacts", "networkDestination", "sourceProof"],
     variants: [
       { name: "ledger", purpose: "Dense custody fact strip." },
       { name: "banner", purpose: "Short pre-action custody summary." },

@@ -306,6 +306,7 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
     }
     const button = descendantElements(permission).find((element) => element.tag === "button");
     if (!button || permission.body.indexOf("If denied") > permission.body.indexOf(button.body)) fail("PermissionExplainer must place denial behavior before its request action");
+    if (!/\b(?:manual|reduced capability)\b/i.test(text)) fail("PermissionExplainer must include a visible fallback");
   }
 
   const artifactFlow = requireClassElement(packMarkup, "sk-pattern-local-artifact-flow", fail, "LocalArtifactFlow");
@@ -321,6 +322,10 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
       const custodianTerm = descendantElements(stage).find((element) => element.tag === "dt" && visibleText(element) === "Custodian / location");
       const followingDefinition = custodianTerm && descendantElements(stage).find((element) => element.tag === "dd" && element.openEnd > custodianTerm.openEnd);
       if (!followingDefinition || visibleText(followingDefinition).length === 0) fail(`LocalArtifactFlow stage ${index + 1} must name its current custodian`);
+    }
+    const receipt = descendantElements(artifactFlow).find((element) => hasClass(element, "sk-pattern-local-artifact-flow__receipt"));
+    if (!receipt || !/\b(?:filename|local result)\b/i.test(visibleText(receipt)) || !/\bdestination\b/i.test(visibleText(receipt)) || !descendantElements(receipt).some((element) => element.tag === "a" && getAttribute(element.attrs, "href"))) {
+      fail("LocalArtifactFlow must include an artifact receipt with filename, destination, and source proof");
     }
   }
   const custodyBoundary = requireClassElement(packMarkup, "sk-pattern-custody-boundary", fail, "CustodyBoundary");
@@ -358,6 +363,7 @@ export function validateProductPatternExemplars({ markupByGroup, contracts = [],
     if (cards.length === 0) fail("ToolDirectory must server-render its complete ToolCard list");
     for (const card of cards) {
       if (card.tag !== "a" || !getAttribute(card.attrs, "href") || getAttribute(card.attrs, "data-sk-primitive") !== "LinkCard") fail("ToolCard must use root-anchor LinkCard semantics");
+      if (!descendantElements(card).some((element) => element.tag === "p" && visibleText(element))) fail("ToolCard must include a visible job summary");
       const labels = descendantElements(card).filter((element) => element.tag === "dt").map(visibleText);
       for (const label of ["Input", "Output", "Review", "Boundary", "Status"]) {
         if (!labels.includes(label)) fail(`ToolCard must include ${label}`);
@@ -417,8 +423,12 @@ export function runProductPatternExemplarFixtures() {
     { name: "local CustodyBoundary without visible state", group: "pack-local-utility", replace: ["Local only · destination · no handoff · ", ""], expected: "local-only state must visibly include local only" },
     { name: "Pack planned banner without no-release claim", group: "pack-local-utility", replace: ["Planned · no release claim · Source", "Planned · Source"], expected: "planned state must visibly include no release claim" },
     { name: "permission without denial behavior", group: "pack-local-utility", replace: ["<span>If denied: use manual download</span>", ""], expected: "include If denied" },
+    { name: "permission without fallback", group: "pack-local-utility", replace: ["manual download", "workflow stops"], expected: "visible fallback" },
+    { name: "LocalArtifactFlow without artifact receipt", group: "pack-local-utility", replace: ['<div class="sk-pattern-local-artifact-flow__receipt">Local result · filename synthetic.pdf · destination Downloads · <a href="/receipt-source">Source proof</a></div>', ""], expected: "artifact receipt" },
     { name: "ToolDirectory missing no-results", group: "tools-local-artifact", replace: ['<div data-tool-empty hidden>No results</div>', ""], expected: "data-tool-empty" },
+    { name: "ToolDirectory missing result status", group: "tools-local-artifact", replace: ['<p role="status">1 result</p>', ""], expected: "result status live region" },
     { name: "ToolCard nested button", group: "tools-local-artifact", replace: ["Inspect tool contract</a>", "Inspect tool contract<button>Run</button></a>"], expected: "nested interactive <button>" },
+    { name: "ToolCard missing job summary", group: "tools-local-artifact", replace: ["<p>Bounded job outcome</p>", ""], expected: "visible job summary" },
     { name: "provenance without source link", group: "public-product", replace: ['<a href="/provenance-source">Source</a>', "Source"], expected: "source link" },
     { name: "provenance without description-list semantics", group: "public-product", replace: ['<dl class="sk-pattern-source-provenance-strip"><div><dt><a href="/provenance-source">Source</a></dt><dd>Repository</dd></div><div class="sk-pattern-grammar--quiet-verified-seal"><dt>Status</dt><dd>14 July 2026 · S7 validator</dd></div></dl>', '<section class="sk-pattern-source-provenance-strip"><div><a href="/provenance-source">Source</a></div><div class="sk-pattern-grammar--quiet-verified-seal">14 July 2026 · S7 validator</div></section>'], expected: "description-list root" },
     { name: "quiet seal without verifier and time", group: "public-product", replace: ["14 July 2026 · S7 validator", "Current"], expected: "verifier and checked time" },
@@ -465,7 +475,7 @@ function validProductPatternFixtureMarkup() {
       "pack-local-utility",
       `<main data-sanchika-example="synthetic">
         <aside class="sk-pattern-permission-explainer"><span>Purpose: local file</span><span>Scope: current action</span><span>Data touched: response</span><span>Data not touched: credentials</span><span>If denied: use manual download</span><button>Review permission</button></aside>
-        <section class="sk-pattern-local-artifact-flow"><ol class="sk-pattern-local-artifact-flow__stages"><li><dl><div><dt>Custodian / location</dt><dd>Browser session</dd></div><div><dt>Data / action</dt><dd>Portal response</dd></div><div><dt>Crosses</dt><dd>Portal to browser</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div><div><dt>Source</dt><dd>Portal</dd></div><div><dt>Result</dt><dd>Local file</dd></div></dl></li></ol>
+        <section class="sk-pattern-local-artifact-flow"><ol class="sk-pattern-local-artifact-flow__stages"><li><dl><div><dt>Custodian / location</dt><dd>Browser session</dd></div><div><dt>Data / action</dt><dd>Portal response</dd></div><div><dt>Crosses</dt><dd>Portal to browser</dd></div><div><dt>Never crosses</dt><dd>Credentials</dd></div><div><dt>Source</dt><dd>Portal</dd></div><div><dt>Result</dt><dd>Local file</dd></div></dl></li></ol><div class="sk-pattern-local-artifact-flow__receipt">Local result · filename synthetic.pdf · destination Downloads · <a href="/receipt-source">Source proof</a></div>
           <dl class="sk-pattern-custody-boundary sk-pattern-custody-boundary--state-local-only"><div>Local only · destination · no handoff · Current custodian</div><div>What moves</div><div>What never moves</div><div>Credentials</div><div>Local destination</div><div>User control</div></dl>
           <dl class="sk-pattern-source-provenance-strip"><div><dt><a href="/source">Source</a></dt><dd>Release source</dd></div><div class="sk-pattern-grammar--quiet-verified-seal"><dt>Status</dt><dd>14 July 2026 · S7 validator</dd></div></dl>
           <aside class="sk-pattern-release-status-banner sk-pattern-release-status-banner--state-planned">Planned · no release claim · Source · <a href="/releases">Review releases</a></aside>
@@ -476,7 +486,7 @@ function validProductPatternFixtureMarkup() {
       "tools-local-artifact",
       `<main data-sanchika-example="synthetic">
         <aside class="sk-pattern-local-boundary-banner"><a href="/source">Source</a></aside>
-        <section class="sk-pattern-tool-directory"><p role="status">1 result</p><input data-tool-search><div data-tool-filters></div><div data-tool-results><a class="sk-pattern-tool-card" href="/tool" data-sk-primitive="LinkCard" data-sk-state="default"><dl><div><dt>Input</dt><dd>Facts</dd></div><div><dt>Output</dt><dd>Draft</dd></div><div><dt>Review</dt><dd>CA</dd></div><div><dt>Boundary</dt><dd>Local</dd></div><div><dt>Status</dt><dd>Available</dd></div></dl>Inspect tool contract</a></div><div data-tool-empty hidden>No results</div></section>
+        <section class="sk-pattern-tool-directory"><p role="status">1 result</p><input data-tool-search><div data-tool-filters></div><div data-tool-results><a class="sk-pattern-tool-card" href="/tool" data-sk-primitive="LinkCard" data-sk-state="default"><p>Bounded job outcome</p><dl><div><dt>Input</dt><dd>Facts</dd></div><div><dt>Output</dt><dd>Draft</dd></div><div><dt>Review</dt><dd>CA</dd></div><div><dt>Boundary</dt><dd>Local</dd></div><div><dt>Status</dt><dd>Available</dd></div></dl>Inspect tool contract</a></div><div data-tool-empty hidden>No results</div></section>
         <aside class="sk-pattern-output-artifact-summary">Draft output · Artifact type · Status / reviewer · Ready for review · Limitation · <dl><div><dt>Next action</dt><dd><a href="/draft">Inspect draft</a></dd></div></dl></aside>
       </main>`,
     ],

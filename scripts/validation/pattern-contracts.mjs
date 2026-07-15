@@ -46,22 +46,22 @@ const requiredAnatomyByPattern = new Map([
   ["ProductRouteMap", ["routeSummary", "primaryRoute", "secondaryRoutes", "boundaryLabels", "currentStatus", "routeActions", "proofOrSource", "colophon"]],
   ["ProofStrip", ["proofItems", "checkedAt"]],
   ["TrustBoundary", ["boundarySummary", "boundaryFacts", "neverCrosses", "actionOwner", "sourceEvidence", "safeAction"]],
-  ["SourceProvenanceStrip", ["sourceType", "sources", "releaseVersion", "checksumReference", "checkedAt", "reviewOwner", "visibleStatus", "limitation"]],
-  ["PricingBlock", ["price", "status", "effectiveAt", "inclusions", "exclusions", "action", "sourceOwner"]],
-  ["FAQAccordion", ["question", "answer"]],
-  ["ReleaseStatusBanner", ["productPackage", "releaseVersion", "effectiveAt", "status", "source", "supportedScope", "knownLimitation", "safeAction"]],
-  ["ReviewDeskPreview", ["syntheticMarker", "workQueue", "selectedWork", "evidence", "ownerDueReview", "blockedReason", "nextSafeAction", "checkpoint", "auditTrail"]],
+  ["SourceProvenanceStrip", ["claim", "sourceType", "sources", "releaseVersion", "checksumReference", "checkedAt", "reviewOwner", "visibleStatus", "limitation"]],
+  ["PricingBlock", ["offerName", "price", "status", "effectiveAt", "inclusions", "exclusions", "reviewBoundary", "action", "sourceOwner"]],
+  ["FAQAccordion", ["question", "answer", "source"]],
+  ["ReleaseStatusBanner", ["status", "productPackage", "releaseVersion", "scope", "effectiveAt", "source", "supportedScope", "knownLimitation", "safeAction"]],
+  ["ReviewDeskPreview", ["deskHeader", "syntheticMarker", "workQueue", "selectedWork", "evidence", "ownerDueReview", "blockedReason", "nextSafeAction", "checkpoint", "auditTrail"]],
   ["EvidencePanel", ["sourceList", "checkedAt", "reviewState", "uncertainty", "reviewer", "safeAction"]],
-  ["HumanReviewCheckpoint", ["preparationState", "reviewOwner", "sourceReadiness", "blockers", "decisionActions", "nextSafeAction", "timestampHistory"]],
-  ["AuditTrailPreview", ["events", "resultingState", "optionalNote"]],
+  ["HumanReviewCheckpoint", ["checkpointLabel", "preparationState", "reviewOwner", "sourceReadiness", "blockers", "decisionQuestion", "evidenceLink", "decisionActions", "nextSafeAction", "timestampHistory"]],
+  ["AuditTrailPreview", ["events", "resultingState", "optionalNote", "scope", "inspectAction"]],
   ["WorkQueueRow", ["identity", "clientEntity", "priority", "dueState", "owner", "sourceState", "reviewState", "blockedReason", "nextSafeAction"]],
-  ["LocalArtifactFlow", ["sourceStage", "localActionStage", "destinationStage", "stepCustody", "sourceEvidence", "resultingArtifact"]],
-  ["PermissionExplainer", ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy"]],
-  ["CustodyBoundary", ["boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "networkDestination", "sourceProof"]],
-  ["ToolDirectory", ["search", "filters", "toolList", "emptyState", "workspaceHandoff"]],
-  ["ToolCard", ["category", "title", "input", "output", "review", "boundary", "status", "action"]],
-  ["LocalBoundaryBanner", ["processingLocation", "accountFact", "uploadFact", "networkTelemetryFact", "reviewFact", "sourcePolicy"]],
-  ["OutputArtifactSummary", ["artifactType", "generatedFrom", "generatedOutput", "destination", "draftReviewStatus", "reviewRequirement", "limitations", "nextAction"]],
+  ["LocalArtifactFlow", ["sourceStage", "localActionStage", "destinationStage", "stepCustody", "sourceEvidence", "resultingArtifact", "custodyFacts", "artifactReceipt"]],
+  ["PermissionExplainer", ["permission", "purpose", "scope", "dataTouched", "dataNotTouched", "denialBehavior", "sourcePolicy", "fallback", "requestAction"]],
+  ["CustodyBoundary", ["boundaryClaim", "boundaryOwner", "insideBoundary", "outsideBoundary", "crossingEvent", "neverCrosses", "userControl", "custodyFacts", "networkDestination", "sourceProof"]],
+  ["ToolDirectory", ["directoryHeader", "resultStatus", "search", "filters", "toolList", "emptyState", "workspaceHandoff"]],
+  ["ToolCard", ["category", "title", "summary", "input", "output", "review", "boundary", "status", "action"]],
+  ["LocalBoundaryBanner", ["boundaryClaim", "processingLocation", "accountFact", "uploadFact", "networkTelemetryFact", "reviewFact", "sourcePolicy"]],
+  ["OutputArtifactSummary", ["artifactType", "artifactName", "generatedFrom", "generatedOutput", "destination", "draftReviewStatus", "reviewRequirement", "limitations", "nextAction"]],
 ]);
 const requiredStatesByPattern = new Map([
   ["PublicHero", ["default", "with-proof-artifact", "compact-mobile"]],
@@ -76,15 +76,6 @@ const requiredStatesByPattern = new Map([
   ["CustodyBoundary", ["local-only", "workspace-scoped", "public-metadata-only", "transfer-pending", "no-transfer"]],
   ["ToolDirectory", ["default", "filtered", "no-results"]],
   ["OutputArtifactSummary", ["generated-draft", "ready-for-review", "copied-downloaded", "failed", "unavailable"]],
-]);
-const requiredFieldsByPattern = new Map([
-  ["PricingBlock", ["action"]],
-  ["PermissionExplainer", ["requestAction"]],
-  ["HumanReviewCheckpoint", ["evidenceLink"]],
-  ["AuditTrailPreview", ["inspectAction"]],
-  ["WorkQueueRow", ["priority"]],
-  ["CustodyBoundary", ["networkDestination"]],
-  ["OutputArtifactSummary", ["nextAction"]],
 ]);
 const requiredVisualGrammar = [
   ["ledgerRail", "sk-pattern-grammar--ledger-rail"],
@@ -255,6 +246,11 @@ export function runProductPatternContractFixtures({ contracts, css = null }) {
     { name: "AuditTrailPreview missing inspect action", mutate: (items) => { const contract = items.find((item) => item.name === "AuditTrailPreview"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "inspectAction"); }, expected: "AuditTrailPreview requiredFields must include inspectAction" },
     { name: "WorkQueueRow missing priority", mutate: (items) => { const contract = items.find((item) => item.name === "WorkQueueRow"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "priority"); }, expected: "WorkQueueRow requiredFields must include priority" },
     { name: "CustodyBoundary missing network destination", mutate: (items) => { const contract = items.find((item) => item.name === "CustodyBoundary"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "networkDestination"); }, expected: "CustodyBoundary requiredFields must include networkDestination" },
+    { name: "LocalArtifactFlow missing artifact receipt", mutate: (items) => { const contract = items.find((item) => item.name === "LocalArtifactFlow"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "artifactReceipt"); }, expected: "LocalArtifactFlow requiredFields must include artifactReceipt" },
+    { name: "PermissionExplainer missing fallback", mutate: (items) => { const contract = items.find((item) => item.name === "PermissionExplainer"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "fallback"); }, expected: "PermissionExplainer requiredFields must include fallback" },
+    { name: "ToolDirectory missing result status", mutate: (items) => { const contract = items.find((item) => item.name === "ToolDirectory"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "resultStatus"); }, expected: "ToolDirectory requiredFields must include resultStatus" },
+    { name: "ToolCard missing summary", mutate: (items) => { const contract = items.find((item) => item.name === "ToolCard"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "summary"); }, expected: "ToolCard requiredFields must include summary" },
+    { name: "non-optional anatomy omitted from required fields", mutate: (items) => { const contract = items.find((item) => item.name === "PublicHero"); contract.requiredFields = contract.requiredFields.filter((field) => field !== "eyebrow"); }, expected: "PublicHero requiredFields must include eyebrow" },
     { name: "ToolCard hidden state missing CSS suppression", mutate: () => {}, mutateCss: (value) => value?.replace(/\.sk-pattern-tool-card\[hidden\],[\s\S]*?display:\s*none;\s*}/, ""), expected: "ToolCard hidden state must suppress author display" },
     { name: "missing copy obligation", mutate: (items) => { items[0].copyObligations = []; }, expected: "copyObligations must be a non-empty array" },
     { name: "missing reduced motion", mutate: (items) => { items[0].reducedMotionBehavior = []; }, expected: "reducedMotionBehavior must be a non-empty array" },
@@ -315,8 +311,11 @@ function collectProductPatternIssues({ contracts, groups, css, exemplarRoutes })
       if (!anatomyNames.has(requiredAnatomy)) issues.push(`${contract.name} must include required anatomy ${requiredAnatomy}`);
     }
     const requiredFieldNames = new Set(contract.requiredFields ?? []);
-    for (const requiredField of requiredFieldsByPattern.get(contract.name) ?? []) {
-      if (!requiredFieldNames.has(requiredField)) issues.push(`${contract.name} requiredFields must include ${requiredField}`);
+    for (const anatomyPart of contract.anatomy ?? []) {
+      const explicitlyOptional = anatomyPart.name.startsWith("optional") || /\boptional\b|\bwhen (?:one )?(?:exists|present|applicable)\b/i.test(anatomyPart.purpose);
+      if (!explicitlyOptional && !requiredFieldNames.has(anatomyPart.name)) {
+        issues.push(`${contract.name} requiredFields must include ${anatomyPart.name}`);
+      }
     }
     const stateNames = new Set((contract.states ?? []).map((state) => state.name));
     for (const requiredState of requiredStatesByPattern.get(contract.name) ?? []) {

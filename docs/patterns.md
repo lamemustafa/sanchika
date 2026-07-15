@@ -20,15 +20,15 @@ S7 adds an immutable `productPatternContracts` registry and four immutable
 | Public/product | `PricingBlock` | offer, price, inclusions, exclusions, review boundary, action | single-offer | available |
 | Public/product | `FAQAccordion` | question, answer, source | stack | collapsed, expanded |
 | Public/product | `ReleaseStatusBanner` | product, release, status, scope, reviewed time, source, limitation, safe action | notice, warning | current, alpha, stale, limited, planned, unavailable |
-| Axal | `ReviewDeskPreview` | synthetic marker, queue, selected work, evidence, owner/due/review, blocker, checkpoint, audit | three-pane, stacked | ca-review-needed, client-input-pending, evidence-requested, source-unavailable, ready-for-reviewer, blocked |
+| Axal | `ReviewDeskPreview` | desk header, synthetic marker, queue, selected work, evidence, owner/due/review, blocker, checkpoint, audit | three-pane, stacked | ca-review-needed, client-input-pending, evidence-requested, source-unavailable, ready-for-reviewer, blocked |
 | Axal | `EvidencePanel` | source, evidence state, uncertainty, checked time, reviewer, action | rail, embedded | available, requested, missing, stale, disputed, under-review |
 | Axal | `HumanReviewCheckpoint` | preparation, owner, source readiness, blocker, decision, evidence, actions, history | inverse, inline | preparation, review-needed, held, approved, rejected-returned, blocked |
-| Axal | `AuditTrailPreview` | actor, action, time, source, resulting state, note | rail, list | compact, expanded, empty |
+| Axal | `AuditTrailPreview` | actor, action, time, source, resulting state, scope, optional note | rail, list | compact, expanded, empty |
 | Axal | `WorkQueueRow` | identity, synthetic entity, priority, source, owner, due/review state, blocker, next action | compact, card | selected, waiting, ready, overdue |
 | Pack | `LocalArtifactFlow` | source, local action, destination, custody facts, receipt | three-stage, compact | ready, running, complete, blocked |
-| Pack | `PermissionExplainer` | permission, purpose, scope, touched/not-touched data, denial, source, request | inline, panel | required, optional, granted, denied, unavailable, not-requested |
-| Pack | `CustodyBoundary` | owner, inside/outside, crossing, never-crosses, user control, source proof | ledger, banner | local-only, workspace-scoped, public-metadata-only, transfer-pending, no-transfer |
-| Tools | `ToolDirectory` | header, search, filters, tool list, no-results state, reset, local boundary, handoff | rows, cards | default, filtered, no-results |
+| Pack | `PermissionExplainer` | permission, purpose, scope, touched/not-touched data, denial, fallback, source, request | inline, panel | required, optional, granted, denied, unavailable, not-requested |
+| Pack | `CustodyBoundary` | claim, owner, inside/outside, crossing, never-crosses, user control, custody facts, network destination, source proof | ledger, banner | local-only, workspace-scoped, public-metadata-only, transfer-pending, no-transfer |
+| Tools | `ToolDirectory` | header, result status, search, filters, tool list, no-results state, reset, local boundary, handoff | rows, cards | default, filtered, no-results |
 | Tools | `ToolCard` | category, title, outcome, input, output, review, boundary, status, action | row, card | available, limited, unavailable |
 | Tools | `LocalBoundaryBanner` | boundary claim, processing, account, upload, network/telemetry, review, source | draft, local | local-only, handoff |
 | Tools | `OutputArtifactSummary` | artifact type/output, source, destination, draft/review, reviewer, limitation, next action | receipt, summary | generated-draft, ready-for-review, copied-downloaded, failed, unavailable |
@@ -41,6 +41,11 @@ behavior, a synthetic-data requirement, consumer responsibilities, the CSS
 contract, exemplar routes, adopter guidance, and non-goals. The source registry
 is authoritative; the gallery contract ledger and rendered state proofs derive
 from it rather than a second inventory.
+
+`requiredFields` covers every anatomy slot unless that slot's contract purpose
+explicitly marks it optional or conditional. Validation derives this rule from
+the authoritative contract itself, so adding anatomy cannot silently create an
+optional implementation gap.
 
 ### Product visual grammar
 

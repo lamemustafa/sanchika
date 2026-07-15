@@ -39,14 +39,15 @@ export const toolsLocalArtifactPatterns = Object.freeze([
     semanticRoot: "A labelled section containing native search, category filters, a complete server-rendered list, result status, no-results state, and handoff.",
     intendedProducts: ["tools/local-artifact"],
     anatomy: [
-      { name: "directoryHeader", purpose: "Scope and tool count." },
+      { name: "directoryHeader", purpose: "Directory scope and identity." },
+      { name: "resultStatus", purpose: "Live result count for default, filtered, and no-results states." },
       { name: "search", purpose: "Browser-local job search." },
       { name: "filters", purpose: "Visible work-category filters." },
       { name: "toolList", purpose: "Ordered tool cards or rows." },
       { name: "emptyState", purpose: "No-match explanation and clear action." },
       { name: "workspaceHandoff", purpose: "Route continuing or saved work to Axal." },
     ],
-    requiredFields: ["search", "filters", "toolList", "emptyState", "workspaceHandoff"],
+    requiredFields: ["directoryHeader", "resultStatus", "search", "filters", "toolList", "emptyState", "workspaceHandoff"],
     variants: [
       { name: "rows", purpose: "Dense job-oriented directory." },
       { name: "cards", purpose: "Compact small-directory layout." },
@@ -82,7 +83,7 @@ export const toolsLocalArtifactPatterns = Object.freeze([
       { name: "status", purpose: "Availability or limitation in text." },
       { name: "action", purpose: "Open or inspect action." },
     ],
-    requiredFields: ["category", "title", "input", "output", "review", "boundary", "status", "action"],
+    requiredFields: ["category", "title", "summary", "input", "output", "review", "boundary", "status", "action"],
     variants: [
       { name: "row", purpose: "Dense directory row." },
       { name: "card", purpose: "Grouped narrow-screen surface." },
@@ -116,7 +117,7 @@ export const toolsLocalArtifactPatterns = Object.freeze([
       { name: "reviewFact", purpose: "Who must review the result." },
       { name: "sourcePolicy", purpose: "Inspectable source or policy link." },
     ],
-    requiredFields: ["processingLocation", "accountFact", "uploadFact", "networkTelemetryFact", "reviewFact", "sourcePolicy"],
+    requiredFields: ["boundaryClaim", "processingLocation", "accountFact", "uploadFact", "networkTelemetryFact", "reviewFact", "sourcePolicy"],
     variants: [
       { name: "draft", purpose: "Browser-local drafting boundary." },
       { name: "local", purpose: "Device-local artifact boundary." },
@@ -151,7 +152,7 @@ export const toolsLocalArtifactPatterns = Object.freeze([
       { name: "limitations", purpose: "What the artifact does not establish." },
       { name: "nextAction", purpose: "Inspect, copy, download, revise, clear, or retry action." },
     ],
-    requiredFields: ["artifactType", "generatedFrom", "generatedOutput", "destination", "draftReviewStatus", "reviewRequirement", "limitations", "nextAction"],
+    requiredFields: ["artifactType", "artifactName", "generatedFrom", "generatedOutput", "destination", "draftReviewStatus", "reviewRequirement", "limitations", "nextAction"],
     variants: [
       { name: "receipt", purpose: "Compact output receipt." },
       { name: "summary", purpose: "Detailed draft review summary." },

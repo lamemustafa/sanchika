@@ -51,7 +51,7 @@ export const publicProductPatterns = Object.freeze([
       { name: "proof", purpose: "Short visible evidence or operating-mode note." },
       { name: "boundaryStatement", purpose: "Optional visible account, upload, custody, or review boundary." },
     ],
-    requiredFields: ["title", "lede", "actions", "proof"],
+    requiredFields: ["eyebrow", "title", "lede", "actions", "proof"],
     variants: [
       { name: "editorial", purpose: "Asymmetric advisory-publication layout." },
       { name: "compact", purpose: "Single-column route introduction." },
@@ -86,7 +86,7 @@ export const publicProductPatterns = Object.freeze([
       { name: "proofOrSource", purpose: "Optional evidence attached to a route claim." },
       { name: "colophon", purpose: "Sanchika evidence path without forcing it into the product list." },
     ],
-    requiredFields: ["routeSummary", "primaryRoute", "secondaryRoutes", "boundaryLabels", "routeActions", "colophon"],
+    requiredFields: ["routeSummary", "primaryRoute", "secondaryRoutes", "boundaryLabels", "routeActions", "currentStatus", "colophon"],
     variants: [{ name: "family", purpose: "One primary route plus bounded alternatives." }],
     states: [
       { name: "default", purpose: "All documented routes are available.", requiredVisibleSignals: ["product names", "operating modes", "boundary labels"] },
@@ -182,7 +182,7 @@ export const publicProductPatterns = Object.freeze([
       { name: "visibleStatus", purpose: "Current evidence state in text." },
       { name: "limitation", purpose: "Uncertainty or missing evidence." },
     ],
-    requiredFields: ["claim", "sources", "checkedAt", "reviewOwner", "visibleStatus", "limitation"],
+    requiredFields: ["claim", "sourceType", "sources", "releaseVersion", "checkedAt", "reviewOwner", "visibleStatus", "limitation"],
     variants: [{ name: "ledger", purpose: "Compact source-and-review ledger." }],
     states: [
       { name: "current", purpose: "Sources and checks are current.", requiredVisibleSignals: ["source", "checked", "review owner"] },
@@ -217,7 +217,7 @@ export const publicProductPatterns = Object.freeze([
       { name: "action", purpose: "Consult or purchase action." },
       { name: "sourceOwner", purpose: "Consumer-owned authoritative pricing source." },
     ],
-    requiredFields: ["price", "status", "effectiveAt", "inclusions", "exclusions", "reviewBoundary", "action", "sourceOwner"],
+    requiredFields: ["offerName", "price", "status", "effectiveAt", "inclusions", "exclusions", "reviewBoundary", "action", "sourceOwner"],
     variants: [{ name: "single-offer", purpose: "One clearly bounded offer." }],
     states: [{ name: "available", purpose: "Price and scope are current.", requiredVisibleSignals: ["price", "cadence", "inclusions", "exclusions"] }],
     accessibilityHooks: accessibilityHooks("Use a labelled section; express price, cadence, tax qualification, inclusions, and exclusions as text.", "Read price status and effective date before inclusions, exclusions, review boundary, and action."),
@@ -277,7 +277,7 @@ export const publicProductPatterns = Object.freeze([
       { name: "knownLimitation", purpose: "What remains unavailable or unproven." },
       { name: "safeAction", purpose: "Review, update, or fallback action." },
     ],
-    requiredFields: ["productPackage", "releaseVersion", "effectiveAt", "status", "source", "supportedScope", "knownLimitation", "safeAction"],
+    requiredFields: ["productPackage", "releaseVersion", "scope", "effectiveAt", "status", "source", "supportedScope", "knownLimitation", "safeAction"],
     variants: [
       { name: "notice", purpose: "Neutral release information." },
       { name: "warning", purpose: "Limited or maintenance state." },
