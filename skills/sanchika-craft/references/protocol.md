@@ -31,6 +31,11 @@ Phase changes may advance one step. Rebriefing may return `review` or
 not resume except `capability_blocked`, which may resume at the same phase with
 unchanged acceptance thresholds.
 
+Saved `directions`, `iterations`, and `reviews` are append-only audit history:
+every prior entry must remain an unchanged prefix of the next snapshot. A
+`capability_blocked` resume must also preserve the complete TrustBrief and
+DesignBrief; only capability state and new evidence may advance.
+
 ## Evidence contracts
 
 Every `CraftRunV01` embeds valid Sanchika `TrustBrief`, `DesignBrief`, and
@@ -62,6 +67,10 @@ Calibrate each reviewer role against all five controls in
 `assets/calibration/metadata.json`. A reviewer must detect every relevant seeded
 failure. Allow one prompt correction and one full rerun. A second failure
 disqualifies that reviewer role until it is replaced.
+
+Persist `calibration.detectedFailures`, `calibration.corrections`, and
+`calibration.fullReruns` on every passed review. The owner gate requires four
+distinct reviewer IDs, one for each visual role.
 
 Visual review roles:
 
@@ -109,3 +118,10 @@ gates, the browser/accessibility matrix, three comparable cold-cache mobile
 measurements, rollback evidence, and post-deploy smoke evidence. Local
 measurements are laboratory evidence, not field Core Web Vitals or user
 validation.
+
+A `verify/complete` run records these under `productionEvidence`:
+
+- `repositoryGates`, `browserAccessibilityMatrix`, `rollbackEvidence`, and
+  `postDeploySmoke`, each with `status: passed` and a non-empty `artifact`;
+- exactly three `mobileMeasurements`, each with a distinct `runId`, the same
+  `profileId`, `coldCache: true`, and non-negative `lcpMs` and `cls` values.

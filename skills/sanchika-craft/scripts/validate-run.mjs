@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 
 const phases = [
   "shape",
@@ -37,6 +39,10 @@ const controlIds = [
   "fake-authority",
   "mobile-a11y-failure",
 ];
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const calibrationMetadata = JSON.parse(
+  readFileSync(join(scriptDir, "../assets/calibration/metadata.json"), "utf8"),
+);
 
 export function validateCraftRun(run, validators, options = {}) {
   const issues = [];
@@ -73,8 +79,8 @@ export function validateCraftRun(run, validators, options = {}) {
 
   validateEmbeddedContracts(run, validators ?? {}, add);
   validateState(run, add);
-  validateDirections(run.directions ?? [], add);
   validateReviews(run.reviews ?? [], add);
+  validateDirections(run, add);
   validateIterations(run, add);
   validateAssets(run.assets ?? [], add);
 
@@ -100,6 +106,7 @@ export function validateCraftRun(run, validators, options = {}) {
       "evidenceLoop.decision",
       "Complete runs require a ready-for-consumer-pr evidence decision.",
     );
+  if (run.status === "complete") validateProductionEvidence(run.productionEvidence, add);
   return issues;
 }
 
@@ -137,10 +144,15 @@ export function validateCraftTransition(previous, next) {
       "phase",
       "Phase transitions must advance one step, rebrief to shape, or resume the same capability-blocked phase.",
     );
-  if ((next?.iterations?.length ?? 0) < (previous?.iterations?.length ?? 0))
-    add("iterations", "Resume cannot discard iteration history.");
-  if ((next?.reviews?.length ?? 0) < (previous?.reviews?.length ?? 0))
-    add("reviews", "Resume cannot discard review history.");
+  preserveHistoryPrefix(previous?.iterations, next?.iterations, "iterations", add);
+  preserveHistoryPrefix(previous?.reviews, next?.reviews, "reviews", add);
+  preserveHistoryPrefix(previous?.directions, next?.directions, "directions", add);
+  if (capabilityResume) {
+    for (const field of ["trustBrief", "designBrief"]) {
+      if (!isDeepStrictEqual(previous?.[field], next?.[field]))
+        add(field, `Capability resumes cannot change ${field} acceptance thresholds.`);
+    }
+  }
   return issues;
 }
 
@@ -218,16 +230,18 @@ function validateEmbeddedContracts(run, validators, add) {
   const route = run.surface?.route;
   if (route && run.trustBrief?.surface !== route)
     add("trustBrief.surface", "TrustBrief surface must match run route.");
-  if (run.designBrief?.id !== run.evidenceLoop?.designBrief?.id)
+  if (!isDeepStrictEqual(run.designBrief, run.evidenceLoop?.designBrief))
     add(
       "evidenceLoop.designBrief",
       "EvidenceLoop must embed the current DesignBrief.",
     );
-  if (run.trustBrief?.id !== run.evidenceLoop?.trustBrief?.id)
+  if (!isDeepStrictEqual(run.trustBrief, run.evidenceLoop?.trustBrief))
     add(
       "evidenceLoop.trustBrief",
       "EvidenceLoop must embed the current TrustBrief.",
     );
+  if (!isDeepStrictEqual(run.trustBrief, run.designBrief?.trustBrief))
+    add("designBrief.trustBrief", "DesignBrief must embed the current TrustBrief.");
 }
 
 function validateState(run, add) {
@@ -265,18 +279,61 @@ function validateState(run, add) {
     run.status !== "complete"
   )
     add("ownerDecision", "Owner approval advances to build or later.");
+  if (phaseAtLeast(run.phase, "build") && run.ownerDecision !== "approved")
+    add("ownerDecision", "Build and later phases require owner approval.");
 }
 
-function validateDirections(directions, add) {
+function validateDirections(run, add) {
+  const directions = run.directions ?? [];
   for (const [index, direction] of directions.entries()) {
     for (const field of ["id", "designBriefId", "territory"])
       requireText(direction?.[field], `directions.${index}.${field}`, add);
-    requireArray(
+    requireNonEmptyTextArray(
       direction?.artifactRefs,
       `directions.${index}.artifactRefs`,
       add,
     );
     if (direction?.qualified === true) {
+      const preference = direction.preference;
+      if (
+        !isRecord(preference) ||
+        preference.reviewers !== 4 ||
+        preference.preferredToBaseline < 3 ||
+        preference.preferredToControl < 3
+      )
+        add(
+          `directions.${index}.preference`,
+          "Qualified directions require at least 3/4 preference over both the baseline and without-skill control.",
+        );
+      const visualReviews = qualifiedVisualReviews(run.reviews ?? []);
+      const actualPreferenceCount = visualReviews.filter((review) =>
+        review.preference?.includes(direction.id),
+      ).length;
+      if (actualPreferenceCount < 3)
+        add(
+          `directions.${index}.preference`,
+          "Qualified directions require preference from at least three calibrated visual reviewers.",
+        );
+      for (const criterion of ["relevance", "distinctiveness", "craft", "trust"]) {
+        const declared = direction.medians?.[criterion];
+        const scores = visualReviews
+          .map((review) => review.directionScores?.[direction.id]?.[criterion])
+          .filter(Number.isFinite);
+        if (!Number.isFinite(declared) || declared < 3 || median(scores) < 3)
+          add(
+            `directions.${index}.medians.${criterion}`,
+            `Qualified directions require a ${criterion} median of at least 3 across calibrated visual reviews.`,
+          );
+      }
+      const unresolvedVetoes = (run.reviews ?? [])
+        .filter((review) => ["trust", "accessibility"].includes(review.role))
+        .flatMap((review) => review.vetoes ?? [])
+        .filter((veto) => vetoTargetsDirection(veto, direction.id));
+      if (unresolvedVetoes.length)
+        add(
+          `directions.${index}.vetoes`,
+          "Qualified directions cannot retain a trust or accessibility veto.",
+        );
       for (const proxy of ["semanticBlind", "identityBlind"]) {
         const result = direction?.recognition?.[proxy];
         if (
@@ -317,6 +374,7 @@ function validateReviews(reviews, add) {
         `reviews.${index}.calibration`,
         "Reviewer must pass calibration or be disqualified.",
       );
+    if (review?.calibration?.passed === true) validateReviewCalibration(review, index, add);
     requireArray(
       review?.evidenceLabels,
       `reviews.${index}.evidenceLabels`,
@@ -342,7 +400,7 @@ function validateIterations(run, add) {
     for (const field of ["failingCriterion", "changeHypothesis"])
       requireText(iteration?.[field], `iterations.${index}.${field}`, add);
     requireArray(iteration?.invariants, `iterations.${index}.invariants`, add);
-    requireArray(
+    requireNonEmptyTextArray(
       iteration?.artifactRefs,
       `iterations.${index}.artifactRefs`,
       add,
@@ -401,21 +459,18 @@ function validateIterations(run, add) {
 }
 
 function validateOwnerGate(run, add) {
-  const passedRoles = new Set(
-    (run.reviews ?? [])
-      .filter(
-        (review) =>
-          visualRoles.includes(review.role) &&
-          review.calibration?.passed === true &&
-          review.disqualified !== true,
-      )
-      .map((review) => review.role),
-  );
-  if (passedRoles.size !== visualRoles.length)
+  const passedReviews = qualifiedVisualReviews(run.reviews ?? []);
+  const passedRoles = new Set(passedReviews.map((review) => review.role));
+  if (
+    passedReviews.length !== visualRoles.length ||
+    passedRoles.size !== visualRoles.length
+  )
     add(
       "reviews",
       "Owner gate requires one calibrated review from each visual role.",
     );
+  if (new Set(passedReviews.map((review) => review.reviewerId)).size !== visualRoles.length)
+    add("reviews", "Owner gate requires four distinct calibrated reviewer identities.");
   if (!(run.directions ?? []).some((direction) => direction.qualified === true))
     add("directions", "Owner gate requires at least one qualifying direction.");
 }
@@ -465,17 +520,136 @@ function requireArray(value, field, add) {
   if (!Array.isArray(value)) add(field, `${field} must be an array.`);
 }
 
-async function main() {
-  const [statePath, flag, previousPath] = process.argv.slice(2);
-  if (!statePath || (flag && flag !== "--previous"))
-    throw new Error(
-      "Usage: validate-run.mjs <state.json> [--previous <state.json>]",
-    );
-  const scriptDir = dirname(fileURLToPath(import.meta.url));
-  const repoRoot = resolve(scriptDir, "../../..");
-  const validators = await import(
-    pathToFileURL(join(repoRoot, "packages/patterns/dist/index.js"))
+function requireNonEmptyTextArray(value, field, add) {
+  if (!Array.isArray(value)) return add(field, `${field} must be an array.`);
+  if (value.length === 0 || value.some((item) => typeof item !== "string" || !item.trim()))
+    add(field, `${field} must contain at least one specific artifact reference.`);
+}
+
+function qualifiedVisualReviews(reviews) {
+  return reviews.filter(
+    (review) =>
+      visualRoles.includes(review.role) &&
+      review.calibration?.passed === true &&
+      review.disqualified !== true,
   );
+}
+
+function validateReviewCalibration(review, index, add) {
+  const expectedFailures = calibrationMetadata.controls
+    .filter((control) => control.relevantRoles.includes(review.role))
+    .flatMap((control) => control.seededFailures);
+  const detectedFailures = review.calibration?.detectedFailures;
+  if (!Array.isArray(detectedFailures)) {
+    add(`reviews.${index}.calibration.detectedFailures`, "Passed calibration must list detected seeded failures.");
+  } else {
+    const missing = expectedFailures.filter((failure) => !detectedFailures.includes(failure));
+    if (missing.length)
+      add(
+        `reviews.${index}.calibration.detectedFailures`,
+        `Passed calibration missed seeded failures: ${missing.join(", ")}.`,
+      );
+  }
+  for (const [field, label] of [["corrections", "prompt correction"], ["fullReruns", "full rerun"]]) {
+    const value = review.calibration?.[field];
+    if (!Number.isInteger(value) || value < 0 || value > 1)
+      add(`reviews.${index}.calibration.${field}`, `Calibration permits at most one ${label}.`);
+  }
+}
+
+function preserveHistoryPrefix(previous, next, field, add) {
+  if (!Array.isArray(previous) || !Array.isArray(next)) {
+    add(field, "Transition history must remain an array.");
+    return;
+  }
+  if (next.length < previous.length || !previous.every((entry, index) => isDeepStrictEqual(entry, next[index])))
+    add(field, `Resume must preserve the complete ${field} history as an unchanged prefix.`);
+}
+
+function vetoTargetsDirection(veto, directionId) {
+  if (typeof veto === "string") return veto.includes(directionId);
+  return isRecord(veto) && veto.directionId === directionId && veto.resolved !== true;
+}
+
+function median(values) {
+  if (!values.length) return Number.NEGATIVE_INFINITY;
+  const ordered = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(ordered.length / 2);
+  return ordered.length % 2 ? ordered[middle] : (ordered[middle - 1] + ordered[middle]) / 2;
+}
+
+function validateProductionEvidence(evidence, add) {
+  if (!isRecord(evidence)) return add("productionEvidence", "Complete runs require production verification evidence.");
+  for (const field of ["repositoryGates", "browserAccessibilityMatrix", "rollbackEvidence", "postDeploySmoke"]) {
+    const record = evidence[field];
+    if (!isRecord(record) || record.status !== "passed")
+      add(`productionEvidence.${field}`, `${field} must record a passed result.`);
+    requireText(record?.artifact, `productionEvidence.${field}.artifact`, add);
+  }
+  const measurements = evidence.mobileMeasurements;
+  if (!Array.isArray(measurements) || measurements.length !== 3) {
+    add("productionEvidence.mobileMeasurements", "Complete runs require exactly three cold-cache mobile measurements.");
+    return;
+  }
+  const profileIds = new Set();
+  const runIds = new Set();
+  for (const [index, measurement] of measurements.entries()) {
+    requireText(measurement?.profileId, `productionEvidence.mobileMeasurements.${index}.profileId`, add);
+    requireText(measurement?.runId, `productionEvidence.mobileMeasurements.${index}.runId`, add);
+    profileIds.add(measurement?.profileId);
+    runIds.add(measurement?.runId);
+    if (measurement?.coldCache !== true)
+      add(`productionEvidence.mobileMeasurements.${index}.coldCache`, "Mobile measurements must use cold cache.");
+    for (const metric of ["lcpMs", "cls"])
+      if (!Number.isFinite(measurement?.[metric]) || measurement[metric] < 0)
+        add(`productionEvidence.mobileMeasurements.${index}.${metric}`, `${metric} must be a non-negative number.`);
+  }
+  if (profileIds.size !== 1) add("productionEvidence.mobileMeasurements", "Mobile measurements must use one comparable profile.");
+  if (runIds.size !== 3) add("productionEvidence.mobileMeasurements", "Mobile measurements must record three distinct runs.");
+}
+
+export function parseArguments(args) {
+  if (
+    !Array.isArray(args) ||
+    (args.length !== 1 && args.length !== 3) ||
+    !args[0] ||
+    (args.length === 3 && (args[1] !== "--previous" || !args[2]))
+  )
+    throw new Error("Usage: validate-run.mjs <state.json> [--previous <state.json>]");
+  return { statePath: args[0], previousPath: args[2] };
+}
+
+export async function loadPatternValidators(repoRoot) {
+  const entry = join(repoRoot, "packages/patterns/dist/index.js");
+  if (!existsSync(entry)) {
+    const build = spawnSync(
+      process.execPath,
+      [
+        join(repoRoot, "scripts/build-package.mjs"),
+        "styles.css",
+        "visual-grammar.css",
+        "public.css",
+        "axal.css",
+        "pack.css",
+        "tools.css",
+        "responsive.css",
+      ],
+      {
+        cwd: join(repoRoot, "packages/patterns"),
+        env: { ...process.env, PATH: `${join(repoRoot, "node_modules/.bin")}:${process.env.PATH ?? ""}` },
+        stdio: "inherit",
+      },
+    );
+    if (build.error || build.status !== 0 || !existsSync(entry))
+      throw new Error("Unable to build @sanchika/patterns validators for craft-run validation.");
+  }
+  return import(`${pathToFileURL(entry).href}?craft-validator=${statSync(entry).mtimeMs}`);
+}
+
+async function main() {
+  const { statePath, previousPath } = parseArguments(process.argv.slice(2));
+  const repoRoot = resolve(scriptDir, "../../..");
+  const validators = await loadPatternValidators(repoRoot);
   const run = JSON.parse(readFileSync(resolve(statePath), "utf8"));
   const issues = validateCraftRun(run, validators, {
     allowTemplate: basename(statePath) === "run-template.json",

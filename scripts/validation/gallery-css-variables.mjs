@@ -33,7 +33,7 @@ export function findGalleryIdentityPolicyFailures({ path, source }) {
   const colorSource = isIdentityLayer ? source.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;]+;/gi, "") : source;
   if (/oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(colorSource)) failures.push(`${path} must not contain raw colors outside gallery identity declarations`);
   if (isIdentityLayer && /\.sk-[a-z0-9-]+/i.test(source)) failures.push("styles/identity.css must not style package selectors");
-  if (isIdentityLayer && /url\(\s*["']?https?:/i.test(source)) failures.push("styles/identity.css must not load external font or image origins");
+  if (isIdentityLayer && containsExternalCssOrigin(source)) failures.push("styles/identity.css must not load external font or image origins");
   for (const match of source.matchAll(/font-family\s*:\s*([^;]+)/gi)) {
     if (!isIdentityLayer && !match[1].trim().startsWith("var(")) failures.push(`${path} must use package or gallery identity typography variables`);
   }
@@ -95,7 +95,53 @@ export function runGalleryVariableFixtures() {
     }
   }
 
-  return { count: fixtures.length, failures };
+  const identityFixtures = [
+    {
+      name: "relative identity asset",
+      source: '@font-face { src: url("../assets/font.woff2"); }',
+      blocked: false,
+    },
+    {
+      name: "absolute URL function",
+      source: '@font-face { src: url("https://fonts.example/font.woff2"); }',
+      blocked: true,
+    },
+    {
+      name: "protocol-relative URL function",
+      source: "@font-face { src: url(//cdn.example/font.woff2); }",
+      blocked: true,
+    },
+    {
+      name: "quoted external import",
+      source: '@import "https://fonts.example/style.css";',
+      blocked: true,
+    },
+    {
+      name: "protocol-relative import",
+      source: '@import url("//fonts.example/style.css");',
+      blocked: true,
+    },
+  ];
+  for (const fixture of identityFixtures) {
+    const blocked = findGalleryIdentityPolicyFailures({
+      path: "styles/identity.css",
+      source: fixture.source,
+    }).some((failure) => failure.includes("external font or image origins"));
+    if (blocked !== fixture.blocked)
+      failures.push(
+        `${fixture.name}: expected external origin blocked=${fixture.blocked}; found ${blocked}`,
+      );
+  }
+
+  return { count: fixtures.length + identityFixtures.length, failures };
+}
+
+function containsExternalCssOrigin(source) {
+  const active = stripCssComments(source);
+  return (
+    /url\(\s*["']?\s*(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(active) ||
+    /@import\s+(?:url\(\s*)?["']?\s*(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(active)
+  );
 }
 
 function extractHtmlCss(html) {

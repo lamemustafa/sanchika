@@ -61,7 +61,12 @@ import { runReleaseScreenshotFixtures, stableReleaseScreenshotSet } from "./vali
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
 import { runTarballContentsFixtures } from "./validation/tarball-contents.mjs";
-import { validateCalibrationPack, validateCraftRun } from "../skills/sanchika-craft/scripts/validate-run.mjs";
+import {
+  loadPatternValidators,
+  validateCalibrationPack,
+  validateCraftRun,
+} from "../skills/sanchika-craft/scripts/validate-run.mjs";
+import { runCraftRunFixtures } from "./validation/craft-run-fixtures.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const failures = [];
@@ -124,7 +129,14 @@ for (const discoveryPath of [".agents/skills/sanchika-craft", ".claude/skills/sa
     fail(`${discoveryPath} must resolve to the canonical skills/sanchika-craft directory`);
   }
 }
-const craftValidators = {};
+const craftValidators = await loadPatternValidators(root);
+const craftRun = readJson("craft/runs/sanchika-landing-s10/state.json");
+const craftRunFixtures = runCraftRunFixtures({
+  baseRun: craftRun,
+  validators: craftValidators,
+});
+for (const fixtureFailure of craftRunFixtures.failures)
+  fail(`craft run fixture ${fixtureFailure}`);
 for (const [statePath, allowTemplate] of [
   ["skills/sanchika-craft/assets/run-template.json", true],
   ["craft/runs/sanchika-landing-s10/state.json", false],
@@ -2209,6 +2221,7 @@ console.log(`Sanchika build artifact fixtures passed (${buildArtifactFixtures.co
 console.log(`Sanchika gallery production fixtures passed (${galleryProductionFixtures.count} cases).`);
 console.log(`Sanchika tarball content fixtures passed (${tarballContentsFixtures.count} cases).`);
 console.log(`Sanchika product pattern fixtures passed (${productPatternFixtures.count} cases).`);
+console.log(`Sanchika craft run fixtures passed (${craftRunFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
 console.log(`Sanchika release screenshot fixtures passed (${releaseScreenshotFixtures.count} cases).`);
 console.log(`Sanchika release readiness fixtures passed (${releaseReadinessFixtures.count} cases).`);

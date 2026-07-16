@@ -212,7 +212,25 @@
       "reviewerId": "brand-01",
       "role": "brand",
       "producer": false,
-      "calibration": { "passed": true, "corrections": 0 },
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment"
+        ]
+      },
       "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
       "scores": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
       "directionScores": {
@@ -227,7 +245,26 @@
       "reviewerId": "craft-01",
       "role": "craft",
       "producer": false,
-      "calibration": { "passed": true, "corrections": 0 },
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
       "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
       "scores": { "relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4 },
       "directionScores": {
@@ -242,7 +279,26 @@
       "reviewerId": "trust-01",
       "role": "trust",
       "producer": false,
-      "calibration": { "passed": true, "corrections": 0 },
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
       "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
       "scores": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
       "directionScores": {
@@ -257,7 +313,18 @@
       "reviewerId": "accessibility-01",
       "role": "accessibility",
       "producer": false,
-      "calibration": { "passed": true, "corrections": 0 },
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
       "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
       "scores": { "relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4, "accessibility": 4 },
       "directionScores": {
