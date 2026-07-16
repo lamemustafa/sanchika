@@ -342,8 +342,29 @@ try {
   const noJsContext = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
   const noJsPage = await noJsContext.newPage();
   await noJsPage.goto(`${origin}/primitives/`, { waitUntil: "networkidle" });
-  evidence.jsDisabled = await noJsPage.evaluate(() => ({ primaryLinks: document.querySelectorAll("header nav a").length, contractLinks: document.querySelectorAll(".contract-index a").length, searchHidden: document.querySelector("[data-docs-search-form]")?.hidden }));
-  if (evidence.jsDisabled.primaryLinks < 5 || evidence.jsDisabled.contractLinks < 28 || !evidence.jsDisabled.searchHidden) failures.push(`JavaScript-disabled navigation proof failed: ${JSON.stringify(evidence.jsDisabled)}`);
+  await noJsPage.locator(".site-primary-navigation-disclosure > summary").click();
+  evidence.jsDisabled = await noJsPage.evaluate(() => {
+    const disclosure = document.querySelector(".site-primary-navigation-disclosure");
+    const links = [...(disclosure?.querySelectorAll("nav a") ?? [])];
+    const adoption = links.find((link) => link.getAttribute("href") === "/adoption/");
+    const adoptionRect = adoption?.getBoundingClientRect();
+    return {
+      disclosureOpen: disclosure instanceof HTMLDetailsElement && disclosure.open,
+      primaryLinks: links.map((link) => ({ label: link.textContent?.trim(), href: link.getAttribute("href") })),
+      adoptionInViewport: Boolean(adoptionRect && adoptionRect.left >= -1 && adoptionRect.right <= document.documentElement.clientWidth + 1),
+      contractLinks: document.querySelectorAll(".contract-index a").length,
+      searchHidden: document.querySelector("[data-docs-search-form]")?.hidden,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  const expectedPrimaryLinks = [
+    { label: "Foundations", href: "/foundations/" },
+    { label: "Primitives", href: "/primitives/" },
+    { label: "Patterns", href: "/patterns/" },
+    { label: "Modes", href: "/modes/" },
+    { label: "Adoption", href: "/adoption/" },
+  ];
+  if (!evidence.jsDisabled.disclosureOpen || JSON.stringify(evidence.jsDisabled.primaryLinks) !== JSON.stringify(expectedPrimaryLinks) || !evidence.jsDisabled.adoptionInViewport || evidence.jsDisabled.contractLinks < 28 || !evidence.jsDisabled.searchHidden || evidence.jsDisabled.overflow > 1) failures.push(`JavaScript-disabled navigation proof failed: ${JSON.stringify(evidence.jsDisabled)}`);
   await captureScreenshot(noJsPage, join(specialEvidenceDir, "javascript-disabled-primitives-390x844.png"), { fullPage: true });
   await noJsContext.close();
 
@@ -421,6 +442,8 @@ try {
     const reflowPage = await reflowContext.newPage();
     const response = await reflowPage.goto(`${origin}${route}`, { waitUntil: "networkidle" });
     const record = await reflowPage.evaluate(() => {
+      const primaryNavigation = document.querySelector(".site-primary-navigation-disclosure");
+      if (primaryNavigation instanceof HTMLDetailsElement) primaryNavigation.open = true;
       const controls = [...document.querySelectorAll("a[href],button,input,select,textarea,summary")].filter((element) => {
         const rect = element.getBoundingClientRect();
         return rect.width > 0 && rect.height > 0;
