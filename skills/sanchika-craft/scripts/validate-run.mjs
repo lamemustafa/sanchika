@@ -146,9 +146,8 @@ export function validateCraftTransition(previous, next) {
     );
   preserveHistoryPrefix(previous?.iterations, next?.iterations, "iterations", add);
   preserveHistoryPrefix(previous?.reviews, next?.reviews, "reviews", add);
-  preserveHistoryPrefix(previous?.directions, next?.directions, "directions", add);
   if (capabilityResume) {
-    for (const field of ["trustBrief", "designBrief"]) {
+    for (const field of ["trustBrief", "designBrief", "directions"]) {
       if (!isDeepStrictEqual(previous?.[field], next?.[field]))
         add(field, `Capability resumes cannot change ${field} acceptance thresholds.`);
     }
@@ -298,8 +297,12 @@ function validateDirections(run, add) {
       if (
         !isRecord(preference) ||
         preference.reviewers !== 4 ||
+        !Number.isInteger(preference.preferredToBaseline) ||
         preference.preferredToBaseline < 3 ||
+        preference.preferredToBaseline > 4 ||
+        !Number.isInteger(preference.preferredToControl) ||
         preference.preferredToControl < 3
+        || preference.preferredToControl > 4
       )
         add(
           `directions.${index}.preference`,
@@ -319,7 +322,12 @@ function validateDirections(run, add) {
         const scores = visualReviews
           .map((review) => review.directionScores?.[direction.id]?.[criterion])
           .filter(Number.isFinite);
-        if (!Number.isFinite(declared) || declared < 3 || median(scores) < 3)
+        if (
+          scores.length !== visualRoles.length ||
+          !Number.isFinite(declared) ||
+          declared < 3 ||
+          median(scores) < 3
+        )
           add(
             `directions.${index}.medians.${criterion}`,
             `Qualified directions require a ${criterion} median of at least 3 across calibrated visual reviews.`,
@@ -328,7 +336,13 @@ function validateDirections(run, add) {
       const unresolvedVetoes = (run.reviews ?? [])
         .filter((review) => ["trust", "accessibility"].includes(review.role))
         .flatMap((review) => review.vetoes ?? [])
-        .filter((veto) => vetoTargetsDirection(veto, direction.id));
+        .filter((veto) =>
+          vetoTargetsDirection(
+            veto,
+            direction.id,
+            directions.map((candidate) => candidate.id),
+          ),
+        );
       if (unresolvedVetoes.length)
         add(
           `directions.${index}.vetoes`,
@@ -566,9 +580,16 @@ function preserveHistoryPrefix(previous, next, field, add) {
     add(field, `Resume must preserve the complete ${field} history as an unchanged prefix.`);
 }
 
-function vetoTargetsDirection(veto, directionId) {
-  if (typeof veto === "string") return veto.includes(directionId);
-  return isRecord(veto) && veto.directionId === directionId && veto.resolved !== true;
+function vetoTargetsDirection(veto, directionId, directionIds) {
+  if (typeof veto === "string") {
+    const targets = directionIds.filter((candidate) => veto.includes(candidate));
+    return targets.length === 0 || targets.includes(directionId);
+  }
+  return (
+    isRecord(veto) &&
+    veto.resolved !== true &&
+    (!veto.directionId || veto.directionId === directionId)
+  );
 }
 
 function median(values) {

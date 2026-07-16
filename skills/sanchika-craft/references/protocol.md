@@ -31,10 +31,11 @@ Phase changes may advance one step. Rebriefing may return `review` or
 not resume except `capability_blocked`, which may resume at the same phase with
 unchanged acceptance thresholds.
 
-Saved `directions`, `iterations`, and `reviews` are append-only audit history:
-every prior entry must remain an unchanged prefix of the next snapshot. A
-`capability_blocked` resume must also preserve the complete TrustBrief and
-DesignBrief; only capability state and new evidence may advance.
+Saved `iterations` and `reviews` are append-only audit history: every prior
+entry must remain an unchanged prefix of the next snapshot. A
+`capability_blocked` resume must also preserve the complete TrustBrief,
+DesignBrief, and direction set; only capability state and new evidence may
+advance.
 
 ## Evidence contracts
 

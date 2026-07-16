@@ -112,6 +112,16 @@ export function runGalleryVariableFixtures() {
       blocked: true,
     },
     {
+      name: "scheme URL without slashes",
+      source: "@font-face { src: url(https:fonts.example/font.woff2); }",
+      blocked: true,
+    },
+    {
+      name: "embedded data URL",
+      source: "@font-face { src: url(data:font/woff2;base64,AA==); }",
+      blocked: false,
+    },
+    {
       name: "quoted external import",
       source: '@import "https://fonts.example/style.css";',
       blocked: true,
@@ -139,8 +149,8 @@ export function runGalleryVariableFixtures() {
 function containsExternalCssOrigin(source) {
   const active = stripCssComments(source);
   return (
-    /url\(\s*["']?\s*(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(active) ||
-    /@import\s+(?:url\(\s*)?["']?\s*(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(active)
+    /url\(\s*["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active) ||
+    /@import\s+(?:url\(\s*)?["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active)
   );
 }
 
