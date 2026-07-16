@@ -7,6 +7,7 @@ import StatusSummary from "../components/StatusSummary.astro";
 import PublicHero from "../components/showcase/PublicHero.astro";
 import ReviewDeskPreview from "../components/showcase/ReviewDeskPreview.astro";
 import { auditTrail, reviewEvidence, reviewQueue } from "../content/showcase";
+import { currentStableRelease, currentStableReleaseUrl } from "../content/site";
 import GalleryLayout from "../layouts/GalleryLayout.astro";
 
 const title = "Sanchika | Evidence-first interface contracts";
@@ -89,7 +90,7 @@ const sectionJumps = [
       <div><p class="eyebrow">Open evidence</p><h2 id="source-coda-title">Inspect before you adopt.</h2><p>Source, entrypoints, release evidence, adoption boundaries, support, security, and trademark terms remain public and linked. The gallery demonstrates contracts; consumers still own authorization, real data, runtime behavior, and professional review.</p></div>
       <div class="source-coda__links">
         <a href="https://github.com/lamemustafa/sanchika">GitHub source</a>
-        <a href="https://github.com/lamemustafa/sanchika/releases">Release evidence</a>
+        <a href={currentStableReleaseUrl}>Release v{currentStableRelease} evidence</a>
         <a href="/adoption/">Adoption boundary</a>
         <a href="/sanchika-manifest.json">Machine-readable manifest</a>
       </div>

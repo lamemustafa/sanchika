@@ -1,11 +1,13 @@
 # Release Policy
 
-Sanchika is pre-1.0 and not published.
+Sanchika is pre-1.0 and not published to npm. The current stable distribution
+model is a reviewed GitHub artifact release.
 
 ## V0 Rules
 
-- Packages remain `private: true` until repository ownership, npm scope, and
-  trademark posture are confirmed.
+- Source package manifests remain `private: true` at version `0.0.0` until
+  repository ownership, npm scope, and trademark posture are confirmed. The
+  stable pack pipeline rewrites clean temporary copies to the release version.
 - Public production-readiness claims require at least one real ComplyEaze
   surface consuming Sanchika successfully.
 - Release notes must state which product modes are proven and which remain
@@ -47,32 +49,80 @@ installs the tarballs into a scratch consumer, runs the consumer probe and
 typecheck, and then writes the same verified assets to `dist/release/`.
 
 The ignored `dist/release/manifest.json` records the source commit, simulated
-version, package filenames, and SHA-256 hashes. Upload every file in
-`dist/release/tarballs/` plus `manifest.json` to a GitHub release when a
-consumer needs a CI-installable artifact but the npm scope is still private.
+version, package and screenshot filenames, SHA-256 hashes, and the deterministic
+`npm pack --json` file inventory for every package. Each inventory records
+archive path and byte size and is checked against the package-specific
+allowlist. The same bundle emits `dist/release/SHA256SUMS` in dependency order
+from the final tarball and screenshot bytes. The completed stable bundle is
+exactly eleven flat files under `dist/release/`: three tarballs,
+`manifest.json`, `SHA256SUMS`, and six named gallery screenshots. Upload those
+eleven files directly as GitHub release assets while the npm scope is private.
+The packed-consumer lane verifies both npm installation and an offline pnpm
+installation with explicit tarball overrides in an empty temporary store. The
+pnpm proof fails if an internal exact-version dependency falls through to the
+npm registry.
 
 `pnpm release:stable-tarballs` is the stable GitHub-release promotion path for
 the releasable V0 package set. It does not publish to npm and does not create a Git
 tag or GitHub release by itself. It validates root `release.json`, then
-generates matching package metadata, tarball filenames, checksums, and emitted
-manifest metadata under `dist/release/`. A command-line version override must
-equal the release manifest version. The current stable artifact baseline is
-`v0.0.2`, with `@sanchika/tokens`, `@sanchika/primitives`, and
+regenerates gallery browser evidence and generates matching package metadata,
+tarball and screenshot filenames, checksums, and emitted manifest metadata
+under `dist/release/`. It validates the current gallery build fingerprints and
+final screenshot bytes before atomically replacing the release directory. A
+command-line version override must
+equal the release manifest version. The current stable artifact release is
+`v0.1.0`, with `@sanchika/tokens`, `@sanchika/primitives`, and
 `@sanchika/patterns` in dependency order. The private
 `@sanchika/gallery-app` is not a consumer package and is excluded from release
 tarballs.
 
-## Current Baseline And Planned Structural Release
+## v0.1.0 Release Preparation And Publication Boundary
 
-S0 introduces release-manifest hygiene for the existing `v0.0.2` artifact
-baseline. It does not publish packages, create a tag, create a GitHub release,
-or approve npm publication. Source package manifests remain on the experimental
-`0.0.0` model.
+The reviewed release tree advances `release.json` to `v0.1.0`. While the
+release-preparation branch is unmerged, this is a candidate declaration only.
+Once the tree is merged, detached release execution regenerates artifacts from
+the merge commit, verifies their final bytes, creates the tag and GitHub
+release, and uploads the exact asset set. The Pages workflow is then rerun to
+publish the matching gallery status. Release preparation itself creates no tag,
+release, upload, npm publication, or deploy.
 
-S1 moves the gallery from its package and string renderer to the private Astro
-application without publishing, tagging, or changing the `v0.0.2` release
-manifest. The next material package release remains planned as `v0.1.0` and is
-separate from this architecture migration.
+The gallery build runs `scripts/check-gallery-release-readiness.mjs` in the
+GitHub Pages master context. It refuses the automatic post-merge deployment
+until the non-draft stable GitHub release exists with exactly the eleven assets
+declared above. It downloads and validates the published manifest, checksum
+summary, tag commit, and final asset bytes. The rerun then regenerates the
+stable bundle. When Pages is running at the release tag commit, the published
+package tarballs and package manifest evidence must match that clean tagged
+build. The gate identifies that checkout from GitHub Actions' trusted
+`GITHUB_SHA`; malformed or mismatching regenerated source metadata fails the
+tag-commit run instead of disabling the comparison. Screenshot hashes and sizes
+are verified against the published manifest;
+pixel-identical regeneration is not required across browser and operating-system
+builds. Later master builds retain the published-release validation without
+pretending to be the historical tag checkout. After publishing those assets,
+rerun the Pages workflow to publish the matching current-release status. This
+verification does not change repository settings or publish to npm.
+
+The release set is exactly tokens, primitives, and patterns. The gallery is a
+separately deployed private application and is never packed. Internal packed
+dependencies resolve to `0.1.0`; source dependencies remain `workspace:*`.
+There is no npm publication and no next package release is announced unless a
+separate approval records one.
+
+## Rollback To v0.0.2
+
+The rollback assets remain:
+
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.0.2/sanchika-tokens-0.0.2.tgz`
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.0.2/sanchika-primitives-0.0.2.tgz`
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.0.2/sanchika-patterns-0.0.2.tgz`
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.0.2/manifest.json`
+
+Consumers restore all three tarballs together, regenerate and review their
+lockfile, remove any v0.1-only API usage, and rerun their package-backed smoke
+check. Rollback changes package artifacts only; it requires no database, DNS,
+or workspace migration. See `docs/migrations/v0.0.2-to-v0.1.0.md` for the
+consumer sequence.
 
 ## Future Trusted Publishing Contract
 

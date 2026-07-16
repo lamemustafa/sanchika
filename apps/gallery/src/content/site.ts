@@ -9,7 +9,25 @@ import release from "../../../../release.json";
 export const canonicalOrigin = "https://sanchika.complyeaze.com";
 export const sourceRepository = "https://github.com/lamemustafa/sanchika";
 export const currentStableRelease = release.version;
-export const plannedRelease = "0.1.0";
+export const currentStableReleaseUrl = `${sourceRepository}/releases/tag/v${currentStableRelease}`;
+export type PlannedRelease = {
+  readonly version: string;
+  readonly status: "planned-not-released";
+  readonly announcement: string;
+};
+const approvedPlannedRelease = (): PlannedRelease | null => null;
+export const plannedRelease = approvedPlannedRelease();
+export const noNextReleaseAnnouncement = "No next package release is currently announced.";
+export const releaseStatus = {
+  currentStable: {
+    version: currentStableRelease,
+    status: "released-current",
+    url: currentStableReleaseUrl,
+    distribution: "GitHub release artifacts; not published to npm",
+  },
+  next: plannedRelease,
+  nextAnnouncement: plannedRelease?.announcement ?? noNextReleaseAnnouncement,
+} as const;
 export const projectProfile = {
   name: "Sanchika",
   description: "A framework-agnostic design contract and static evidence system for evidence-first Indian compliance interfaces. It provides typed tokens, React-ready primitive contracts, package CSS, product patterns, and inspectable gallery proof.",
@@ -34,7 +52,7 @@ export const projectProfile = {
 } as const;
 export const preferredSourceLinks = [
   { label: "Source", url: sourceRepository },
-  { label: "Releases", url: `${sourceRepository}/releases` },
+  { label: `Release v${currentStableRelease}`, url: currentStableReleaseUrl },
   { label: "Security", url: `${sourceRepository}/blob/master/SECURITY.md` },
   { label: "License and trademark", url: `${sourceRepository}/blob/master/LICENSE.brand.md` },
 ] as const;

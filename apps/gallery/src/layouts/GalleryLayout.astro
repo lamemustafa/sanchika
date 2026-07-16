@@ -1,6 +1,6 @@
 ---
 import "../styles/index.css";
-import { currentStableRelease, sourceRepository } from "../content/site";
+import { currentStableRelease, currentStableReleaseUrl, sourceRepository } from "../content/site";
 
 interface Props {
   title: string;
@@ -61,7 +61,7 @@ const nav = [
         <p>Design contracts, not compliance judgment. All gallery records are synthetic.</p>
       </div>
       <nav aria-label="Repository and governance">
-        <a href={`${sourceRepository}/releases`}>Release v{currentStableRelease}</a>
+        <a href={currentStableReleaseUrl}>Release v{currentStableRelease}</a>
         <a href={`${sourceRepository}/blob/master/CONTRIBUTING.md`}>Contribute</a>
         <a href={`${sourceRepository}/blob/master/SUPPORT.md`}>Support</a>
         <a href={`${sourceRepository}/blob/master/SECURITY.md`}>Security</a>

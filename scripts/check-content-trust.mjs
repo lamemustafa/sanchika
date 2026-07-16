@@ -90,7 +90,7 @@ function lintTrustCopy(text, { requireBoundaryDisclosure = true } = {}) {
 
 function validateProductionPathTrust({ documentPath, visibleText, failures }) {
   const requirements = new Map([
-    ["index.html", ["No model runtime", "No automated compliance judgment", "Synthetic examples", "v0.1.0 is planned, not released"]],
+    ["index.html", ["No model runtime", "No automated compliance judgment", "Synthetic examples", "Current stable release: v0.1.0", "No next package release is currently announced."]],
     ["modes/complyeaze/index.html", ["Product-family boundary", "Credentials or artifacts", "person choosing the route"]],
     ["modes/axal/index.html", ["Saved synthetic context", "judgment stays human", "Source evidence", "CA decision required"]],
     ["modes/pack/index.html", ["Credentials, session cookies, and downloaded files", "No ComplyEaze account", "Inspect permission contract", "manual download path"]],

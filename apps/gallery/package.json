@@ -9,7 +9,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "astro build && node ../../scripts/write-gallery-build-metadata.mjs",
+    "build": "astro build && node ../../scripts/write-gallery-build-metadata.mjs && node ../../scripts/check-gallery-release-readiness.mjs",
     "browser:check": "node scripts/check-browser.mjs",
     "evidence:check": "node scripts/write-evidence-manifest.mjs --check",
     "evidence:manifest": "node scripts/write-evidence-manifest.mjs",

@@ -104,7 +104,25 @@ export function assertPackedFileList({ packageName, packed }) {
   }
 
   const allowedPaths = allowedPathsFor(packageName);
-  const actualPaths = packed.files.map((file) => normalizePackedPath(file.path)).sort();
+  const inventory = packed.files.map((file) => ({
+    path: normalizePackedPath(file.path),
+    size: file.size,
+  }));
+  const actualPaths = inventory.map((file) => file.path);
+  if (new Set(actualPaths).size !== actualPaths.length) {
+    throw new Error(`@sanchika/${packageName} tarball file inventory must not contain duplicate paths`);
+  }
+
+  for (const file of inventory) {
+    if (!file.path || file.path.startsWith("/") || file.path.includes("\\") || file.path.split("/").includes("..")) {
+      throw new Error(`@sanchika/${packageName} tarball file inventory path is invalid: ${file.path || "missing"}`);
+    }
+    if (!Number.isSafeInteger(file.size) || file.size < 0) {
+      throw new Error(`@sanchika/${packageName} tarball file ${file.path} must include a non-negative byte size`);
+    }
+  }
+  inventory.sort((left, right) => left.path.localeCompare(right.path));
+  actualPaths.sort();
 
   for (const path of actualPaths) {
     if (forbiddenPathPatterns.some((pattern) => pattern.test(path))) {
@@ -121,6 +139,44 @@ export function assertPackedFileList({ packageName, packed }) {
       throw new Error(`@sanchika/${packageName} tarball is missing ${path}`);
     }
   }
+
+  return inventory;
+}
+
+export function runTarballContentsFixtures() {
+  const validPaths = [
+    "LICENSE",
+    "README.md",
+    "dist/generated.d.ts",
+    "dist/generated.js",
+    "dist/index.d.ts",
+    "dist/index.js",
+    "dist/theme.css",
+    "package.json",
+  ];
+  const validFiles = () => validPaths.map((path, index) => ({ path, size: index + 1 }));
+  const cases = [
+    { name: "valid tokens inventory", files: validFiles(), expected: null },
+    { name: "missing required file", files: validFiles().filter((file) => file.path !== "README.md"), expected: "is missing README.md" },
+    { name: "extra file", files: [...validFiles(), { path: "CHANGELOG.md", size: 1 }], expected: "unexpected file CHANGELOG.md" },
+    { name: "forbidden source file", files: [...validFiles(), { path: "src/index.ts", size: 1 }], expected: "must not include src/index.ts" },
+    { name: "mismatched package file", files: validFiles().map((file) => file.path === "dist/theme.css" ? { ...file, path: "dist/styles.css" } : file), expected: "unexpected file dist/styles.css" },
+    { name: "duplicate file", files: [...validFiles(), { path: "README.md", size: 1 }], expected: "duplicate paths" },
+    { name: "invalid byte size", files: validFiles().map((file, index) => index === 0 ? { ...file, size: -1 } : file), expected: "non-negative byte size" },
+    { name: "absolute archive path", files: validFiles().map((file, index) => index === 0 ? { ...file, path: "/LICENSE" } : file), expected: "path is invalid" },
+  ];
+  const failures = [];
+  for (const fixture of cases) {
+    try {
+      const inventory = assertPackedFileList({ packageName: "tokens", packed: { files: fixture.files } });
+      if (fixture.expected) failures.push(`${fixture.name} should fail with ${fixture.expected}`);
+      else if (JSON.stringify(inventory.map((file) => file.path)) !== JSON.stringify([...validPaths].sort((left, right) => left.localeCompare(right)))) failures.push(`${fixture.name} did not return deterministic path order`);
+    } catch (error) {
+      if (!fixture.expected) failures.push(`${fixture.name} should pass: ${String(error)}`);
+      else if (!String(error).includes(fixture.expected)) failures.push(`${fixture.name} should mention ${fixture.expected}; received ${String(error)}`);
+    }
+  }
+  return { count: cases.length, failures };
 }
 
 function allowedPathsFor(packageName) {

@@ -8,7 +8,7 @@ import ProductRouteArtifact from "./showcase/ProductRouteArtifact.astro";
 import PublicHero from "./showcase/PublicHero.astro";
 import ReviewDeskPreview from "./showcase/ReviewDeskPreview.astro";
 import ToolDirectory from "./showcase/ToolDirectory.astro";
-import { currentStableRelease, plannedRelease, sourceRepository } from "../content/site";
+import { currentStableRelease, currentStableReleaseUrl, noNextReleaseAnnouncement, sourceRepository } from "../content/site";
 import { auditTrail, custodyFacts, custodyStages, modeRoutePaths, productRoutes, reviewEvidence, reviewQueue, showcaseTools } from "../content/showcase";
 
 interface Props { contract: ProductPatternContract; }
@@ -60,7 +60,7 @@ const tool = showcaseTools[1];
     </div>
   )}
   {contract.name === "ReleaseStatusBanner" && (
-    <aside class={className} aria-label="Release status proof"><strong>v{currentStableRelease} is stable</strong><span>v{plannedRelease} remains planned and unreleased; consumer adoption evidence is incomplete.</span><a href={`${sourceRepository}/releases`}>Inspect releases</a></aside>
+    <aside class={className} aria-label="Release status proof"><strong>v{currentStableRelease} is the current GitHub artifact release</strong><span>The packages are not published to npm. {noNextReleaseAnnouncement}</span><a href={currentStableReleaseUrl}>Inspect v{currentStableRelease} release evidence</a></aside>
   )}
   {contract.name === "ReviewDeskPreview" && <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />}
   {contract.name === "EvidencePanel" && (

@@ -44,17 +44,22 @@ Do not migrate Axal, Pack, or Tools before the ComplyEaze foundation is usable.
 - Import guard search finds no `../sanchika`, `sanchika/packages/*/src`, or
   parent workspace inclusion of `sanchika/`.
 
-## V0 Local Consumption Quickstart
+## V0 Artifact Consumption Quickstart
 
-Until Sanchika is published, ComplyEaze adoption must use a reviewed local
-package link from the Sanchika repo. Do not import nested source paths such as
+Sanchika v0.1.0 is distributed through reviewed GitHub release tarballs, not
+npm. Cross-repository ComplyEaze adoption should use the three release assets
+and record their SHA-256 checksums. A reviewed local package link remains valid
+for same-machine development. Do not import nested source paths such as
 `../sanchika`, `sanchika/packages/*/src`, or add `sanchika/` to the parent pnpm
 workspace.
 
 1. In Sanchika, run `pnpm install`, `pnpm validate`, `pnpm typecheck`, and
    `pnpm build`.
-2. Link only package entrypoints such as `@sanchika/tokens`,
-   `@sanchika/primitives`, and `@sanchika/patterns`.
+2. Install or link only package entrypoints such as `@sanchika/tokens`,
+   `@sanchika/primitives`, and `@sanchika/patterns`. For release adoption,
+   declare all three v0.1.0 GitHub tarballs and the pnpm overrides documented in
+   `docs/migrations/v0.0.2-to-v0.1.0.md` so internal dependencies do not fall
+   through to npm.
 3. In ComplyEaze, target the public/product route group first. Add token CSS
    before primitive CSS at the chosen CSS boundary, then apply one primitive or
    token mapping to a controlled surface.
@@ -80,7 +85,7 @@ workspace.
   tarball version and checksum. Use `docs/adoption-evidence.md` as the evidence
   template.
 
-Packed tarball artifacts are a validated packaging smoke artifact after
-`pnpm publish:tarball-check` passes. They are not the default V0 adoption path;
-use them only when a consumer-specific adoption plan approves tarballs and
-records the tarball version and checksum.
+GitHub tarball artifacts are the reviewed cross-repository v0.1.0 adoption path
+after `pnpm publish:tarball-check` and detached release verification pass. A
+consumer-specific adoption plan must still record the version, all three checksums,
+changed files, and rollback files.

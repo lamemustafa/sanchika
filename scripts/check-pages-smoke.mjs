@@ -14,8 +14,9 @@ const requiredFragments = [
   "Composed package proof",
   "Related by evidence. Different by work.",
   "Find the contract behind the interface.",
-  "Proven, limited, planned.",
-  "Current stable release: v0.0.2",
+  "Proven, limited, current.",
+  "Current stable release: v0.1.0",
+  "No next package release is currently announced.",
   'href="/sanchika-manifest.json"',
   'href="/llms.txt"',
   '<link rel="stylesheet" href="/_astro/',
@@ -65,8 +66,8 @@ try {
   if (!manifestResponse.ok || !llmsResponse.ok) throw new Error("Expected generated manifest and llms.txt endpoints to return HTTP 2xx");
   const manifest = await manifestResponse.json();
   const llms = await llmsResponse.text();
-  if (manifest.releases?.currentStable?.version !== "0.0.2" || manifest.releases?.planned?.status === "released") throw new Error("Generated manifest release state is not truthful");
-  if (!llms.includes("v0.1.0 is planned and is not released")) throw new Error("Generated llms.txt release boundary is missing");
+  if (manifest.releases?.currentStable?.version !== "0.1.0" || manifest.releases?.currentStable?.status !== "released-current" || manifest.releases?.next !== null || Object.hasOwn(manifest.releases ?? {}, "planned")) throw new Error("Generated manifest release state is not truthful");
+  if (!llms.includes("Current stable release: v0.1.0. GitHub release artifacts; not published to npm.") || !llms.includes("No next package release is currently announced.")) throw new Error("Generated llms.txt release boundary is missing");
 
   console.log(`Sanchika Pages smoke check passed for ${targetUrl}`);
 } catch (error) {
