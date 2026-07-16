@@ -3,10 +3,11 @@
 External adopters are independent operational SaaS teams evaluating Sanchika
 outside the ComplyEaze, Axal, Pack, and Tools product family.
 
-Sanchika V0 is public source, not a published npm release. External teams can
-review, clone, and locally link built packages for evaluation, but they must not
-treat the repository as production-ready, filing-ready, government-official, or
-security-audited.
+Sanchika V0 is public source with reviewed GitHub release artifacts, not a published npm release.
+External teams can review, clone, locally link built
+packages, or use the approved v0.1.0 tarballs for evaluation, but they must not
+treat the repository as production-ready, filing-ready, government-official,
+or security-audited.
 
 ## Entry Criteria
 
@@ -31,11 +32,10 @@ security-audited.
 - Import guard search finds no `../sanchika`, `sanchika/packages/*/src`, or
   workspace inclusion of the Sanchika source tree.
 
-## V0 Local Consumption Quickstart
+## V0 Artifact Consumption Quickstart
 
-Until Sanchika is published, external adoption must use a reviewed local
-package-directory link or an adoption-approved packed artifact. The default path
-is local-link evaluation.
+External adoption uses the reviewed v0.1.0 GitHub artifact set or a reviewed
+local package-directory link. GitHub artifacts are not npm publication.
 
 1. In Sanchika, run `pnpm install`, `pnpm validate`, `pnpm typecheck`,
    `pnpm build`, `pnpm typecheck:api`, and `pnpm consumer:check`.
@@ -47,7 +47,7 @@ is local-link evaluation.
 5. Roll back by removing the package link, CSS imports, and mapped primitive or
    pattern usage. Do not leave source-path imports behind.
 
-Packed tarball artifacts are a validated packaging smoke artifact after
-`pnpm publish:tarball-check` passes. They are not the default V0 adoption path;
-use them only when a consumer-specific adoption plan approves tarballs and
-records the tarball version and checksum.
+Tarball adoption must declare the complete dependency set plus the pnpm
+overrides in `docs/migrations/v0.0.2-to-v0.1.0.md`, then record the version, all
+three checksums, changed files, and rollback files after
+`pnpm publish:tarball-check` and detached release verification pass.

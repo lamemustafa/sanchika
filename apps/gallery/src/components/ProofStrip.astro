@@ -1,10 +1,10 @@
 ---
 import { productPatternClassName } from "@sanchika/patterns";
-import { currentStableRelease, packageMetadata, sourceRepository } from "../content/site";
+import { currentStableRelease, currentStableReleaseUrl, packageMetadata, sourceRepository } from "../content/site";
 ---
 
 <dl class={`${productPatternClassName("ProofStrip", { variant: "inline", state: "limited" })} landing-proof-strip`} aria-label="Sanchika proof facts">
-  <div><dt>Stable release</dt><dd><a href={`${sourceRepository}/releases`}>v{currentStableRelease}</a><small>Released artifact; v0.1.0 is only planned.</small></dd></div>
+  <div><dt>Stable release</dt><dd><a href={currentStableReleaseUrl}>v{currentStableRelease}</a><small>Current GitHub artifact release; no npm publication.</small></dd></div>
   <div><dt>Packages</dt><dd><a href={`${sourceRepository}/tree/master/packages`}>{packageMetadata.length} package entrypoints</a><small>Tokens, primitives, patterns; source contracts remain experimental.</small></dd></div>
   <div><dt>Adoption</dt><dd><a href="/adoption/">ComplyEaze first</a><small>Axal, Pack, then Tools; real rollout remains incomplete.</small></dd></div>
   <div><dt>Evidence</dt><dd><a href="/sanchika-manifest.json">Deterministic manifest</a><small>Static output, generated from package and route metadata.</small></dd></div>

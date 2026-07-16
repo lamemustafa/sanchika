@@ -34,9 +34,11 @@ Tools is in scope as a documented future consumer only. Do not implement tool
 templates, routes, or product-specific APIs until a specific Tools product spec
 exists.
 
-External adoption is in scope as public source evaluation only. Packages remain
-private and unpublished in V0; external teams must use a documented local link or
-approved artifact path and record rollback evidence.
+External adoption is in scope as public source evaluation only. Source package
+manifests remain private at `0.0.0`; the stable GitHub artifact pipeline rewrites
+clean temporary package copies to the release version. External teams must use
+the reviewed GitHub artifacts or a documented local link and record rollback
+evidence.
 
 ## Runtime Prerequisites
 
@@ -70,6 +72,16 @@ pnpm verify
 
 In sandboxed Codex runs, use the installed `pnpm` binary directly. `corepack
 pnpm` may fail if it cannot write to the user-level Corepack cache.
+
+## GitHub Artifact Release
+
+`v0.1.0` is the current stable version declared by `release.json` for
+`@sanchika/tokens`, `@sanchika/primitives`, and `@sanchika/patterns`. The
+matching assets, manifest, checksums, and release notes are available at the
+[v0.1.0 GitHub release](https://github.com/lamemustafa/sanchika/releases/tag/v0.1.0)
+after detached release execution publishes them from the reviewed merge commit.
+The packages are not published to npm, and the private gallery app is not part
+of the release package set.
 
 ## CSS Usage
 
@@ -114,8 +126,10 @@ adapter, runtime shell, or consumer package.
 
 ## Status
 
-Early internal scaffold. Do not claim production readiness until at least one
-real ComplyEaze surface consumes Sanchika successfully.
+Pre-1.0 GitHub artifact release. The package contracts and gallery proof are
+reviewed, but real consumer adoption remains incomplete. Do not claim universal
+production readiness, framework coverage, or assistive-technology completeness.
+No next package release is currently announced.
 
 ## Governance
 
@@ -135,6 +149,8 @@ real ComplyEaze surface consumes Sanchika successfully.
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security policy](SECURITY.md)
 - [Release policy](docs/release-policy.md)
+- [v0.1.0 release notes](docs/releases/v0.1.0.md)
+- [v0.0.2 to v0.1.0 migration](docs/migrations/v0.0.2-to-v0.1.0.md)
 - [Hosting](docs/hosting.md)
 - [GitHub repository setup](docs/github-repository-setup.md)
 - [Repository settings](docs/repository-settings.md)

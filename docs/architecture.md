@@ -29,8 +29,9 @@ tokens -> primitives -> patterns
   `@sanchika/patterns/styles.css` stay side-effectful so production bundlers do
   not prune required styles.
 
-Parent applications should consume published packages or reviewed local package
-links. They should not import source files from this repository by path.
+Parent applications should consume reviewed GitHub release artifacts or
+reviewed local package links. The packages are not published to npm. Consumers
+must not import source files from this repository by path.
 V0 local-link adoption is checked by `pnpm consumer:check` and
 `pnpm typecheck:api`; packed tarballs are verified by
 `pnpm publish:tarball-check` as a pre-publish packaging and consumer-smoke path.

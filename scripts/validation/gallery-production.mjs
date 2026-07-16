@@ -21,8 +21,15 @@ export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, 
   if (manifest) {
     if (manifest.schemaVersion !== "1.0.0" || manifest.project !== "Sanchika") fail("manifest schema and project identity must remain explicit");
     if (manifest.sourceRepository !== "https://github.com/lamemustafa/sanchika") fail("manifest source repository must remain public and canonical");
-    if (manifest.releases?.currentStable?.version !== stableRelease || manifest.releases?.currentStable?.status !== "released") fail("manifest current stable release must match release.json");
-    if (manifest.releases?.planned?.version === "0.1.0" && manifest.releases?.planned?.status === "released") fail("manifest must not claim v0.1.0 is released");
+    if (manifest.releases?.currentStable?.version !== stableRelease || manifest.releases?.currentStable?.status !== "released-current") fail("manifest current stable release must match release.json as released-current");
+    if (manifest.releases?.currentStable?.url !== `https://github.com/lamemustafa/sanchika/releases/tag/v${stableRelease}`) fail("manifest current stable release must link to its GitHub release");
+    if (Object.hasOwn(manifest.releases ?? {}, "planned")) fail("manifest must not retain the legacy planned release field");
+    if (manifest.releases?.next) {
+      if (manifest.releases.next.version === stableRelease) fail("manifest current and next release versions must not duplicate");
+      if (manifest.releases.next.status !== "planned-not-released") fail("manifest next release must remain planned-not-released");
+    } else if (manifest.releases?.next !== null || manifest.releases?.nextAnnouncement !== "No next package release is currently announced.") {
+      fail("manifest must state that no next package release is currently announced");
+    }
     const actualPackageNames = (manifest.packages ?? []).map((pkg) => pkg.name).sort();
     const canonicalPackageNames = Object.keys(packageEntrypoints).sort();
     if (JSON.stringify(actualPackageNames) !== JSON.stringify(canonicalPackageNames)) fail("manifest packages must match the canonical package set");
@@ -69,7 +76,11 @@ export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, 
   }
   if (sitemapLocations.some((url) => new URL(url).pathname.startsWith("/lab/"))) fail("sitemap must not contain lab routes");
 
-  if (!llms.includes(`Current stable release: v${stableRelease}.`)) fail("llms.txt must be generated from the current stable release");
+  if (!llms.includes(`Current stable release: v${stableRelease}. GitHub release artifacts; not published to npm.`)) fail("llms.txt must be generated from the current stable release");
+  const nextReleaseStatement = manifest?.releases?.next
+    ? `Next announced package release: v${manifest.releases.next.version}. ${manifest.releases.next.announcement}`
+    : "No next package release is currently announced.";
+  if (!llms.includes(nextReleaseStatement)) fail("llms.txt must use the canonical optional next-release status");
   if (!llms.includes("https://github.com/lamemustafa/sanchika")) fail("llms.txt must cite the canonical source repository");
   if (manifest) {
     const expectedLlmsFacts = [
@@ -85,10 +96,12 @@ export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, 
     for (const fact of expectedLlmsFacts) if (!llms.includes(fact)) fail(`llms.txt diverged from canonical metadata: ${fact}`);
   }
   if (/\/Users\/|\.worktrees|\bS8\b|\bS9\b|\bC2\b|\bNorth Star(?:s)?\b/.test(llms)) fail("llms.txt must not expose private paths or internal planning vocabulary");
-  if (/v0\.1\.0\s+(?:is\s+)?released/i.test(llms)) fail("llms.txt must not claim v0.1.0 is released");
   if (!index.includes("Build compliance interfaces that show their evidence.")) fail("landing source must render the S8 outcome-first hero");
   if (!index.includes("Related by evidence. Different by work.")) fail("landing must render the four-mode comparison");
-  if (!index.includes("Proven, limited, planned.")) fail("landing must expose honest status treatment");
+  if (!index.includes("Proven, limited, current.")) fail("landing must expose honest status treatment");
+  if (!index.includes(`Current stable release: v${stableRelease}`) || !index.includes(`releases/tag/v${stableRelease}`)) fail("landing must show and link the current stable release");
+  if (!index.includes(nextReleaseStatement)) fail("landing must state the canonical optional next-release status");
+  if (new RegExp(`v${stableRelease}[^<]{0,80}(?:planned|unreleased)`, "i").test(index)) fail("landing must not duplicate the current stable version as planned");
 
   for (const [path, content] of outputFiles) {
     if (/\/Users\/|\.worktrees/.test(content)) fail(`${path} must not expose a local private path`);
@@ -102,7 +115,16 @@ export function runGalleryProductionFixtures() {
     schemaVersion: "1.0.0",
     project: "Sanchika",
     sourceRepository: "https://github.com/lamemustafa/sanchika",
-    releases: { currentStable: { version: "0.0.2", status: "released" }, planned: { version: "0.1.0", status: "planned-not-released" } },
+    releases: {
+      currentStable: {
+        version: "0.1.0",
+        status: "released-current",
+        url: "https://github.com/lamemustafa/sanchika/releases/tag/v0.1.0",
+        distribution: "GitHub release artifacts; not published to npm",
+      },
+      next: null,
+      nextAnnouncement: "No next package release is currently announced.",
+    },
     packages: [{ name: "@sanchika/tokens", entrypoints: ["@sanchika/tokens", "@sanchika/tokens/theme.css"] }],
     routes: [
       { url: `${canonicalOrigin}/`, kind: "overview", label: "Sanchika" },
@@ -114,10 +136,11 @@ export function runGalleryProductionFixtures() {
     limitations: ["Physical assistive-technology testing remains necessary."],
     preferredSources: [{ label: "Source", url: "https://github.com/lamemustafa/sanchika" }],
   };
-  const validIndex = '<main><h1>Build compliance interfaces that show their evidence.</h1><h2>Related by evidence. Different by work.</h2><h2>Proven, limited, planned.</h2><a href="/" data-docs-search-item>Home</a><a href="/patterns/reviewdeskpreview/" data-docs-search-item>ReviewDeskPreview</a></main>';
+  const validIndex = '<main><h1>Build compliance interfaces that show their evidence.</h1><h2>Related by evidence. Different by work.</h2><h2>Proven, limited, current.</h2><strong>Current stable release: v0.1.0</strong><p>No next package release is currently announced.</p><a href="https://github.com/lamemustafa/sanchika/releases/tag/v0.1.0">Release evidence</a><a href="/" data-docs-search-item>Home</a><a href="/patterns/reviewdeskpreview/" data-docs-search-item>ReviewDeskPreview</a></main>';
   const validLlms = [
     "# Sanchika",
-    "Current stable release: v0.0.2.",
+    "Current stable release: v0.1.0. GitHub release artifacts; not published to npm.",
+    "No next package release is currently announced.",
     "- Patterns: https://sanchika.complyeaze.com/patterns/",
     "- Axal / workspace: Keep evidence and judgment together. — https://sanchika.complyeaze.com/modes/axal/",
     "- Keep human judgment explicit.",
@@ -138,8 +161,11 @@ export function runGalleryProductionFixtures() {
     { name: "duplicate route in search", mutate: (files) => replace(files, "index.html", "</main>", '<a href="/" data-docs-search-item>Duplicate</a></main>'), expected: "duplicate route in search" },
     { name: "lab route entering shipping output", mutate: (files) => new Map([...files, ["lab/retired/index.html", "<main><h1>Retired</h1></main>"]]), expected: "lab route entered shipping output" },
     { name: "prefix-valid nonexistent manifest package entrypoint", mutate: (files) => mutateManifest(files, (value) => { value.packages[0].entrypoints = ["@sanchika/tokens", "@sanchika/tokens/missing.css"]; }), expected: "invalid manifest package entrypoint" },
-    { name: "manifest claiming released v0.1.0", mutate: (files) => mutateManifest(files, (value) => { value.releases.planned.status = "released"; }), expected: "must not claim v0.1.0 is released" },
-    { name: "manually divergent llms content", mutate: (files) => new Map([...files].map(([path, content]) => [path, path === "llms.txt" ? content.replace("v0.0.2", "v9.9.9") : content])), expected: "llms.txt must be generated" },
+    { name: "stale manually edited manifest release", mutate: (files) => mutateManifest(files, (value) => { value.releases.currentStable.version = "9.9.9"; }), expected: "current stable release must match" },
+    { name: "legacy planned release field", mutate: (files) => mutateManifest(files, (value) => { value.releases.planned = { version: "0.1.0", status: "planned-not-released" }; }), expected: "must not retain the legacy planned release field" },
+    { name: "duplicate current and next release version", mutate: (files) => mutateManifest(files, (value) => { value.releases.next = { version: "0.1.0", status: "planned-not-released", announcement: "Planned." }; }), expected: "must not duplicate" },
+    { name: "missing no-next-release announcement", mutate: (files) => mutateManifest(files, (value) => { value.releases.nextAnnouncement = ""; }), expected: "no next package release" },
+    { name: "manually divergent llms content", mutate: (files) => new Map([...files].map(([path, content]) => [path, path === "llms.txt" ? content.replace("v0.1.0", "v9.9.9") : content])), expected: "llms.txt must be generated" },
     { name: "llms mode fact diverging from canonical metadata", mutate: (files) => replace(files, "llms.txt", "Axal / workspace", "Axal / stale mode"), expected: "llms.txt diverged from canonical metadata" },
     { name: "llms documentation route diverging from canonical metadata", mutate: (files) => replace(files, "llms.txt", "/patterns/", "/stale-patterns/"), expected: "llms.txt diverged from canonical metadata" },
     { name: "llms trust rule diverging from canonical metadata", mutate: (files) => replace(files, "llms.txt", "Keep human judgment explicit.", "Trust automation."), expected: "llms.txt diverged from canonical metadata" },
@@ -153,7 +179,7 @@ export function runGalleryProductionFixtures() {
     const findings = validateGalleryProduction({
       outputFiles: fixture.mutate(new Map(valid)),
       expectedDocumentPaths,
-      stableRelease: "0.0.2",
+      stableRelease: "0.1.0",
       packageEntrypoints: { "@sanchika/tokens": ["@sanchika/tokens", "@sanchika/tokens/theme.css"] },
     });
     const matched = fixture.expected ? findings.some((finding) => finding.includes(fixture.expected)) : findings.length === 0;

@@ -36,8 +36,10 @@ import {
 import { productVisualGrammar } from "../packages/patterns/src/visual-grammar.ts";
 import { validatePrimitiveContracts } from "./validation/primitive-contracts.mjs";
 import { runMotionAssistFixtures } from "./validation/motion-assist.mjs";
+import { runReleaseDocumentFixtures } from "./validation/release-documents.mjs";
 import {
   createReleaseArtifactManifest,
+  createReleaseChecksumSummary,
   loadReleaseManifest,
   parseReleaseManifest,
   releaseManifestFixtureCases,
@@ -46,8 +48,11 @@ import {
   stableReleasePackageOrder,
   validateReleaseManifest,
 } from "./validation/release-manifest.mjs";
+import { runReleaseReadinessFixtures } from "./validation/release-readiness.mjs";
+import { stableReleaseScreenshotSet } from "./validation/release-screenshots.mjs";
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
+import { runTarballContentsFixtures } from "./validation/tarball-contents.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const failures = [];
@@ -60,6 +65,8 @@ const buildArtifactFixtures = runBuildArtifactFixtures();
 for (const fixtureFailure of buildArtifactFixtures.failures) fail(`build artifact fixture ${fixtureFailure}`);
 const galleryProductionFixtures = runGalleryProductionFixtures();
 for (const fixtureFailure of galleryProductionFixtures.failures) fail(`gallery production fixture ${fixtureFailure}`);
+const tarballContentsFixtures = runTarballContentsFixtures();
+for (const fixtureFailure of tarballContentsFixtures.failures) fail(`tarball content fixture ${fixtureFailure}`);
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
 }
@@ -120,8 +127,8 @@ if (galleryAppPackage.devDependencies?.["@axe-core/playwright"] !== "4.12.1") {
 if (galleryAppPackage.devDependencies?.["playwright-core"] !== "1.55.1") {
   fail("@sanchika/gallery-app must pin the browser-only playwright-core 1.55.1 dependency used by its evidence lane");
 }
-if (galleryAppPackage.scripts?.build !== "astro build && node ../../scripts/write-gallery-build-metadata.mjs") {
-  fail("@sanchika/gallery-app build must write deterministic gallery build metadata after Astro output");
+if (galleryAppPackage.scripts?.build !== "astro build && node ../../scripts/write-gallery-build-metadata.mjs && node ../../scripts/check-gallery-release-readiness.mjs") {
+  fail("@sanchika/gallery-app build must write deterministic gallery build metadata and enforce published release readiness");
 }
 for (const requiredGalleryBuildFragment of ['transformer: "postcss"', 'cssMinify: "esbuild"']) {
   if (!galleryAstroConfig.includes(requiredGalleryBuildFragment)) {
@@ -384,7 +391,7 @@ if (rootPackage.scripts?.["release:tarballs"] !== "pnpm build && node scripts/ch
 
 if (
   rootPackage.scripts?.["release:stable-tarballs"] !==
-  "pnpm build && node scripts/check-packed-tarball-consumer.mjs --stable-release --emit-dir dist/release"
+  "pnpm build && pnpm gallery:browser && node scripts/check-packed-tarball-consumer.mjs --stable-release --emit-dir dist/release"
 ) {
   fail("root package must expose release:stable-tarballs for approval-gated stable GitHub release assets");
 }
@@ -425,6 +432,16 @@ for (const [name, operation, expectedFailure] of [
     () => resolveReleaseVersion({ manifest: releaseManifest, override: `${releaseManifest?.version}-mismatch` }),
     "must match release manifest version",
   ],
+  [
+    "v0.0.2 override rejected for v0.1.0",
+    () => resolveReleaseVersion({ manifest: releaseManifest, override: "0.0.2" }),
+    "must match release manifest version 0.1.0",
+  ],
+  [
+    "v0.1.1 override rejected for v0.1.0",
+    () => resolveReleaseVersion({ manifest: releaseManifest, override: "0.1.1" }),
+    "must match release manifest version 0.1.0",
+  ],
 ]) {
   releaseManifestFixtureCount += 1;
   try {
@@ -455,6 +472,18 @@ const validArtifactTarballs = () =>
     filename: `${packageName.replace("@sanchika/", "sanchika-")}-${releaseManifest.version}.tgz`,
     path: fixtureArtifactPath,
     sha256: fixtureChecksum,
+    files: [
+      { path: "LICENSE", size: 1 },
+      { path: "package.json", size: readFileSync(fixtureArtifactPath).byteLength },
+    ],
+  }));
+const validArtifactScreenshots = () =>
+  stableReleaseScreenshotSet.map(({ file, source }) => ({
+    file,
+    source,
+    path: fixtureArtifactPath,
+    sha256: fixtureChecksum,
+    size: readFileSync(fixtureArtifactPath).byteLength,
   }));
 
 for (const [name, mutate, expectedFailure] of [
@@ -479,6 +508,31 @@ for (const [name, mutate, expectedFailure] of [
     (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, sha256: "a".repeat(64) } : tarball),
     "checksum must match the bytes",
   ],
+  [
+    "missing package file inventory",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, files: [] } : tarball),
+    "npm pack file inventory",
+  ],
+  [
+    "duplicate package file inventory path",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, files: [...tarball.files, tarball.files[0]] } : tarball),
+    "must not contain duplicate paths",
+  ],
+  [
+    "non-deterministic package file inventory order",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, files: [...tarball.files].reverse() } : tarball),
+    "deterministic path order",
+  ],
+  [
+    "absolute package file inventory path",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, files: [{ path: "/package.json", size: 1 }] } : tarball),
+    "invalid path",
+  ],
+  [
+    "invalid package file inventory size",
+    (tarballs) => tarballs.map((tarball, index) => index === 0 ? { ...tarball, files: [{ path: "package.json", size: -1 }] } : tarball),
+    "non-negative byte size",
+  ],
 ]) {
   releaseManifestFixtureCount += 1;
   try {
@@ -488,16 +542,24 @@ for (const [name, mutate, expectedFailure] of [
       source: { repository: "fixture", commit: "fixture" },
       generatedAt: "fixture",
       tarballs: mutate(validArtifactTarballs()),
+      screenshots: validArtifactScreenshots(),
     });
     if (expectedFailure) {
       fail(`Release manifest fixture ${name} must fail with ${expectedFailure}`);
     } else if (
       artifactManifest.version !== releaseManifest.version ||
       artifactManifest.packages.some(
-        (entry) => entry.version !== releaseManifest.version || entry.sha256 !== fixtureChecksum,
+        (entry) => entry.version !== releaseManifest.version || entry.sha256 !== fixtureChecksum || entry.files.length !== 2,
       )
     ) {
-      fail("Release manifest fixture emitted metadata must agree with release version and final-byte checksums");
+      fail("Release manifest fixture emitted metadata must agree with release version, final-byte checksums, and package file inventories");
+    } else {
+      const checksumSummary = createReleaseChecksumSummary(artifactManifest);
+      const expectedSummary = [...artifactManifest.packages, ...artifactManifest.screenshots]
+        .map((entry) => `${entry.sha256}  ${entry.file}`).join("\n") + "\n";
+      if (checksumSummary !== expectedSummary || checksumSummary.includes("manifest.json")) {
+        fail("Release checksum fixture must use package order, agree with manifest hashes, and avoid manifest recursion");
+      }
     }
   } catch (error) {
     if (!expectedFailure) {
@@ -555,6 +617,9 @@ for (const requiredTarballEvidenceFragment of [
   "--emit-dir",
   "manifest.json",
   "Release artifact bundle written to",
+  "pnpm offline packed-tarball consumer install",
+  '"--offline"',
+  "overrides",
 ]) {
   if (!packedTarballScript.includes(requiredTarballEvidenceFragment)) {
     fail(`scripts/check-packed-tarball-consumer.mjs must emit tarball evidence with ${requiredTarballEvidenceFragment}`);
@@ -735,6 +800,24 @@ const contributingDocs = readText("CONTRIBUTING.md");
 const codeOfConduct = requireText("CODE_OF_CONDUCT.md");
 const supportDocs = requireText("SUPPORT.md");
 const releasePolicy = readText("docs/release-policy.md");
+const releaseNotes = readText("docs/releases/v0.1.0.md");
+const migrationGuide = readText("docs/migrations/v0.0.2-to-v0.1.0.md");
+const releaseReadinessFixtures = runReleaseReadinessFixtures(releaseManifest);
+for (const fixtureFailure of releaseReadinessFixtures.failures) fail(`release readiness fixture ${fixtureFailure}`);
+const releaseDocumentFixtures = runReleaseDocumentFixtures({
+  manifest: releaseManifest,
+  documents: {
+    releaseNotes,
+    migrationGuide,
+    releasePolicy,
+    packageReadmes: {
+      tokens: readText("packages/tokens/README.md"),
+      primitives: readText("packages/primitives/README.md"),
+      patterns: readText("packages/patterns/README.md"),
+    },
+  },
+});
+for (const fixtureFailure of releaseDocumentFixtures.failures) fail(`release document fixture ${fixtureFailure}`);
 const hostingDocs = requireText("docs/hosting.md");
 const githubSetupDocs = requireText("docs/github-repository-setup.md");
 const repositorySettingsDocs = requireText("docs/repository-settings.md");
@@ -1033,7 +1116,7 @@ if (!readText("README.md").includes("tools.complyeaze.com")) {
 for (const requiredExternalAdoptionFragment of [
   "External operational SaaS adopters",
   "docs/adoption-external.md",
-  "private and unpublished in V0",
+  "stable GitHub artifact pipeline",
 ]) {
   if (!readText("README.md").includes(requiredExternalAdoptionFragment)) {
     fail(`README must document external adoption with ${requiredExternalAdoptionFragment}`);
@@ -1114,10 +1197,11 @@ for (const requiredPackageApiFragment of ["pnpm typecheck:api", "public package-
 }
 
 for (const requiredTarballPostureFragment of [
-  "validated packaging smoke artifact",
-  "not the default V0 adoption path",
+  "GitHub tarball artifacts",
+  "reviewed cross-repository v0.1.0 adoption path",
   "consumer-specific adoption plan",
-  "tarball version and checksum",
+  "all three checksums",
+  "pnpm overrides",
 ]) {
   if (!complyeazeAdoptionDocs.includes(requiredTarballPostureFragment)) {
     fail(`docs/adoption-complyeaze.md must document packed tarballs as ${requiredTarballPostureFragment}`);
@@ -1159,9 +1243,12 @@ for (const [consumerName, requiredFragment] of [
 
 for (const requiredExternalFragment of [
   "independent operational SaaS teams",
-  "public source, not a published npm release",
+  "public source with reviewed GitHub release artifacts",
+  "not a published npm release",
   "local package-directory link",
-  "approved packed artifact",
+  "approved v0.1.0 tarballs",
+  "pnpm",
+  "overrides",
   "direct imports from `packages/*/src` are not allowed",
 ]) {
   if (!adoptionDocs.External.includes(requiredExternalFragment)) {
@@ -1999,7 +2086,10 @@ if (failures.length > 0) {
 
 console.log(`Sanchika build artifact fixtures passed (${buildArtifactFixtures.count} cases).`);
 console.log(`Sanchika gallery production fixtures passed (${galleryProductionFixtures.count} cases).`);
+console.log(`Sanchika tarball content fixtures passed (${tarballContentsFixtures.count} cases).`);
 console.log(`Sanchika product pattern fixtures passed (${productPatternFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
+console.log(`Sanchika release readiness fixtures passed (${releaseReadinessFixtures.count} cases).`);
+console.log(`Sanchika release document fixtures passed (${releaseDocumentFixtures.count} cases).`);
 console.log(`Sanchika motion-assist fixtures passed (${motionFixtureCount} cases).`);
 console.log("Sanchika repo validation passed.");

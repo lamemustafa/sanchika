@@ -8,6 +8,7 @@ import {
   readFileSync,
   renameSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -16,11 +17,13 @@ import { fileURLToPath } from "node:url";
 import { assertBuiltPackageArtifacts } from "./validation/build-artifacts.mjs";
 import {
   createReleaseArtifactManifest,
+  createReleaseChecksumSummary,
   loadReleaseManifest,
   resolveReleaseVersion,
   sha256File,
 } from "./validation/release-manifest.mjs";
 import { assertPackedFileList } from "./validation/tarball-contents.mjs";
+import { loadStableReleaseScreenshots } from "./validation/release-screenshots.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const args = new Set(process.argv.slice(2));
@@ -45,11 +48,13 @@ const tempRoot = mkdtempSync(join(tmpdir(), "sanchika-tarball-consumer-"));
 const packageRoot = join(tempRoot, "packages");
 const tarballRoot = join(tempRoot, "tarballs");
 const consumerRoot = join(tempRoot, "consumer");
+const pnpmConsumerRoot = join(tempRoot, "pnpm-consumer");
 
 try {
   mkdirSync(packageRoot);
   mkdirSync(tarballRoot);
   mkdirSync(consumerRoot);
+  mkdirSync(pnpmConsumerRoot);
 
   for (const packageName of packages) {
     preparePackageCopy(packageName);
@@ -57,10 +62,31 @@ try {
 
   const tarballs = packages.map((packageName) => packPackage(packageName));
   printTarballEvidence(tarballs);
-  writeConsumerPackage();
+  writeConsumerPackage(consumerRoot);
   run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs.map((tarball) => tarball.path)], consumerRoot);
-  runConsumerProbe();
-  runConsumerTypecheck();
+  runConsumerProbe(consumerRoot);
+  runConsumerTypecheck(consumerRoot);
+  console.log("npm packed-tarball consumer install, runtime probe, and typecheck passed.");
+  if (!strictPublishManifests) {
+    writePnpmConsumerPackage(tarballs);
+    run(
+      "pnpm",
+      [
+        "install",
+        "--offline",
+        "--ignore-scripts",
+        "--no-frozen-lockfile",
+        "--store-dir",
+        join(tempRoot, "pnpm-store"),
+        "--cache-dir",
+        join(tempRoot, "pnpm-cache"),
+      ],
+      pnpmConsumerRoot,
+    );
+    runConsumerProbe(pnpmConsumerRoot);
+    runConsumerTypecheck(pnpmConsumerRoot);
+    console.log("pnpm offline packed-tarball consumer install, overrides, runtime probe, and typecheck passed.");
+  }
   if (emitDir) writeReleaseArtifacts(tarballs);
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
@@ -112,12 +138,14 @@ function rewriteInternalDependencySections(manifest) {
 function packPackage(packageName) {
   const output = run("npm", ["pack", "--json", "--pack-destination", tarballRoot], join(packageRoot, packageName));
   const packed = JSON.parse(output)[0];
-  assertPackedFileList({ packageName, packed });
+  const files = assertPackedFileList({ packageName, packed });
   const tarballPath = join(tarballRoot, basename(packed.filename));
   if (!existsSync(tarballPath)) {
     throw new Error(`@sanchika/${packageName} tarball was not created at ${tarballPath}`);
   }
-  if (!strictPublishManifests) assertPackedArtifactVersion({ packageName, packed, tarballPath });
+  const internalDependencies = !strictPublishManifests
+    ? assertPackedArtifactVersion({ packageName, packed, tarballPath })
+    : [];
   if (strictPublishManifests) assertPackedManifestMatchesSource({ packageName, packed, tarballPath });
   return {
     packageName: `@sanchika/${packageName}`,
@@ -125,6 +153,8 @@ function packPackage(packageName) {
     filename: basename(tarballPath),
     path: tarballPath,
     sha256: sha256File(tarballPath),
+    files,
+    internalDependencies,
   };
 }
 
@@ -139,13 +169,18 @@ function assertPackedArtifactVersion({ packageName, packed, tarballPath }) {
   if (!basename(tarballPath).endsWith(`-${artifactVersion}.tgz`)) {
     throw new Error(`@sanchika/${packageName} tarball filename must include version ${artifactVersion}`);
   }
+  const internalDependencies = [];
   for (const dependencyField of ["dependencies", "peerDependencies", "optionalDependencies", "devDependencies"]) {
     for (const [dependencyName, version] of Object.entries(packedTarManifest[dependencyField] ?? {})) {
       if (packageNames.has(dependencyName) && version !== artifactVersion) {
         throw new Error(`@sanchika/${packageName} packed ${dependencyField} ${dependencyName} must use ${artifactVersion}`);
       }
+      if (packageNames.has(dependencyName)) {
+        internalDependencies.push({ field: dependencyField, name: dependencyName, version });
+      }
     }
   }
+  return internalDependencies.sort((left, right) => `${left.field}:${left.name}`.localeCompare(`${right.field}:${right.name}`));
 }
 
 function assertPackedManifestMatchesSource({ packageName, packed, tarballPath }) {
@@ -169,23 +204,36 @@ function assertPackedManifestMatchesSource({ packageName, packed, tarballPath })
 function printTarballEvidence(tarballs) {
   console.log("Tarball evidence:");
   for (const tarball of tarballs) {
-    console.log(`${tarball.packageName}@${tarball.version} ${tarball.filename} sha256=${tarball.sha256}`);
+    const dependencies = tarball.internalDependencies.length
+      ? tarball.internalDependencies.map((dependency) => `${dependency.name}@${dependency.version}`).join(",")
+      : "none";
+    console.log(`${tarball.packageName}@${tarball.version} ${tarball.filename} sha256=${tarball.sha256} files=${tarball.files.length} internal=${dependencies}`);
   }
 }
 
 function writeReleaseArtifacts(tarballs) {
   assertCleanGitTree();
+  const screenshots = stableRelease ? loadStableReleaseScreenshots({ root }) : [];
   const releaseRoot = releaseRootFrom(emitDir);
   const stagingRoot = `${releaseRoot}.tmp-${process.pid}`;
-  const stagingTarballRoot = join(stagingRoot, "tarballs");
   rmSync(stagingRoot, { recursive: true, force: true });
 
   try {
-    mkdirSync(stagingTarballRoot, { recursive: true });
+    mkdirSync(stagingRoot, { recursive: true });
     const emittedTarballs = tarballs.map((tarball) => {
-      const targetPath = join(stagingTarballRoot, tarball.filename);
+      const targetPath = join(stagingRoot, tarball.filename);
       copyFileSync(tarball.path, targetPath);
       return { ...tarball, path: targetPath, sha256: sha256File(targetPath) };
+    });
+    const emittedScreenshots = screenshots.map((screenshot) => {
+      const targetPath = join(stagingRoot, screenshot.file);
+      copyFileSync(screenshot.path, targetPath);
+      return {
+        ...screenshot,
+        path: targetPath,
+        size: statSync(targetPath).size,
+        sha256: sha256File(targetPath),
+      };
     });
     const manifest = createReleaseArtifactManifest({
       version: artifactVersion,
@@ -196,9 +244,11 @@ function writeReleaseArtifacts(tarballs) {
       },
       generatedAt: new Date().toISOString(),
       tarballs: emittedTarballs,
+      screenshots: emittedScreenshots,
     });
 
     writeFileSync(join(stagingRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+    writeFileSync(join(stagingRoot, "SHA256SUMS"), createReleaseChecksumSummary(manifest));
     rmSync(releaseRoot, { recursive: true, force: true });
     renameSync(stagingRoot, releaseRoot);
   } catch (error) {
@@ -208,26 +258,44 @@ function writeReleaseArtifacts(tarballs) {
   console.log(`Release artifact bundle written to ${emitDir}`);
 }
 
-function writeConsumerPackage() {
+function writeConsumerPackage(targetRoot, manifest = { type: "module", dependencies: {} }) {
   writeFileSync(
-    join(consumerRoot, "package.json"),
-    `${JSON.stringify(
-      {
-        type: "module",
-        dependencies: {},
-      },
-      null,
-      2,
-    )}\n`,
+    join(targetRoot, "package.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
   );
   writeFileSync(
-    join(consumerRoot, "legacy-token.css"),
+    join(targetRoot, "legacy-token.css"),
     '@import "@sanchika/tokens/theme.css";\n.legacy-surface { background: var(--sk-color-bg-base); color: var(--sk-color-ink-primary); border: 1px solid var(--sk-color-border-control); border-radius: var(--sk-radius-card); }\n',
   );
 }
 
-function runConsumerProbe() {
-  const probePath = join(consumerRoot, "probe.mjs");
+function writePnpmConsumerPackage(tarballs) {
+  const tarballsByPackage = new Map(tarballs.map((tarball) => [tarball.packageName, tarball]));
+  const dependencies = Object.fromEntries(
+    tarballs.map((tarball) => [tarball.packageName, `file:${tarball.path}`]),
+  );
+  const overridePackageNames = new Set(
+    tarballs.flatMap((tarball) => tarball.internalDependencies.map((dependency) => dependency.name)),
+  );
+  const overrides = Object.fromEntries(
+    tarballs
+      .filter((tarball) => overridePackageNames.has(tarball.packageName))
+      .map((tarball) => [`${tarball.packageName}@${artifactVersion}`, `file:${tarball.path}`]),
+  );
+  for (const packageName of overridePackageNames) {
+    if (!tarballsByPackage.has(packageName)) {
+      throw new Error(`pnpm packed consumer is missing override tarball ${packageName}`);
+    }
+  }
+  writeConsumerPackage(pnpmConsumerRoot, {
+    type: "module",
+    dependencies,
+    pnpm: { overrides },
+  });
+}
+
+function runConsumerProbe(targetRoot) {
+  const probePath = join(targetRoot, "probe.mjs");
   writeFileSync(
     probePath,
     `import { createRequire } from "node:module";
@@ -351,14 +419,14 @@ function expectInvalid(label, operation) {
 }
 `,
   );
-  run(process.execPath, [probePath], consumerRoot);
+  run(process.execPath, [probePath], targetRoot);
 }
 
-function runConsumerTypecheck() {
-  mkdirSync(join(consumerRoot, "type-tests"));
-  copyFileSync(join(root, "type-tests/package-api.ts"), join(consumerRoot, "type-tests/package-api.ts"));
+function runConsumerTypecheck(targetRoot) {
+  mkdirSync(join(targetRoot, "type-tests"));
+  copyFileSync(join(root, "type-tests/package-api.ts"), join(targetRoot, "type-tests/package-api.ts"));
   writeFileSync(
-    join(consumerRoot, "tsconfig.json"),
+    join(targetRoot, "tsconfig.json"),
     `${JSON.stringify(
       {
         compilerOptions: {
@@ -378,7 +446,7 @@ function runConsumerTypecheck() {
       2,
     )}\n`,
   );
-  run(process.execPath, [join(root, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.json", "--noEmit"], consumerRoot);
+  run(process.execPath, [join(root, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.json", "--noEmit"], targetRoot);
 }
 
 function run(command, args, cwd) {

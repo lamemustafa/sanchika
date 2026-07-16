@@ -1,15 +1,14 @@
 import {
   canonicalOrigin,
-  currentStableRelease,
   generatedDocumentRoutes,
   llmsDocumentationRoutes,
   manifestSource,
   modes,
   packageMetadata,
-  plannedRelease,
   preferredSourceLinks,
   projectProfile,
   productionRoutes,
+  releaseStatus,
   sourceRepository,
 } from "./site";
 
@@ -22,8 +21,9 @@ export function createSanchikaManifest() {
     sourceRepository,
     canonicalSite: canonicalOrigin,
     releases: {
-      currentStable: { version: currentStableRelease, status: "released" },
-      planned: { version: plannedRelease, status: "planned-not-released" },
+      currentStable: releaseStatus.currentStable,
+      next: releaseStatus.next,
+      nextAnnouncement: releaseStatus.nextAnnouncement,
     },
     packages: packageMetadata.map((pkg) => ({
       ...pkg,
@@ -92,6 +92,9 @@ export function createSanchikaManifest() {
 export function createLlmsText() {
   const manifest = createSanchikaManifest();
   const packageLines = manifest.packages.map((pkg) => `- ${pkg.name}: ${pkg.entrypoints.join(", ")} — ${pkg.documentation}`);
+  const nextReleaseLine = manifest.releases.next
+    ? `Next announced package release: v${manifest.releases.next.version}. ${manifest.releases.next.announcement}`
+    : manifest.releases.nextAnnouncement;
   return [
     "# Sanchika",
     "",
@@ -114,7 +117,8 @@ export function createLlmsText() {
     ...manifest.trustAndAccessibilityRules.map((rule) => `- ${rule}`),
     "",
     "## Current status and limitations",
-    `Current stable release: v${manifest.releases.currentStable.version}. v${manifest.releases.planned.version} is planned and is not released.`,
+    `Current stable release: v${manifest.releases.currentStable.version}. ${manifest.releases.currentStable.distribution}.`,
+    nextReleaseLine,
     ...manifest.limitations.map((limitation) => `- ${limitation}`),
     "",
     "## Preferred sources",

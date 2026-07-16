@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
+import { assertStableReleaseScreenshotRecords, stableReleaseScreenshotSet } from "./release-screenshots.mjs";
 
 export const stableReleasePackageOrder = [
   "@sanchika/tokens",
@@ -39,7 +40,7 @@ export function resolveReleaseVersion({ manifest, override }) {
   return manifest.version;
 }
 
-export function createReleaseArtifactManifest({ version, channel, source, generatedAt, tarballs }) {
+export function createReleaseArtifactManifest({ version, channel, source, generatedAt, tarballs, screenshots = [] }) {
   if (
     channel === "stable" &&
     JSON.stringify(tarballs.map((tarball) => tarball.packageName)) !==
@@ -60,6 +61,11 @@ export function createReleaseArtifactManifest({ version, channel, source, genera
     if (!tarball.path || sha256File(tarball.path) !== tarball.sha256) {
       throw new Error(`${tarball.packageName} artifact checksum must match the bytes at ${String(tarball.path)}`);
     }
+    assertReleaseFileInventory(tarball);
+  }
+  if (channel === "stable") assertStableReleaseScreenshotRecords(screenshots);
+  if (channel !== "stable" && screenshots.length > 0) {
+    throw new Error("screenshots are supported only for the stable release artifact bundle");
   }
 
   return {
@@ -70,10 +76,43 @@ export function createReleaseArtifactManifest({ version, channel, source, genera
     packages: tarballs.map((tarball) => ({
       name: tarball.packageName,
       version: tarball.version,
-      file: `tarballs/${tarball.filename}`,
+      file: tarball.filename,
       sha256: tarball.sha256,
+      files: tarball.files.map((file) => ({ path: file.path, size: file.size })),
+    })),
+    screenshots: screenshots.map((screenshot) => ({
+      file: screenshot.file,
+      sha256: screenshot.sha256,
+      size: screenshot.size,
     })),
   };
+}
+
+export function createReleaseChecksumSummary(manifest) {
+  if (
+    !["stable", "prerelease-check"].includes(manifest?.channel) ||
+    JSON.stringify(manifest.packages?.map((pkg) => pkg.name)) !== JSON.stringify(stableReleasePackageOrder)
+  ) {
+    throw new Error(`checksum summary packages must follow ${stableReleasePackageOrder.join(", ")}`);
+  }
+
+  const packageLines = manifest.packages.map((pkg) => {
+    if (!/^[0-9a-f]{64}$/.test(pkg.sha256 ?? "")) {
+      throw new Error(`${pkg.name} checksum summary entry must include a SHA-256 checksum`);
+    }
+    if (typeof pkg.file !== "string" || !/^[^/]+\.tgz$/.test(pkg.file)) {
+      throw new Error(`${pkg.name} checksum summary entry must reference one release tarball`);
+    }
+    return `${pkg.sha256}  ${pkg.file}`;
+  });
+
+  const screenshots = manifest.screenshots ?? [];
+  if (manifest.channel === "stable") assertManifestScreenshotRecords(screenshots);
+  if (manifest.channel !== "stable" && screenshots.length > 0) {
+    throw new Error("prerelease checksum summary must not contain screenshots");
+  }
+  const screenshotLines = screenshots.map((screenshot) => `${screenshot.sha256}  ${screenshot.file}`);
+  return `${[...packageLines, ...screenshotLines].join("\n")}\n`;
 }
 
 export function sha256File(path) {
@@ -130,7 +169,7 @@ export function validateReleaseManifest(manifest) {
 
 export function releaseManifestFixtureCases() {
   const valid = {
-    version: "1.2.3",
+    version: "0.1.0",
     channel: "stable",
     packages: [...stableReleasePackageOrder],
   };
@@ -139,12 +178,54 @@ export function releaseManifestFixtureCases() {
     { name: "unsupported channel", manifest: { ...valid, channel: "next" }, expectedFailure: "channel must be stable" },
     { name: "duplicate package", manifest: { ...valid, packages: [stableReleasePackageOrder[0], stableReleasePackageOrder[0]] }, expectedFailure: "duplicate package" },
     { name: "unknown package", manifest: { ...valid, packages: ["@sanchika/unknown"] }, expectedFailure: "unknown package" },
-    { name: "gallery app is not a release package", manifest: { ...valid, packages: ["@sanchika/gallery"] }, expectedFailure: "unknown package" },
+    { name: "gallery app is not a release package", manifest: { ...valid, packages: ["@sanchika/gallery-app"] }, expectedFailure: "unknown package" },
     { name: "invalid version", manifest: { ...valid, version: "01.2.3" }, expectedFailure: "non-prerelease semantic version" },
     { name: "prerelease version", manifest: { ...valid, version: "1.2.3-next.1" }, expectedFailure: "non-prerelease semantic version" },
     { name: "non-deterministic order", manifest: { ...valid, packages: [...stableReleasePackageOrder].reverse() }, expectedFailure: "deterministic order" },
     { name: "missing package list", manifest: { version: "1.2.3", channel: "stable" }, expectedFailure: "non-empty array" },
   ];
+}
+
+function assertReleaseFileInventory(tarball) {
+  if (!Array.isArray(tarball.files) || tarball.files.length === 0) {
+    throw new Error(`${tarball.packageName} artifact must include its npm pack file inventory`);
+  }
+  const paths = tarball.files.map((file) => file?.path);
+  if (new Set(paths).size !== paths.length) {
+    throw new Error(`${tarball.packageName} artifact file inventory must not contain duplicate paths`);
+  }
+  if (JSON.stringify(paths) !== JSON.stringify([...paths].sort((left, right) => left.localeCompare(right)))) {
+    throw new Error(`${tarball.packageName} artifact file inventory must use deterministic path order`);
+  }
+  for (const file of tarball.files) {
+    if (
+      typeof file?.path !== "string" ||
+      !file.path ||
+      file.path.startsWith("/") ||
+      file.path.includes("\\") ||
+      file.path.split("/").includes("..")
+    ) {
+      throw new Error(`${tarball.packageName} artifact file inventory contains an invalid path`);
+    }
+    if (!Number.isSafeInteger(file.size) || file.size < 0) {
+      throw new Error(`${tarball.packageName} artifact file ${file.path} must include a non-negative byte size`);
+    }
+  }
+}
+
+function assertManifestScreenshotRecords(screenshots) {
+  const expectedFiles = stableReleaseScreenshotSet.map(({ file }) => file);
+  if (JSON.stringify(screenshots.map(({ file }) => file)) !== JSON.stringify(expectedFiles)) {
+    throw new Error(`stable release screenshots must include exactly ${expectedFiles.join(", ")}`);
+  }
+  for (const screenshot of screenshots) {
+    if (!/^[0-9a-f]{64}$/.test(screenshot.sha256 ?? "")) {
+      throw new Error(`${screenshot.file} checksum summary entry must include a SHA-256 checksum`);
+    }
+    if (!Number.isSafeInteger(screenshot.size) || screenshot.size <= 0) {
+      throw new Error(`${screenshot.file} must include a positive byte size`);
+    }
+  }
 }
 
 function isStableSemver(version) {
