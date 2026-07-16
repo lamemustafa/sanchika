@@ -36,12 +36,15 @@ Before changing phase or status, run:
 node skills/sanchika-craft/scripts/validate-run.mjs craft/runs/<run-id>/state.json
 ```
 
-When resuming or advancing a saved run, also pass its prior snapshot:
+Advanced runs retain the immediately prior snapshot at
+`craft/runs/<run-id>/transitions/previous-state.json`; the manifest hashes it
+and the validator loads it automatically. If `--previous` is supplied, it must
+identify that same authenticated snapshot:
 
 ```bash
 node skills/sanchika-craft/scripts/validate-run.mjs \
   craft/runs/<run-id>/state.json \
-  --previous output/creative/<run-id>/previous-state.json
+  --previous craft/runs/<run-id>/transitions/previous-state.json
 ```
 
 Stop at `owner_gate` with `status: awaiting_owner`. Only the owner can approve a

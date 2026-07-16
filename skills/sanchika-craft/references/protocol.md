@@ -41,6 +41,11 @@ DesignBrief, and direction set; only capability state and new evidence may
 advance. A capability-blocked stop records the concrete `nextAction` needed to
 resume.
 
+Every run beyond `shape` retains its immediately prior valid state under
+`transitions/previous-state.json`. The instruction manifest authenticates that
+snapshot, and both direct and repository validation apply the transition rules
+to it. Transition validation is never optional for an advanced persisted run.
+
 `reviewRound` starts at 1 and increments only when rebriefing to `shape`.
 Directions, iterations, and reviews record their round. Owner-gate consensus is
 calculated only from the current round, while prior rounds remain immutable
@@ -55,6 +60,11 @@ existing `@sanchika/patterns` validators.
 Every direction records a stable ID and design-brief ID, a territory and
 artifact references, semantic-blind and identity-blind proxy results, and its
 qualification state.
+
+Stopped and complete runs record `evidenceDigests` for every referenced
+direction, revision, render, and production artifact. The validator checks
+containment, real path, existence, and SHA-256 before retained evidence can
+support a gate.
 
 Every review summary records its isolated reviewer role, calibration result,
 complete 0-4 rubric scores, vetoes, preference, per-direction comparison with
@@ -91,6 +101,10 @@ Every control declares `mediaType: image/webp` and the SHA-256 of its WebP
 bytes. Both canonical and run-retained packs verify media magic, digest,
 reviewer-role coverage, and the 300KB limit before their evidence can qualify a
 direction.
+
+The manifest separately authenticates the honest without-skill control at
+`evidence/without-skill-control.webp`; comparison preferences cannot qualify a
+direction when that artifact is missing or its digest differs.
 
 Persist `calibration.detectedFailures`, `calibration.corrections`, and
 `calibration.fullReruns` on every passed review. The owner gate requires four

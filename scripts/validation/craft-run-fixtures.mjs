@@ -746,6 +746,196 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "calibration.current-baseline.sha256",
   );
   runCase(
+    "capability-blocked review may persist unavailable isolation",
+    () =>
+      validate((run) => {
+        run.phase = "review";
+        run.status = "stopped";
+        run.ownerDecision = "pending";
+        run.stopReason = "capability_blocked";
+        run.capabilities.isolatedReview = false;
+        run.nextAction = "Restore isolated reviewer capacity and resume review.";
+      }),
+    null,
+  );
+  runCase(
+    "manifest authenticates the without-skill control",
+    () => {
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      manifest.plainRequestControl.sha256 = "0".repeat(64);
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.plainRequestControl.sha256",
+  );
+  runCase(
+    "manifest rejects retained counterfactual code",
+    () => {
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      manifest.plainRequestControl.codeRetained = true;
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.plainRequestControl.codeRetained",
+  );
+  runCase(
+    "terminal references require evidence digests",
+    () =>
+      validate((run) => {
+        delete run.evidenceDigests[
+          "craft/runs/sanchika-landing-s10/evidence/direction-alpha.webp"
+        ];
+      }),
+    "directions.0.artifactRefs.0",
+  );
+  runCase(
+    "advanced run manifest requires a prior snapshot",
+    () => {
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      delete manifest.transition;
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.transition.previousState",
+  );
+  runCase(
+    "advanced history cannot downgrade to initial shape",
+    () => {
+      const run = structuredClone(baseRun);
+      run.phase = "shape";
+      run.status = "active";
+      run.ownerDecision = "pending";
+      delete run.stopReason;
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      delete manifest.transition;
+      return validateInstructionManifest(manifest, run, repoRoot);
+    },
+    "instructionManifest.transition.previousState",
+  );
+  runCase(
+    "calibration retains canonical seeded failures",
+    () => {
+      const source = join(
+        repoRoot,
+        "skills/sanchika-craft/assets/calibration",
+      );
+      const temporaryRoot = mkdtempSync(join(tmpdir(), "sanchika-calibration-"));
+      try {
+        const metadata = JSON.parse(
+          readFileSync(join(source, "metadata.json"), "utf8"),
+        );
+        metadata.controls[1].seededFailures = [];
+        for (const control of metadata.controls)
+          copyFileSync(
+            join(source, control.file),
+            join(temporaryRoot, control.file),
+          );
+        writeFileSync(
+          join(temporaryRoot, "metadata.json"),
+          `${JSON.stringify(metadata, null, 2)}\n`,
+        );
+        return validateCalibrationPack(temporaryRoot);
+      } finally {
+        rmSync(temporaryRoot, { recursive: true, force: true });
+      }
+    },
+    "calibration.generic-ai-saas.seededFailures",
+  );
+  runCase(
+    "owner-rejected stop requires rejected decision",
+    () =>
+      validate((run) => {
+        run.ownerDecision = "pending";
+      }),
+    "ownerDecision",
+  );
+  runCase(
+    "persisted run rejects nested template placeholders",
+    () =>
+      validate((run) => {
+        run.trustBrief.id = "template-trust-brief";
+      }),
+    "run",
+  );
+  runCase(
+    "earlier adjacent failures still require rebrief",
+    () =>
+      validate((run) => {
+        run.phase = "review";
+        run.status = "active";
+        run.ownerDecision = "pending";
+        delete run.stopReason;
+        for (const [failingCriterion, attempt] of [
+          ["distinctiveness", 1],
+          ["distinctiveness", 2],
+          ["trust", 1],
+        ])
+          run.iterations.push({
+            reviewRound: 1,
+            failingCriterion,
+            changeHypothesis: `Attempt ${attempt}`,
+            invariants: ["trust boundary"],
+            artifactRefs: [
+              "craft/runs/sanchika-landing-s10/evidence/direction-alpha.webp",
+            ],
+            result: "not_improved",
+          });
+      }),
+    "iterations",
+  );
+  runCase(
+    "ready-for-consumer decision requires complete status",
+    () =>
+      validate((run) => {
+        run.evidenceLoop.decision = "ready-for-consumer-pr";
+        run.evidenceLoop.adoptionEvidence.status = "verified";
+        run.evidenceLoop.residualRisks = [
+          "AI proxy evidence remains distinct from user validation.",
+        ];
+      }),
+    "evidenceLoop.decision",
+  );
+  runCase(
+    "mobile evidence requires a mobile viewport artifact",
+    () =>
+      validate((run) => {
+        run.evidenceLoop.renderEvidence.find(
+          (evidence) => evidence.type === "mobile-screenshot",
+        ).artifact =
+          "craft/runs/sanchika-landing-s10/evidence/without-skill-control.webp";
+      }),
+    "evidenceLoop.renderEvidence.1.artifact",
+  );
+  runCase(
     "incomplete previous argument is rejected",
     () => {
       try {

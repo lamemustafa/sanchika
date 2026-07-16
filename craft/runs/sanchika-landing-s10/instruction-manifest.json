@@ -6,6 +6,7 @@
   "plainRequestControl": {
     "isolation": "fresh context with only the plain request and same-commit repository access",
     "retainedArtifact": "evidence/without-skill-control.webp",
+    "sha256": "fd3ea9bf35445127de0a5900e1f7382dab6f84390eb63ec4a7c6e1d5c0feded7",
     "codeRetained": false
   },
   "hashes": {
@@ -20,6 +21,10 @@
     "protocol": "craft/runs/sanchika-landing-s10/instructions/protocol.md",
     "runTemplate": "craft/runs/sanchika-landing-s10/instructions/run-template.json",
     "calibrationMetadata": "craft/runs/sanchika-landing-s10/instructions/calibration/metadata.json"
+  },
+  "transition": {
+    "previousState": "craft/runs/sanchika-landing-s10/transitions/previous-state.json",
+    "sha256": "8c2b0932e99d77c2d5510eac094e5b6519cc62ff0589621d8701c71ad44333e2"
   },
   "reviewIsolation": {
     "visualReviewerCount": 4,

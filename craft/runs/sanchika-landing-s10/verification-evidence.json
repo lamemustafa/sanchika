@@ -41,6 +41,7 @@
       "gatedLabBuildRoutes": 64,
       "productionLabRoutes": 0,
       "rasterGeneration": false,
+      "retainedMobileEvidence": "evidence/direction-alpha-mobile-390.webp (390x844)",
       "terminalDisposition": "All territory, provisional identity, and provisional font code removed after owner rejection; optimized evidence retained."
     },
     "review": {
@@ -89,7 +90,7 @@
       "baselineSearchScriptGzipBytes": 1057
     },
     "budgets": {
-      "committedCreativeEvidenceBytes": 980104,
+      "committedCreativeEvidenceBytes": 997960,
       "creativeEvidenceLimitBytes": 1000000,
       "selfHostedFontBytes": 0,
       "selfHostedFontLimitBytes": 160000,

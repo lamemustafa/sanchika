@@ -27,7 +27,7 @@ export function findUnresolvedGalleryVariables({ html, copiedCss }) {
 export function findGalleryIdentityPolicyFailures({ path, source }) {
   const failures = [];
   const activeSource = stripCssComments(source);
-  const isIdentityLayer = path === "styles/identity.css" || path.endsWith("/styles/identity.css");
+  const isIdentityLayer = path.replaceAll("\\", "/") === "styles/identity.css";
   if (/--lab-/.test(activeSource)) failures.push(`${path} must not contain retired lab variables`);
   if (/--sk-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not author --sk-* variables`);
   if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
@@ -171,8 +171,21 @@ export function runGalleryVariableFixtures() {
       );
   }
 
+  const nestedIdentityFailures = findGalleryIdentityPolicyFailures({
+    path: "components/styles/identity.css",
+    source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+  });
+  if (
+    !nestedIdentityFailures.some((failure) =>
+      failure.includes("outside styles/identity.css"),
+    )
+  )
+    failures.push(
+      "nested identity stylesheet must not receive canonical identity privileges",
+    );
+
   return {
-    count: fixtures.length + identityFixtures.length + selectorFixtures.length,
+    count: fixtures.length + identityFixtures.length + selectorFixtures.length + 1,
     failures,
   };
 }

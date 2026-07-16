@@ -13,7 +13,7 @@
     "rasterGeneration": false
   },
   "phase": "owner_gate",
-  "status": "stopped",
+  "status": "awaiting_owner",
   "reviewRound": 1,
   "trustBrief": {
     "id": "sanchika-landing-trust-v1",
@@ -372,7 +372,7 @@
       ]
     }
   ],
-  "ownerDecision": "rejected",
+  "ownerDecision": "pending",
   "selectedDirectionId": null,
   "assets": [
     {
@@ -583,16 +583,15 @@
       "verificationRun": "Gated lab build, gallery typecheck, calibrated review, and 3-of-3 recognition completed before the owner rejected all qualifying directions; rejected lab code was then removed.",
       "rollbackPlan": "No production gallery identity was adopted; canonical gallery behavior remains unchanged apart from the independently merged H0 navigation fix."
     },
-    "decision": "blocked-by-boundary",
+    "decision": "needs-verification",
     "residualRisks": [
-      "The owner rejected all qualifying directions, so this run cannot advance to production or consumer adoption.",
+      "The owner has not selected or rejected the qualifying directions.",
       "All review and recognition results are AI proxy evidence, not user validation."
     ],
     "nextActions": [
-      "Begin a new craft run only after the owner supplies or approves a materially new design brief.",
-      "Do not reuse the rejected territory implementations as production identity."
+      "Await the owner's anonymized direct comparison decision.",
+      "Do not advance either qualifying direction before that decision."
     ]
   },
-  "nextAction": "Start a new Sanchika landing craft run only after a materially new owner brief.",
-  "stopReason": "owner_rejected"
+  "nextAction": "Await the owner's C2R-A decision."
 }

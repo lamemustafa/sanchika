@@ -64,8 +64,11 @@ import { runTarballContentsFixtures } from "./validation/tarball-contents.mjs";
 import {
   loadPatternValidators,
   loadRunCalibrationMetadata,
+  loadRunPreviousState,
+  requiresTransitionEvidence,
   validateCalibrationPack,
   validateCraftRun,
+  validateCraftTransition,
   validateInstructionManifest,
 } from "../skills/sanchika-craft/scripts/validate-run.mjs";
 import { runCraftRunFixtures } from "./validation/craft-run-fixtures.mjs";
@@ -163,10 +166,11 @@ for (const statePath of craftStatePaths) {
   const run = readJson(statePath);
   const manifestPath = join(dirname(statePath), "instruction-manifest.json");
   let runCalibrationMetadata;
+  let manifest;
   if (!existsSync(join(root, manifestPath))) {
     fail(`${statePath} requires ${manifestPath}`);
   } else {
-    const manifest = readJson(manifestPath);
+    manifest = readJson(manifestPath);
     const manifestIssues = validateInstructionManifest(manifest, run, root);
     for (const issue of manifestIssues)
       fail(`${manifestPath} ${issue.field}: ${issue.reason}`);
@@ -185,6 +189,22 @@ for (const statePath of craftStatePaths) {
     calibrationMetadata: runCalibrationMetadata,
   }))
     fail(`${statePath} ${issue.field}: ${issue.reason}`);
+  if (manifest && requiresTransitionEvidence(run)) {
+    try {
+      const previous = loadRunPreviousState(manifest, run, root);
+      for (const issue of validateCraftRun(previous, craftValidators, {
+        allowTemplate: false,
+        repoRoot: root,
+        expectedRunId: run.runId,
+        calibrationMetadata: runCalibrationMetadata,
+      }))
+        fail(`${manifest.transition.previousState} ${issue.field}: ${issue.reason}`);
+      for (const issue of validateCraftTransition(previous, run))
+        fail(`${statePath} transition ${issue.field}: ${issue.reason}`);
+    } catch (error) {
+      fail(`${statePath} prior transition snapshot is unreadable: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
 }
 for (const issue of validateCalibrationPack(join(craftSkillRoot, "assets/calibration"))) fail(`craft calibration ${issue.field}: ${issue.reason}`);
 

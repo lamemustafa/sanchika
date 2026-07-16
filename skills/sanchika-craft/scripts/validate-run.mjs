@@ -46,6 +46,49 @@ const controlIds = [
   "fake-authority",
   "mobile-a11y-failure",
 ];
+const controlRequirements = {
+  "current-baseline": {
+    seededFailures: [],
+    relevantRoles: ["brand", "craft", "trust", "accessibility"],
+  },
+  "generic-ai-saas": {
+    seededFailures: [
+      "generic-purple-gradient",
+      "glass-bento-cliche",
+      "unsupported-accuracy-and-speed-claims",
+      "generic-ai-copy",
+    ],
+    relevantRoles: ["brand", "craft", "trust"],
+  },
+  "off-brief-editorial": {
+    seededFailures: [
+      "attractive-but-off-brief",
+      "serif-theatre",
+      "mono-heavy-metadata",
+      "text-only-poster-without-product-proof",
+    ],
+    relevantRoles: ["brand", "craft"],
+  },
+  "fake-authority": {
+    seededFailures: [
+      "fake-government-seal",
+      "unsupported-ministry-approval",
+      "guaranteed-statutory-accuracy",
+      "automated-compliance-judgment",
+    ],
+    relevantRoles: ["brand", "trust"],
+  },
+  "mobile-a11y-failure": {
+    seededFailures: [
+      "low-text-contrast",
+      "sub-44px-targets",
+      "motion-only-status",
+      "color-only-state",
+      "long-identifier-overflow",
+    ],
+    relevantRoles: ["craft", "trust", "accessibility"],
+  },
+};
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const canonicalCalibrationMetadata = JSON.parse(
   readFileSync(join(scriptDir, "../assets/calibration/metadata.json"), "utf8"),
@@ -68,6 +111,14 @@ export function validateCraftRun(run, validators, options = {}) {
     add("runId", "runId must match its containing craft/runs directory.");
   if (!allowTemplate && String(run.runId).startsWith("template-"))
     add("runId", "Replace template run ID before use.");
+  if (!allowTemplate) {
+    const placeholders = findTemplatePlaceholders(run);
+    if (placeholders.length)
+      add(
+        "run",
+        `Persisted runs cannot contain template placeholders: ${placeholders.slice(0, 5).join(", ")}.`,
+      );
+  }
   validateSurface(run.surface, allowTemplate, add);
   validateCapabilities(run.capabilities, add);
   if (!phases.includes(run.phase))
@@ -90,7 +141,7 @@ export function validateCraftRun(run, validators, options = {}) {
   ])
     requireArray(run[field], field, add);
 
-  validateEmbeddedContracts(run, validators ?? {}, add);
+  validateEmbeddedContracts(run, validators ?? {}, options, add);
   validateState(run, add);
   validateReviews(
     run,
@@ -100,6 +151,7 @@ export function validateCraftRun(run, validators, options = {}) {
   validateDirections(run, options, add);
   validateIterations(run, options, add);
   validateAssets(run, options, add);
+  validateEvidenceDigests(run, options, add);
 
   if (phaseAtLeast(run.phase, "explore") && asArray(run.directions).length === 0)
     add(
@@ -108,7 +160,11 @@ export function validateCraftRun(run, validators, options = {}) {
     );
   if (
     phaseAtLeast(run.phase, "review") &&
-    run.capabilities?.isolatedReview !== true
+    run.capabilities?.isolatedReview !== true &&
+    !(
+      run.status === "stopped" &&
+      run.stopReason === "capability_blocked"
+    )
   )
     add(
       "capabilities.isolatedReview",
@@ -122,6 +178,14 @@ export function validateCraftRun(run, validators, options = {}) {
     add(
       "evidenceLoop.decision",
       "Complete runs require a ready-for-consumer-pr evidence decision.",
+    );
+  if (
+    run.evidenceLoop?.decision === "ready-for-consumer-pr" &&
+    run.status !== "complete"
+  )
+    add(
+      "evidenceLoop.decision",
+      "ready-for-consumer-pr is reserved for complete, production-approved runs.",
     );
   if (run.status === "complete") {
     if (
@@ -320,6 +384,26 @@ export function validateCalibrationPack(directory) {
       add,
     );
     const roles = asArray(control.relevantRoles);
+    const requirement = controlRequirements[control.id];
+    if (
+      !requirement ||
+      !isDeepStrictEqual(
+        asArray(control.seededFailures),
+        requirement.seededFailures,
+      )
+    )
+      add(
+        `calibration.${control.id}.seededFailures`,
+        "Calibration controls must retain the protocol's canonical seeded failures.",
+      );
+    if (
+      requirement &&
+      !isDeepStrictEqual(roles, requirement.relevantRoles)
+    )
+      add(
+        `calibration.${control.id}.relevantRoles`,
+        "Calibration controls must retain the protocol's canonical role coverage.",
+      );
     if (
       roles.length === 0 ||
       new Set(roles).size !== roles.length ||
@@ -379,7 +463,7 @@ export function validateCalibrationPack(directory) {
   return issues;
 }
 
-function validateEmbeddedContracts(run, validators, add) {
+function validateEmbeddedContracts(run, validators, options, add) {
   for (const issue of validators.validateTrustBrief?.(run.trustBrief) ?? [])
     add(`trustBrief.${issue.field}`, issue.reason);
   for (const issue of validators.validateDesignBrief?.(run.designBrief) ?? [])
@@ -401,6 +485,43 @@ function validateEmbeddedContracts(run, validators, add) {
     );
   if (!isDeepStrictEqual(run.trustBrief, run.designBrief?.trustBrief))
     add("designBrief.trustBrief", "DesignBrief must embed the current TrustBrief.");
+  if (!options.allowTemplate) {
+    const renderArtifacts = asArray(run.evidenceLoop?.renderEvidence)
+      .map((evidence) => evidence?.artifact)
+      .filter(Boolean);
+    validateArtifactReferences(
+      run,
+      renderArtifacts,
+      "evidenceLoop.renderEvidence",
+      options,
+      add,
+    );
+  }
+  for (const [index, evidence] of asArray(
+    run.evidenceLoop?.renderEvidence,
+  ).entries()) {
+    if (
+      evidence?.type !== "mobile-screenshot" ||
+      options?.allowTemplate ||
+      !options?.repoRoot ||
+      typeof evidence.artifact !== "string"
+    )
+      continue;
+    const path = resolve(options.repoRoot, evidence.artifact);
+    const dimensions = existsSync(path)
+      ? readWebpDimensions(readFileSync(path))
+      : null;
+    if (
+      !dimensions ||
+      dimensions.width < 320 ||
+      dimensions.width > 430 ||
+      dimensions.height < 600
+    )
+      add(
+        `evidenceLoop.renderEvidence.${index}.artifact`,
+        "Mobile screenshot evidence must retain a genuine 320-430px viewport WebP render.",
+      );
+  }
 }
 
 function validateState(run, add) {
@@ -452,6 +573,14 @@ function validateState(run, add) {
     add(
       "ownerDecision",
       "Rejected owner decisions are valid only at owner_gate and must stop with owner_rejected.",
+    );
+  if (
+    run.stopReason === "owner_rejected" &&
+    run.ownerDecision !== "rejected"
+  )
+    add(
+      "ownerDecision",
+      "owner_rejected stops require an explicit rejected owner decision.",
     );
   if (
     run.ownerDecision === "approved" &&
@@ -802,15 +931,10 @@ function validateIterations(run, options, add) {
   const currentRoundIterations = iterations.filter(
     (iteration) => iteration.reviewRound === run.reviewRound,
   );
-  const tail = currentRoundIterations.slice(-2);
-  if (
-    tail.length === 2 &&
-    tail.every((item) => item.result === "not_improved") &&
-    tail[0].failingCriterion === tail[1].failingCriterion
-  ) {
+  for (const criterion of failedCriteriaInRound(currentRoundIterations)) {
     const failedRoundCount = countFailedRounds(
       iterations,
-      tail[0].failingCriterion,
+      criterion,
     );
     if (
       failedRoundCount === 1 &&
@@ -861,17 +985,24 @@ function countFailedRounds(iterations, criterion) {
     entries.push(iteration);
     byRound.set(iteration.reviewRound, entries);
   }
-  return [...byRound.values()].filter((entries) => {
-    const tail = entries.slice(-2);
-    return (
-      tail.length === 2 &&
-      tail.every(
-        (item) =>
-          item.result === "not_improved" &&
-          item.failingCriterion === criterion,
-      )
-    );
-  }).length;
+  return [...byRound.values()].filter((entries) =>
+    failedCriteriaInRound(entries).includes(criterion),
+  ).length;
+}
+
+function failedCriteriaInRound(iterations) {
+  const criteria = new Set();
+  for (let index = 1; index < iterations.length; index += 1) {
+    const previous = iterations[index - 1];
+    const current = iterations[index];
+    if (
+      previous.result === "not_improved" &&
+      current.result === "not_improved" &&
+      previous.failingCriterion === current.failingCriterion
+    )
+      criteria.add(current.failingCriterion);
+  }
+  return [...criteria];
 }
 
 function validateOwnerGate(run, add) {
@@ -962,6 +1093,66 @@ function isIsoTimestamp(value) {
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
 }
+function readWebpDimensions(bytes) {
+  if (
+    bytes.length < 30 ||
+    bytes.subarray(0, 4).toString("ascii") !== "RIFF" ||
+    bytes.subarray(8, 12).toString("ascii") !== "WEBP"
+  )
+    return null;
+  let offset = 12;
+  while (offset + 8 <= bytes.length) {
+    const type = bytes.subarray(offset, offset + 4).toString("ascii");
+    const size = bytes.readUInt32LE(offset + 4);
+    const data = offset + 8;
+    if (type === "VP8X" && data + 10 <= bytes.length)
+      return {
+        width:
+          1 +
+          bytes[data + 4] +
+          (bytes[data + 5] << 8) +
+          (bytes[data + 6] << 16),
+        height:
+          1 +
+          bytes[data + 7] +
+          (bytes[data + 8] << 8) +
+          (bytes[data + 9] << 16),
+      };
+    if (
+      type === "VP8 " &&
+      data + 10 <= bytes.length &&
+      bytes[data + 3] === 0x9d &&
+      bytes[data + 4] === 0x01 &&
+      bytes[data + 5] === 0x2a
+    )
+      return {
+        width: bytes.readUInt16LE(data + 6) & 0x3fff,
+        height: bytes.readUInt16LE(data + 8) & 0x3fff,
+      };
+    if (type === "VP8L" && data + 5 <= bytes.length && bytes[data] === 0x2f) {
+      const bits = bytes.readUInt32LE(data + 1);
+      return {
+        width: (bits & 0x3fff) + 1,
+        height: ((bits >>> 14) & 0x3fff) + 1,
+      };
+    }
+    offset = data + size + (size % 2);
+  }
+  return null;
+}
+function findTemplatePlaceholders(value, path = "run") {
+  if (typeof value === "string")
+    return value.includes("template-") ? [path] : [];
+  if (Array.isArray(value))
+    return value.flatMap((item, index) =>
+      findTemplatePlaceholders(item, `${path}.${index}`),
+    );
+  if (isRecord(value))
+    return Object.entries(value).flatMap(([key, item]) =>
+      findTemplatePlaceholders(item, `${path}.${key}`),
+    );
+  return [];
+}
 function isContainedPath(directory, candidate) {
   if (!directory || !candidate) return false;
   const path = relative(directory, candidate);
@@ -979,6 +1170,46 @@ function requireNonEmptyTextArray(value, field, add) {
   if (!Array.isArray(value)) return add(field, `${field} must be an array.`);
   if (value.length === 0 || value.some((item) => typeof item !== "string" || !item.trim()))
     add(field, `${field} must contain at least one specific artifact reference.`);
+}
+
+function validateEvidenceDigests(run, options, add) {
+  const terminal = ["stopped", "complete"].includes(run.status);
+  if (terminal && !isRecord(run.evidenceDigests)) {
+    add(
+      "evidenceDigests",
+      "Terminal runs require SHA-256 digests for retained evidence.",
+    );
+    return;
+  }
+  if (!isRecord(run.evidenceDigests) || !options?.repoRoot) return;
+  const evidenceDirectory = resolve(
+    options.repoRoot,
+    `craft/runs/${run.runId}/evidence`,
+  );
+  const realEvidenceDirectory = existsSync(evidenceDirectory)
+    ? realpathSync(evidenceDirectory)
+    : null;
+  for (const [reference, digest] of Object.entries(run.evidenceDigests)) {
+    const path = resolve(options.repoRoot, reference);
+    if (
+      !realEvidenceDirectory ||
+      !isContainedPath(evidenceDirectory, path) ||
+      !existsSync(path) ||
+      !statSync(path).isFile() ||
+      !isContainedPath(realEvidenceDirectory, realpathSync(path))
+    ) {
+      add(
+        `evidenceDigests.${reference}`,
+        "Evidence digest paths must identify retained run-local evidence files.",
+      );
+      continue;
+    }
+    if (!/^[0-9a-f]{64}$/.test(digest) || sha256(readFileSync(path)) !== digest)
+      add(
+        `evidenceDigests.${reference}`,
+        "Evidence SHA-256 must match the retained bytes.",
+      );
+  }
 }
 
 function validateArtifactReferences(run, references, field, options, add) {
@@ -1013,6 +1244,17 @@ function validateArtifactReferences(run, references, field, options, add) {
       (!existsSync(artifactPath) || !statSync(artifactPath).isFile())
     )
       add(`${field}.${index}`, `Referenced artifact is missing: ${reference}.`);
+    if (
+      ["stopped", "complete"].includes(run.status) &&
+      run.evidenceDigests?.[reference] !==
+        (artifactPath && existsSync(artifactPath)
+          ? sha256(readFileSync(artifactPath))
+          : undefined)
+    )
+      add(
+        `${field}.${index}`,
+        `Terminal evidence requires a matching SHA-256 entry for ${reference}.`,
+      );
   }
 }
 
@@ -1171,6 +1413,68 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
         `Instruction manifest ${field} hash must match its retained snapshot.`,
       );
   }
+  const expectedControl = "evidence/without-skill-control.webp";
+  const controlReference = manifest.plainRequestControl?.retainedArtifact;
+  const controlPath = resolve(
+    repoRoot,
+    `craft/runs/${run.runId}/${controlReference ?? ""}`,
+  );
+  const evidenceRoot = resolve(
+    repoRoot,
+    `craft/runs/${run.runId}/evidence`,
+  );
+  if (
+    controlReference !== expectedControl ||
+    !existsSync(controlPath) ||
+    !statSync(controlPath).isFile() ||
+    !isContainedPath(evidenceRoot, controlPath) ||
+    !isContainedPath(realpathSync(evidenceRoot), realpathSync(controlPath))
+  )
+    add(
+      "instructionManifest.plainRequestControl.retainedArtifact",
+      `Without-skill control must be retained at ${expectedControl}.`,
+    );
+  else if (
+    !/^[0-9a-f]{64}$/.test(manifest.plainRequestControl?.sha256 ?? "") ||
+    sha256(readFileSync(controlPath)) !== manifest.plainRequestControl.sha256
+  )
+    add(
+      "instructionManifest.plainRequestControl.sha256",
+      "Without-skill control SHA-256 must match its retained bytes.",
+    );
+  if (manifest.plainRequestControl?.codeRetained !== false)
+    add(
+      "instructionManifest.plainRequestControl.codeRetained",
+      "Without-skill control code must not be retained.",
+    );
+  if (requiresTransitionEvidence(run)) {
+    const expectedPrevious = `craft/runs/${run.runId}/transitions/previous-state.json`;
+    const previousReference = manifest.transition?.previousState;
+    const previousPath = resolve(repoRoot, previousReference ?? "");
+    const transitionRoot = resolve(
+      repoRoot,
+      `craft/runs/${run.runId}/transitions`,
+    );
+    if (
+      previousReference !== expectedPrevious ||
+      !existsSync(previousPath) ||
+      !statSync(previousPath).isFile() ||
+      !isContainedPath(transitionRoot, previousPath) ||
+      !isContainedPath(realpathSync(transitionRoot), realpathSync(previousPath))
+    )
+      add(
+        "instructionManifest.transition.previousState",
+        `Advanced runs must retain their prior snapshot at ${expectedPrevious}.`,
+      );
+    else if (
+      !/^[0-9a-f]{64}$/.test(manifest.transition?.sha256 ?? "") ||
+      sha256(readFileSync(previousPath)) !== manifest.transition.sha256
+    )
+      add(
+        "instructionManifest.transition.sha256",
+        "Previous-state SHA-256 must match the retained snapshot.",
+      );
+  }
   return issues;
 }
 
@@ -1181,6 +1485,24 @@ export function loadRunCalibrationMetadata(manifest, run, repoRoot) {
       `Run calibration metadata must be retained at ${expected}.`,
     );
   return JSON.parse(readFileSync(resolve(repoRoot, expected), "utf8"));
+}
+
+export function loadRunPreviousState(manifest, run, repoRoot) {
+  const expected = `craft/runs/${run.runId}/transitions/previous-state.json`;
+  if (manifest?.transition?.previousState !== expected)
+    throw new Error(`Prior state must be retained at ${expected}.`);
+  return JSON.parse(readFileSync(resolve(repoRoot, expected), "utf8"));
+}
+
+export function requiresTransitionEvidence(run) {
+  return (
+    run?.phase !== "shape" ||
+    run?.ownerDecision === "rebrief" ||
+    run?.reviewRound > 1 ||
+    asArray(run?.directions).length > 0 ||
+    asArray(run?.iterations).length > 0 ||
+    asArray(run?.reviews).length > 0
+  );
 }
 
 export async function loadPatternValidators(repoRoot) {
@@ -1235,6 +1557,7 @@ async function main() {
   const manifestPath = join(dirname(resolve(statePath)), "instruction-manifest.json");
   let calibrationDirectory = join(scriptDir, "../assets/calibration");
   let calibrationMetadata = canonicalCalibrationMetadata;
+  let manifest;
   if (!allowTemplate && !existsSync(manifestPath)) {
     issues.push({
       field: "instructionManifest",
@@ -1242,7 +1565,7 @@ async function main() {
     });
   } else if (existsSync(manifestPath)) {
     try {
-      const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+      manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
       const manifestIssues = validateInstructionManifest(manifest, run, repoRoot);
       issues.push(...manifestIssues);
       if (manifestIssues.length === 0) {
@@ -1271,13 +1594,39 @@ async function main() {
   issues.push(
     ...validateCalibrationPack(calibrationDirectory),
   );
-  if (previousPath)
-    issues.push(
-      ...validateCraftTransition(
-        JSON.parse(readFileSync(resolve(previousPath), "utf8")),
-        run,
-      ),
-    );
+  if (!allowTemplate && requiresTransitionEvidence(run) && manifest) {
+    try {
+      const retainedPreviousPath = resolve(
+        repoRoot,
+        manifest.transition?.previousState ?? "",
+      );
+      if (
+        previousPath &&
+        resolve(previousPath) !== retainedPreviousPath
+      )
+        issues.push({
+          field: "arguments.previous",
+          reason: "--previous must identify the manifest-authenticated prior snapshot.",
+        });
+      const previous = loadRunPreviousState(manifest, run, repoRoot);
+      for (const issue of validateCraftRun(previous, validators, {
+        allowTemplate: false,
+        repoRoot,
+        expectedRunId: run.runId,
+        calibrationMetadata,
+      }))
+        issues.push({
+          field: `previousState.${issue.field}`,
+          reason: issue.reason,
+        });
+      issues.push(...validateCraftTransition(previous, run));
+    } catch {
+      issues.push({
+        field: "previousState",
+        reason: "Advanced runs require a readable manifest-authenticated prior snapshot.",
+      });
+    }
+  }
   if (issues.length) {
     for (const issue of issues)
       console.error(`${issue.field}: ${issue.reason}`);

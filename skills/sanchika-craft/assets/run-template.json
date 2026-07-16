@@ -134,6 +134,7 @@
   "ownerDecision": "pending",
   "selectedDirectionId": null,
   "assets": [],
+  "evidenceDigests": {},
   "reconciliation": [],
   "evidenceLoop": {
     "id": "template-evidence-loop",
