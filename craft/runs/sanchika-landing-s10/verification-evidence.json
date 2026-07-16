@@ -1,10 +1,19 @@
 {
   "schemaVersion": 1,
   "runId": "sanchika-landing-s10",
-  "capturedAt": "2026-07-16T18:25:00Z",
+  "capturedAt": "2026-07-16T18:43:29Z",
   "sourceCommit": "f5f86eae29d573576a40c002da7210d7bc7a4dc4",
   "phase": "owner_gate",
-  "status": "awaiting_owner",
+  "status": "stopped",
+  "terminalOutcome": {
+    "ownerDecision": "reject all",
+    "stopReason": "owner_rejected",
+    "reason": "The owner found the two qualifying options materially alike and accepted neither.",
+    "productionIdentityAdopted": false,
+    "consumerAdoptionAuthorized": false,
+    "rejectedLabCodeRemoved": true,
+    "optimizedEvidenceRetained": true
+  },
   "completedEvidence": {
     "ratification": {
       "status": "passed",
@@ -14,7 +23,7 @@
       "status": "passed",
       "skill": "skills/sanchika-craft/SKILL.md",
       "protocolVersion": "0.1.0",
-      "runValidation": "Craft run valid: sanchika-landing-s10 (owner_gate/awaiting_owner)",
+      "runValidation": "Craft run valid: sanchika-landing-s10 (owner_gate/stopped)",
       "calibrationPackBytes": 128245
     },
     "counterfactual": {
@@ -31,7 +40,8 @@
       "productionBuildRoutes": 61,
       "gatedLabBuildRoutes": 64,
       "productionLabRoutes": 0,
-      "rasterGeneration": false
+      "rasterGeneration": false,
+      "terminalDisposition": "All territory, provisional identity, and provisional font code removed after owner rejection; optimized evidence retained."
     },
     "review": {
       "status": "passed",
@@ -81,24 +91,23 @@
     "budgets": {
       "committedCreativeEvidenceBytes": 846824,
       "creativeEvidenceLimitBytes": 1000000,
-      "selfHostedFontBytes": 13276,
+      "selfHostedFontBytes": 0,
       "selfHostedFontLimitBytes": 160000,
       "externalOrigins": 0
     }
   },
-  "pendingRequiredGates": [
-    "C2R-A owner selection",
+  "pendingRequiredGates": [],
+  "notStartedBecauseOwnerRejected": [
     "selected-direction typeface bracket and production build",
     "four-role copy comprehension review",
     "C2R-B production approval",
     "production browser and three-run performance matrix",
-    "PR current-head review and deployment",
-    "post-deploy live smoke and canonical master sync",
-    "S11 consumer adoption in ComplyEaze, Axal, Pack, then Tools"
+    "production identity deployment",
+    "S11 consumer adoption"
   ],
   "parallelH0": {
     "sanchikaPr": 50,
-    "sanchikaState": "mergeable with green required checks; explicit merge decision pending because strict local review-object check and findings-based required status disagree",
+    "sanchikaState": "merged as dd03c363e23523fe3961892d62d851de764d4101; remote and local task branches deleted; canonical local master fast-forwarded",
     "axalPr": 193,
     "complyEazePr": 194,
     "complyEazeState": "mergeable with clean current-head Codex comments; GitHub Actions jobs were not started because account billing or spend limit is blocked"

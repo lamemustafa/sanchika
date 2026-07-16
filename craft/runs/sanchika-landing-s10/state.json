@@ -13,7 +13,7 @@
     "rasterGeneration": false
   },
   "phase": "owner_gate",
-  "status": "awaiting_owner",
+  "status": "stopped",
   "trustBrief": {
     "id": "sanchika-landing-trust-v1",
     "consumerMode": "external/operational-saas",
@@ -278,17 +278,50 @@
       ]
     }
   ],
-  "ownerDecision": "pending",
+  "ownerDecision": "rejected",
   "assets": [
     {
       "path": "apps/gallery/src/assets/fonts/AnekDevanagari-Variable-subset.woff2",
       "origin": "https://github.com/google/fonts/blob/ac1371ad5eccb06352daf399448b673a79c98024/ofl/anekdevanagari/AnekDevanagari%5Bwdth%2Cwght%5D.ttf",
       "licence": "SIL Open Font License 1.1",
       "sha256": "ee7f019997e631bb456bc2e637e26e37104d31b3b668c05743c41fc41fa308fb",
-      "job": "identity"
+      "job": "identity",
+      "retained": false,
+      "disposition": "Deleted with the rejected provisional wordmark after C2R-A. Provenance remains in this terminal run record."
     }
   ],
-  "reconciliation": [],
+  "reconciliation": [
+    {
+      "subject": "direction-alpha",
+      "decision": "delete",
+      "reason": "Owner rejected Option Alpha at C2R-A; remove its gallery lab implementation and retain optimized evidence only."
+    },
+    {
+      "subject": "direction-beta",
+      "decision": "delete",
+      "reason": "Owner rejected Option Beta at C2R-A; remove its gallery lab implementation and retain optimized evidence only."
+    },
+    {
+      "subject": "direction-gamma",
+      "decision": "delete",
+      "reason": "Direction did not qualify and was not presented as an owner-selectable production option."
+    },
+    {
+      "subject": "provisional-wordmark-and-font",
+      "decision": "delete",
+      "reason": "No identity direction was approved, so provisional identity assets must not remain in the gallery."
+    },
+    {
+      "subject": "optimized-comparison-evidence",
+      "decision": "retain",
+      "reason": "Preserve the auditable counterfactual, direction, recognition, and owner-comparison evidence for this terminal run."
+    },
+    {
+      "subject": "canonical-craft-core",
+      "decision": "retain",
+      "reason": "The provider-neutral skill, validator, calibration pack, protocol, and terminal run evidence are independent of owner approval for a visual direction."
+    }
+  ],
   "evidenceLoop": {
     "id": "sanchika-landing-evidence-v1",
     "trustBrief": {
@@ -431,26 +464,26 @@
     "adoptionEvidence": {
       "consumerRepo": "lamemustafa/sanchika",
       "consumerSurface": "/",
-      "status": "proposed",
+      "status": "deferred",
       "changedFiles": [
-        "apps/gallery/src/pages/lab/[territory].astro",
-        "apps/gallery/src/components/craft/DirectionLab.astro",
-        "apps/gallery/src/styles/craft-lab.css",
-        "apps/gallery/src/styles/identity.css"
+        "craft/runs/sanchika-landing-s10/state.json",
+        "craft/runs/sanchika-landing-s10/owner-decision.json",
+        "craft/runs/sanchika-landing-s10/review-summaries.json",
+        "craft/runs/sanchika-landing-s10/verification-evidence.json"
       ],
-      "verificationRun": "Gated lab build, gallery typecheck, repository validation, calibrated review, and 3-of-3 recognition completed.",
-      "rollbackPlan": "Keep the lab excluded from normal builds and delete rejected direction code until owner approval."
+      "verificationRun": "Gated lab build, gallery typecheck, calibrated review, and 3-of-3 recognition completed before the owner rejected all qualifying directions; rejected lab code was then removed.",
+      "rollbackPlan": "No production gallery identity was adopted; canonical gallery behavior remains unchanged apart from the independently merged H0 navigation fix."
     },
-    "decision": "needs-verification",
+    "decision": "blocked-by-boundary",
     "residualRisks": [
-      "Owner selection is pending.",
-      "Production browser, accessibility, and performance gates have not started.",
+      "The owner rejected all qualifying directions, so this run cannot advance to production or consumer adoption.",
       "All review and recognition results are AI proxy evidence, not user validation."
     ],
     "nextActions": [
-      "Owner selects Option Alpha, Option Beta, or rejects both.",
-      "Advance only an approved qualifying direction to the production build phase."
+      "Begin a new craft run only after the owner supplies or approves a materially new design brief.",
+      "Do not reuse the rejected territory implementations as production identity."
     ]
   },
-  "nextAction": "Await C2R-A owner selection between anonymized Option Alpha and Option Beta."
+  "nextAction": "Start a new Sanchika landing craft run only after a materially new owner brief.",
+  "stopReason": "owner_rejected"
 }
