@@ -1,8 +1,11 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
+import { resolveGalleryReleaseState } from "./validation/gallery-release-state.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+const release = JSON.parse(readFileSync(new URL("../release.json", import.meta.url), "utf8"));
+const galleryReleaseState = resolveGalleryReleaseState(release);
 assertGalleryBuildArtifacts({ root, commandName: "pnpm smoke:check" });
 const dist = new URL("../apps/gallery/dist/", import.meta.url);
 const failures = [];
@@ -11,7 +14,7 @@ if (documents.length !== 61) failures.push(`production gallery must emit 61 HTML
 if (documents.some((path) => /(^|\/)lab(\/|$)/.test(path))) failures.push("production gallery must not emit lab routes");
 
 const checks = new Map([
-  ["index.html", ["Build compliance interfaces that show their evidence.", "sk-pattern-review-desk-preview", "Related by evidence. Different by work.", "Find the contract behind the interface.", "Proven, limited, current.", "No next package release is currently announced."]],
+  ["index.html", ["Build compliance interfaces that show their evidence.", "sk-pattern-review-desk-preview", "Related by evidence. Different by work.", "Find the contract behind the interface.", "Proven, limited, current.", galleryReleaseState.nextAnnouncement]],
   ["foundations/index.html", ["Evidence Modernism grammar", "/foundations/typography/"]],
   ["foundations/tokens/index.html", ["108 generated tokens", "@sanchika/tokens/theme.css"]],
   ["foundations/motion/index.html", ["Motion confirms state", "focus-feedback", "skeleton-loading"]],
@@ -26,9 +29,9 @@ for (const [path, fragments] of checks) {
   for (const fragment of fragments) if (!markup.includes(fragment)) failures.push(`${path} must include ${fragment}`);
 }
 const manifest = JSON.parse(readFileSync(new URL("sanchika-manifest.json", dist), "utf8"));
-if (manifest.releases.currentStable.version !== "0.1.0" || manifest.releases.currentStable.status !== "released-current" || manifest.releases.next !== null || manifest.releases.nextAnnouncement !== "No next package release is currently announced." || Object.hasOwn(manifest.releases, "planned")) failures.push("manifest release status must remain truthful");
+if (manifest.releases.currentStable.version !== galleryReleaseState.currentStable || manifest.releases.currentStable.status !== "released-current" || (manifest.releases.next?.version ?? null) !== galleryReleaseState.next || manifest.releases.nextAnnouncement !== galleryReleaseState.nextAnnouncement || Object.hasOwn(manifest.releases, "planned")) failures.push("manifest release status must remain truthful");
 const llms = readFileSync(new URL("llms.txt", dist), "utf8");
-if (!llms.includes("design contract and static evidence system") || !llms.includes("Current stable release: v0.1.0. GitHub release artifacts; not published to npm.") || !llms.includes("No next package release is currently announced.")) failures.push("llms.txt must expose the concise generated project and release boundary");
+if (!llms.includes("design contract and static evidence system") || !llms.includes(`Current stable release: v${galleryReleaseState.currentStable}. GitHub release artifacts; not published to npm.`) || !llms.includes(galleryReleaseState.nextAnnouncement)) failures.push("llms.txt must expose the concise generated project and release boundary");
 if (failures.length) {
   console.error("Sanchika gallery smoke failed:");
   for (const failure of failures) console.error(`- ${failure}`);

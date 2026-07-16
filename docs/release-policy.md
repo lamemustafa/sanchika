@@ -29,7 +29,8 @@ Before the first package publish:
    under `dist/release/` for GitHub release assets or CI-resolvable local
    testing.
 7. For an approval-gated stable GitHub release that still avoids npm
-   publishing, run `pnpm release:stable-tarballs`. This uses the same pack,
+   publishing, select the exact Node version in `.node-version`, retain its
+   bundled npm, and run `pnpm release:stable-tarballs`. This uses the same pack,
    scratch-consumer, probe, typecheck, manifest, and SHA-256 path as
    `release:tarballs`, but reads the stable version and ordered package set
    from root `release.json`.
@@ -70,22 +71,43 @@ tarball and screenshot filenames, checksums, and emitted manifest metadata
 under `dist/release/`. It validates the current gallery build fingerprints,
 final screenshot bytes, and the exact pixel dimensions encoded by every stable
 screenshot filename before atomically replacing the release directory. A
-command-line version override must
-equal the release manifest version. The current stable artifact release is
-`v0.1.0`, with `@sanchika/tokens`, `@sanchika/primitives`, and
+command-line version override must equal the release manifest version. Before
+any build or artifact emission, the command requires the exact Node, npm, and
+zlib runtime recorded by `.node-version` and
+`scripts/validation/release-runtime.mjs`. The direct stable pack entrypoint
+repeats that assertion so callers cannot bypass it. This runtime pin preserves
+final gzip bytes as well as the already deterministic uncompressed tar payload;
+the release gate continues to compare final `.tgz` bytes. The stable artifact
+candidate declared by this correction is `v0.1.1`, with `@sanchika/tokens`,
+`@sanchika/primitives`, and
 `@sanchika/patterns` in dependency order. The private
 `@sanchika/gallery-app` is not a consumer package and is excluded from release
 tarballs.
 
-## v0.1.0 Release Preparation And Publication Boundary
+Root `release.json` also records `previousVersion` as the pre-publication
+current release and rollback target. Ordinary local and CI gallery builds show
+that previous release as current and the new `version` as a candidate. The
+stable release runner sets the promotion state only while generating final
+release evidence. The Pages master build still verifies that the tag, GitHub
+release, exact assets, checksums, and tagged commit exist before deploying the
+promoted current-release wording.
 
-The reviewed release tree advances `release.json` to `v0.1.0`. While the
+## v0.1.1 Reproducibility Correction And Publication Boundary
+
+The reviewed correction tree advances `release.json` to `v0.1.1`. While the
 release-preparation branch is unmerged, this is a candidate declaration only.
 Once the tree is merged, detached release execution regenerates artifacts from
 the merge commit, verifies their final bytes, creates the tag and GitHub
 release, and uploads the exact asset set. The Pages workflow is then rerun to
 publish the matching gallery status. Release preparation itself creates no tag,
 release, upload, npm publication, or deploy.
+
+The published v0.1.0 tag and assets remain immutable. They are not deleted,
+retargeted, or silently replaced. v0.1.1 corrects the compressed-byte
+reproducibility failure by pinning the release runtime, while preserving the
+reviewed package contracts. The correction adds no package API, token,
+primitive, pattern, motion, gallery feature, consumer change, registry work, or
+npm publication.
 
 The gallery build runs `scripts/check-gallery-release-readiness.mjs` in the
 GitHub Pages master context. It refuses the automatic post-merge deployment
@@ -101,16 +123,36 @@ are verified against the published manifest;
 pixel-identical regeneration is not required across browser and operating-system
 builds. Later master builds retain the published-release validation without
 pretending to be the historical tag checkout. After publishing those assets,
-rerun the Pages workflow to publish the matching current-release status. This
-verification does not change repository settings or publish to npm.
+rerun the Pages workflow to publish the matching current-release status, then
+run `SANCHIKA_EXPECTED_RELEASE_VERSION=0.1.1 pnpm pages:smoke` so the live proof
+requires that exact promoted release. The scheduled smoke compares the live
+site's internally consistent release metadata with GitHub's latest published
+stable release. During the bounded interval between a release-preparation merge
+and artifact publication, GitHub still reports the preceding immutable release,
+so a healthy unchanged deployment does not fail merely because source contains
+the next candidate. This verification does not change repository settings or
+publish to npm.
 
 The release set is exactly tokens, primitives, and patterns. The gallery is a
 separately deployed private application and is never packed. Internal packed
-dependencies resolve to `0.1.0`; source dependencies remain `workspace:*`.
+dependencies resolve to `0.1.1`; source dependencies remain `workspace:*`.
 There is no npm publication and no next package release is announced unless a
 separate approval records one.
 
-## Rollback To v0.0.2
+## Rollback From v0.1.1
+
+The immediate rollback assets are the immutable v0.1.0 GitHub release:
+
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-tokens-0.1.0.tgz`
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-primitives-0.1.0.tgz`
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-patterns-0.1.0.tgz`
+- `https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/manifest.json`
+
+Consumers restore all three tarballs and exact-version overrides together,
+regenerate and review their lockfile, and rerun package-backed verification.
+See `docs/migrations/v0.1.0-to-v0.1.1.md` for the exact sequence.
+
+## Historical Rollback To v0.0.2
 
 The rollback assets remain:
 

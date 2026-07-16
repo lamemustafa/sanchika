@@ -1,6 +1,6 @@
 const canonicalOrigin = "https://sanchika.complyeaze.com";
 
-export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, stableRelease, packageEntrypoints }) {
+export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, stableRelease, nextRelease = null, packageEntrypoints }) {
   const failures = [];
   const fail = (message) => failures.push(message);
   const index = outputFiles.get("index.html") ?? "";
@@ -26,9 +26,12 @@ export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, 
     if (Object.hasOwn(manifest.releases ?? {}, "planned")) fail("manifest must not retain the legacy planned release field");
     if (manifest.releases?.next) {
       if (manifest.releases.next.version === stableRelease) fail("manifest current and next release versions must not duplicate");
+      if (manifest.releases.next.version !== nextRelease) fail("manifest next release must match the declared stable artifact candidate");
       if (manifest.releases.next.status !== "planned-not-released") fail("manifest next release must remain planned-not-released");
     } else if (manifest.releases?.next !== null || manifest.releases?.nextAnnouncement !== "No next package release is currently announced.") {
       fail("manifest must state that no next package release is currently announced");
+    } else if (nextRelease !== null) {
+      fail("manifest must expose the declared stable artifact candidate as next before promotion");
     }
     const actualPackageNames = (manifest.packages ?? []).map((pkg) => pkg.name).sort();
     const canonicalPackageNames = Object.keys(packageEntrypoints).sort();
@@ -80,6 +83,7 @@ export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, 
   const nextReleaseStatement = manifest?.releases?.next
     ? `Next announced package release: v${manifest.releases.next.version}. ${manifest.releases.next.announcement}`
     : "No next package release is currently announced.";
+  const landingNextReleaseStatement = manifest?.releases?.next?.announcement ?? nextReleaseStatement;
   if (!llms.includes(nextReleaseStatement)) fail("llms.txt must use the canonical optional next-release status");
   if (!llms.includes("https://github.com/lamemustafa/sanchika")) fail("llms.txt must cite the canonical source repository");
   if (manifest) {
@@ -100,7 +104,7 @@ export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, 
   if (!index.includes("Related by evidence. Different by work.")) fail("landing must render the four-mode comparison");
   if (!index.includes("Proven, limited, current.")) fail("landing must expose honest status treatment");
   if (!index.includes(`Current stable release: v${stableRelease}`) || !index.includes(`releases/tag/v${stableRelease}`)) fail("landing must show and link the current stable release");
-  if (!index.includes(nextReleaseStatement)) fail("landing must state the canonical optional next-release status");
+  if (!index.includes(landingNextReleaseStatement)) fail("landing must state the canonical optional next-release status");
   if (new RegExp(`v${stableRelease}[^<]{0,80}(?:planned|unreleased)`, "i").test(index)) fail("landing must not duplicate the current stable version as planned");
 
   for (const [path, content] of outputFiles) {

@@ -131,6 +131,13 @@ export function validateReleaseManifest(manifest) {
   if (!isStableSemver(manifest.version)) {
     failures.push("version must be a non-prerelease semantic version other than 0.0.0 for the stable channel");
   }
+  if (manifest.previousVersion !== undefined) {
+    if (!isStableSemver(manifest.previousVersion)) {
+      failures.push("previousVersion must be a non-prerelease semantic version other than 0.0.0");
+    } else if (manifest.previousVersion === manifest.version) {
+      failures.push("previousVersion must differ from the stable release version");
+    }
+  }
   if (!Array.isArray(manifest.packages) || manifest.packages.length === 0) {
     failures.push("packages must be a non-empty array");
     return failures;
@@ -169,7 +176,8 @@ export function validateReleaseManifest(manifest) {
 
 export function releaseManifestFixtureCases() {
   const valid = {
-    version: "0.1.0",
+    version: "1.2.3",
+    previousVersion: "1.2.2",
     channel: "stable",
     packages: [...stableReleasePackageOrder],
   };
@@ -181,6 +189,8 @@ export function releaseManifestFixtureCases() {
     { name: "gallery app is not a release package", manifest: { ...valid, packages: ["@sanchika/gallery-app"] }, expectedFailure: "unknown package" },
     { name: "invalid version", manifest: { ...valid, version: "01.2.3" }, expectedFailure: "non-prerelease semantic version" },
     { name: "prerelease version", manifest: { ...valid, version: "1.2.3-next.1" }, expectedFailure: "non-prerelease semantic version" },
+    { name: "invalid previous version", manifest: { ...valid, previousVersion: "1.2.2-next.1" }, expectedFailure: "previousVersion" },
+    { name: "duplicate previous version", manifest: { ...valid, previousVersion: valid.version }, expectedFailure: "must differ" },
     { name: "non-deterministic order", manifest: { ...valid, packages: [...stableReleasePackageOrder].reverse() }, expectedFailure: "deterministic order" },
     { name: "missing package list", manifest: { version: "1.2.3", channel: "stable" }, expectedFailure: "non-empty array" },
   ];

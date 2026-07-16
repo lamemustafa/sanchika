@@ -24,6 +24,7 @@ import {
 } from "./validation/release-manifest.mjs";
 import { assertPackedFileList } from "./validation/tarball-contents.mjs";
 import { loadStableReleaseScreenshots } from "./validation/release-screenshots.mjs";
+import { assertStableReleaseRuntime, resolveBundledNpmCli } from "./validation/release-runtime.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const args = new Set(process.argv.slice(2));
@@ -32,6 +33,12 @@ if (args.has("--release-manifest")) {
 }
 const strictPublishManifests = args.has("--strict-publish-manifests");
 const stableRelease = args.has("--stable-release");
+if (stableRelease) {
+  assertStableReleaseRuntime();
+  if (process.env.SANCHIKA_RELEASE_PROMOTED !== "true") {
+    throw new Error("stable release packing requires SANCHIKA_RELEASE_PROMOTED=true; use pnpm release:stable-tarballs");
+  }
+}
 const emitDir = valueAfter("--emit-dir");
 const versionOverride = valueAfter("--version");
 const releaseManifest = stableRelease ? loadReleaseManifest(join(root, "release.json")) : null;
@@ -63,7 +70,7 @@ try {
   const tarballs = packages.map((packageName) => packPackage(packageName));
   printTarballEvidence(tarballs);
   writeConsumerPackage(consumerRoot);
-  run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs.map((tarball) => tarball.path)], consumerRoot);
+  runNpm(["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs.map((tarball) => tarball.path)], consumerRoot);
   runConsumerProbe(consumerRoot);
   runConsumerTypecheck(consumerRoot);
   console.log("npm packed-tarball consumer install, runtime probe, and typecheck passed.");
@@ -136,7 +143,7 @@ function rewriteInternalDependencySections(manifest) {
 }
 
 function packPackage(packageName) {
-  const output = run("npm", ["pack", "--json", "--pack-destination", tarballRoot], join(packageRoot, packageName));
+  const output = runNpm(["pack", "--json", "--pack-destination", tarballRoot], join(packageRoot, packageName));
   const packed = JSON.parse(output)[0];
   const files = assertPackedFileList({ packageName, packed });
   const tarballPath = join(tarballRoot, basename(packed.filename));
@@ -458,6 +465,12 @@ function runConsumerTypecheck(targetRoot) {
     )}\n`,
   );
   run(process.execPath, [join(root, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.json", "--noEmit"], targetRoot);
+}
+
+function runNpm(args, cwd) {
+  return stableRelease
+    ? run(process.execPath, [resolveBundledNpmCli(), ...args], cwd)
+    : run("npm", args, cwd);
 }
 
 function run(command, args, cwd) {

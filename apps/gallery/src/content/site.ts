@@ -8,16 +8,27 @@ import release from "../../../../release.json";
 
 export const canonicalOrigin = "https://sanchika.complyeaze.com";
 export const sourceRepository = "https://github.com/lamemustafa/sanchika";
-export const currentStableRelease = release.version;
+const promotionValue = import.meta.env.SANCHIKA_RELEASE_PROMOTED;
+if (promotionValue && promotionValue !== "true") {
+  throw new Error("SANCHIKA_RELEASE_PROMOTED must be true when the stable release is being promoted");
+}
+const releasePromoted = promotionValue === "true";
+export const currentStableRelease = releasePromoted ? release.version : release.previousVersion;
 export const currentStableReleaseUrl = `${sourceRepository}/releases/tag/v${currentStableRelease}`;
 export type PlannedRelease = {
   readonly version: string;
   readonly status: "planned-not-released";
   readonly announcement: string;
 };
-const approvedPlannedRelease = (): PlannedRelease | null => null;
+const approvedPlannedRelease = (): PlannedRelease | null => releasePromoted
+  ? null
+  : {
+      version: release.version,
+      status: "planned-not-released",
+      announcement: `v${release.version} is the declared stable artifact candidate; it is not released until detached publication succeeds.`,
+    };
 export const plannedRelease = approvedPlannedRelease();
-export const noNextReleaseAnnouncement = "No next package release is currently announced.";
+export const noNextReleaseAnnouncement = plannedRelease?.announcement ?? "No next package release is currently announced.";
 export const releaseStatus = {
   currentStable: {
     version: currentStableRelease,
@@ -26,7 +37,7 @@ export const releaseStatus = {
     distribution: "GitHub release artifacts; not published to npm",
   },
   next: plannedRelease,
-  nextAnnouncement: plannedRelease?.announcement ?? noNextReleaseAnnouncement,
+  nextAnnouncement: noNextReleaseAnnouncement,
 } as const;
 export const projectProfile = {
   name: "Sanchika",

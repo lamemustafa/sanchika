@@ -13,9 +13,10 @@ export function validatePagesSmokeWorkflow({ pagesSmokeWorkflow, fail }) {
     "contents: read",
     "if: github.ref == 'refs/heads/master'",
     "persist-credentials: false",
-    "node-version: 24",
+    "node-version-file: .node-version",
     "run: node scripts/check-pages-smoke.mjs",
     "SANCHIKA_PAGES_URL: https://sanchika.complyeaze.com/",
+    "GITHUB_TOKEN: ${{ github.token }}",
   ]) {
     if (!pagesSmokeWorkflow.includes(requiredFragment)) {
       fail(`Pages smoke workflow must include ${requiredFragment}`);

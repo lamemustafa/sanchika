@@ -16,6 +16,7 @@ import { renderTokenArtifacts, validateTokenSource } from "./token-generation.mj
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
 import { runBuildArtifactFixtures } from "./validation/build-artifacts.mjs";
 import { runGalleryProductionFixtures } from "./validation/gallery-production.mjs";
+import { resolveGalleryReleaseState } from "./validation/gallery-release-state.mjs";
 import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
 import { validatePagesSmokeWorkflow } from "./validation/pages-smoke-workflow.mjs";
 import { expectedGithubLabels } from "./validation/github-labels.mjs";
@@ -49,6 +50,12 @@ import {
   validateReleaseManifest,
 } from "./validation/release-manifest.mjs";
 import { runReleaseReadinessFixtures } from "./validation/release-readiness.mjs";
+import {
+  releaseNpmCliCandidates,
+  releaseRuntimeFixtureCases,
+  stableReleaseRuntime,
+  validateReleaseRuntime,
+} from "./validation/release-runtime.mjs";
 import { runReleaseScreenshotFixtures, stableReleaseScreenshotSet } from "./validation/release-screenshots.mjs";
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
@@ -393,9 +400,47 @@ if (rootPackage.scripts?.["release:tarballs"] !== "pnpm build && node scripts/ch
 
 if (
   rootPackage.scripts?.["release:stable-tarballs"] !==
-  "pnpm build && pnpm gallery:browser && node scripts/check-packed-tarball-consumer.mjs --stable-release --emit-dir dist/release"
+  "node scripts/run-stable-release.mjs"
 ) {
   fail("root package must expose release:stable-tarballs for approval-gated stable GitHub release assets");
+}
+
+for (const releaseRuntimeScript of ["scripts/check-release-runtime.mjs", "scripts/run-stable-release.mjs"]) {
+  if (!existsSync(join(root, releaseRuntimeScript))) {
+    fail(`${releaseRuntimeScript} must exist`);
+  }
+}
+const stableReleaseRunner = requireText("scripts/run-stable-release.mjs");
+for (const requiredRunnerFragment of [
+  "assertStableReleaseRuntime",
+  'SANCHIKA_RELEASE_PROMOTED: "true"',
+  '"-r", "build"',
+  '"@sanchika/gallery-app", "browser:check"',
+  '"--stable-release"',
+  '"dist/release"',
+]) {
+  if (!stableReleaseRunner.includes(requiredRunnerFragment)) {
+    fail(`scripts/run-stable-release.mjs must include ${requiredRunnerFragment}`);
+  }
+}
+
+if (readText(".node-version").trim() !== stableReleaseRuntime.node.replace(/^v/, "")) {
+  fail(`.node-version must pin the stable release runtime to ${stableReleaseRuntime.node}`);
+}
+
+for (const fixture of releaseRuntimeFixtureCases()) {
+  const fixtureFailures = validateReleaseRuntime(fixture.actual);
+  const matched = fixture.expectedFailure
+    ? fixtureFailures.some((message) => message.includes(fixture.expectedFailure))
+    : fixtureFailures.length === 0;
+  if (!matched) {
+    fail(`Release runtime fixture ${fixture.name} expected ${fixture.expectedFailure ?? "success"}; found ${fixtureFailures.join(", ") || "success"}`);
+  }
+}
+
+const homebrewNpmCli = "/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js";
+if (!releaseNpmCliCandidates("/opt/homebrew/Cellar/node/24.18.0/bin/node").includes(homebrewNpmCli)) {
+  fail(`Release runtime npm resolver must include the Homebrew shared npm CLI at ${homebrewNpmCli}`);
 }
 
 let releaseManifest;
@@ -410,6 +455,19 @@ if (
   JSON.stringify(releaseManifest.packages) !== JSON.stringify(stableReleasePackageOrder)
 ) {
   fail(`release.json packages must be exactly ${stableReleasePackageOrder.join(", ")}`);
+}
+if (releaseManifest && !releaseManifest.previousVersion) {
+  fail("release.json must declare previousVersion for publication-aware gallery status and rollback");
+}
+if (releaseManifest) {
+  const previewReleaseState = resolveGalleryReleaseState(releaseManifest);
+  const promotedReleaseState = resolveGalleryReleaseState(releaseManifest, "true");
+  if (previewReleaseState.currentStable !== releaseManifest.previousVersion || previewReleaseState.next !== releaseManifest.version) {
+    fail("ordinary gallery builds must keep the prior published release current and expose the candidate as next");
+  }
+  if (promotedReleaseState.currentStable !== releaseManifest.version || promotedReleaseState.next !== null) {
+    fail("promoted gallery builds must expose the released version as current with no invented next release");
+  }
 }
 
 let releaseManifestFixtureCount = 0;
@@ -435,14 +493,14 @@ for (const [name, operation, expectedFailure] of [
     "must match release manifest version",
   ],
   [
-    "v0.0.2 override rejected for v0.1.0",
-    () => resolveReleaseVersion({ manifest: releaseManifest, override: "0.0.2" }),
-    "must match release manifest version 0.1.0",
+    "previous stable override rejected",
+    () => resolveReleaseVersion({ manifest: releaseManifest, override: "0.1.0" }),
+    `must match release manifest version ${releaseManifest?.version}`,
   ],
   [
-    "v0.1.1 override rejected for v0.1.0",
-    () => resolveReleaseVersion({ manifest: releaseManifest, override: "0.1.1" }),
-    "must match release manifest version 0.1.0",
+    "future override rejected",
+    () => resolveReleaseVersion({ manifest: releaseManifest, override: "0.1.2" }),
+    `must match release manifest version ${releaseManifest?.version}`,
   ],
 ]) {
   releaseManifestFixtureCount += 1;
@@ -790,6 +848,7 @@ const motionGallerySource = `${requireText("apps/gallery/src/pages/foundations/m
 const ciWorkflow = requireText(".github/workflows/ci.yml");
 const pagesWorkflow = requireText(".github/workflows/pages.yml");
 const pagesSmokeWorkflow = requireText(".github/workflows/pages-smoke.yml");
+const pagesSmokeSource = requireText("scripts/check-pages-smoke.mjs");
 const reviewGateWorkflow = requireText(".github/workflows/review-gate.yml");
 const codeowners = requireText(".github/CODEOWNERS");
 const claudeGuide = requireText("CLAUDE.md");
@@ -804,8 +863,8 @@ const contributingDocs = readText("CONTRIBUTING.md");
 const codeOfConduct = requireText("CODE_OF_CONDUCT.md");
 const supportDocs = requireText("SUPPORT.md");
 const releasePolicy = readText("docs/release-policy.md");
-const releaseNotes = readText("docs/releases/v0.1.0.md");
-const migrationGuide = readText("docs/migrations/v0.0.2-to-v0.1.0.md");
+const releaseNotes = readText(`docs/releases/v${releaseManifest.version}.md`);
+const migrationGuide = readText(`docs/migrations/v${releaseManifest.previousVersion}-to-v${releaseManifest.version}.md`);
 const releaseReadinessFixtures = runReleaseReadinessFixtures(releaseManifest);
 for (const fixtureFailure of releaseReadinessFixtures.failures) fail(`release readiness fixture ${fixtureFailure}`);
 const releaseDocumentFixtures = runReleaseDocumentFixtures({
@@ -1200,14 +1259,15 @@ for (const requiredPackageApiFragment of ["pnpm typecheck:api", "public package-
   }
 }
 
+const normalizedComplyeazeAdoptionDocs = normalizeProse(complyeazeAdoptionDocs);
 for (const requiredTarballPostureFragment of [
   "GitHub tarball artifacts",
-  "reviewed cross-repository v0.1.0 adoption path",
+  `become the reviewed cross-repository v${releaseManifest.version} adoption path only after`,
   "consumer-specific adoption plan",
   "all three checksums",
   "pnpm overrides",
 ]) {
-  if (!complyeazeAdoptionDocs.includes(requiredTarballPostureFragment)) {
+  if (!normalizedComplyeazeAdoptionDocs.includes(requiredTarballPostureFragment)) {
     fail(`docs/adoption-complyeaze.md must document packed tarballs as ${requiredTarballPostureFragment}`);
   }
 }
@@ -1245,17 +1305,18 @@ for (const [consumerName, requiredFragment] of [
   }
 }
 
+const normalizedExternalAdoptionDocs = normalizeProse(adoptionDocs.External);
 for (const requiredExternalFragment of [
   "independent operational SaaS teams",
   "public source with reviewed GitHub release artifacts",
   "not a published npm release",
   "local package-directory link",
-  "approved v0.1.0 tarballs",
+  `v${releaseManifest.version} set becomes eligible only after publication`,
   "pnpm",
   "overrides",
   "direct imports from `packages/*/src` are not allowed",
 ]) {
-  if (!adoptionDocs.External.includes(requiredExternalFragment)) {
+  if (!normalizedExternalAdoptionDocs.includes(requiredExternalFragment)) {
     fail(`External adoption docs must include ${requiredExternalFragment}`);
   }
 }
@@ -1278,6 +1339,21 @@ for (const [consumerName, docs] of Object.entries(adoptionDocs)) {
 validateCiWorkflow({ ciWorkflow, fail });
 validatePagesWorkflow({ pagesWorkflow, fail });
 validatePagesSmokeWorkflow({ pagesSmokeWorkflow, fail });
+
+for (const requiredPagesSmokeFragment of [
+  "SANCHIKA_EXPECTED_RELEASE_VERSION",
+  "https://api.github.com/repos/lamemustafa/sanchika/releases/latest",
+  "releases/tags/v${expectedReleaseVersion}",
+  "publishedRelease.draft",
+  "publishedRelease.prerelease",
+  "publishedRelease.tag_name",
+  "manifest.releases?.currentStable?.url",
+  "manifest.releases?.nextAnnouncement",
+]) {
+  if (!pagesSmokeSource.includes(requiredPagesSmokeFragment)) {
+    fail(`scripts/check-pages-smoke.mjs must include ${requiredPagesSmokeFragment}`);
+  }
+}
 
 const retentionFailureMessage =
   "Pages workflow ordinary build evidence retention-days must be a literal integer from 1 to 7";
@@ -2060,6 +2136,9 @@ for (const requiredTarballCheckFragment of [
   "./validation/tarball-contents.mjs",
   "package/package.json",
   "tarballPath",
+  "resolveBundledNpmCli",
+  "runNpm",
+  "process.execPath",
   "strict publish manifest check must match package/package.json inside the tarball",
 ]) {
   if (!packedTarballCheckSource.includes(requiredTarballCheckFragment)) {

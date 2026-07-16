@@ -5,7 +5,9 @@ outside the ComplyEaze, Axal, Pack, and Tools product family.
 
 Sanchika V0 is public source with reviewed GitHub release artifacts, not a published npm release.
 External teams can review, clone, locally link built
-packages, or use the approved v0.1.0 tarballs for evaluation, but they must not
+packages, or use the latest published stable tarballs for evaluation. Until
+v0.1.1 is published, v0.1.0 remains the current artifact set. External teams
+must not
 treat the repository as production-ready, filing-ready, government-official,
 or security-audited.
 
@@ -34,8 +36,10 @@ or security-audited.
 
 ## V0 Artifact Consumption Quickstart
 
-External adoption uses the reviewed v0.1.0 GitHub artifact set or a reviewed
-local package-directory link. GitHub artifacts are not npm publication.
+External adoption uses the latest reviewed published GitHub artifact set or a
+reviewed local package-directory link. The v0.1.1 set becomes eligible only
+after publication; until then, use v0.1.0. GitHub artifacts are not npm
+publication.
 
 1. In Sanchika, run `pnpm install`, `pnpm validate`, `pnpm typecheck`,
    `pnpm build`, `pnpm typecheck:api`, and `pnpm consumer:check`.
@@ -47,7 +51,7 @@ local package-directory link. GitHub artifacts are not npm publication.
 5. Roll back by removing the package link, CSS imports, and mapped primitive or
    pattern usage. Do not leave source-path imports behind.
 
-Tarball adoption must declare the complete dependency set plus the pnpm
-overrides in `docs/migrations/v0.0.2-to-v0.1.0.md`, then record the version, all
-three checksums, changed files, and rollback files after
+After v0.1.1 is published, tarball adoption must declare the complete dependency
+set plus the pnpm overrides in `docs/migrations/v0.1.0-to-v0.1.1.md`, then
+record the version, all three checksums, changed files, and rollback files after
 `pnpm publish:tarball-check` and detached release verification pass.
