@@ -441,7 +441,7 @@
       "verificationRun": "Gated lab build, gallery typecheck, repository validation, calibrated review, and 3-of-3 recognition completed.",
       "rollbackPlan": "Keep the lab excluded from normal builds and delete rejected direction code until owner approval."
     },
-    "decision": "needs-design-revision",
+    "decision": "needs-verification",
     "residualRisks": [
       "Owner selection is pending.",
       "Production browser, accessibility, and performance gates have not started.",

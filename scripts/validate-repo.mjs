@@ -237,6 +237,9 @@ if (rootPackage.scripts?.["evidence:loop:fixtures"] !== "node scripts/validation
 if (!rootPackage.scripts?.verify?.includes("node skills/sanchika-craft/scripts/validate-run.mjs skills/sanchika-craft/assets/run-template.json")) {
   fail("root verify must validate the canonical Sanchika craft run template");
 }
+if (!rootPackage.scripts?.verify?.includes("node skills/sanchika-craft/scripts/validate-run.mjs craft/runs/sanchika-landing-s10/state.json")) {
+  fail("root verify must validate the persisted Sanchika pilot run");
+}
 
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
