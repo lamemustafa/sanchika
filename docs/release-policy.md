@@ -67,8 +67,9 @@ the releasable V0 package set. It does not publish to npm and does not create a 
 tag or GitHub release by itself. It validates root `release.json`, then
 regenerates gallery browser evidence and generates matching package metadata,
 tarball and screenshot filenames, checksums, and emitted manifest metadata
-under `dist/release/`. It validates the current gallery build fingerprints and
-final screenshot bytes before atomically replacing the release directory. A
+under `dist/release/`. It validates the current gallery build fingerprints,
+final screenshot bytes, and the exact pixel dimensions encoded by every stable
+screenshot filename before atomically replacing the release directory. A
 command-line version override must
 equal the release manifest version. The current stable artifact release is
 `v0.1.0`, with `@sanchika/tokens`, `@sanchika/primitives`, and

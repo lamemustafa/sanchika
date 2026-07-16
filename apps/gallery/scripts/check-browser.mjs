@@ -14,6 +14,7 @@ const dist = join(appRoot, "dist");
 const evidenceRoot = join(repositoryRoot, "output/playwright/s8-gallery-showcase");
 const evidenceDir = join(evidenceRoot, "browser");
 const routeEvidenceDir = join(evidenceRoot, "final-routes");
+const releaseEvidenceDir = join(evidenceRoot, "release-routes");
 const rectificationEvidenceDir = join(evidenceRoot, "after/post-rectification");
 const specialEvidenceDir = join(evidenceRoot, "special-modes");
 const routes = ["/", "/foundations/", "/foundations/tokens/", "/foundations/motion/", "/primitives/", "/primitives/searchfield/", "/patterns/", "/patterns/reviewdeskpreview/", "/modes/", "/modes/complyeaze/", "/modes/axal/", "/modes/pack/", "/modes/tools/", "/adoption/"];
@@ -75,7 +76,7 @@ const server = await startServer();
 const origin = `http://127.0.0.1:${server.address().port}`;
 const { browser, launchMode } = await launchEvidenceBrowser();
 evidence.environment = { browser: "Chromium", browserVersion: browser.version(), headless: true, launchMode };
-for (const directory of [evidenceDir, routeEvidenceDir, rectificationEvidenceDir, specialEvidenceDir]) mkdirSync(directory, { recursive: true });
+for (const directory of [evidenceDir, routeEvidenceDir, releaseEvidenceDir, rectificationEvidenceDir, specialEvidenceDir]) mkdirSync(directory, { recursive: true });
 try {
   for (const viewport of viewports) {
     const context = await browser.newContext({
@@ -132,6 +133,10 @@ try {
       });
       const evidenceName = routeEvidenceName(route);
       await captureScreenshot(page, join(routeEvidenceDir, `${evidenceName}-${viewport.width}x${viewport.height}.png`), { fullPage: true });
+      const releaseEvidenceName = stableReleaseEvidenceName(route, viewport);
+      if (releaseEvidenceName) {
+        await captureScreenshot(page, join(releaseEvidenceDir, releaseEvidenceName));
+      }
       if (route === "/") {
         await captureScreenshot(page, join(rectificationEvidenceDir, `root-${viewport.width}x${viewport.height}.png`), { fullPage: true });
         await captureScreenshot(page, join(rectificationEvidenceDir, `root-${viewport.width}x${viewport.height}-first-viewport.png`));
@@ -392,6 +397,7 @@ try {
   });
   if (!evidence.forcedColors.mediaMatches || !evidence.forcedColors.focusVisible || evidence.forcedColors.structuralBoundaries < 3) failures.push(`Forced-colors proof failed: ${JSON.stringify(evidence.forcedColors)}`);
   await captureScreenshot(forcedPage, join(specialEvidenceDir, "forced-colors-focus-768x1024.png"), { fullPage: true });
+  await captureScreenshot(forcedPage, join(releaseEvidenceDir, "forced-colors-768x1024.png"));
   await forcedContext.close();
 
   const zoomContext = await browser.newContext({ viewport: { width: 720, height: 500 }, deviceScaleFactor: 1, colorScheme: "light" });
@@ -576,6 +582,20 @@ function routeEvidenceName(route) {
     "/adoption/": "adoption",
   };
   return names[route] ?? route.replace(/^\/+|\/+$/g, "").replaceAll("/", "-");
+}
+
+function stableReleaseEvidenceName(route, viewport) {
+  const profile = `${viewport.width}x${viewport.height}`;
+  const releaseCaptures = {
+    "/": {
+      "390x844": "landing-390x844.png",
+      "1440x1000": "landing-1440x1000.png",
+    },
+    "/modes/axal/": { "1440x1000": "axal-1440x1000.png" },
+    "/modes/pack/": { "1440x1000": "pack-1440x1000.png" },
+    "/modes/tools/": { "1440x1000": "tools-1440x1000.png" },
+  };
+  return releaseCaptures[route]?.[profile] ?? null;
 }
 
 function axeGateFailures(route, violations) {
