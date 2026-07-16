@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   evaluateContrastPairs,
@@ -139,18 +139,34 @@ const craftRunFixtures = runCraftRunFixtures({
 });
 for (const fixtureFailure of craftRunFixtures.failures)
   fail(`craft run fixture ${fixtureFailure}`);
-for (const [statePath, allowTemplate] of [
-  ["skills/sanchika-craft/assets/run-template.json", true],
-  ["craft/runs/sanchika-landing-s10/state.json", false],
-]) {
-  for (const issue of validateCraftRun(readJson(statePath), craftValidators, { allowTemplate, repoRoot: root })) fail(`${statePath} ${issue.field}: ${issue.reason}`);
+const craftTemplatePath = "skills/sanchika-craft/assets/run-template.json";
+for (const issue of validateCraftRun(readJson(craftTemplatePath), craftValidators, {
+  allowTemplate: true,
+  repoRoot: root,
+}))
+  fail(`${craftTemplatePath} ${issue.field}: ${issue.reason}`);
+const craftRunRoot = join(root, "craft/runs");
+const craftStatePaths = readdirSync(craftRunRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => `craft/runs/${entry.name}/state.json`)
+  .filter((path) => existsSync(join(root, path)))
+  .sort();
+if (craftStatePaths.length === 0) fail("craft/runs must contain at least one persisted run");
+for (const statePath of craftStatePaths) {
+  const run = readJson(statePath);
+  for (const issue of validateCraftRun(run, craftValidators, {
+    allowTemplate: false,
+    repoRoot: root,
+  }))
+    fail(`${statePath} ${issue.field}: ${issue.reason}`);
+  const manifestPath = join(dirname(statePath), "instruction-manifest.json");
+  if (!existsSync(join(root, manifestPath))) {
+    fail(`${statePath} requires ${manifestPath}`);
+  } else {
+    for (const issue of validateInstructionManifest(readJson(manifestPath), run, root))
+      fail(`${manifestPath} ${issue.field}: ${issue.reason}`);
+  }
 }
-for (const issue of validateInstructionManifest(
-  readJson("craft/runs/sanchika-landing-s10/instruction-manifest.json"),
-  craftRun,
-  root,
-))
-  fail(`craft instruction manifest ${issue.field}: ${issue.reason}`);
 for (const issue of validateCalibrationPack(join(craftSkillRoot, "assets/calibration"))) fail(`craft calibration ${issue.field}: ${issue.reason}`);
 
 validateSensitiveExamples({ root, fail });
@@ -254,12 +270,8 @@ if (rootPackage.scripts?.["evidence:loop:fixtures"] !== "node scripts/validation
   fail("root package must expose evidence:loop:fixtures for evidence-loop runtime regression checks");
 }
 
-if (!rootPackage.scripts?.verify?.includes("node skills/sanchika-craft/scripts/validate-run.mjs skills/sanchika-craft/assets/run-template.json")) {
-  fail("root verify must validate the canonical Sanchika craft run template");
-}
-if (!rootPackage.scripts?.verify?.includes("node skills/sanchika-craft/scripts/validate-run.mjs craft/runs/sanchika-landing-s10/state.json")) {
-  fail("root verify must validate the persisted Sanchika pilot run");
-}
+if (rootPackage.scripts?.verify?.includes("craft/runs/sanchika-landing-s10/state.json"))
+  fail("root verify must rely on repository-wide craft run discovery, not a hard-coded pilot path");
 
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");

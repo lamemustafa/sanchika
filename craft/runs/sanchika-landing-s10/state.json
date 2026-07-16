@@ -243,6 +243,10 @@
         "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 3 }
       },
       "preference": ["direction-alpha", "direction-beta", "direction-gamma"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      },
       "vetoes": []
     },
     {
@@ -278,6 +282,10 @@
         "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 3 }
       },
       "preference": ["direction-beta", "direction-alpha"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      },
       "vetoes": ["direction-gamma does not preserve co-equal accountable parts"]
     },
     {
@@ -313,6 +321,10 @@
         "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 3 }
       },
       "preference": ["direction-alpha", "direction-beta", "direction-gamma"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      },
       "vetoes": []
     },
     {
@@ -340,6 +352,10 @@
         "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4, "accessibility": 2 }
       },
       "preference": ["direction-alpha", "direction-beta"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      },
       "vetoes": ["direction-gamma remains too dominant and crowded as a default family grammar"],
       "revisionAssessments": [
         {

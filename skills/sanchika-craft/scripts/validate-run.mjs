@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 
@@ -85,9 +85,9 @@ export function validateCraftRun(run, validators, options = {}) {
   validateReviews(run, add);
   validateDirections(run, options, add);
   validateIterations(run, options, add);
-  validateAssets(run.assets ?? [], add);
+  validateAssets(run, options, add);
 
-  if (phaseAtLeast(run.phase, "explore") && (run.directions?.length ?? 0) === 0)
+  if (phaseAtLeast(run.phase, "explore") && asArray(run.directions).length === 0)
     add(
       "directions",
       "Explore and later phases require at least one direction.",
@@ -109,7 +109,8 @@ export function validateCraftRun(run, validators, options = {}) {
       "evidenceLoop.decision",
       "Complete runs require a ready-for-consumer-pr evidence decision.",
     );
-  if (run.status === "complete") validateProductionEvidence(run.productionEvidence, add);
+  if (run.status === "complete")
+    validateProductionEvidence(run, options, add);
   return issues;
 }
 
@@ -164,7 +165,7 @@ export function validateCraftTransition(previous, next) {
     }
   }
   if (previous?.phase === "owner_gate" && next?.phase === "build") {
-    const selected = previous?.directions?.find(
+    const selected = asArray(previous?.directions).find(
       (direction) =>
         direction.id === next?.selectedDirectionId &&
         direction.qualified === true &&
@@ -175,7 +176,7 @@ export function validateCraftTransition(previous, next) {
         "selectedDirectionId",
         "Build must select a qualified direction from the immediately preceding owner gate.",
       );
-    const current = next?.directions?.find(
+    const current = asArray(next?.directions).find(
       (direction) => direction.id === next?.selectedDirectionId,
     );
     if (!selected || !isDeepStrictEqual(selected, current))
@@ -318,7 +319,7 @@ function validateState(run, add) {
     add("ownerDecision", "Build and later phases require owner approval.");
   if (run.ownerDecision === "approved") {
     requireText(run.selectedDirectionId, "selectedDirectionId", add);
-    const selected = (run.directions ?? []).find(
+    const selected = asArray(run.directions).find(
       (direction) =>
         direction.id === run.selectedDirectionId &&
         direction.qualified === true &&
@@ -336,7 +337,7 @@ function validateState(run, add) {
 }
 
 function validateDirections(run, options, add) {
-  const directions = run.directions ?? [];
+  const directions = asArray(run.directions);
   for (const [index, direction] of directions.entries()) {
     for (const field of ["id", "designBriefId", "territory"])
       requireText(direction?.[field], `directions.${index}.${field}`, add);
@@ -366,34 +367,48 @@ function validateDirections(run, options, add) {
           `directions.${index}.preference`,
           "Qualified directions require at least 3/4 preference over both the baseline and without-skill control.",
         );
-      const visualReviews = qualifiedVisualReviews(run.reviews ?? []).filter(
+      const visualReviews = qualifiedVisualReviews(run.reviews).filter(
         (review) => review.reviewRound === direction.reviewRound,
       );
-      const actualPreferenceCount = visualReviews.filter((review) =>
-        review.preference?.includes(direction.id),
+      const baselinePreferenceCount = visualReviews.filter(
+        (review) =>
+          review.directionComparisons?.[direction.id]?.baseline === true,
       ).length;
-      if (actualPreferenceCount < 3)
+      const controlPreferenceCount = visualReviews.filter(
+        (review) =>
+          review.directionComparisons?.[direction.id]?.withoutSkillControl ===
+          true,
+      ).length;
+      if (
+        baselinePreferenceCount < 3 ||
+        controlPreferenceCount < 3 ||
+        preference?.reviewers !== visualReviews.length ||
+        preference?.preferredToBaseline !== baselinePreferenceCount ||
+        preference?.preferredToControl !== controlPreferenceCount
+      )
         add(
           `directions.${index}.preference`,
-          "Qualified directions require preference from at least three calibrated visual reviewers.",
+          "Qualified directions require matching per-review preference over both comparison controls.",
         );
       for (const criterion of ["relevance", "distinctiveness", "craft", "trust"]) {
         const declared = direction.medians?.[criterion];
         const scores = visualReviews
           .map((review) => review.directionScores?.[direction.id]?.[criterion])
           .filter(Number.isFinite);
+        const calculated = median(scores);
         if (
           scores.length !== visualRoles.length ||
           !Number.isFinite(declared) ||
           declared < 3 ||
-          median(scores) < 3
+          calculated < 3 ||
+          declared !== calculated
         )
           add(
             `directions.${index}.medians.${criterion}`,
             `Qualified directions require a ${criterion} median of at least 3 across calibrated visual reviews.`,
           );
       }
-      const unresolvedVetoes = (run.reviews ?? [])
+      const unresolvedVetoes = asArray(run.reviews)
         .filter(
           (review) =>
             review.reviewRound === direction.reviewRound &&
@@ -416,9 +431,11 @@ function validateDirections(run, options, add) {
         const result = direction?.recognition?.[proxy];
         if (
           !result ||
+          !Number.isInteger(result.correctMatchers) ||
           result.correctMatchers < 2 ||
+          result.correctMatchers > 3 ||
           result.matcherCount !== 3 ||
-          result.colorOnly === true
+          result.colorOnly !== false
         )
           add(
             `directions.${index}.recognition.${proxy}`,
@@ -430,7 +447,7 @@ function validateDirections(run, options, add) {
 }
 
 function validateReviews(run, add) {
-  const reviews = run.reviews ?? [];
+  const reviews = asArray(run.reviews);
   for (const [index, review] of reviews.entries()) {
     requireText(review?.reviewerId, `reviews.${index}.reviewerId`, add);
     if (!Number.isInteger(review?.reviewRound) || review.reviewRound < 1)
@@ -447,10 +464,10 @@ function validateReviews(run, add) {
       ].includes(review?.role)
     )
       add(`reviews.${index}.role`, "Unknown reviewer role.");
-    if (review?.producer === true)
+    if (review?.producer !== false)
       add(
         `reviews.${index}.producer`,
-        "A producing context cannot review its own output.",
+        "Reviews must explicitly record producer: false.",
       );
     if (review?.calibration?.passed !== true && review?.disqualified !== true)
       add(
@@ -463,12 +480,61 @@ function validateReviews(run, add) {
       `reviews.${index}.evidenceLabels`,
       add,
     );
-    for (const label of review?.evidenceLabels ?? [])
+    for (const label of asArray(review?.evidenceLabels))
       if (!evidenceLabels.includes(label))
         add(
           `reviews.${index}.evidenceLabels`,
           `Unknown evidence label ${label}.`,
         );
+    if (
+      visualRoles.includes(review?.role) &&
+      (!asArray(review?.evidenceLabels).includes("ai-visual-proxy") ||
+        !asArray(review?.evidenceLabels).includes("not-user-validated"))
+    )
+      add(
+        `reviews.${index}.evidenceLabels`,
+        "Visual reviews require ai-visual-proxy and not-user-validated labels.",
+      );
+    if (visualRoles.includes(review?.role)) {
+      requireNonEmptyTextArray(
+        review?.preference,
+        `reviews.${index}.preference`,
+        add,
+      );
+      if (!isRecord(review?.directionComparisons))
+        add(
+          `reviews.${index}.directionComparisons`,
+          "Visual reviews require per-direction comparison evidence.",
+        );
+      for (const [directionId, comparison] of Object.entries(
+        review?.directionComparisons ?? {},
+      )) {
+        if (
+          !isRecord(comparison) ||
+          typeof comparison.baseline !== "boolean" ||
+          typeof comparison.withoutSkillControl !== "boolean"
+        )
+          add(
+            `reviews.${index}.directionComparisons.${directionId}`,
+            "Direction comparisons require explicit baseline and withoutSkillControl booleans.",
+          );
+        if (
+          (comparison?.baseline === true ||
+            comparison?.withoutSkillControl === true) &&
+          !asArray(review.preference).includes(directionId)
+        )
+          add(
+            `reviews.${index}.preference`,
+            "Preferred control comparisons must agree with the direction ranking.",
+          );
+      }
+      for (const criterion of ["relevance", "distinctiveness", "craft", "trust"])
+        if (!Number.isInteger(review?.scores?.[criterion]))
+          add(
+            `reviews.${index}.scores.${criterion}`,
+            "Visual reviews require the complete 0-4 rubric.",
+          );
+    }
     for (const [criterion, score] of Object.entries(review?.scores ?? {}))
       if (!Number.isInteger(score) || score < 0 || score > 4)
         add(
@@ -482,11 +548,49 @@ function validateReviews(run, add) {
             `reviews.${index}.directionScores.${directionId}.${criterion}`,
             "Direction rubric scores must be integers from 0 to 4.",
           );
+    for (const [assessmentIndex, assessment] of asArray(
+      review?.revisionAssessments,
+    ).entries()) {
+      if (
+        !Number.isInteger(assessment?.iterationIndex) ||
+        assessment.iterationIndex < 0 ||
+        assessment.iterationIndex >= asArray(run.iterations).length
+      )
+        add(
+          `reviews.${index}.revisionAssessments.${assessmentIndex}.iterationIndex`,
+          "Revision assessment iterationIndex must identify an existing iteration.",
+        );
+      if (
+        !Number.isInteger(assessment?.preferCount) ||
+        assessment.preferCount < 0 ||
+        assessment.preferCount > 4
+      )
+        add(
+          `reviews.${index}.revisionAssessments.${assessmentIndex}.preferCount`,
+          "Revision assessment preferCount must be an integer from 0 to 4.",
+        );
+      for (const field of ["medianBefore", "medianAfter"])
+        if (
+          !Number.isFinite(assessment?.[field]) ||
+          assessment[field] < 0 ||
+          assessment[field] > 4
+        )
+          add(
+            `reviews.${index}.revisionAssessments.${assessmentIndex}.${field}`,
+            `${field} must be a number from 0 to 4.`,
+          );
+      if (!Array.isArray(assessment?.criticalRegressions))
+        add(
+          `reviews.${index}.revisionAssessments.${assessmentIndex}.criticalRegressions`,
+          "Revision assessment criticalRegressions must be an explicit array.",
+        );
+    }
   }
 }
 
 function validateIterations(run, options, add) {
-  for (const [index, iteration] of (run.iterations ?? []).entries()) {
+  const iterations = asArray(run.iterations);
+  for (const [index, iteration] of iterations.entries()) {
     for (const field of ["failingCriterion", "changeHypothesis"])
       requireText(iteration?.[field], `iterations.${index}.${field}`, add);
     requireArray(iteration?.invariants, `iterations.${index}.invariants`, add);
@@ -506,14 +610,23 @@ function validateIterations(run, options, add) {
         "Iteration result must be improved or not_improved.",
       );
     if (iteration?.result === "improved") {
-      const assessments = (run.reviews ?? [])
-        .flatMap((review) => review.revisionAssessments ?? [])
+      const assessments = asArray(run.reviews)
+        .flatMap((review) => asArray(review.revisionAssessments))
         .filter((item) => item.iterationIndex === index);
       const supported = assessments.some(
         (item) =>
+          Number.isInteger(item.preferCount) &&
           item.preferCount >= 3 &&
+          item.preferCount <= 4 &&
+          Number.isFinite(item.medianBefore) &&
+          item.medianBefore >= 0 &&
+          item.medianBefore <= 4 &&
+          Number.isFinite(item.medianAfter) &&
+          item.medianAfter >= 0 &&
+          item.medianAfter <= 4 &&
           item.medianAfter - item.medianBefore >= 1 &&
-          (item.criticalRegressions?.length ?? 0) === 0,
+          Array.isArray(item.criticalRegressions) &&
+          item.criticalRegressions.length === 0,
       );
       if (!supported)
         add(
@@ -522,7 +635,7 @@ function validateIterations(run, options, add) {
         );
     }
   }
-  const currentRoundIterations = (run.iterations ?? []).filter(
+  const currentRoundIterations = iterations.filter(
     (iteration) => iteration.reviewRound === run.reviewRound,
   );
   const tail = currentRoundIterations.slice(-2);
@@ -531,33 +644,63 @@ function validateIterations(run, options, add) {
     tail.every((item) => item.result === "not_improved") &&
     tail[0].failingCriterion === tail[1].failingCriterion
   ) {
+    const failedRoundCount = countFailedRounds(
+      iterations,
+      tail[0].failingCriterion,
+    );
     if (
-      !(run.phase === "shape" && run.ownerDecision === "rebrief") &&
-      run.stopReason !== "no_adoptable_direction"
+      failedRoundCount === 1 &&
+      !(run.phase === "shape" && run.ownerDecision === "rebrief")
     )
       add(
         "iterations",
         "Two consecutive non-improving revisions require a rebrief.",
       );
+    if (failedRoundCount === 1 && run.stopReason === "no_adoptable_direction")
+      add(
+        "stopReason",
+        "no_adoptable_direction requires the same criterion to fail on a second brief.",
+      );
+    if (failedRoundCount >= 2 && run.stopReason !== "no_adoptable_direction")
+      add(
+        "stopReason",
+        "A second brief failing the same criterion must stop as no_adoptable_direction.",
+      );
   }
-  const lastFour = (run.iterations ?? []).slice(-4);
-  if (
-    lastFour.length === 4 &&
-    lastFour.every(
-      (item) =>
-        item.result === "not_improved" &&
-        item.failingCriterion === lastFour[0].failingCriterion,
-    ) &&
-    run.stopReason !== "no_adoptable_direction"
-  )
-    add(
-      "stopReason",
-      "A second brief failing the same criterion must stop as no_adoptable_direction.",
+  if (run.stopReason === "no_adoptable_direction") {
+    const criteria = new Set(
+      iterations.map((iteration) => iteration.failingCriterion).filter(Boolean),
     );
+    if (![...criteria].some((criterion) => countFailedRounds(iterations, criterion) >= 2))
+      add(
+        "stopReason",
+        "no_adoptable_direction requires the same criterion to fail on two review rounds.",
+      );
+  }
+}
+
+function countFailedRounds(iterations, criterion) {
+  const byRound = new Map();
+  for (const iteration of iterations) {
+    const entries = byRound.get(iteration.reviewRound) ?? [];
+    entries.push(iteration);
+    byRound.set(iteration.reviewRound, entries);
+  }
+  return [...byRound.values()].filter((entries) => {
+    const tail = entries.slice(-2);
+    return (
+      tail.length === 2 &&
+      tail.every(
+        (item) =>
+          item.result === "not_improved" &&
+          item.failingCriterion === criterion,
+      )
+    );
+  }).length;
 }
 
 function validateOwnerGate(run, add) {
-  const passedReviews = qualifiedVisualReviews(run.reviews ?? []).filter(
+  const passedReviews = qualifiedVisualReviews(run.reviews).filter(
     (review) => review.reviewRound === run.reviewRound,
   );
   const passedRoles = new Set(passedReviews.map((review) => review.role));
@@ -572,7 +715,7 @@ function validateOwnerGate(run, add) {
   if (new Set(passedReviews.map((review) => review.reviewerId)).size !== visualRoles.length)
     add("reviews", "Owner gate requires four distinct calibrated reviewer identities.");
   if (
-    !(run.directions ?? []).some(
+    !asArray(run.directions).some(
       (direction) =>
         direction.qualified === true &&
         direction.reviewRound === run.reviewRound &&
@@ -582,7 +725,8 @@ function validateOwnerGate(run, add) {
     add("directions", "Owner gate requires at least one qualifying direction.");
 }
 
-function validateAssets(assets, add) {
+function validateAssets(run, options, add) {
+  const assets = asArray(run.assets);
   for (const [index, asset] of assets.entries()) {
     for (const field of ["path", "origin", "licence", "sha256"])
       requireText(asset?.[field], `assets.${index}.${field}`, add);
@@ -591,6 +735,20 @@ function validateAssets(assets, add) {
         `assets.${index}.job`,
         "Asset job must be identity, atmosphere, or evidence.",
       );
+    if (asset?.retained !== false && options?.repoRoot) {
+      const path = resolve(options.repoRoot, asset?.path ?? "");
+      if (
+        !isContainedPath(options.repoRoot, path) ||
+        !existsSync(path) ||
+        !statSync(path).isFile()
+      ) {
+        add(`assets.${index}.path`, "Retained assets must exist inside the repository.");
+      } else if (!/^[0-9a-f]{64}$/i.test(asset?.sha256 ?? "")) {
+        add(`assets.${index}.sha256`, "Retained asset sha256 must be a 64-character digest.");
+      } else if (sha256(readFileSync(path)) !== asset.sha256.toLowerCase()) {
+        add(`assets.${index}.sha256`, "Retained asset sha256 must match the retained bytes.");
+      }
+    }
   }
 }
 
@@ -619,6 +777,14 @@ function phaseAtLeast(value, minimum) {
 function isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+function isContainedPath(directory, candidate) {
+  if (!directory || !candidate) return false;
+  const path = relative(directory, candidate);
+  return path === "" || (!path.startsWith("..") && !isAbsolute(path));
+}
 function requireText(value, field, add) {
   if (typeof value !== "string" || !value.trim())
     add(field, `${field} must be specific.`);
@@ -636,23 +802,32 @@ function requireNonEmptyTextArray(value, field, add) {
 function validateArtifactReferences(run, references, field, options, add) {
   if (!Array.isArray(references)) return;
   const committedPrefix = `craft/runs/${run.runId}/evidence/`;
+  const evidenceDirectory = options?.repoRoot
+    ? resolve(options.repoRoot, committedPrefix)
+    : null;
   for (const [index, reference] of references.entries()) {
     if (typeof reference !== "string" || !reference.trim()) continue;
+    const artifactPath = options?.repoRoot
+      ? resolve(options.repoRoot, reference)
+      : null;
     if (
       ["stopped", "complete"].includes(run.status) &&
-      !reference.startsWith(committedPrefix)
+      (!artifactPath || !isContainedPath(evidenceDirectory, artifactPath))
     )
       add(
         `${field}.${index}`,
         `Terminal run evidence must be retained under ${committedPrefix}.`,
       );
-    if (options?.repoRoot && !existsSync(resolve(options.repoRoot, reference)))
+    if (
+      artifactPath &&
+      (!existsSync(artifactPath) || !statSync(artifactPath).isFile())
+    )
       add(`${field}.${index}`, `Referenced artifact is missing: ${reference}.`);
   }
 }
 
 function qualifiedVisualReviews(reviews) {
-  return reviews.filter(
+  return asArray(reviews).filter(
     (review) =>
       visualRoles.includes(review.role) &&
       review.calibration?.passed === true &&
@@ -710,13 +885,21 @@ function median(values) {
   return ordered.length % 2 ? ordered[middle] : (ordered[middle - 1] + ordered[middle]) / 2;
 }
 
-function validateProductionEvidence(evidence, add) {
+function validateProductionEvidence(run, options, add) {
+  const evidence = run.productionEvidence;
   if (!isRecord(evidence)) return add("productionEvidence", "Complete runs require production verification evidence.");
   for (const field of ["repositoryGates", "browserAccessibilityMatrix", "rollbackEvidence", "postDeploySmoke"]) {
     const record = evidence[field];
     if (!isRecord(record) || record.status !== "passed")
       add(`productionEvidence.${field}`, `${field} must record a passed result.`);
     requireText(record?.artifact, `productionEvidence.${field}.artifact`, add);
+    validateArtifactReferences(
+      run,
+      record?.artifact ? [record.artifact] : [],
+      `productionEvidence.${field}.artifact`,
+      options,
+      add,
+    );
   }
   const measurements = evidence.mobileMeasurements;
   if (!Array.isArray(measurements) || measurements.length !== 3) {
@@ -822,8 +1005,9 @@ async function main() {
   const repoRoot = resolve(scriptDir, "../../..");
   const validators = await loadPatternValidators(repoRoot);
   const run = JSON.parse(readFileSync(resolve(statePath), "utf8"));
+  const allowTemplate = basename(statePath) === "run-template.json";
   const issues = validateCraftRun(run, validators, {
-    allowTemplate: basename(statePath) === "run-template.json",
+    allowTemplate,
     repoRoot,
   });
   issues.push(
@@ -837,7 +1021,12 @@ async function main() {
       ),
     );
   const manifestPath = join(dirname(resolve(statePath)), "instruction-manifest.json");
-  if (existsSync(manifestPath))
+  if (!allowTemplate && !existsSync(manifestPath))
+    issues.push({
+      field: "instructionManifest",
+      reason: "Non-template craft runs require instruction-manifest.json.",
+    });
+  else if (existsSync(manifestPath))
     issues.push(
       ...validateInstructionManifest(
         JSON.parse(readFileSync(manifestPath, "utf8")),

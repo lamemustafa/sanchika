@@ -53,8 +53,14 @@ artifact references, semantic-blind and identity-blind proxy results, and its
 qualification state.
 
 Every review summary records its isolated reviewer role, calibration result,
-0-4 rubric scores, vetoes, preference, and revision assessments. Producing
-contexts cannot review their own output.
+complete 0-4 rubric scores, vetoes, preference, per-direction comparison with
+both controls, and revision assessments. `producer: false` is explicit;
+producing contexts cannot review their own output.
+
+Every non-template run includes `instruction-manifest.json` beside its state.
+The manifest hashes the canonical skill, protocol, and run template. Repository
+validation discovers every `craft/runs/*/state.json`; new runs cannot bypass the
+gate by omitting a hard-coded path.
 
 Evidence labels are limited to:
 
@@ -97,6 +103,10 @@ Copy review roles:
 For each revision, record `failingCriterion`, `changeHypothesis`, `invariants`,
 expected evidence in `artifactRefs`, and `result`.
 
+Stopped and complete runs retain every referenced direction, revision, and
+production artifact inside their committed `craft/runs/<run-id>/evidence/`
+directory. Retained asset bytes must exist and match their recorded SHA-256.
+
 Mark `improved` only when a matching revision assessment shows at least three
 of four relevant reviewer preferences, a targeted rubric median increase of at
 least one whole point, and no critical trust, accessibility, or performance
@@ -133,6 +143,6 @@ validation.
 A `verify/complete` run records these under `productionEvidence`:
 
 - `repositoryGates`, `browserAccessibilityMatrix`, `rollbackEvidence`, and
-  `postDeploySmoke`, each with `status: passed` and a non-empty `artifact`;
+  `postDeploySmoke`, each with `status: passed` and a retained `artifact`;
 - exactly three `mobileMeasurements`, each with a distinct `runId`, the same
   `profileId`, `coldCache: true`, and non-negative `lcpMs` and `cls` values.

@@ -65,6 +65,31 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "directions.0.medians.trust",
   );
   runCase(
+    "declared median differs from reviewer evidence",
+    () =>
+      validate((run) => {
+        run.directions[0].medians.trust = 3;
+      }),
+    "directions.0.medians.trust",
+  );
+  runCase(
+    "recognition result exceeds matcher bounds",
+    () =>
+      validate((run) => {
+        run.directions[0].recognition.semanticBlind.correctMatchers = 99;
+        run.directions[0].recognition.semanticBlind.colorOnly = "yes";
+      }),
+    "directions.0.recognition.semanticBlind",
+  );
+  runCase(
+    "aggregate preference differs from per-review controls",
+    () =>
+      validate((run) => {
+        run.reviews[0].directionComparisons["direction-alpha"].baseline = false;
+      }),
+    "directions.0.preference",
+  );
+  runCase(
     "passed calibration missing a seeded failure",
     () =>
       validate((run) => {
@@ -79,6 +104,42 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.reviews[0].calibration.fullReruns = 2;
       }),
     "reviews.0.calibration.fullReruns",
+  );
+  runCase(
+    "visual review omits producer isolation",
+    () =>
+      validate((run) => {
+        delete run.reviews[0].producer;
+      }),
+    "reviews.0.producer",
+  );
+  runCase(
+    "visual review omits proxy evidence labels",
+    () =>
+      validate((run) => {
+        run.reviews[0].evidenceLabels = [];
+      }),
+    "reviews.0.evidenceLabels",
+  );
+  runCase(
+    "visual review omits the rubric",
+    () =>
+      validate((run) => {
+        delete run.reviews[0].scores;
+      }),
+    "reviews.0.scores.relevance",
+  );
+  runCase(
+    "revision assessment uses coercive values",
+    () =>
+      validate((run) => {
+        const assessment = run.reviews[3].revisionAssessments[0];
+        assessment.preferCount = "999";
+        assessment.medianBefore = "-99";
+        assessment.medianAfter = "999";
+        delete assessment.criticalRegressions;
+      }),
+    "reviews.3.revisionAssessments.0.preferCount",
   );
   runCase(
     "direction rubric score exceeds the scale",
@@ -139,6 +200,36 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "productionEvidence",
   );
   runCase(
+    "complete run references missing production evidence",
+    () =>
+      validate((run) => {
+        run.phase = "verify";
+        run.status = "complete";
+        run.ownerDecision = "approved";
+        run.selectedDirectionId = "direction-alpha";
+        run.evidenceLoop.decision = "ready-for-consumer-pr";
+        delete run.stopReason;
+        const gate = {
+          status: "passed",
+          artifact: `craft/runs/${run.runId}/evidence/missing.webp`,
+        };
+        run.productionEvidence = {
+          repositoryGates: gate,
+          browserAccessibilityMatrix: gate,
+          rollbackEvidence: gate,
+          postDeploySmoke: gate,
+          mobileMeasurements: [1, 2, 3].map((number) => ({
+            runId: `run-${number}`,
+            profileId: "mobile-v1",
+            coldCache: true,
+            lcpMs: 1200,
+            cls: 0,
+          })),
+        };
+      }),
+    "productionEvidence.repositoryGates.artifact.0",
+  );
+  runCase(
     "direction omits artifact references",
     () =>
       validate((run) => {
@@ -161,6 +252,66 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.iterations[0].artifactRefs = ["output/creative/revision.png"];
       }),
     "iterations.0.artifactRefs.0",
+  );
+  runCase(
+    "terminal evidence path escapes its directory",
+    () =>
+      validate((run) => {
+        run.iterations[0].artifactRefs = [
+          `craft/runs/${run.runId}/evidence/../../../../package.json`,
+        ];
+      }),
+    "iterations.0.artifactRefs.0",
+  );
+  runCase(
+    "first failed brief cannot stop as no adoptable direction",
+    () =>
+      validate((run) => {
+        run.phase = "review";
+        run.ownerDecision = "pending";
+        run.stopReason = "no_adoptable_direction";
+        run.iterations.push(
+          {
+            reviewRound: 1,
+            failingCriterion: "distinctiveness",
+            changeHypothesis: "First attempt",
+            invariants: ["trust boundary"],
+            artifactRefs: [
+              `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+            ],
+            result: "not_improved",
+          },
+          {
+            reviewRound: 1,
+            failingCriterion: "distinctiveness",
+            changeHypothesis: "Second attempt",
+            invariants: ["trust boundary"],
+            artifactRefs: [
+              `craft/runs/${run.runId}/evidence/direction-beta.webp`,
+            ],
+            result: "not_improved",
+          },
+        );
+      }),
+    "stopReason",
+  );
+  runCase(
+    "retained asset checksum differs from bytes",
+    () =>
+      validate((run) => {
+        run.assets[0].retained = true;
+        run.assets[0].path = `craft/runs/${run.runId}/state.json`;
+        run.assets[0].sha256 = "0".repeat(64);
+      }),
+    "assets.0.sha256",
+  );
+  runCase(
+    "non-array directions return structured issues",
+    () =>
+      validate((run) => {
+        run.directions = {};
+      }),
+    "directions",
   );
   runCase(
     "transition rewrites review history",
@@ -236,6 +387,12 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
           "direction-round-2": structuredClone(
             review.directionScores["direction-alpha"],
           ),
+        };
+        review.directionComparisons = {
+          "direction-round-2": {
+            baseline: true,
+            withoutSkillControl: true,
+          },
         };
         run.reviews.push(review);
       }

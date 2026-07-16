@@ -26,18 +26,19 @@ export function findUnresolvedGalleryVariables({ html, copiedCss }) {
 
 export function findGalleryIdentityPolicyFailures({ path, source }) {
   const failures = [];
+  const activeSource = stripCssComments(source);
   const isIdentityLayer = path === "styles/identity.css" || path.endsWith("/styles/identity.css");
-  if (/--lab-/.test(source)) failures.push(`${path} must not contain retired lab variables`);
-  if (/--sk-[a-z0-9-]+\s*:/.test(source)) failures.push(`${path} must not author --sk-* variables`);
-  if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(source)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
-  const colorSource = isIdentityLayer ? source.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;]+;/gi, "") : source;
+  if (/--lab-/.test(activeSource)) failures.push(`${path} must not contain retired lab variables`);
+  if (/--sk-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not author --sk-* variables`);
+  if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
+  const colorSource = isIdentityLayer ? activeSource.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;]+;/gi, "") : activeSource;
   if (/oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(colorSource)) failures.push(`${path} must not contain raw colors outside gallery identity declarations`);
-  if (isIdentityLayer && /\.sk-[a-z0-9-]+/i.test(source)) failures.push("styles/identity.css must not style package selectors");
-  if (isIdentityLayer && containsExternalCssOrigin(source)) failures.push("styles/identity.css must not load external font or image origins");
-  for (const match of source.matchAll(/font-family\s*:\s*([^;]+)/gi)) {
+  if (isIdentityLayer && (/\.sk-[a-z0-9-]+/i.test(activeSource) || /\[\s*class\b[^\]]*sk-/i.test(activeSource))) failures.push("styles/identity.css must not style package selectors");
+  if (isIdentityLayer && containsExternalCssOrigin(activeSource)) failures.push("styles/identity.css must not load external font or image origins");
+  for (const match of activeSource.matchAll(/font-family\s*:\s*([^;]+)/gi)) {
     if (!isIdentityLayer && !match[1].trim().startsWith("var(")) failures.push(`${path} must use package or gallery identity typography variables`);
   }
-  for (const match of source.matchAll(/box-shadow\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package elevation tokens`);
+  for (const match of activeSource.matchAll(/box-shadow\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package elevation tokens`);
   return failures;
 }
 
@@ -131,6 +132,16 @@ export function runGalleryVariableFixtures() {
       source: '@import url("//fonts.example/style.css");',
       blocked: true,
     },
+    {
+      name: "external image-set string",
+      source: 'background-image: image-set("https://cdn.example/identity.webp" 1x);',
+      blocked: true,
+    },
+    {
+      name: "local image-set string",
+      source: 'background-image: image-set("../assets/identity.webp" 1x);',
+      blocked: false,
+    },
   ];
   for (const fixture of identityFixtures) {
     const blocked = findGalleryIdentityPolicyFailures({
@@ -143,14 +154,35 @@ export function runGalleryVariableFixtures() {
       );
   }
 
-  return { count: fixtures.length + identityFixtures.length, failures };
+  const selectorFixtures = [
+    { source: '.sk-button { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '[class~="sk-button"] { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '[class^="sk-"] { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '.craft-button { color: var(--gallery-brand-ink); }', blocked: false },
+  ];
+  for (const fixture of selectorFixtures) {
+    const blocked = findGalleryIdentityPolicyFailures({
+      path: "styles/identity.css",
+      source: fixture.source,
+    }).some((failure) => failure.includes("package selectors"));
+    if (blocked !== fixture.blocked)
+      failures.push(
+        `identity selector ${fixture.source}: expected blocked=${fixture.blocked}; found ${blocked}`,
+      );
+  }
+
+  return {
+    count: fixtures.length + identityFixtures.length + selectorFixtures.length,
+    failures,
+  };
 }
 
 function containsExternalCssOrigin(source) {
   const active = stripCssComments(source);
   return (
     /url\(\s*["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active) ||
-    /@import\s+(?:url\(\s*)?["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active)
+    /@import\s+(?:url\(\s*)?["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active) ||
+    /(?:-webkit-)?image-set\([^)]*["']\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active)
   );
 }
 
