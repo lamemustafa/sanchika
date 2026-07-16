@@ -1,7 +1,19 @@
 import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
   parseArguments,
+  validateCalibrationPack,
   validateCraftRun,
   validateCraftTransition,
+  validateInstructionManifest,
 } from "../../skills/sanchika-craft/scripts/validate-run.mjs";
 
 export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
@@ -401,6 +413,161 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       );
     },
     null,
+  );
+  runCase(
+    "run ID is a safe directory segment",
+    () =>
+      validate((run) => {
+        run.runId = "foo/../bar";
+      }),
+    "runId",
+  );
+  runCase(
+    "run ID matches its containing directory",
+    () =>
+      validateCraftRun(baseRun, validators, {
+        repoRoot,
+        expectedRunId: "different-run",
+      }),
+    "runId",
+  );
+  runCase(
+    "direction IDs are unique",
+    () =>
+      validate((run) => {
+        run.directions[1].id = run.directions[0].id;
+      }),
+    "directions",
+  );
+  runCase(
+    "visual review compares every direction",
+    () =>
+      validate((run) => {
+        delete run.reviews[0].directionComparisons["direction-gamma"];
+      }),
+    "reviews.0.directionComparisons.direction-gamma",
+  );
+  runCase(
+    "disqualified review cannot prove an improved revision",
+    () =>
+      validate((run) => {
+        run.reviews[3].disqualified = true;
+      }),
+    "iterations.0.result",
+  );
+  runCase(
+    "historical repeated failures require a terminal stop",
+    () =>
+      validate((run) => {
+        run.phase = "explore";
+        run.status = "active";
+        run.ownerDecision = "pending";
+        run.reviewRound = 3;
+        delete run.stopReason;
+        for (const reviewRound of [1, 2])
+          for (let attempt = 0; attempt < 2; attempt += 1)
+            run.iterations.push({
+              reviewRound,
+              failingCriterion: "distinctiveness",
+              changeHypothesis: `Attempt ${attempt + 1}`,
+              invariants: ["trust boundary"],
+              artifactRefs: [
+                `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+              ],
+              result: "not_improved",
+            });
+      }),
+    "stopReason",
+  );
+  runCase(
+    "verification failure is restricted to verify",
+    () =>
+      validate((run) => {
+        run.phase = "shape";
+        run.status = "stopped";
+        run.ownerDecision = "pending";
+        run.stopReason = "verification_failed";
+      }),
+    "stopReason",
+  );
+  runCase(
+    "awaiting owner transition freezes directions",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.status = "awaiting_owner";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.directions[0].territory = "rewritten-after-owner-preview";
+      return validateCraftTransition(previous, next);
+    },
+    "directions",
+  );
+  runCase(
+    "terminal evidence rejects symlink escapes",
+    () => {
+      const temporaryRoot = mkdtempSync(join(tmpdir(), "sanchika-craft-"));
+      try {
+        const evidenceDirectory = join(
+          temporaryRoot,
+          "craft/runs/sanchika-landing-s10/evidence",
+        );
+        mkdirSync(evidenceDirectory, { recursive: true });
+        const outside = join(temporaryRoot, "outside.json");
+        writeFileSync(outside, "{}\n");
+        symlinkSync(outside, join(evidenceDirectory, "escape.json"));
+        const run = structuredClone(baseRun);
+        run.directions[0].artifactRefs = [
+          "craft/runs/sanchika-landing-s10/evidence/escape.json",
+        ];
+        return validateCraftRun(run, validators, { repoRoot: temporaryRoot });
+      } finally {
+        rmSync(temporaryRoot, { recursive: true, force: true });
+      }
+    },
+    "directions.0.artifactRefs.0",
+  );
+  runCase(
+    "manifest rejects mutable canonical instruction sources",
+    () => {
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      manifest.sources.canonicalSkill = "skills/sanchika-craft/SKILL.md";
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.sources.canonicalSkill",
+  );
+  runCase(
+    "calibration rejects unknown reviewer roles",
+    () => {
+      const temporaryRoot = mkdtempSync(join(tmpdir(), "sanchika-calibration-"));
+      try {
+        const metadata = JSON.parse(
+          readFileSync(
+            join(repoRoot, "skills/sanchika-craft/assets/calibration/metadata.json"),
+            "utf8",
+          ),
+        );
+        metadata.controls[1].relevantRoles = ["brand", "typo-role"];
+        for (const control of metadata.controls)
+          writeFileSync(join(temporaryRoot, control.file), "fixture\n");
+        writeFileSync(
+          join(temporaryRoot, "metadata.json"),
+          `${JSON.stringify(metadata, null, 2)}\n`,
+        );
+        return validateCalibrationPack(temporaryRoot);
+      } finally {
+        rmSync(temporaryRoot, { recursive: true, force: true });
+      }
+    },
+    "calibration.generic-ai-saas.relevantRoles",
   );
   runCase(
     "incomplete previous argument is rejected",

@@ -57,13 +57,10 @@ complete 0-4 rubric scores, vetoes, preference, per-direction comparison with
 both controls, and revision assessments. `producer: false` is explicit;
 producing contexts cannot review their own output.
 
-Every direct child of `craft/runs/` is a lowercase kebab-case run directory and
-must contain `state.json` whose `runId` matches that directory. Every
-non-template run also includes `instruction-manifest.json` beside its state and
-retains the exact skill, protocol, run template, and calibration metadata used
-for that run under `instructions/`. The manifest hashes those immutable
-run-local snapshots, so later canonical instruction updates do not rewrite
-historical evidence.
+Every non-template run includes `instruction-manifest.json` beside its state.
+The manifest hashes the canonical skill, protocol, and run template. Repository
+validation discovers every `craft/runs/*/state.json`; new runs cannot bypass the
+gate by omitting a hard-coded path.
 
 Evidence labels are limited to:
 

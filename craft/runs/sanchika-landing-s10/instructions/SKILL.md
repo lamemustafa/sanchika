@@ -14,10 +14,7 @@ shape -> explore -> review -> owner gate -> build -> reconcile -> verify
 Read [references/protocol.md](references/protocol.md) before starting or
 resuming a run. Copy [assets/run-template.json](assets/run-template.json) to
 `craft/runs/<run-id>/state.json`, replace every `template-*` value, and persist
-after every owner gate or terminal state. Use a lowercase kebab-case run ID
-that exactly matches the containing directory. Retain the skill, protocol, run
-template, and calibration metadata used by the run under `instructions/`, and
-hash those immutable snapshots in the adjacent `instruction-manifest.json`.
+after every owner gate or terminal state.
 
 Use code-native composition first. Treat raster generation as optional,
 removable, and forbidden until a code-native direction qualifies. Never use a

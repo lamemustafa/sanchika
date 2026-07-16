@@ -146,17 +146,24 @@ for (const issue of validateCraftRun(readJson(craftTemplatePath), craftValidator
 }))
   fail(`${craftTemplatePath} ${issue.field}: ${issue.reason}`);
 const craftRunRoot = join(root, "craft/runs");
-const craftStatePaths = readdirSync(craftRunRoot, { withFileTypes: true })
+const craftRunDirectories = readdirSync(craftRunRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
-  .map((entry) => `craft/runs/${entry.name}/state.json`)
-  .filter((path) => existsSync(join(root, path)))
+  .map((entry) => entry.name)
   .sort();
+const craftStatePaths = craftRunDirectories.map(
+  (runId) => `craft/runs/${runId}/state.json`,
+);
 if (craftStatePaths.length === 0) fail("craft/runs must contain at least one persisted run");
 for (const statePath of craftStatePaths) {
+  if (!existsSync(join(root, statePath))) {
+    fail(`${dirname(statePath)} requires state.json`);
+    continue;
+  }
   const run = readJson(statePath);
   for (const issue of validateCraftRun(run, craftValidators, {
     allowTemplate: false,
     repoRoot: root,
+    expectedRunId: dirname(statePath).split("/").at(-1),
   }))
     fail(`${statePath} ${issue.field}: ${issue.reason}`);
   const manifestPath = join(dirname(statePath), "instruction-manifest.json");

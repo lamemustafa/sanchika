@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+  "controls": [
+    {
+      "id": "current-baseline",
+      "file": "current-baseline.webp",
+      "viewport": { "width": 1440, "height": 900 },
+      "source": "Browser capture of the Sanchika v0.1.1 production landing page on 2026-07-16.",
+      "seededFailures": [],
+      "relevantRoles": ["brand", "craft", "trust", "accessibility"]
+    },
+    {
+      "id": "generic-ai-saas",
+      "file": "generic-ai-saas.webp",
+      "viewport": { "width": 1440, "height": 900 },
+      "source": "Deterministic code-native calibration control.",
+      "seededFailures": [
+        "generic-purple-gradient",
+        "glass-bento-cliche",
+        "unsupported-accuracy-and-speed-claims",
+        "generic-ai-copy"
+      ],
+      "relevantRoles": ["brand", "craft", "trust"]
+    },
+    {
+      "id": "off-brief-editorial",
+      "file": "off-brief-editorial.webp",
+      "viewport": { "width": 1440, "height": 900 },
+      "source": "Deterministic code-native calibration control.",
+      "seededFailures": [
+        "attractive-but-off-brief",
+        "serif-theatre",
+        "mono-heavy-metadata",
+        "text-only-poster-without-product-proof"
+      ],
+      "relevantRoles": ["brand", "craft"]
+    },
+    {
+      "id": "fake-authority",
+      "file": "fake-authority.webp",
+      "viewport": { "width": 1440, "height": 900 },
+      "source": "Deterministic code-native calibration control.",
+      "seededFailures": [
+        "fake-government-seal",
+        "unsupported-ministry-approval",
+        "guaranteed-statutory-accuracy",
+        "automated-compliance-judgment"
+      ],
+      "relevantRoles": ["brand", "trust"]
+    },
+    {
+      "id": "mobile-a11y-failure",
+      "file": "mobile-a11y-failure.webp",
+      "viewport": { "width": 390, "height": 844 },
+      "source": "Deterministic code-native calibration control.",
+      "seededFailures": [
+        "low-text-contrast",
+        "sub-44px-targets",
+        "motion-only-status",
+        "color-only-state",
+        "long-identifier-overflow"
+      ],
+      "relevantRoles": ["craft", "trust", "accessibility"]
+    }
+  ]
+}

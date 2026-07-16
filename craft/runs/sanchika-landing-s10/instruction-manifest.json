@@ -12,7 +12,14 @@
     "canonicalSkill": "733a1c65d1a9d20a85cede2e73c51fbedbc9b6f5d8e6b693e5df778776a46dfa",
     "protocol": "000c07c67516bca46b9e6905f61b0364a359e0c13f0e0f74a849d050493aac98",
     "runTemplate": "37a9adc49fe071e944b09c12b9905bdf5be082ccb513e80393c7d31f741d0f90",
+    "calibrationMetadata": "49f1b9561190b46180c6d85703eb7d7d5caaecc78c2e5b29ef6bbf0bbaba7866",
     "frozenLabContent": "9e10d08f4ca532b1e4d4ba95d3c0f309cd9aa664604470b226c25217dfdf698b"
+  },
+  "sources": {
+    "canonicalSkill": "craft/runs/sanchika-landing-s10/instructions/SKILL.md",
+    "protocol": "craft/runs/sanchika-landing-s10/instructions/protocol.md",
+    "runTemplate": "craft/runs/sanchika-landing-s10/instructions/run-template.json",
+    "calibrationMetadata": "craft/runs/sanchika-landing-s10/instructions/calibration-metadata.json"
   },
   "reviewIsolation": {
     "visualReviewerCount": 4,

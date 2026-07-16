@@ -2,7 +2,13 @@
 
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  statSync,
+} from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
@@ -56,6 +62,10 @@ export function validateCraftRun(run, validators, options = {}) {
   if (run.protocolVersion !== "0.1.0")
     add("protocolVersion", "protocolVersion must be 0.1.0.");
   requireText(run.runId, "runId", add);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(run.runId ?? ""))
+    add("runId", "runId must be a safe lowercase kebab-case path segment.");
+  if (options.expectedRunId && run.runId !== options.expectedRunId)
+    add("runId", "runId must match its containing craft/runs directory.");
   if (!allowTemplate && String(run.runId).startsWith("template-"))
     add("runId", "Replace template run ID before use.");
   validateSurface(run.surface, allowTemplate, add);
@@ -158,6 +168,16 @@ export function validateCraftTransition(previous, next) {
     );
   preserveHistoryPrefix(previous?.iterations, next?.iterations, "iterations", add);
   preserveHistoryPrefix(previous?.reviews, next?.reviews, "reviews", add);
+  if (
+    previous?.phase === "owner_gate" &&
+    previous?.status === "awaiting_owner" &&
+    !rebrief &&
+    !isDeepStrictEqual(previous?.directions, next?.directions)
+  )
+    add(
+      "directions",
+      "Directions shown at an awaiting owner gate cannot change before the owner decides.",
+    );
   if (capabilityResume) {
     for (const field of ["trustBrief", "designBrief", "directions"]) {
       if (!isDeepStrictEqual(previous?.[field], next?.[field]))
@@ -227,6 +247,21 @@ export function validateCalibrationPack(directory) {
       `calibration.${control.id}.relevantRoles`,
       add,
     );
+    const roles = asArray(control.relevantRoles);
+    if (
+      roles.length === 0 ||
+      new Set(roles).size !== roles.length ||
+      roles.some((role) => !visualRoles.includes(role))
+    )
+      add(
+        `calibration.${control.id}.relevantRoles`,
+        "Calibration controls require unique, allowed visual reviewer roles.",
+      );
+    if (asArray(control.seededFailures).length > 0 && roles.length === 0)
+      add(
+        `calibration.${control.id}.relevantRoles`,
+        "Every seeded-failure control requires reviewer-role coverage.",
+      );
     const file = join(directory, control.file ?? "");
     try {
       total += statSync(file).size;
@@ -295,6 +330,16 @@ function validateState(run, add) {
     add("status", "complete requires verify phase and owner approval.");
   if (run.status === "stopped" && !stopReasons.includes(run.stopReason))
     add("stopReason", "Stopped runs require an allowed stopReason.");
+  const requiredStopPhase = {
+    no_adoptable_direction: "review",
+    owner_rejected: "owner_gate",
+    verification_failed: "verify",
+  }[run.stopReason];
+  if (run.status === "stopped" && requiredStopPhase && run.phase !== requiredStopPhase)
+    add(
+      "stopReason",
+      `${run.stopReason} is valid only in the ${requiredStopPhase} phase.`,
+    );
   if (run.status !== "stopped" && run.stopReason !== undefined)
     add("stopReason", "Only stopped runs may carry stopReason.");
   if (
@@ -338,6 +383,9 @@ function validateState(run, add) {
 
 function validateDirections(run, options, add) {
   const directions = asArray(run.directions);
+  const directionIds = directions.map((direction) => direction?.id);
+  if (new Set(directionIds).size !== directionIds.length)
+    add("directions", "Direction IDs must be unique within a craft run.");
   for (const [index, direction] of directions.entries()) {
     for (const field of ["id", "designBriefId", "territory"])
       requireText(direction?.[field], `directions.${index}.${field}`, add);
@@ -506,6 +554,15 @@ function validateReviews(run, add) {
           `reviews.${index}.directionComparisons`,
           "Visual reviews require per-direction comparison evidence.",
         );
+      const reviewedDirectionIds = asArray(run.directions)
+        .filter((direction) => direction.reviewRound === review.reviewRound)
+        .map((direction) => direction.id);
+      for (const directionId of reviewedDirectionIds)
+        if (!Object.hasOwn(review?.directionComparisons ?? {}, directionId))
+          add(
+            `reviews.${index}.directionComparisons.${directionId}`,
+            "Visual reviews require explicit comparisons for every direction in their review round.",
+          );
       for (const [directionId, comparison] of Object.entries(
         review?.directionComparisons ?? {},
       )) {
@@ -610,7 +667,7 @@ function validateIterations(run, options, add) {
         "Iteration result must be improved or not_improved.",
       );
     if (iteration?.result === "improved") {
-      const assessments = asArray(run.reviews)
+      const assessments = qualifiedVisualReviews(run.reviews)
         .flatMap((review) => asArray(review.revisionAssessments))
         .filter((item) => item.iterationIndex === index);
       const supported = assessments.some(
@@ -677,6 +734,17 @@ function validateIterations(run, options, add) {
         "no_adoptable_direction requires the same criterion to fail on two review rounds.",
       );
   }
+  const repeatedFailure = [
+    ...new Set(iterations.map((iteration) => iteration.failingCriterion).filter(Boolean)),
+  ].some((criterion) => countFailedRounds(iterations, criterion) >= 2);
+  if (
+    repeatedFailure &&
+    !(run.status === "stopped" && run.stopReason === "no_adoptable_direction")
+  )
+    add(
+      "stopReason",
+      "Any criterion failing on two review rounds requires a terminal no_adoptable_direction stop.",
+    );
 }
 
 function countFailedRounds(iterations, criterion) {
@@ -737,10 +805,12 @@ function validateAssets(run, options, add) {
       );
     if (asset?.retained !== false && options?.repoRoot) {
       const path = resolve(options.repoRoot, asset?.path ?? "");
+      const repositoryPath = realpathSync(options.repoRoot);
       if (
         !isContainedPath(options.repoRoot, path) ||
         !existsSync(path) ||
-        !statSync(path).isFile()
+        !statSync(path).isFile() ||
+        !isContainedPath(repositoryPath, realpathSync(path))
       ) {
         add(`assets.${index}.path`, "Retained assets must exist inside the repository.");
       } else if (!/^[0-9a-f]{64}$/i.test(asset?.sha256 ?? "")) {
@@ -805,6 +875,10 @@ function validateArtifactReferences(run, references, field, options, add) {
   const evidenceDirectory = options?.repoRoot
     ? resolve(options.repoRoot, committedPrefix)
     : null;
+  const realEvidenceDirectory =
+    evidenceDirectory && existsSync(evidenceDirectory)
+      ? realpathSync(evidenceDirectory)
+      : null;
   for (const [index, reference] of references.entries()) {
     if (typeof reference !== "string" || !reference.trim()) continue;
     const artifactPath = options?.repoRoot
@@ -812,7 +886,11 @@ function validateArtifactReferences(run, references, field, options, add) {
       : null;
     if (
       ["stopped", "complete"].includes(run.status) &&
-      (!artifactPath || !isContainedPath(evidenceDirectory, artifactPath))
+      (!artifactPath ||
+        !isContainedPath(evidenceDirectory, artifactPath) ||
+        (existsSync(artifactPath) &&
+          (!realEvidenceDirectory ||
+            !isContainedPath(realEvidenceDirectory, realpathSync(artifactPath)))))
     )
       add(
         `${field}.${index}`,
@@ -943,16 +1021,40 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
     add("instructionManifest.protocolVersion", "Instruction manifest protocolVersion must match the run.");
   if (manifest.sourceCommit !== run.surface?.sourceCommit)
     add("instructionManifest.sourceCommit", "Instruction manifest sourceCommit must match the run.");
-  for (const [field, path] of Object.entries({
-    canonicalSkill: "skills/sanchika-craft/SKILL.md",
-    protocol: "skills/sanchika-craft/references/protocol.md",
-    runTemplate: "skills/sanchika-craft/assets/run-template.json",
-  })) {
-    const expected = sha256(readFileSync(join(repoRoot, path)));
+  const instructionRoot = resolve(
+    repoRoot,
+    `craft/runs/${run.runId}/instructions`,
+  );
+  const realInstructionRoot = existsSync(instructionRoot)
+    ? realpathSync(instructionRoot)
+    : null;
+  for (const field of [
+    "canonicalSkill",
+    "protocol",
+    "runTemplate",
+    "calibrationMetadata",
+  ]) {
+    const source = manifest.sources?.[field];
+    const sourcePath = typeof source === "string" ? resolve(repoRoot, source) : null;
+    if (
+      !sourcePath ||
+      !realInstructionRoot ||
+      !isContainedPath(instructionRoot, sourcePath) ||
+      !existsSync(sourcePath) ||
+      !statSync(sourcePath).isFile() ||
+      !isContainedPath(realInstructionRoot, realpathSync(sourcePath))
+    ) {
+      add(
+        `instructionManifest.sources.${field}`,
+        `Instruction manifest ${field} must reference a retained run-local instruction snapshot.`,
+      );
+      continue;
+    }
+    const expected = sha256(readFileSync(sourcePath));
     if (manifest.hashes?.[field] !== expected)
       add(
         `instructionManifest.hashes.${field}`,
-        `Instruction manifest ${field} hash must match ${path}.`,
+        `Instruction manifest ${field} hash must match its retained snapshot.`,
       );
   }
   return issues;
@@ -1009,6 +1111,7 @@ async function main() {
   const issues = validateCraftRun(run, validators, {
     allowTemplate,
     repoRoot,
+    expectedRunId: allowTemplate ? undefined : basename(dirname(resolve(statePath))),
   });
   issues.push(
     ...validateCalibrationPack(join(scriptDir, "../assets/calibration")),

@@ -1,0 +1,283 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "runId": "template-run-id",
+  "surface": {
+    "repo": "template-owner/template-repo",
+    "route": "/template-route/",
+    "sourceCommit": "template-40-character-source-commit"
+  },
+  "capabilities": {
+    "browser": true,
+    "isolatedReview": true,
+    "rasterGeneration": false
+  },
+  "phase": "shape",
+  "status": "active",
+  "reviewRound": 1,
+  "trustBrief": {
+    "id": "template-trust-brief",
+    "consumerMode": "external/operational-saas",
+    "register": "product",
+    "surface": "/template-route/",
+    "userJob": "Understand one regulated decision and its evidence before acting.",
+    "primaryDecision": "Decide whether the direction is safe to explore.",
+    "dataSensitivity": ["public-copy"],
+    "trustBoundaries": [
+      "Synthetic evidence only; human accountability remains visible."
+    ],
+    "evidenceRequirements": [
+      "Source, uncertainty, review state, and owner decision remain distinct."
+    ],
+    "selectedPatterns": [
+      { "name": "EvidencePanel", "states": ["pending-review"] }
+    ],
+    "claims": [
+      {
+        "claim": "Synthetic pilot evidence",
+        "evidence": "Repository-owned fixture and review record"
+      }
+    ],
+    "nonGoals": [
+      "No AI runtime, compliance judgment, customer evidence, or app scaffolding."
+    ],
+    "verificationGates": [
+      "wcag-22-aa",
+      "keyboard-focus",
+      "non-color-state",
+      "desktop-render",
+      "mobile-render",
+      "reduced-motion",
+      "rollback-path"
+    ]
+  },
+  "designBrief": {
+    "id": "template-design-brief",
+    "trustBrief": {
+      "id": "template-trust-brief",
+      "consumerMode": "external/operational-saas",
+      "register": "product",
+      "surface": "/template-route/",
+      "userJob": "Understand one regulated decision and its evidence before acting.",
+      "primaryDecision": "Decide whether the direction is safe to explore.",
+      "dataSensitivity": ["public-copy"],
+      "trustBoundaries": [
+        "Synthetic evidence only; human accountability remains visible."
+      ],
+      "evidenceRequirements": [
+        "Source, uncertainty, review state, and owner decision remain distinct."
+      ],
+      "selectedPatterns": [
+        { "name": "EvidencePanel", "states": ["pending-review"] }
+      ],
+      "claims": [
+        {
+          "claim": "Synthetic pilot evidence",
+          "evidence": "Repository-owned fixture and review record"
+        }
+      ],
+      "nonGoals": [
+        "No AI runtime, compliance judgment, customer evidence, or app scaffolding."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "register": "product",
+    "surface": "/template-route/",
+    "firstViewportSignal": "One source-backed decision and its human review boundary are visible immediately.",
+    "emotionalIntent": "Prepared, clear, and accountable under pressure.",
+    "narrativeArc": [
+      "Reveal the source",
+      "Separate interpretation",
+      "Pause at accountable human review"
+    ],
+    "informationPriority": [
+      "Source",
+      "Uncertainty",
+      "Human decision",
+      "Next safe action"
+    ],
+    "responsiveConstraints": [
+      "Mobile keeps source and decision in reading order.",
+      "Desktop preserves their visual separation."
+    ],
+    "interactionStates": ["focus", "hover", "selected", "blocked"],
+    "visualQualityGates": [
+      "not-generic-saas",
+      "first-viewport-product-signal",
+      "source-visible",
+      "human-review-visible",
+      "responsive-fit",
+      "keyboardable",
+      "reduced-motion",
+      "performance-budget"
+    ],
+    "verificationEvidence": [
+      "Desktop render",
+      "Mobile render",
+      "Keyboard and reduced-motion notes"
+    ],
+    "nonGoals": [
+      "No dashboard shell, fake authority, rasterized UI, or motion-gated content."
+    ]
+  },
+  "directions": [],
+  "iterations": [],
+  "reviews": [],
+  "ownerDecision": "pending",
+  "selectedDirectionId": null,
+  "assets": [],
+  "reconciliation": [],
+  "evidenceLoop": {
+    "id": "template-evidence-loop",
+    "trustBrief": {
+      "id": "template-trust-brief",
+      "consumerMode": "external/operational-saas",
+      "register": "product",
+      "surface": "/template-route/",
+      "userJob": "Understand one regulated decision and its evidence before acting.",
+      "primaryDecision": "Decide whether the direction is safe to explore.",
+      "dataSensitivity": ["public-copy"],
+      "trustBoundaries": [
+        "Synthetic evidence only; human accountability remains visible."
+      ],
+      "evidenceRequirements": [
+        "Source, uncertainty, review state, and owner decision remain distinct."
+      ],
+      "selectedPatterns": [
+        { "name": "EvidencePanel", "states": ["pending-review"] }
+      ],
+      "claims": [
+        {
+          "claim": "Synthetic pilot evidence",
+          "evidence": "Repository-owned fixture and review record"
+        }
+      ],
+      "nonGoals": [
+        "No AI runtime, compliance judgment, customer evidence, or app scaffolding."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "designBrief": {
+      "id": "template-design-brief",
+      "trustBrief": {
+        "id": "template-trust-brief",
+        "consumerMode": "external/operational-saas",
+        "register": "product",
+        "surface": "/template-route/",
+        "userJob": "Understand one regulated decision and its evidence before acting.",
+        "primaryDecision": "Decide whether the direction is safe to explore.",
+        "dataSensitivity": ["public-copy"],
+        "trustBoundaries": [
+          "Synthetic evidence only; human accountability remains visible."
+        ],
+        "evidenceRequirements": [
+          "Source, uncertainty, review state, and owner decision remain distinct."
+        ],
+        "selectedPatterns": [
+          { "name": "EvidencePanel", "states": ["pending-review"] }
+        ],
+        "claims": [
+          {
+            "claim": "Synthetic pilot evidence",
+            "evidence": "Repository-owned fixture and review record"
+          }
+        ],
+        "nonGoals": [
+          "No AI runtime, compliance judgment, customer evidence, or app scaffolding."
+        ],
+        "verificationGates": [
+          "wcag-22-aa",
+          "keyboard-focus",
+          "non-color-state",
+          "desktop-render",
+          "mobile-render",
+          "reduced-motion",
+          "rollback-path"
+        ]
+      },
+      "register": "product",
+      "surface": "/template-route/",
+      "firstViewportSignal": "One source-backed decision and its human review boundary are visible immediately.",
+      "emotionalIntent": "Prepared, clear, and accountable under pressure.",
+      "narrativeArc": [
+        "Reveal the source",
+        "Separate interpretation",
+        "Pause at accountable human review"
+      ],
+      "informationPriority": [
+        "Source",
+        "Uncertainty",
+        "Human decision",
+        "Next safe action"
+      ],
+      "responsiveConstraints": [
+        "Mobile keeps source and decision in reading order.",
+        "Desktop preserves their visual separation."
+      ],
+      "interactionStates": ["focus", "hover", "selected", "blocked"],
+      "visualQualityGates": [
+        "not-generic-saas",
+        "first-viewport-product-signal",
+        "source-visible",
+        "human-review-visible",
+        "responsive-fit",
+        "keyboardable",
+        "reduced-motion",
+        "performance-budget"
+      ],
+      "verificationEvidence": [
+        "Desktop render",
+        "Mobile render",
+        "Keyboard and reduced-motion notes"
+      ],
+      "nonGoals": [
+        "No dashboard shell, fake authority, rasterized UI, or motion-gated content."
+      ]
+    },
+    "renderEvidence": [
+      {
+        "type": "desktop-screenshot",
+        "artifact": "template-desktop.webp",
+        "finding": "Desktop evidence placeholder; replace before review."
+      },
+      {
+        "type": "mobile-screenshot",
+        "artifact": "template-mobile.webp",
+        "finding": "Mobile evidence placeholder; replace before review."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "template-a11y.md",
+        "finding": "Accessibility evidence placeholder; replace before review."
+      }
+    ],
+    "adoptionEvidence": {
+      "consumerRepo": "template-owner/template-repo",
+      "consumerSurface": "/template-route/",
+      "status": "proposed",
+      "changedFiles": ["template-planned-file"],
+      "verificationRun": "Not run; template state.",
+      "rollbackPlan": "Restore the source commit recorded on this run."
+    },
+    "decision": "needs-design-revision",
+    "residualRisks": ["Template evidence must be replaced."],
+    "nextActions": ["Complete shape and explore phases."]
+  },
+  "nextAction": "Replace template values and persist the initialized run."
+}
