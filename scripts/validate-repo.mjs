@@ -63,6 +63,7 @@ import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.
 import { runTarballContentsFixtures } from "./validation/tarball-contents.mjs";
 import {
   loadPatternValidators,
+  loadRunCalibrationMetadata,
   validateCalibrationPack,
   validateCraftRun,
   validateInstructionManifest,
@@ -160,19 +161,30 @@ for (const statePath of craftStatePaths) {
     continue;
   }
   const run = readJson(statePath);
+  const manifestPath = join(dirname(statePath), "instruction-manifest.json");
+  let runCalibrationMetadata;
+  if (!existsSync(join(root, manifestPath))) {
+    fail(`${statePath} requires ${manifestPath}`);
+  } else {
+    const manifest = readJson(manifestPath);
+    const manifestIssues = validateInstructionManifest(manifest, run, root);
+    for (const issue of manifestIssues)
+      fail(`${manifestPath} ${issue.field}: ${issue.reason}`);
+    if (manifestIssues.length === 0) {
+      runCalibrationMetadata = loadRunCalibrationMetadata(manifest, run, root);
+      for (const issue of validateCalibrationPack(
+        dirname(join(root, manifest.sources.calibrationMetadata)),
+      ))
+        fail(`${manifestPath} ${issue.field}: ${issue.reason}`);
+    }
+  }
   for (const issue of validateCraftRun(run, craftValidators, {
     allowTemplate: false,
     repoRoot: root,
     expectedRunId: dirname(statePath).split("/").at(-1),
+    calibrationMetadata: runCalibrationMetadata,
   }))
     fail(`${statePath} ${issue.field}: ${issue.reason}`);
-  const manifestPath = join(dirname(statePath), "instruction-manifest.json");
-  if (!existsSync(join(root, manifestPath))) {
-    fail(`${statePath} requires ${manifestPath}`);
-  } else {
-    for (const issue of validateInstructionManifest(readJson(manifestPath), run, root))
-      fail(`${manifestPath} ${issue.field}: ${issue.reason}`);
-  }
 }
 for (const issue of validateCalibrationPack(join(craftSkillRoot, "assets/calibration"))) fail(`craft calibration ${issue.field}: ${issue.reason}`);
 

@@ -6,6 +6,8 @@
     {
       "id": "current-baseline",
       "file": "current-baseline.webp",
+      "mediaType": "image/webp",
+      "sha256": "5e52686bc54390368deb742f4dcd6d6b6ac64d74f80e03ac07dcbc8a8f1da2bc",
       "viewport": { "width": 1440, "height": 900 },
       "source": "Browser capture of the Sanchika v0.1.1 production landing page on 2026-07-16.",
       "seededFailures": [],
@@ -14,6 +16,8 @@
     {
       "id": "generic-ai-saas",
       "file": "generic-ai-saas.webp",
+      "mediaType": "image/webp",
+      "sha256": "f8ac3f25c3cc71c7942be35f101cfb23c2320affb4dbf38ce1425f1d7778fd6d",
       "viewport": { "width": 1440, "height": 900 },
       "source": "Deterministic code-native calibration control.",
       "seededFailures": [
@@ -27,6 +31,8 @@
     {
       "id": "off-brief-editorial",
       "file": "off-brief-editorial.webp",
+      "mediaType": "image/webp",
+      "sha256": "5e0f8ffeebe4a8c6ddfbce9b980ad26022af0c30777070318495d66fd2c34277",
       "viewport": { "width": 1440, "height": 900 },
       "source": "Deterministic code-native calibration control.",
       "seededFailures": [
@@ -40,6 +46,8 @@
     {
       "id": "fake-authority",
       "file": "fake-authority.webp",
+      "mediaType": "image/webp",
+      "sha256": "14e08cf33340d8e6b9a2560ca6d7ae169f1bd4f12f7ea7cdbb35b202f62611c4",
       "viewport": { "width": 1440, "height": 900 },
       "source": "Deterministic code-native calibration control.",
       "seededFailures": [
@@ -53,6 +61,8 @@
     {
       "id": "mobile-a11y-failure",
       "file": "mobile-a11y-failure.webp",
+      "mediaType": "image/webp",
+      "sha256": "f8a755c411aa18fe2ddd5c0d26e5da4fc4b54698cecda6f63ed12620b144c4af",
       "viewport": { "width": 390, "height": 844 },
       "source": "Deterministic code-native calibration control.",
       "seededFailures": [

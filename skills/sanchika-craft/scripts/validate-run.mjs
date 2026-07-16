@@ -47,7 +47,7 @@ const controlIds = [
   "mobile-a11y-failure",
 ];
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const calibrationMetadata = JSON.parse(
+const canonicalCalibrationMetadata = JSON.parse(
   readFileSync(join(scriptDir, "../assets/calibration/metadata.json"), "utf8"),
 );
 
@@ -92,7 +92,11 @@ export function validateCraftRun(run, validators, options = {}) {
 
   validateEmbeddedContracts(run, validators ?? {}, add);
   validateState(run, add);
-  validateReviews(run, add);
+  validateReviews(
+    run,
+    options.calibrationMetadata ?? canonicalCalibrationMetadata,
+    add,
+  );
   validateDirections(run, options, add);
   validateIterations(run, options, add);
   validateAssets(run, options, add);
@@ -110,7 +114,7 @@ export function validateCraftRun(run, validators, options = {}) {
       "capabilities.isolatedReview",
       "Review and later phases require isolated review capability.",
     );
-  if (run.phase === "owner_gate") validateOwnerGate(run, add);
+  if (phaseAtLeast(run.phase, "owner_gate")) validateOwnerGate(run, add);
   if (
     run.status === "complete" &&
     run.evidenceLoop?.decision !== "ready-for-consumer-pr"
@@ -119,8 +123,27 @@ export function validateCraftRun(run, validators, options = {}) {
       "evidenceLoop.decision",
       "Complete runs require a ready-for-consumer-pr evidence decision.",
     );
-  if (run.status === "complete")
+  if (run.status === "complete") {
+    if (
+      !isRecord(run.productionApproval) ||
+      run.productionApproval.decision !== "approved" ||
+      run.productionApproval.approvedBy !== "owner" ||
+      !isIsoTimestamp(run.productionApproval.approvedAt)
+    )
+      add(
+        "productionApproval",
+        "Complete runs require a distinct timestamped owner production approval.",
+      );
     validateProductionEvidence(run, options, add);
+  } else if (
+    run.productionApproval !== undefined &&
+    run.productionApproval !== null
+  ) {
+    add(
+      "productionApproval",
+      "Production approval may be recorded only on a complete verify run.",
+    );
+  }
   return issues;
 }
 
@@ -168,6 +191,35 @@ export function validateCraftTransition(previous, next) {
     );
   preserveHistoryPrefix(previous?.iterations, next?.iterations, "iterations", add);
   preserveHistoryPrefix(previous?.reviews, next?.reviews, "reviews", add);
+  if (rebrief)
+    preserveHistoryPrefix(
+      previous?.directions,
+      next?.directions,
+      "directions",
+      add,
+    );
+  const historicalDirections = asArray(previous?.directions).filter(
+    (direction) => direction.reviewRound < next?.reviewRound,
+  );
+  if (
+    historicalDirections.some(
+      (direction, index) =>
+        !isDeepStrictEqual(direction, asArray(next?.directions)[index]),
+    )
+  )
+    add(
+      "directions",
+      "Prior-round directions must remain an unchanged prefix of later snapshots.",
+    );
+  if (!rebrief) {
+    for (const field of ["trustBrief", "designBrief"]) {
+      if (!isDeepStrictEqual(previous?.[field], next?.[field]))
+        add(
+          field,
+          `${field} cannot change outside an explicit rebrief transition.`,
+        );
+    }
+  }
   if (
     previous?.phase === "owner_gate" &&
     previous?.status === "awaiting_owner" &&
@@ -234,9 +286,29 @@ export function validateCalibrationPack(directory) {
       "calibration.controls",
       "Calibration controls must use the five canonical IDs in order.",
     );
+  const realDirectory = realpathSync(directory);
   let total = statSync(metadataPath).size;
   for (const control of controls) {
     requireText(control.file, `calibration.${control.id}.file`, add);
+    if (
+      typeof control.file !== "string" ||
+      basename(control.file) !== control.file ||
+      !control.file.endsWith(".webp")
+    )
+      add(
+        `calibration.${control.id}.file`,
+        "Calibration control files must be run-local .webp filenames.",
+      );
+    if (control.mediaType !== "image/webp")
+      add(
+        `calibration.${control.id}.mediaType`,
+        "Calibration controls must declare image/webp.",
+      );
+    if (!/^[0-9a-f]{64}$/.test(control.sha256 ?? ""))
+      add(
+        `calibration.${control.id}.sha256`,
+        "Calibration controls must declare a lowercase SHA-256 digest.",
+      );
     requireArray(
       control.seededFailures,
       `calibration.${control.id}.seededFailures`,
@@ -262,9 +334,29 @@ export function validateCalibrationPack(directory) {
         `calibration.${control.id}.relevantRoles`,
         "Every seeded-failure control requires reviewer-role coverage.",
       );
-    const file = join(directory, control.file ?? "");
+    const file = resolve(directory, control.file ?? "");
     try {
-      total += statSync(file).size;
+      if (
+        !isContainedPath(directory, file) ||
+        !isContainedPath(realDirectory, realpathSync(file))
+      )
+        throw new Error("Calibration control escapes its pack.");
+      const bytes = readFileSync(file);
+      total += bytes.length;
+      if (
+        bytes.length < 12 ||
+        bytes.subarray(0, 4).toString("ascii") !== "RIFF" ||
+        bytes.subarray(8, 12).toString("ascii") !== "WEBP"
+      )
+        add(
+          `calibration.${control.id}.mediaType`,
+          `${control.file} must contain WebP bytes.`,
+        );
+      if (sha256(bytes) !== control.sha256)
+        add(
+          `calibration.${control.id}.sha256`,
+          `${control.file} SHA-256 must match calibration metadata.`,
+        );
     } catch {
       add(`calibration.${control.id}.file`, `Missing ${control.file}.`);
     }
@@ -342,6 +434,15 @@ function validateState(run, add) {
     );
   if (run.status !== "stopped" && run.stopReason !== undefined)
     add("stopReason", "Only stopped runs may carry stopReason.");
+  if (
+    run.status === "stopped" &&
+    run.stopReason === "capability_blocked"
+  )
+    requireText(
+      run.nextAction,
+      "nextAction",
+      add,
+    );
   if (
     run.ownerDecision === "rejected" &&
     (run.phase !== "owner_gate" ||
@@ -494,7 +595,7 @@ function validateDirections(run, options, add) {
   }
 }
 
-function validateReviews(run, add) {
+function validateReviews(run, calibrationMetadata, add) {
   const reviews = asArray(run.reviews);
   for (const [index, review] of reviews.entries()) {
     requireText(review?.reviewerId, `reviews.${index}.reviewerId`, add);
@@ -522,7 +623,13 @@ function validateReviews(run, add) {
         `reviews.${index}.calibration`,
         "Reviewer must pass calibration or be disqualified.",
       );
-    if (review?.calibration?.passed === true) validateReviewCalibration(review, index, add);
+    if (review?.calibration?.passed === true)
+      validateReviewCalibration(
+        review,
+        index,
+        calibrationMetadata,
+        add,
+      );
     requireArray(
       review?.evidenceLabels,
       `reviews.${index}.evidenceLabels`,
@@ -850,6 +957,11 @@ function isRecord(value) {
 function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
+function isIsoTimestamp(value) {
+  if (typeof value !== "string") return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+}
 function isContainedPath(directory, candidate) {
   if (!directory || !candidate) return false;
   const path = relative(directory, candidate);
@@ -913,7 +1025,7 @@ function qualifiedVisualReviews(reviews) {
   );
 }
 
-function validateReviewCalibration(review, index, add) {
+function validateReviewCalibration(review, index, calibrationMetadata, add) {
   const expectedFailures = calibrationMetadata.controls
     .filter((control) => control.relevantRoles.includes(review.role))
     .flatMap((control) => control.seededFailures);
@@ -1028,15 +1140,17 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
   const realInstructionRoot = existsSync(instructionRoot)
     ? realpathSync(instructionRoot)
     : null;
-  for (const field of [
-    "canonicalSkill",
-    "protocol",
-    "runTemplate",
-    "calibrationMetadata",
-  ]) {
+  const expectedSources = {
+    canonicalSkill: `craft/runs/${run.runId}/instructions/SKILL.md`,
+    protocol: `craft/runs/${run.runId}/instructions/protocol.md`,
+    runTemplate: `craft/runs/${run.runId}/instructions/run-template.json`,
+    calibrationMetadata: `craft/runs/${run.runId}/instructions/calibration/metadata.json`,
+  };
+  for (const [field, expectedSource] of Object.entries(expectedSources)) {
     const source = manifest.sources?.[field];
     const sourcePath = typeof source === "string" ? resolve(repoRoot, source) : null;
     if (
+      source !== expectedSource ||
       !sourcePath ||
       !realInstructionRoot ||
       !isContainedPath(instructionRoot, sourcePath) ||
@@ -1046,7 +1160,7 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
     ) {
       add(
         `instructionManifest.sources.${field}`,
-        `Instruction manifest ${field} must reference a retained run-local instruction snapshot.`,
+        `Instruction manifest ${field} must reference ${expectedSource}.`,
       );
       continue;
     }
@@ -1058,6 +1172,15 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
       );
   }
   return issues;
+}
+
+export function loadRunCalibrationMetadata(manifest, run, repoRoot) {
+  const expected = `craft/runs/${run.runId}/instructions/calibration/metadata.json`;
+  if (manifest?.sources?.calibrationMetadata !== expected)
+    throw new Error(
+      `Run calibration metadata must be retained at ${expected}.`,
+    );
+  return JSON.parse(readFileSync(resolve(repoRoot, expected), "utf8"));
 }
 
 export async function loadPatternValidators(repoRoot) {
@@ -1108,33 +1231,51 @@ async function main() {
   const validators = await loadPatternValidators(repoRoot);
   const run = JSON.parse(readFileSync(resolve(statePath), "utf8"));
   const allowTemplate = basename(statePath) === "run-template.json";
-  const issues = validateCraftRun(run, validators, {
+  const issues = [];
+  const manifestPath = join(dirname(resolve(statePath)), "instruction-manifest.json");
+  let calibrationDirectory = join(scriptDir, "../assets/calibration");
+  let calibrationMetadata = canonicalCalibrationMetadata;
+  if (!allowTemplate && !existsSync(manifestPath)) {
+    issues.push({
+      field: "instructionManifest",
+      reason: "Non-template craft runs require instruction-manifest.json.",
+    });
+  } else if (existsSync(manifestPath)) {
+    try {
+      const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+      const manifestIssues = validateInstructionManifest(manifest, run, repoRoot);
+      issues.push(...manifestIssues);
+      if (manifestIssues.length === 0) {
+        calibrationMetadata = loadRunCalibrationMetadata(
+          manifest,
+          run,
+          repoRoot,
+        );
+        calibrationDirectory = dirname(
+          resolve(repoRoot, manifest.sources.calibrationMetadata),
+        );
+      }
+    } catch {
+      issues.push({
+        field: "instructionManifest",
+        reason: "Instruction manifest and retained snapshots must be readable.",
+      });
+    }
+  }
+  issues.push(...validateCraftRun(run, validators, {
     allowTemplate,
     repoRoot,
     expectedRunId: allowTemplate ? undefined : basename(dirname(resolve(statePath))),
-  });
+    calibrationMetadata,
+  }));
   issues.push(
-    ...validateCalibrationPack(join(scriptDir, "../assets/calibration")),
+    ...validateCalibrationPack(calibrationDirectory),
   );
   if (previousPath)
     issues.push(
       ...validateCraftTransition(
         JSON.parse(readFileSync(resolve(previousPath), "utf8")),
         run,
-      ),
-    );
-  const manifestPath = join(dirname(resolve(statePath)), "instruction-manifest.json");
-  if (!allowTemplate && !existsSync(manifestPath))
-    issues.push({
-      field: "instructionManifest",
-      reason: "Non-template craft runs require instruction-manifest.json.",
-    });
-  else if (existsSync(manifestPath))
-    issues.push(
-      ...validateInstructionManifest(
-        JSON.parse(readFileSync(manifestPath, "utf8")),
-        run,
-        repoRoot,
       ),
     );
   if (issues.length) {

@@ -22,7 +22,8 @@ Statuses are `active`, `awaiting_owner`, `complete`, and `stopped`.
 - Use `active` while work can proceed.
 - Use `awaiting_owner` only at `owner_gate`, with `ownerDecision: pending`.
 - Resume an approved owner gate at `build` with `ownerDecision: approved`.
-- Use `complete` only at `verify`, after owner approval and verified evidence.
+- Use `complete` only at `verify`, after a distinct owner production approval
+  and verified evidence.
 - Use `stopped` with an allowed `stopReason`; keep `nextAction` when resumption
   is possible.
 
@@ -32,10 +33,13 @@ not resume except `capability_blocked`, which may resume at the same phase with
 unchanged acceptance thresholds.
 
 Saved `iterations` and `reviews` are append-only audit history: every prior
-entry must remain an unchanged prefix of the next snapshot. A
+entry must remain an unchanged prefix of the next snapshot. Rebriefs also
+preserve prior-round directions as an unchanged prefix. TrustBrief and
+DesignBrief remain frozen outside an explicit rebrief transition. A
 `capability_blocked` resume must also preserve the complete TrustBrief,
 DesignBrief, and direction set; only capability state and new evidence may
-advance.
+advance. A capability-blocked stop records the concrete `nextAction` needed to
+resume.
 
 `reviewRound` starts at 1 and increments only when rebriefing to `shape`.
 Directions, iterations, and reviews record their round. Owner-gate consensus is
@@ -82,6 +86,11 @@ Calibrate each reviewer role against all five controls in
 `assets/calibration/metadata.json`. A reviewer must detect every relevant seeded
 failure. Allow one prompt correction and one full rerun. A second failure
 disqualifies that reviewer role until it is replaced.
+
+Every control declares `mediaType: image/webp` and the SHA-256 of its WebP
+bytes. Both canonical and run-retained packs verify media magic, digest,
+reviewer-role coverage, and the 300KB limit before their evidence can qualify a
+direction.
 
 Persist `calibration.detectedFailures`, `calibration.corrections`, and
 `calibration.fullReruns` on every passed review. The owner gate requires four
@@ -137,7 +146,10 @@ record cannot change while entering `build`. Rejection is valid only at
 
 ## Production gate
 
-Only the owner can approve production. Verification must include repository
+Only the owner can approve production. Direction approval does not approve the
+finished production result. A `verify/complete` run records a distinct
+`productionApproval` with `decision: approved`, `approvedBy: owner`, and an ISO
+timestamp. Verification must include repository
 gates, the browser/accessibility matrix, three comparable cold-cache mobile
 measurements, rollback evidence, and post-deploy smoke evidence. Local
 measurements are laboratory evidence, not field Core Web Vitals or user

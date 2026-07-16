@@ -1,4 +1,5 @@
 import {
+  copyFileSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -568,6 +569,181 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       }
     },
     "calibration.generic-ai-saas.relevantRoles",
+  );
+  runCase(
+    "later phases retain owner-gate consensus",
+    () =>
+      validate((run) => {
+        run.phase = "build";
+        run.status = "active";
+        run.ownerDecision = "approved";
+        run.selectedDirectionId = "direction-alpha";
+        delete run.stopReason;
+        run.reviews = run.reviews.filter(
+          (review) => review.role !== "accessibility",
+        );
+      }),
+    "reviews",
+  );
+  runCase(
+    "persisted run uses its calibration snapshot",
+    () => {
+      const metadata = JSON.parse(
+        readFileSync(
+          join(repoRoot, "skills/sanchika-craft/assets/calibration/metadata.json"),
+          "utf8",
+        ),
+      );
+      metadata.controls[1].seededFailures.push("run-local-required-failure");
+      return validateCraftRun(baseRun, validators, {
+        repoRoot,
+        calibrationMetadata: metadata,
+      });
+    },
+    "reviews.0.calibration.detectedFailures",
+  );
+  runCase(
+    "manifest source roles cannot alias one snapshot",
+    () => {
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      manifest.sources.protocol = manifest.sources.canonicalSkill;
+      manifest.hashes.protocol = manifest.hashes.canonicalSkill;
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.sources.protocol",
+  );
+  runCase(
+    "rebrief preserves prior-round directions",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "review";
+      previous.status = "active";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "shape";
+      next.ownerDecision = "rebrief";
+      next.reviewRound = 2;
+      next.directions = next.directions.slice(1);
+      return validateCraftTransition(previous, next);
+    },
+    "directions",
+  );
+  runCase(
+    "later transitions preserve prior-round directions",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "shape";
+      previous.status = "active";
+      previous.ownerDecision = "rebrief";
+      previous.reviewRound = 2;
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "explore";
+      next.ownerDecision = "pending";
+      next.directions[0].territory = "rewritten-old-round";
+      return validateCraftTransition(previous, next);
+    },
+    "directions",
+  );
+  runCase(
+    "briefs remain frozen outside rebrief",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "review";
+      previous.status = "active";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "owner_gate";
+      next.status = "awaiting_owner";
+      next.trustBrief.surface = "/weakened-after-review";
+      return validateCraftTransition(previous, next);
+    },
+    "trustBrief",
+  );
+  runCase(
+    "capability stop requires a resume action",
+    () =>
+      validate((run) => {
+        run.phase = "review";
+        run.status = "stopped";
+        run.ownerDecision = "pending";
+        run.stopReason = "capability_blocked";
+        delete run.nextAction;
+      }),
+    "nextAction",
+  );
+  runCase(
+    "completion requires distinct production approval",
+    () =>
+      validate((run) => {
+        run.phase = "verify";
+        run.status = "complete";
+        run.ownerDecision = "approved";
+        run.selectedDirectionId = "direction-alpha";
+        run.productionApproval = null;
+        run.evidenceLoop.decision = "ready-for-consumer-pr";
+        delete run.stopReason;
+        const gate = {
+          status: "passed",
+          artifact: `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+        };
+        run.productionEvidence = {
+          repositoryGates: gate,
+          browserAccessibilityMatrix: gate,
+          rollbackEvidence: gate,
+          postDeploySmoke: gate,
+          mobileMeasurements: [1, 2, 3].map((number) => ({
+            runId: `run-${number}`,
+            profileId: "mobile-v1",
+            coldCache: true,
+            lcpMs: 1200,
+            cls: 0,
+          })),
+        };
+      }),
+    "productionApproval",
+  );
+  runCase(
+    "calibration authenticates control bytes",
+    () => {
+      const source = join(
+        repoRoot,
+        "skills/sanchika-craft/assets/calibration",
+      );
+      const temporaryRoot = mkdtempSync(join(tmpdir(), "sanchika-calibration-"));
+      try {
+        const metadata = JSON.parse(
+          readFileSync(join(source, "metadata.json"), "utf8"),
+        );
+        for (const control of metadata.controls)
+          copyFileSync(
+            join(source, control.file),
+            join(temporaryRoot, control.file),
+          );
+        writeFileSync(
+          join(temporaryRoot, metadata.controls[0].file),
+          "not-a-webp\n",
+        );
+        writeFileSync(
+          join(temporaryRoot, "metadata.json"),
+          `${JSON.stringify(metadata, null, 2)}\n`,
+        );
+        return validateCalibrationPack(temporaryRoot);
+      } finally {
+        rmSync(temporaryRoot, { recursive: true, force: true });
+      }
+    },
+    "calibration.current-baseline.sha256",
   );
   runCase(
     "incomplete previous argument is rejected",

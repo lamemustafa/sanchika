@@ -45,5 +45,6 @@ node skills/sanchika-craft/scripts/validate-run.mjs \
 ```
 
 Stop at `owner_gate` with `status: awaiting_owner`. Only the owner can approve a
-direction or production. A subscription, quota, browser, or reviewer-capability
-interruption must save state; it must not lower any acceptance threshold.
+direction or production, and those are separate persisted decisions. A
+subscription, quota, browser, or reviewer-capability interruption must save
+state with a concrete next action; it must not lower any acceptance threshold.
