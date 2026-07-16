@@ -45,9 +45,15 @@ const nav = [
           <span aria-hidden="true">S</span>
           <span><strong>Sanchika</strong><small>Evidence contracts</small></span>
         </a>
-        <nav aria-label="Primary navigation">
+        <nav class="site-primary-navigation site-primary-navigation--desktop" aria-label="Primary navigation">
           {nav.map(([label, href]) => <a href={href} aria-current={path.startsWith(href) ? "page" : undefined}>{label}</a>)}
         </nav>
+        <details class="site-primary-navigation-disclosure">
+          <summary>Primary navigation</summary>
+          <nav aria-label="Primary navigation">
+            {nav.map(([label, href]) => <a href={href} aria-current={path.startsWith(href) ? "page" : undefined}>{label}</a>)}
+          </nav>
+        </details>
         <div class="site-header__actions">
           <a class="site-header__search" href="/#landing-docs" aria-keyshortcuts="/">Search <kbd aria-hidden="true">/</kbd></a>
           <a class="site-header__source" href={sourceRepository}>Source <span aria-hidden="true">↗</span></a>
