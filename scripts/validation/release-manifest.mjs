@@ -136,6 +136,11 @@ export function validateReleaseManifest(manifest) {
       failures.push("previousVersion must be a non-prerelease semantic version other than 0.0.0");
     } else if (manifest.previousVersion === manifest.version) {
       failures.push("previousVersion must differ from the stable release version");
+    } else if (
+      isStableSemver(manifest.version) &&
+      compareStableSemver(manifest.previousVersion, manifest.version) > 0
+    ) {
+      failures.push("previousVersion must be older than the stable release version");
     }
   }
   if (!Array.isArray(manifest.packages) || manifest.packages.length === 0) {
@@ -191,6 +196,7 @@ export function releaseManifestFixtureCases() {
     { name: "prerelease version", manifest: { ...valid, version: "1.2.3-next.1" }, expectedFailure: "non-prerelease semantic version" },
     { name: "invalid previous version", manifest: { ...valid, previousVersion: "1.2.2-next.1" }, expectedFailure: "previousVersion" },
     { name: "duplicate previous version", manifest: { ...valid, previousVersion: valid.version }, expectedFailure: "must differ" },
+    { name: "newer previous version", manifest: { ...valid, previousVersion: "1.2.4" }, expectedFailure: "must be older" },
     { name: "non-deterministic order", manifest: { ...valid, packages: [...stableReleasePackageOrder].reverse() }, expectedFailure: "deterministic order" },
     { name: "missing package list", manifest: { version: "1.2.3", channel: "stable" }, expectedFailure: "non-empty array" },
   ];
@@ -244,4 +250,14 @@ function isStableSemver(version) {
     /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version) &&
     version !== "0.0.0"
   );
+}
+
+function compareStableSemver(left, right) {
+  const leftParts = left.split(".").map(BigInt);
+  const rightParts = right.split(".").map(BigInt);
+  for (let index = 0; index < leftParts.length; index += 1) {
+    if (leftParts[index] < rightParts[index]) return -1;
+    if (leftParts[index] > rightParts[index]) return 1;
+  }
+  return 0;
 }

@@ -418,6 +418,9 @@ for (const requiredRunnerFragment of [
   '"@sanchika/gallery-app", "browser:check"',
   '"--stable-release"',
   '"dist/release"',
+  "stableReleaseArguments(process.argv.slice(2))",
+  "stable release runner accepts only --version <semantic-version>",
+  "resolveReleaseVersion({ manifest: releaseManifest, override: releaseArguments[1] })",
 ]) {
   if (!stableReleaseRunner.includes(requiredRunnerFragment)) {
     fail(`scripts/run-stable-release.mjs must include ${requiredRunnerFragment}`);
