@@ -95,7 +95,7 @@ const appSources = readdirSync(join(root, "apps/gallery/src"), { recursive: true
 for (const [path, source] of appSources) {
   const isCraftLabRoute = path === "pages/lab/[territory].astro";
   if ((/(^|\/)lab(\/|$)/i.test(path) && !isCraftLabRoute) || /--lab-/.test(source)) failures.push(`retired lab source remains at ${path}`);
-  if (isCraftLabRoute && !source.includes('process.env.SANCHIKA_CRAFT_LAB !== "1"')) failures.push("canonical craft lab route must remain environment gated");
+  if (isCraftLabRoute && !source.includes('import.meta.env.SANCHIKA_CRAFT_LAB !== "1"')) failures.push("canonical craft lab route must remain environment gated");
   if (path.endsWith(".css")) {
     failures.push(...findGalleryIdentityPolicyFailures({ path, source }));
   }
