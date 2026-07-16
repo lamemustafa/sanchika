@@ -37,6 +37,11 @@ entry must remain an unchanged prefix of the next snapshot. A
 DesignBrief, and direction set; only capability state and new evidence may
 advance.
 
+`reviewRound` starts at 1 and increments only when rebriefing to `shape`.
+Directions, iterations, and reviews record their round. Owner-gate consensus is
+calculated only from the current round, while prior rounds remain immutable
+audit history.
+
 ## Evidence contracts
 
 Every `CraftRunV01` embeds valid Sanchika `TrustBrief`, `DesignBrief`, and
@@ -111,6 +116,11 @@ of three correct matchers without relying only on color.
 
 Non-qualifying work cannot advance by override. Present qualifying directions
 anonymously. The owner may select one or reject all.
+
+Approval records `selectedDirectionId`. The selected direction must be a
+qualifying direction from the current brief and review round, and its reviewed
+record cannot change while entering `build`. Rejection is valid only at
+`owner_gate` after the normal direction and reviewer gates have passed.
 
 ## Production gate
 

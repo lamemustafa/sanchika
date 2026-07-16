@@ -4,7 +4,7 @@ import {
   validateCraftTransition,
 } from "../../skills/sanchika-craft/scripts/validate-run.mjs";
 
-export function runCraftRunFixtures({ baseRun, validators }) {
+export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   const failures = [];
   const cases = [];
   const runCase = (name, exercise, expectedField) => {
@@ -34,7 +34,7 @@ export function runCraftRunFixtures({ baseRun, validators }) {
   const validate = (mutate) => {
     const run = structuredClone(baseRun);
     mutate?.(run);
-    return validateCraftRun(run, validators);
+    return validateCraftRun(run, validators, { repoRoot });
   };
 
   runCase("valid terminal owner-gate run", () => validate(), null);
@@ -81,6 +81,14 @@ export function runCraftRunFixtures({ baseRun, validators }) {
     "reviews.0.calibration.fullReruns",
   );
   runCase(
+    "direction rubric score exceeds the scale",
+    () =>
+      validate((run) => {
+        run.reviews[0].directionScores["direction-alpha"].trust = 100;
+      }),
+    "reviews.0.directionScores.direction-alpha.trust",
+  );
+  runCase(
     "owner gate reuses one reviewer identity",
     () =>
       validate((run) => {
@@ -105,6 +113,16 @@ export function runCraftRunFixtures({ baseRun, validators }) {
         run.status = "active";
         run.ownerDecision = "pending";
         delete run.stopReason;
+      }),
+    "ownerDecision",
+  );
+  runCase(
+    "owner rejection occurs before the owner gate",
+    () =>
+      validate((run) => {
+        run.phase = "review";
+        run.reviews = [];
+        run.directions.forEach((direction) => { direction.qualified = false; });
       }),
     "ownerDecision",
   );
@@ -137,6 +155,14 @@ export function runCraftRunFixtures({ baseRun, validators }) {
     "iterations.0.artifactRefs",
   );
   runCase(
+    "terminal revision references uncommitted output",
+    () =>
+      validate((run) => {
+        run.iterations[0].artifactRefs = ["output/creative/revision.png"];
+      }),
+    "iterations.0.artifactRefs.0",
+  );
+  runCase(
     "transition rewrites review history",
     () => {
       const previous = structuredClone(baseRun);
@@ -161,6 +187,63 @@ export function runCraftRunFixtures({ baseRun, validators }) {
       return validateCraftTransition(previous, next);
     },
     "designBrief",
+  );
+  runCase(
+    "owner-gate transition swaps the selected direction",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.status = "awaiting_owner";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "build";
+      next.status = "active";
+      next.ownerDecision = "approved";
+      next.selectedDirectionId = "direction-gamma";
+      return validateCraftTransition(previous, next);
+    },
+    "selectedDirectionId",
+  );
+  runCase(
+    "rebriefed round advances without replaying old iteration failures",
+    () => {
+      const run = structuredClone(baseRun);
+      run.phase = "explore";
+      run.status = "active";
+      run.ownerDecision = "pending";
+      run.reviewRound = 2;
+      delete run.stopReason;
+      return validateCraftRun(run, validators, { repoRoot }).filter(
+        (issue) => issue.field === "iterations",
+      );
+    },
+    null,
+  );
+  runCase(
+    "owner gate scopes reviewers to the current round",
+    () => {
+      const run = structuredClone(baseRun);
+      run.reviewRound = 2;
+      const currentDirection = structuredClone(run.directions[0]);
+      currentDirection.id = "direction-round-2";
+      currentDirection.reviewRound = 2;
+      run.directions.push(currentDirection);
+      for (const review of structuredClone(run.reviews)) {
+        review.reviewerId = `${review.reviewerId}-round-2`;
+        review.reviewRound = 2;
+        review.preference = ["direction-round-2"];
+        review.directionScores = {
+          "direction-round-2": structuredClone(
+            review.directionScores["direction-alpha"],
+          ),
+        };
+        run.reviews.push(review);
+      }
+      return validateCraftRun(run, validators, { repoRoot }).filter(
+        (issue) => issue.field === "reviews",
+      );
+    },
+    null,
   );
   runCase(
     "incomplete previous argument is rejected",

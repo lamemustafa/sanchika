@@ -14,6 +14,7 @@
   },
   "phase": "owner_gate",
   "status": "stopped",
+  "reviewRound": 1,
   "trustBrief": {
     "id": "sanchika-landing-trust-v1",
     "consumerMode": "external/operational-saas",
@@ -138,6 +139,7 @@
     {
       "id": "direction-alpha",
       "designBriefId": "sanchika-landing-design-v1",
+      "reviewRound": 1,
       "territory": "joined-planes",
       "artifactRefs": [
         "craft/runs/sanchika-landing-s10/evidence/direction-alpha.webp",
@@ -155,6 +157,7 @@
     {
       "id": "direction-beta",
       "designBriefId": "sanchika-landing-design-v1",
+      "reviewRound": 1,
       "territory": "variable-measure",
       "artifactRefs": [
         "craft/runs/sanchika-landing-s10/evidence/direction-beta.webp",
@@ -172,6 +175,7 @@
     {
       "id": "direction-gamma",
       "designBriefId": "sanchika-landing-design-v1",
+      "reviewRound": 1,
       "territory": "decision-theatre",
       "artifactRefs": [
         "craft/runs/sanchika-landing-s10/evidence/direction-gamma.webp"
@@ -189,6 +193,7 @@
   ],
   "iterations": [
     {
+      "reviewRound": 1,
       "failingCriterion": "dark-checkpoint-legibility",
       "changeHypothesis": "Raising secondary-text contrast and size and allowing resilient wrapping will clear the accessibility veto without changing territory identity.",
       "invariants": [
@@ -199,10 +204,8 @@
         "interaction behavior"
       ],
       "artifactRefs": [
-        "output/creative/sanchika-landing-s10/directions/joined-planes-before-1440.png",
-        "output/creative/sanchika-landing-s10/directions/joined-planes-1440.png",
-        "output/creative/sanchika-landing-s10/directions/variable-measure-before-390.png",
-        "output/creative/sanchika-landing-s10/directions/variable-measure-390.png"
+        "craft/runs/sanchika-landing-s10/evidence/alpha-revision.webp",
+        "craft/runs/sanchika-landing-s10/evidence/beta-revision.webp"
       ],
       "result": "improved"
     }
@@ -211,6 +214,7 @@
     {
       "reviewerId": "brand-01",
       "role": "brand",
+      "reviewRound": 1,
       "producer": false,
       "calibration": {
         "passed": true,
@@ -244,6 +248,7 @@
     {
       "reviewerId": "craft-01",
       "role": "craft",
+      "reviewRound": 1,
       "producer": false,
       "calibration": {
         "passed": true,
@@ -278,6 +283,7 @@
     {
       "reviewerId": "trust-01",
       "role": "trust",
+      "reviewRound": 1,
       "producer": false,
       "calibration": {
         "passed": true,
@@ -312,6 +318,7 @@
     {
       "reviewerId": "accessibility-01",
       "role": "accessibility",
+      "reviewRound": 1,
       "producer": false,
       "calibration": {
         "passed": true,
@@ -346,6 +353,7 @@
     }
   ],
   "ownerDecision": "rejected",
+  "selectedDirectionId": null,
   "assets": [
     {
       "path": "apps/gallery/src/assets/fonts/AnekDevanagari-Variable-subset.woff2",

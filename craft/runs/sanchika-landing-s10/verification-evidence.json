@@ -89,7 +89,7 @@
       "baselineSearchScriptGzipBytes": 1057
     },
     "budgets": {
-      "committedCreativeEvidenceBytes": 846824,
+      "committedCreativeEvidenceBytes": 980104,
       "creativeEvidenceLimitBytes": 1000000,
       "selfHostedFontBytes": 0,
       "selfHostedFontLimitBytes": 160000,

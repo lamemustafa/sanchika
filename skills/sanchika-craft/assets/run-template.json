@@ -14,6 +14,7 @@
   },
   "phase": "shape",
   "status": "active",
+  "reviewRound": 1,
   "trustBrief": {
     "id": "template-trust-brief",
     "consumerMode": "external/operational-saas",
@@ -131,6 +132,7 @@
   "iterations": [],
   "reviews": [],
   "ownerDecision": "pending",
+  "selectedDirectionId": null,
   "assets": [],
   "reconciliation": [],
   "evidenceLoop": {

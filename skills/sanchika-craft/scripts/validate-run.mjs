@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -63,6 +64,8 @@ export function validateCraftRun(run, validators, options = {}) {
     add("phase", `Unknown phase ${run.phase ?? "(missing)"}.`);
   if (!statuses.includes(run.status))
     add("status", `Unknown status ${run.status ?? "(missing)"}.`);
+  if (!Number.isInteger(run.reviewRound) || run.reviewRound < 1)
+    add("reviewRound", "reviewRound must be a positive integer.");
   if (!ownerDecisions.includes(run.ownerDecision))
     add(
       "ownerDecision",
@@ -79,9 +82,9 @@ export function validateCraftRun(run, validators, options = {}) {
 
   validateEmbeddedContracts(run, validators ?? {}, add);
   validateState(run, add);
-  validateReviews(run.reviews ?? [], add);
-  validateDirections(run, add);
-  validateIterations(run, add);
+  validateReviews(run, add);
+  validateDirections(run, options, add);
+  validateIterations(run, options, add);
   validateAssets(run.assets ?? [], add);
 
   if (phaseAtLeast(run.phase, "explore") && (run.directions?.length ?? 0) === 0)
@@ -139,6 +142,14 @@ export function validateCraftTransition(previous, next) {
     previous?.status === "stopped" &&
     previous?.stopReason === "capability_blocked" &&
     previous?.phase === next?.phase;
+  const expectedReviewRound = rebrief
+    ? (previous?.reviewRound ?? 0) + 1
+    : previous?.reviewRound;
+  if (next?.reviewRound !== expectedReviewRound)
+    add(
+      "reviewRound",
+      "Review round must remain stable except for a one-step increment during rebrief.",
+    );
   if (!rebrief && !capabilityResume && to !== from && to !== from + 1)
     add(
       "phase",
@@ -151,6 +162,27 @@ export function validateCraftTransition(previous, next) {
       if (!isDeepStrictEqual(previous?.[field], next?.[field]))
         add(field, `Capability resumes cannot change ${field} acceptance thresholds.`);
     }
+  }
+  if (previous?.phase === "owner_gate" && next?.phase === "build") {
+    const selected = previous?.directions?.find(
+      (direction) =>
+        direction.id === next?.selectedDirectionId &&
+        direction.qualified === true &&
+        direction.reviewRound === previous?.reviewRound,
+    );
+    if (!selected)
+      add(
+        "selectedDirectionId",
+        "Build must select a qualified direction from the immediately preceding owner gate.",
+      );
+    const current = next?.directions?.find(
+      (direction) => direction.id === next?.selectedDirectionId,
+    );
+    if (!selected || !isDeepStrictEqual(selected, current))
+      add(
+        "directions",
+        "The selected owner-gate direction cannot change while entering build.",
+      );
   }
   return issues;
 }
@@ -266,11 +298,13 @@ function validateState(run, add) {
     add("stopReason", "Only stopped runs may carry stopReason.");
   if (
     run.ownerDecision === "rejected" &&
-    (run.status !== "stopped" || run.stopReason !== "owner_rejected")
+    (run.phase !== "owner_gate" ||
+      run.status !== "stopped" ||
+      run.stopReason !== "owner_rejected")
   )
     add(
       "ownerDecision",
-      "Rejected owner decisions must stop with owner_rejected.",
+      "Rejected owner decisions are valid only at owner_gate and must stop with owner_rejected.",
     );
   if (
     run.ownerDecision === "approved" &&
@@ -278,11 +312,30 @@ function validateState(run, add) {
     run.status !== "complete"
   )
     add("ownerDecision", "Owner approval advances to build or later.");
+  if (run.ownerDecision === "rebrief" && run.phase !== "shape")
+    add("ownerDecision", "rebrief is valid only while returning to shape.");
   if (phaseAtLeast(run.phase, "build") && run.ownerDecision !== "approved")
     add("ownerDecision", "Build and later phases require owner approval.");
+  if (run.ownerDecision === "approved") {
+    requireText(run.selectedDirectionId, "selectedDirectionId", add);
+    const selected = (run.directions ?? []).find(
+      (direction) =>
+        direction.id === run.selectedDirectionId &&
+        direction.qualified === true &&
+        direction.designBriefId === run.designBrief?.id &&
+        direction.reviewRound === run.reviewRound,
+    );
+    if (!selected)
+      add(
+        "selectedDirectionId",
+        "Owner approval must identify a qualified direction from the current brief and review round.",
+      );
+  } else if (run.selectedDirectionId !== null && run.selectedDirectionId !== undefined) {
+    add("selectedDirectionId", "Only an approved owner decision may select a direction.");
+  }
 }
 
-function validateDirections(run, add) {
+function validateDirections(run, options, add) {
   const directions = run.directions ?? [];
   for (const [index, direction] of directions.entries()) {
     for (const field of ["id", "designBriefId", "territory"])
@@ -292,6 +345,11 @@ function validateDirections(run, add) {
       `directions.${index}.artifactRefs`,
       add,
     );
+    validateArtifactReferences(run, direction?.artifactRefs, `directions.${index}.artifactRefs`, options, add);
+    if (!Number.isInteger(direction?.reviewRound) || direction.reviewRound < 1)
+      add(`directions.${index}.reviewRound`, "Direction reviewRound must be a positive integer.");
+    else if (direction.reviewRound > run.reviewRound)
+      add(`directions.${index}.reviewRound`, "Direction reviewRound cannot be in the future.");
     if (direction?.qualified === true) {
       const preference = direction.preference;
       if (
@@ -308,7 +366,9 @@ function validateDirections(run, add) {
           `directions.${index}.preference`,
           "Qualified directions require at least 3/4 preference over both the baseline and without-skill control.",
         );
-      const visualReviews = qualifiedVisualReviews(run.reviews ?? []);
+      const visualReviews = qualifiedVisualReviews(run.reviews ?? []).filter(
+        (review) => review.reviewRound === direction.reviewRound,
+      );
       const actualPreferenceCount = visualReviews.filter((review) =>
         review.preference?.includes(direction.id),
       ).length;
@@ -334,7 +394,11 @@ function validateDirections(run, add) {
           );
       }
       const unresolvedVetoes = (run.reviews ?? [])
-        .filter((review) => ["trust", "accessibility"].includes(review.role))
+        .filter(
+          (review) =>
+            review.reviewRound === direction.reviewRound &&
+            ["trust", "accessibility"].includes(review.role),
+        )
         .flatMap((review) => review.vetoes ?? [])
         .filter((veto) =>
           vetoTargetsDirection(
@@ -365,9 +429,14 @@ function validateDirections(run, add) {
   }
 }
 
-function validateReviews(reviews, add) {
+function validateReviews(run, add) {
+  const reviews = run.reviews ?? [];
   for (const [index, review] of reviews.entries()) {
     requireText(review?.reviewerId, `reviews.${index}.reviewerId`, add);
+    if (!Number.isInteger(review?.reviewRound) || review.reviewRound < 1)
+      add(`reviews.${index}.reviewRound`, "Review reviewRound must be a positive integer.");
+    else if (review.reviewRound > run.reviewRound)
+      add(`reviews.${index}.reviewRound`, "Review reviewRound cannot be in the future.");
     if (
       ![
         ...visualRoles,
@@ -406,10 +475,17 @@ function validateReviews(reviews, add) {
           `reviews.${index}.scores.${criterion}`,
           "Rubric scores must be integers from 0 to 4.",
         );
+    for (const [directionId, scores] of Object.entries(review?.directionScores ?? {}))
+      for (const [criterion, score] of Object.entries(scores ?? {}))
+        if (!Number.isInteger(score) || score < 0 || score > 4)
+          add(
+            `reviews.${index}.directionScores.${directionId}.${criterion}`,
+            "Direction rubric scores must be integers from 0 to 4.",
+          );
   }
 }
 
-function validateIterations(run, add) {
+function validateIterations(run, options, add) {
   for (const [index, iteration] of (run.iterations ?? []).entries()) {
     for (const field of ["failingCriterion", "changeHypothesis"])
       requireText(iteration?.[field], `iterations.${index}.${field}`, add);
@@ -419,6 +495,11 @@ function validateIterations(run, add) {
       `iterations.${index}.artifactRefs`,
       add,
     );
+    validateArtifactReferences(run, iteration?.artifactRefs, `iterations.${index}.artifactRefs`, options, add);
+    if (!Number.isInteger(iteration?.reviewRound) || iteration.reviewRound < 1)
+      add(`iterations.${index}.reviewRound`, "Iteration reviewRound must be a positive integer.");
+    else if (iteration.reviewRound > run.reviewRound)
+      add(`iterations.${index}.reviewRound`, "Iteration reviewRound cannot be in the future.");
     if (!["improved", "not_improved"].includes(iteration?.result))
       add(
         `iterations.${index}.result`,
@@ -441,7 +522,10 @@ function validateIterations(run, add) {
         );
     }
   }
-  const tail = (run.iterations ?? []).slice(-2);
+  const currentRoundIterations = (run.iterations ?? []).filter(
+    (iteration) => iteration.reviewRound === run.reviewRound,
+  );
+  const tail = currentRoundIterations.slice(-2);
   if (
     tail.length === 2 &&
     tail.every((item) => item.result === "not_improved") &&
@@ -473,7 +557,9 @@ function validateIterations(run, add) {
 }
 
 function validateOwnerGate(run, add) {
-  const passedReviews = qualifiedVisualReviews(run.reviews ?? []);
+  const passedReviews = qualifiedVisualReviews(run.reviews ?? []).filter(
+    (review) => review.reviewRound === run.reviewRound,
+  );
   const passedRoles = new Set(passedReviews.map((review) => review.role));
   if (
     passedReviews.length !== visualRoles.length ||
@@ -485,7 +571,14 @@ function validateOwnerGate(run, add) {
     );
   if (new Set(passedReviews.map((review) => review.reviewerId)).size !== visualRoles.length)
     add("reviews", "Owner gate requires four distinct calibrated reviewer identities.");
-  if (!(run.directions ?? []).some((direction) => direction.qualified === true))
+  if (
+    !(run.directions ?? []).some(
+      (direction) =>
+        direction.qualified === true &&
+        direction.reviewRound === run.reviewRound &&
+        direction.designBriefId === run.designBrief?.id,
+    )
+  )
     add("directions", "Owner gate requires at least one qualifying direction.");
 }
 
@@ -538,6 +631,24 @@ function requireNonEmptyTextArray(value, field, add) {
   if (!Array.isArray(value)) return add(field, `${field} must be an array.`);
   if (value.length === 0 || value.some((item) => typeof item !== "string" || !item.trim()))
     add(field, `${field} must contain at least one specific artifact reference.`);
+}
+
+function validateArtifactReferences(run, references, field, options, add) {
+  if (!Array.isArray(references)) return;
+  const committedPrefix = `craft/runs/${run.runId}/evidence/`;
+  for (const [index, reference] of references.entries()) {
+    if (typeof reference !== "string" || !reference.trim()) continue;
+    if (
+      ["stopped", "complete"].includes(run.status) &&
+      !reference.startsWith(committedPrefix)
+    )
+      add(
+        `${field}.${index}`,
+        `Terminal run evidence must be retained under ${committedPrefix}.`,
+      );
+    if (options?.repoRoot && !existsSync(resolve(options.repoRoot, reference)))
+      add(`${field}.${index}`, `Referenced artifact is missing: ${reference}.`);
+  }
 }
 
 function qualifiedVisualReviews(reviews) {
@@ -640,9 +751,34 @@ export function parseArguments(args) {
   return { statePath: args[0], previousPath: args[2] };
 }
 
+export function validateInstructionManifest(manifest, run, repoRoot) {
+  const issues = [];
+  const add = (field, reason) => issues.push({ field, reason });
+  if (!isRecord(manifest))
+    return [{ field: "instructionManifest", reason: "Instruction manifest must be an object." }];
+  if (manifest.protocolVersion !== run.protocolVersion)
+    add("instructionManifest.protocolVersion", "Instruction manifest protocolVersion must match the run.");
+  if (manifest.sourceCommit !== run.surface?.sourceCommit)
+    add("instructionManifest.sourceCommit", "Instruction manifest sourceCommit must match the run.");
+  for (const [field, path] of Object.entries({
+    canonicalSkill: "skills/sanchika-craft/SKILL.md",
+    protocol: "skills/sanchika-craft/references/protocol.md",
+    runTemplate: "skills/sanchika-craft/assets/run-template.json",
+  })) {
+    const expected = sha256(readFileSync(join(repoRoot, path)));
+    if (manifest.hashes?.[field] !== expected)
+      add(
+        `instructionManifest.hashes.${field}`,
+        `Instruction manifest ${field} hash must match ${path}.`,
+      );
+  }
+  return issues;
+}
+
 export async function loadPatternValidators(repoRoot) {
   const entry = join(repoRoot, "packages/patterns/dist/index.js");
-  if (!existsSync(entry)) {
+  const sourceMtime = latestMtime(join(repoRoot, "packages/patterns/src"));
+  if (!existsSync(entry) || sourceMtime > statSync(entry).mtimeMs) {
     const build = spawnSync(
       process.execPath,
       [
@@ -667,6 +803,20 @@ export async function loadPatternValidators(repoRoot) {
   return import(`${pathToFileURL(entry).href}?craft-validator=${statSync(entry).mtimeMs}`);
 }
 
+function latestMtime(directory) {
+  return Math.max(
+    statSync(directory).mtimeMs,
+    ...readdirSync(directory, { recursive: true })
+      .map((path) => join(directory, path))
+      .filter((path) => statSync(path).isFile())
+      .map((path) => statSync(path).mtimeMs),
+  );
+}
+
+function sha256(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
 async function main() {
   const { statePath, previousPath } = parseArguments(process.argv.slice(2));
   const repoRoot = resolve(scriptDir, "../../..");
@@ -674,6 +824,7 @@ async function main() {
   const run = JSON.parse(readFileSync(resolve(statePath), "utf8"));
   const issues = validateCraftRun(run, validators, {
     allowTemplate: basename(statePath) === "run-template.json",
+    repoRoot,
   });
   issues.push(
     ...validateCalibrationPack(join(scriptDir, "../assets/calibration")),
@@ -683,6 +834,15 @@ async function main() {
       ...validateCraftTransition(
         JSON.parse(readFileSync(resolve(previousPath), "utf8")),
         run,
+      ),
+    );
+  const manifestPath = join(dirname(resolve(statePath)), "instruction-manifest.json");
+  if (existsSync(manifestPath))
+    issues.push(
+      ...validateInstructionManifest(
+        JSON.parse(readFileSync(manifestPath, "utf8")),
+        run,
+        repoRoot,
       ),
     );
   if (issues.length) {

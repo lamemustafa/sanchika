@@ -65,6 +65,7 @@ import {
   loadPatternValidators,
   validateCalibrationPack,
   validateCraftRun,
+  validateInstructionManifest,
 } from "../skills/sanchika-craft/scripts/validate-run.mjs";
 import { runCraftRunFixtures } from "./validation/craft-run-fixtures.mjs";
 
@@ -134,6 +135,7 @@ const craftRun = readJson("craft/runs/sanchika-landing-s10/state.json");
 const craftRunFixtures = runCraftRunFixtures({
   baseRun: craftRun,
   validators: craftValidators,
+  repoRoot: root,
 });
 for (const fixtureFailure of craftRunFixtures.failures)
   fail(`craft run fixture ${fixtureFailure}`);
@@ -141,8 +143,14 @@ for (const [statePath, allowTemplate] of [
   ["skills/sanchika-craft/assets/run-template.json", true],
   ["craft/runs/sanchika-landing-s10/state.json", false],
 ]) {
-  for (const issue of validateCraftRun(readJson(statePath), craftValidators, { allowTemplate })) fail(`${statePath} ${issue.field}: ${issue.reason}`);
+  for (const issue of validateCraftRun(readJson(statePath), craftValidators, { allowTemplate, repoRoot: root })) fail(`${statePath} ${issue.field}: ${issue.reason}`);
 }
+for (const issue of validateInstructionManifest(
+  readJson("craft/runs/sanchika-landing-s10/instruction-manifest.json"),
+  craftRun,
+  root,
+))
+  fail(`craft instruction manifest ${issue.field}: ${issue.reason}`);
 for (const issue of validateCalibrationPack(join(craftSkillRoot, "assets/calibration"))) fail(`craft calibration ${issue.field}: ${issue.reason}`);
 
 validateSensitiveExamples({ root, fail });
