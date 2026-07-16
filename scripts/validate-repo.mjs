@@ -49,7 +49,7 @@ import {
   validateReleaseManifest,
 } from "./validation/release-manifest.mjs";
 import { runReleaseReadinessFixtures } from "./validation/release-readiness.mjs";
-import { stableReleaseScreenshotSet } from "./validation/release-screenshots.mjs";
+import { runReleaseScreenshotFixtures, stableReleaseScreenshotSet } from "./validation/release-screenshots.mjs";
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
 import { runTarballContentsFixtures } from "./validation/tarball-contents.mjs";
@@ -67,6 +67,8 @@ const galleryProductionFixtures = runGalleryProductionFixtures();
 for (const fixtureFailure of galleryProductionFixtures.failures) fail(`gallery production fixture ${fixtureFailure}`);
 const tarballContentsFixtures = runTarballContentsFixtures();
 for (const fixtureFailure of tarballContentsFixtures.failures) fail(`tarball content fixture ${fixtureFailure}`);
+const releaseScreenshotFixtures = runReleaseScreenshotFixtures();
+for (const fixtureFailure of releaseScreenshotFixtures.failures) fail(`release screenshot fixture ${fixtureFailure}`);
 function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
 }
@@ -2091,6 +2093,7 @@ console.log(`Sanchika gallery production fixtures passed (${galleryProductionFix
 console.log(`Sanchika tarball content fixtures passed (${tarballContentsFixtures.count} cases).`);
 console.log(`Sanchika product pattern fixtures passed (${productPatternFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
+console.log(`Sanchika release screenshot fixtures passed (${releaseScreenshotFixtures.count} cases).`);
 console.log(`Sanchika release readiness fixtures passed (${releaseReadinessFixtures.count} cases).`);
 console.log(`Sanchika release document fixtures passed (${releaseDocumentFixtures.count} cases).`);
 console.log(`Sanchika motion-assist fixtures passed (${motionFixtureCount} cases).`);
