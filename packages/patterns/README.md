@@ -11,15 +11,15 @@ compatibility pass against built artifacts and consumer checks.
 
 ## Install From The GitHub Release
 
-After the v0.1.0 GitHub release is published, declare all three tarballs and
+After the v0.1.1 GitHub release is published, declare all three tarballs and
 map the packed exact internal dependencies to their GitHub assets:
 
 ```json
 {
   "dependencies": {
-    "@sanchika/tokens": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-tokens-0.1.0.tgz",
-    "@sanchika/primitives": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-primitives-0.1.0.tgz",
-    "@sanchika/patterns": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-patterns-0.1.0.tgz"
+    "@sanchika/tokens": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.1/sanchika-tokens-0.1.1.tgz",
+    "@sanchika/primitives": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.1/sanchika-primitives-0.1.1.tgz",
+    "@sanchika/patterns": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.1/sanchika-patterns-0.1.1.tgz"
   }
 }
 ```
@@ -28,13 +28,13 @@ Add the internal dependency mappings to `pnpm-workspace.yaml`:
 
 ```yaml
 overrides:
-  "@sanchika/tokens@0.1.0": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-tokens-0.1.0.tgz"
-  "@sanchika/primitives@0.1.0": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-primitives-0.1.0.tgz"
+  "@sanchika/tokens@0.1.1": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.1/sanchika-tokens-0.1.1.tgz"
+  "@sanchika/primitives@0.1.1": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.1/sanchika-primitives-0.1.1.tgz"
 ```
 
 Run `pnpm install`, review the lockfile, and verify the package-backed consumer.
 
-These packages are not available from npm. Release tarballs are version 0.1.0;
+These packages are not available from npm. Release tarballs are version 0.1.1;
 private source manifests remain version 0.0.0 with `workspace:*` dependencies
 and are rewritten only in verified temporary pack copies.
 

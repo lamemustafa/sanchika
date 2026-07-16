@@ -11,13 +11,13 @@ compatibility pass against built artifacts and consumer checks.
 
 ## Install From The GitHub Release
 
-After the v0.1.0 GitHub release is published:
+After the v0.1.1 GitHub release is published:
 
 ```bash
-pnpm add https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-tokens-0.1.0.tgz
+pnpm add https://github.com/lamemustafa/sanchika/releases/download/v0.1.1/sanchika-tokens-0.1.1.tgz
 ```
 
-This package is not available from npm. The release tarball is version 0.1.0;
+This package is not available from npm. The release tarball is version 0.1.1;
 the private source manifest deliberately remains version 0.0.0 and is rewritten
 only in the verified temporary pack copy.
 

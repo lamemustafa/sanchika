@@ -48,6 +48,14 @@ verification, and package checks. Package manifests currently declare
 policy is an npm Trusted Publishing minimum, not a supported Sanchika package
 runtime floor.
 
+Stable GitHub artifact generation is narrower: use the exact Node version in
+`.node-version` with its bundled npm. The stable release command rejects a
+different Node, npm, or zlib runtime before building or emitting assets.
+Ordinary gallery builds keep `release.json.previousVersion` as the published
+current release and show `release.json.version` as the candidate. The stable
+release runner promotes the candidate only for release evidence; Pages still
+refuses deployment until the matching GitHub release and final bytes exist.
+
 ## Commands
 
 ```bash
@@ -73,13 +81,20 @@ pnpm verify
 In sandboxed Codex runs, use the installed `pnpm` binary directly. `corepack
 pnpm` may fail if it cannot write to the user-level Corepack cache.
 
+`pnpm pages:smoke` validates the deployed site's internally consistent current
+release against GitHub's latest published stable release. After publishing, set
+`SANCHIKA_EXPECTED_RELEASE_VERSION` to the new version to make promotion of
+that exact release a blocking assertion without waiting for latest-release API
+propagation.
+
 ## GitHub Artifact Release
 
-`v0.1.0` is the current stable version declared by `release.json` for
-`@sanchika/tokens`, `@sanchika/primitives`, and `@sanchika/patterns`. The
-matching assets, manifest, checksums, and release notes are available at the
-[v0.1.0 GitHub release](https://github.com/lamemustafa/sanchika/releases/tag/v0.1.0)
-after detached release execution publishes them from the reviewed merge commit.
+`release.json` declares `v0.1.1` as the stable artifact version for
+`@sanchika/tokens`, `@sanchika/primitives`, and `@sanchika/patterns`. It remains
+a candidate until detached release execution publishes it from the reviewed
+merge commit. Until that publication, `v0.1.0` remains the current published
+release. After publication, the matching assets, manifest, checksums, and
+release notes appear in the [GitHub release history](https://github.com/lamemustafa/sanchika/releases).
 The packages are not published to npm, and the private gallery app is not part
 of the release package set.
 
@@ -129,7 +144,9 @@ adapter, runtime shell, or consumer package.
 Pre-1.0 GitHub artifact release. The package contracts and gallery proof are
 reviewed, but real consumer adoption remains incomplete. Do not claim universal
 production readiness, framework coverage, or assistive-technology completeness.
-No next package release is currently announced.
+Until detached publication succeeds, v0.1.1 remains the declared candidate and
+v0.1.0 remains the current published release. No release after v0.1.1 is
+currently announced.
 
 ## Governance
 
@@ -149,6 +166,8 @@ No next package release is currently announced.
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security policy](SECURITY.md)
 - [Release policy](docs/release-policy.md)
+- [v0.1.1 release notes](docs/releases/v0.1.1.md)
+- [v0.1.0 to v0.1.1 migration](docs/migrations/v0.1.0-to-v0.1.1.md)
 - [v0.1.0 release notes](docs/releases/v0.1.0.md)
 - [v0.0.2 to v0.1.0 migration](docs/migrations/v0.0.2-to-v0.1.0.md)
 - [Hosting](docs/hosting.md)

@@ -7,12 +7,14 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
   const normalizedMigrationGuide = normalizeProse(migrationGuide);
   const normalizedReleasePolicy = normalizeProse(releasePolicy);
   const version = manifest.version;
+  const previousVersion = manifest.previousVersion;
   const tag = `v${version}`;
+  const previousTag = `v${previousVersion}`;
   const packageFiles = stableReleasePackageOrder.map(
     (name) => `${name.replace("@sanchika/", "sanchika-")}-${version}.tgz`,
   );
   const rollbackFiles = stableReleasePackageOrder.map(
-    (name) => `${name.replace("@sanchika/", "sanchika-")}-0.0.2.tgz`,
+    (name) => `${name.replace("@sanchika/", "sanchika-")}-${previousVersion}.tgz`,
   );
   const requiredReleaseAssets = [
     ...packageFiles,
@@ -54,8 +56,8 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
     if (!migrationGuide.includes(url)) failures.push(`migration guide must include ${url}`);
   }
   for (const file of rollbackFiles) {
-    const url = `https://github.com/lamemustafa/sanchika/releases/download/v0.0.2/${file}`;
-    if (!migrationGuide.includes(url)) failures.push(`migration guide must include ${url}`);
+    const url = `https://github.com/lamemustafa/sanchika/releases/download/${previousTag}/${file}`;
+    if (!migrationGuide.includes(url)) failures.push(`migration guide must include rollback URL ${url}`);
   }
   const cssOrder = [
     '@import "@sanchika/tokens/theme.css";',
@@ -69,13 +71,13 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
   for (const fragment of [
     "`pnpm-workspace.yaml`",
     "overrides:",
-    '"@sanchika/tokens@0.1.0"',
-    '"@sanchika/primitives@0.1.0"',
-    "pnpm otherwise looks up the packed `0.1.0` dependency ranges on npm",
+    `"@sanchika/tokens@${version}"`,
+    `"@sanchika/primitives@${version}"`,
+    `pnpm otherwise looks up the packed \`${version}\` dependency ranges on npm`,
     "regenerate the lockfile",
-    "@sanchika/tokens@0.0.2",
-    "@sanchika/primitives@0.0.2",
-    "leaving the v0.1.0 selectors would allow the rollback dependencies to fall through to npm",
+    `@sanchika/tokens@${previousVersion}`,
+    `@sanchika/primitives@${previousVersion}`,
+    `leaving the v${version} selectors would allow the rollback dependencies to fall through to npm`,
     "consumer manifest and lockfile rollback together",
     "It does not require a database, DNS, or workspace migration",
     "private deployed application, not a dependency or release package",
@@ -84,8 +86,8 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
     if (!normalizedMigrationGuide.includes(fragment)) failures.push(`migration guide must include ${fragment}`);
   }
   for (const [packageName, requiredFragments] of Object.entries({
-    primitives: ["`pnpm-workspace.yaml`", "overrides:", '"@sanchika/tokens@0.1.0"', "pnpm install"],
-    patterns: ["`pnpm-workspace.yaml`", "overrides:", '"@sanchika/tokens@0.1.0"', '"@sanchika/primitives@0.1.0"', "pnpm install"],
+    primitives: ["`pnpm-workspace.yaml`", "overrides:", `"@sanchika/tokens@${version}"`, "pnpm install"],
+    patterns: ["`pnpm-workspace.yaml`", "overrides:", `"@sanchika/tokens@${version}"`, `"@sanchika/primitives@${version}"`, "pnpm install"],
   })) {
     const readme = normalizeProse(packageReadmes?.[packageName] ?? "");
     for (const fragment of requiredFragments) {
@@ -99,6 +101,7 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
     "offline pnpm installation with explicit tarball overrides",
     "check-gallery-release-readiness.mjs",
     "published package tarballs and package manifest evidence must match that clean tagged build",
+    "exact Node, npm, and zlib runtime",
     "uploads the exact asset set. The Pages workflow is then rerun",
     "rerun the Pages workflow",
     "does not publish to npm",
@@ -114,14 +117,15 @@ function normalizeProse(text) {
 }
 
 export function runReleaseDocumentFixtures({ manifest, documents }) {
+  const previousVersion = manifest.previousVersion;
   const cases = [
     { name: "current documents", documents, expected: null },
-    { name: "stale release version", documents: { ...documents, releaseNotes: documents.releaseNotes.replaceAll(manifest.version, "0.1.1") }, expected: "stable asset" },
+    { name: "stale release version", documents: { ...documents, releaseNotes: documents.releaseNotes.replaceAll(manifest.version, "9.9.9") }, expected: "stable asset" },
     { name: "missing screenshot", documents: { ...documents, releaseNotes: documents.releaseNotes.replaceAll(stableReleaseScreenshotSet[0].file, "missing.png") }, expected: "stable asset" },
     { name: "tarball-only checksum wording", documents: { ...documents, releaseNotes: documents.releaseNotes.replace("SHA256SUMS_FROM_FINAL_RELEASE_ASSET_BYTES", "SHA256SUMS_FROM_FINAL_TARBALL_BYTES") }, expected: "tarball-only" },
     { name: "missing pnpm overrides", documents: { ...documents, migrationGuide: documents.migrationGuide.replace("overrides:", "registryFallback:") }, expected: "migration guide must include overrides:" },
-    { name: "wrong rollback asset", documents: { ...documents, migrationGuide: documents.migrationGuide.replaceAll("sanchika-tokens-0.0.2.tgz", "sanchika-tokens-0.0.1.tgz") }, expected: "v0.0.2" },
-    { name: "missing rollback override selector", documents: { ...documents, migrationGuide: documents.migrationGuide.replace("@sanchika/tokens@0.0.2", "@sanchika/tokens@0.1.0") }, expected: "@sanchika/tokens@0.0.2" },
+    { name: "wrong rollback asset", documents: { ...documents, migrationGuide: documents.migrationGuide.replaceAll(`sanchika-tokens-${previousVersion}.tgz`, "sanchika-tokens-0.0.1.tgz") }, expected: "rollback URL" },
+    { name: "missing rollback override selector", documents: { ...documents, migrationGuide: documents.migrationGuide.replace(`@sanchika/tokens@${previousVersion}`, `@sanchika/tokens@${manifest.version}`) }, expected: `@sanchika/tokens@${previousVersion}` },
     { name: "unsafe compatibility claim", documents: { ...documents, releaseNotes: `${documents.releaseNotes}\nFully backward compatible.` }, expected: "fully backward compatible" },
     { name: "missing private source model", documents: { ...documents, migrationGuide: documents.migrationGuide.replace(/Source package manifests deliberately\s+remain private/, "Source manifests remain") }, expected: "Source package manifests" },
   ];

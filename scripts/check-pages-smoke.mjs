@@ -1,5 +1,7 @@
 const defaultUrl = "https://sanchika.complyeaze.com/";
 const targetUrl = process.env.SANCHIKA_PAGES_URL || defaultUrl;
+const expectedReleaseVersion = process.env.SANCHIKA_EXPECTED_RELEASE_VERSION;
+const githubToken = process.env.GITHUB_TOKEN;
 const timeoutMs = Number.parseInt(process.env.SANCHIKA_PAGES_TIMEOUT_MS || "15000", 10);
 
 const controller = new AbortController();
@@ -15,7 +17,6 @@ const requiredFragments = [
   "Related by evidence. Different by work.",
   "Find the contract behind the interface.",
   "Proven, limited, current.",
-  "Current stable release: v0.1.0",
   "No next package release is currently announced.",
   'href="/sanchika-manifest.json"',
   'href="/llms.txt"',
@@ -59,15 +60,34 @@ try {
   }
 
   const origin = new URL(targetUrl).origin;
-  const [manifestResponse, llmsResponse] = await Promise.all([
+  const releaseMetadataUrl = expectedReleaseVersion
+    ? `https://api.github.com/repos/lamemustafa/sanchika/releases/tags/v${expectedReleaseVersion}`
+    : "https://api.github.com/repos/lamemustafa/sanchika/releases/latest";
+  const [manifestResponse, llmsResponse, releaseMetadataResponse] = await Promise.all([
     fetch(`${origin}/sanchika-manifest.json`, { signal: controller.signal }),
     fetch(`${origin}/llms.txt`, { signal: controller.signal }),
+    fetch(releaseMetadataUrl, {
+      headers: {
+        accept: "application/vnd.github+json",
+        ...(githubToken ? { authorization: `Bearer ${githubToken}` } : {}),
+        "user-agent": "sanchika-pages-smoke/1.0",
+      },
+      signal: controller.signal,
+    }),
   ]);
   if (!manifestResponse.ok || !llmsResponse.ok) throw new Error("Expected generated manifest and llms.txt endpoints to return HTTP 2xx");
   const manifest = await manifestResponse.json();
   const llms = await llmsResponse.text();
-  if (manifest.releases?.currentStable?.version !== "0.1.0" || manifest.releases?.currentStable?.status !== "released-current" || manifest.releases?.next !== null || Object.hasOwn(manifest.releases ?? {}, "planned")) throw new Error("Generated manifest release state is not truthful");
-  if (!llms.includes("Current stable release: v0.1.0. GitHub release artifacts; not published to npm.") || !llms.includes("No next package release is currently announced.")) throw new Error("Generated llms.txt release boundary is missing");
+  const liveReleaseVersion = manifest.releases?.currentStable?.version;
+  if (!/^\d+\.\d+\.\d+$/.test(liveReleaseVersion ?? "") || manifest.releases?.currentStable?.status !== "released-current" || manifest.releases?.currentStable?.url !== `https://github.com/lamemustafa/sanchika/releases/tag/v${liveReleaseVersion}` || manifest.releases?.next !== null || manifest.releases?.nextAnnouncement !== "No next package release is currently announced." || Object.hasOwn(manifest.releases ?? {}, "planned")) throw new Error("Generated manifest release state is not truthful");
+  if (!releaseMetadataResponse.ok) throw new Error(`Expected GitHub release metadata to return HTTP 2xx; received ${releaseMetadataResponse.status}`);
+  const publishedRelease = await releaseMetadataResponse.json();
+  if (publishedRelease.draft || publishedRelease.prerelease || !/^v\d+\.\d+\.\d+$/.test(publishedRelease.tag_name ?? "")) throw new Error("GitHub release metadata is not one published stable semantic version");
+  const authoritativeReleaseVersion = expectedReleaseVersion ?? publishedRelease.tag_name.slice(1);
+  if (publishedRelease.tag_name !== `v${authoritativeReleaseVersion}`) throw new Error(`Expected GitHub release v${authoritativeReleaseVersion}, received ${String(publishedRelease.tag_name)}`);
+  if (liveReleaseVersion !== authoritativeReleaseVersion) throw new Error(`Expected live stable release v${authoritativeReleaseVersion}, received v${String(liveReleaseVersion)}`);
+  if (!body.includes(`Current stable release: v${liveReleaseVersion}`) || !body.includes(`releases/tag/v${liveReleaseVersion}`)) throw new Error("Landing release status does not agree with the generated manifest");
+  if (!llms.includes(`Current stable release: v${liveReleaseVersion}. GitHub release artifacts; not published to npm.`) || !llms.includes("No next package release is currently announced.")) throw new Error("Generated llms.txt release boundary is missing");
 
   console.log(`Sanchika Pages smoke check passed for ${targetUrl}`);
 } catch (error) {

@@ -1,9 +1,12 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { resolveGalleryReleaseState } from "./validation/gallery-release-state.mjs";
 import { fileURLToPath } from "node:url";
 import { invalidTrustCopyFixtures } from "./validation/content-trust-fixtures.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+const release = JSON.parse(readFileSync(join(root, "release.json"), "utf8"));
+const galleryReleaseState = resolveGalleryReleaseState(release);
 const failures = [];
 
 for (const fixture of invalidTrustCopyFixtures) {
@@ -90,7 +93,7 @@ function lintTrustCopy(text, { requireBoundaryDisclosure = true } = {}) {
 
 function validateProductionPathTrust({ documentPath, visibleText, failures }) {
   const requirements = new Map([
-    ["index.html", ["No model runtime", "No automated compliance judgment", "Synthetic examples", "Current stable release: v0.1.0", "No next package release is currently announced."]],
+    ["index.html", ["No model runtime", "No automated compliance judgment", "Synthetic examples", `Current stable release: v${galleryReleaseState.currentStable}`, galleryReleaseState.nextAnnouncement]],
     ["modes/complyeaze/index.html", ["Product-family boundary", "Credentials or artifacts", "person choosing the route"]],
     ["modes/axal/index.html", ["Saved synthetic context", "judgment stays human", "Source evidence", "CA decision required"]],
     ["modes/pack/index.html", ["Credentials, session cookies, and downloaded files", "No ComplyEaze account", "Inspect permission contract", "manual download path"]],

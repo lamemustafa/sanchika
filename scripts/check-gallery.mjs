@@ -6,6 +6,7 @@ import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
 import { findUnresolvedGalleryVariables, runGalleryVariableFixtures } from "./validation/gallery-css-variables.mjs";
 import { inspectGalleryAssetGraph, runGalleryOutputFixtures } from "./validation/gallery-output.mjs";
 import { runGalleryProductionFixtures, validateGalleryProduction } from "./validation/gallery-production.mjs";
+import { resolveGalleryReleaseState } from "./validation/gallery-release-state.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 assertGalleryBuildArtifacts({ root, commandName: "pnpm gallery:check" });
@@ -19,6 +20,7 @@ const outputFiles = new Map(
 const primitives = await import("../packages/primitives/dist/index.js");
 const patterns = await import("../packages/patterns/dist/index.js");
 const release = JSON.parse(readFileSync(join(root, "release.json"), "utf8"));
+const galleryReleaseState = resolveGalleryReleaseState(release);
 const packageEntrypoints = Object.fromEntries(
   ["tokens", "primitives", "patterns"].map((packageName) => {
     const manifest = JSON.parse(readFileSync(join(root, "packages", packageName, "package.json"), "utf8"));
@@ -81,7 +83,8 @@ if (landingWords > 1800) failures.push(`landing visible copy exceeds 1,800 words
 const productionFailures = validateGalleryProduction({
   outputFiles,
   expectedDocumentPaths,
-  stableRelease: release.version,
+  stableRelease: galleryReleaseState.currentStable,
+  nextRelease: galleryReleaseState.next,
   packageEntrypoints,
 });
 failures.push(...productionFailures);

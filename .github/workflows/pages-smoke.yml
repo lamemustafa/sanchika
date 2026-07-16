@@ -27,9 +27,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: 24
+          node-version-file: .node-version
 
       - name: Smoke live gallery
         run: node scripts/check-pages-smoke.mjs
         env:
           SANCHIKA_PAGES_URL: https://sanchika.complyeaze.com/
+          GITHUB_TOKEN: ${{ github.token }}

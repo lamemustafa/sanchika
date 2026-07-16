@@ -46,10 +46,12 @@ Do not migrate Axal, Pack, or Tools before the ComplyEaze foundation is usable.
 
 ## V0 Artifact Consumption Quickstart
 
-Sanchika v0.1.0 is distributed through reviewed GitHub release tarballs, not
-npm. Cross-repository ComplyEaze adoption should use the three release assets
-and record their SHA-256 checksums. A reviewed local package link remains valid
-for same-machine development. Do not import nested source paths such as
+Sanchika stable packages are distributed through reviewed GitHub release
+tarballs, not npm. Until v0.1.1 is published, v0.1.0 remains the current
+published artifact set. Cross-repository ComplyEaze adoption should use all
+three assets from one published release and record their SHA-256 checksums. A
+reviewed local package link remains valid for same-machine development. Do not
+import nested source paths such as
 `../sanchika`, `sanchika/packages/*/src`, or add `sanchika/` to the parent pnpm
 workspace.
 
@@ -57,9 +59,10 @@ workspace.
    `pnpm build`.
 2. Install or link only package entrypoints such as `@sanchika/tokens`,
    `@sanchika/primitives`, and `@sanchika/patterns`. For release adoption,
-   declare all three v0.1.0 GitHub tarballs and the pnpm overrides documented in
-   `docs/migrations/v0.0.2-to-v0.1.0.md` so internal dependencies do not fall
-   through to npm.
+   after v0.1.1 is published, declare all three v0.1.1 GitHub tarballs and the
+   pnpm overrides documented in `docs/migrations/v0.1.0-to-v0.1.1.md` so
+   internal dependencies do not fall through to npm. Until then, keep using the
+   published v0.1.0 artifact set.
 3. In ComplyEaze, target the public/product route group first. Add token CSS
    before primitive CSS at the chosen CSS boundary, then apply one primitive or
    token mapping to a controlled surface.
@@ -85,7 +88,8 @@ workspace.
   tarball version and checksum. Use `docs/adoption-evidence.md` as the evidence
   template.
 
-GitHub tarball artifacts are the reviewed cross-repository v0.1.0 adoption path
-after `pnpm publish:tarball-check` and detached release verification pass. A
+GitHub tarball artifacts become the reviewed cross-repository v0.1.1 adoption
+path only after `pnpm publish:tarball-check`, detached release verification,
+and publication pass. A
 consumer-specific adoption plan must still record the version, all three checksums,
 changed files, and rollback files.

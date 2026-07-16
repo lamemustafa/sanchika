@@ -7,6 +7,7 @@ on:
       - master
     paths:
       - ".github/workflows/pages.yml"
+      - ".node-version"
       - "docs/**"
       - "apps/gallery/**"
       - "packages/**"
@@ -14,6 +15,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "release.json"
 
 permissions:
   contents: read
@@ -47,7 +49,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: pnpm
 
       - name: Install dependencies
