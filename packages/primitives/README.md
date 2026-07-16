@@ -19,13 +19,15 @@ packed exact token dependency to its GitHub asset:
   "dependencies": {
     "@sanchika/tokens": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-tokens-0.1.0.tgz",
     "@sanchika/primitives": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-primitives-0.1.0.tgz"
-  },
-  "pnpm": {
-    "overrides": {
-      "@sanchika/tokens@0.1.0": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-tokens-0.1.0.tgz"
-    }
   }
 }
+```
+
+Add the internal dependency mapping to `pnpm-workspace.yaml`:
+
+```yaml
+overrides:
+  "@sanchika/tokens@0.1.0": "https://github.com/lamemustafa/sanchika/releases/download/v0.1.0/sanchika-tokens-0.1.0.tgz"
 ```
 
 Run `pnpm install`, review the lockfile, and verify the package-backed consumer.

@@ -28,6 +28,8 @@ export function validatePagesWorkflow({ pagesWorkflow, fail }) {
     "run: pnpm install --frozen-lockfile --ignore-scripts",
     "run: pnpm build",
     "run: pnpm gallery:check",
+    "pnpm release:stable-tarballs",
+    "node scripts/check-gallery-release-readiness.mjs --local-release-dir dist/release",
     "path: apps/gallery/dist",
   ]) {
     if (!activeWorkflow.includes(requiredFragment)) {

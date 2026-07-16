@@ -89,9 +89,19 @@ release, upload, npm publication, or deploy.
 The gallery build runs `scripts/check-gallery-release-readiness.mjs` in the
 GitHub Pages master context. It refuses the automatic post-merge deployment
 until the non-draft stable GitHub release exists with exactly the eleven assets
-declared above. After publishing those assets, rerun the Pages workflow to
-publish the matching current-release status. This gate changes neither the
-Pages workflow nor repository settings and does not publish to npm.
+declared above. It downloads and validates the published manifest, checksum
+summary, tag commit, and final asset bytes. The rerun then regenerates the
+stable bundle. When Pages is running at the release tag commit, the published
+package tarballs and package manifest evidence must match that clean tagged
+build. The gate identifies that checkout from GitHub Actions' trusted
+`GITHUB_SHA`; malformed or mismatching regenerated source metadata fails the
+tag-commit run instead of disabling the comparison. Screenshot hashes and sizes
+are verified against the published manifest;
+pixel-identical regeneration is not required across browser and operating-system
+builds. Later master builds retain the published-release validation without
+pretending to be the historical tag checkout. After publishing those assets,
+rerun the Pages workflow to publish the matching current-release status. This
+verification does not change repository settings or publish to npm.
 
 The release set is exactly tokens, primitives, and patterns. The gallery is a
 separately deployed private application and is never packed. Internal packed

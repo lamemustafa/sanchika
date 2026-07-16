@@ -620,6 +620,8 @@ for (const requiredTarballEvidenceFragment of [
   "pnpm offline packed-tarball consumer install",
   '"--offline"',
   "overrides",
+  "pnpm-workspace.yaml",
+  "writePnpmConsumerWorkspace",
 ]) {
   if (!packedTarballScript.includes(requiredTarballEvidenceFragment)) {
     fail(`scripts/check-packed-tarball-consumer.mjs must emit tarball evidence with ${requiredTarballEvidenceFragment}`);

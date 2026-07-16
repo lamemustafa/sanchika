@@ -290,8 +290,19 @@ function writePnpmConsumerPackage(tarballs) {
   writeConsumerPackage(pnpmConsumerRoot, {
     type: "module",
     dependencies,
-    pnpm: { overrides },
   });
+  writePnpmConsumerWorkspace(overrides);
+}
+
+function writePnpmConsumerWorkspace(overrides) {
+  const lines = [
+    "packages:",
+    '  - "."',
+    "overrides:",
+    ...Object.entries(overrides).map(([selector, target]) =>
+      `  ${JSON.stringify(selector)}: ${JSON.stringify(target)}`),
+  ];
+  writeFileSync(join(pnpmConsumerRoot, "pnpm-workspace.yaml"), `${lines.join("\n")}\n`);
 }
 
 function runConsumerProbe(targetRoot) {

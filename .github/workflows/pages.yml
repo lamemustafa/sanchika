@@ -59,6 +59,11 @@ jobs:
       - name: Check gallery
         run: pnpm gallery:check
 
+      - name: Verify published release evidence
+        run: |
+          pnpm release:stable-tarballs
+          node scripts/check-gallery-release-readiness.mjs --local-release-dir dist/release
+
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
 

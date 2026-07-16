@@ -67,8 +67,8 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
     failures.push("migration guide CSS imports must be tokens, primitives, patterns, then consumer CSS");
   }
   for (const fragment of [
-    '"pnpm":',
-    '"overrides":',
+    "`pnpm-workspace.yaml`",
+    "overrides:",
     '"@sanchika/tokens@0.1.0"',
     '"@sanchika/primitives@0.1.0"',
     "pnpm otherwise looks up the packed `0.1.0` dependency ranges on npm",
@@ -84,8 +84,8 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
     if (!normalizedMigrationGuide.includes(fragment)) failures.push(`migration guide must include ${fragment}`);
   }
   for (const [packageName, requiredFragments] of Object.entries({
-    primitives: ['"pnpm":', '"overrides":', '"@sanchika/tokens@0.1.0"', "pnpm install"],
-    patterns: ['"pnpm":', '"overrides":', '"@sanchika/tokens@0.1.0"', '"@sanchika/primitives@0.1.0"', "pnpm install"],
+    primitives: ["`pnpm-workspace.yaml`", "overrides:", '"@sanchika/tokens@0.1.0"', "pnpm install"],
+    patterns: ["`pnpm-workspace.yaml`", "overrides:", '"@sanchika/tokens@0.1.0"', '"@sanchika/primitives@0.1.0"', "pnpm install"],
   })) {
     const readme = normalizeProse(packageReadmes?.[packageName] ?? "");
     for (const fragment of requiredFragments) {
@@ -98,6 +98,7 @@ export function validateReleaseDocuments({ manifest, releaseNotes, migrationGuid
     "final tarball and screenshot bytes",
     "offline pnpm installation with explicit tarball overrides",
     "check-gallery-release-readiness.mjs",
+    "published package tarballs and package manifest evidence must match that clean tagged build",
     "uploads the exact asset set. The Pages workflow is then rerun",
     "rerun the Pages workflow",
     "does not publish to npm",
@@ -118,7 +119,7 @@ export function runReleaseDocumentFixtures({ manifest, documents }) {
     { name: "stale release version", documents: { ...documents, releaseNotes: documents.releaseNotes.replaceAll(manifest.version, "0.1.1") }, expected: "stable asset" },
     { name: "missing screenshot", documents: { ...documents, releaseNotes: documents.releaseNotes.replaceAll(stableReleaseScreenshotSet[0].file, "missing.png") }, expected: "stable asset" },
     { name: "tarball-only checksum wording", documents: { ...documents, releaseNotes: documents.releaseNotes.replace("SHA256SUMS_FROM_FINAL_RELEASE_ASSET_BYTES", "SHA256SUMS_FROM_FINAL_TARBALL_BYTES") }, expected: "tarball-only" },
-    { name: "missing pnpm overrides", documents: { ...documents, migrationGuide: documents.migrationGuide.replace('"overrides":', '"registryFallback":') }, expected: "migration guide must include \"overrides\":" },
+    { name: "missing pnpm overrides", documents: { ...documents, migrationGuide: documents.migrationGuide.replace("overrides:", "registryFallback:") }, expected: "migration guide must include overrides:" },
     { name: "wrong rollback asset", documents: { ...documents, migrationGuide: documents.migrationGuide.replaceAll("sanchika-tokens-0.0.2.tgz", "sanchika-tokens-0.0.1.tgz") }, expected: "v0.0.2" },
     { name: "missing rollback override selector", documents: { ...documents, migrationGuide: documents.migrationGuide.replace("@sanchika/tokens@0.0.2", "@sanchika/tokens@0.1.0") }, expected: "@sanchika/tokens@0.0.2" },
     { name: "unsafe compatibility claim", documents: { ...documents, releaseNotes: `${documents.releaseNotes}\nFully backward compatible.` }, expected: "fully backward compatible" },
