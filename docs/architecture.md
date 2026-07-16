@@ -7,6 +7,8 @@ Sanchika is a design-system SDK, not an application framework.
 ```text
 tokens -> primitives -> patterns
    \----------\----------> apps/gallery
+
+skills/sanchika-craft -> craft/runs/* (development evidence only)
 ```
 
 - `tokens` has no package dependencies.
@@ -24,6 +26,10 @@ tokens -> primitives -> patterns
   S6 adds no package runtime: motion-assist metadata and a finite class-name
   helper resolve package CSS only, while the `/foundations/motion/` route is
   statically derived proof.
+- `skills/sanchika-craft` is the single provider-neutral development skill. Its
+  protocol, run template, validator, and calibration pack sit outside package
+  exports and runtime dependencies. Run evidence under `craft/runs/` records
+  decisions; it is not a package, service, API, or compliance engine.
 - CSS package exports are the only declared package side effects:
   `@sanchika/tokens/theme.css`, `@sanchika/primitives/styles.css`, and
   `@sanchika/patterns/styles.css` stay side-effectful so production bundlers do
@@ -46,8 +52,7 @@ visual review evidence.
 
 ## AI-Native Tooling
 
-AI-native tooling is advisory until a real consumer adoption proves the review
-signal is stable. Keep Impeccable, Codex, Claude, and similar assistants outside
-the runtime dependency graph; use them to review rendered consumer surfaces and
-repository contracts, not to add model execution or generated app scaffolds to
-Sanchika. See `docs/ai-native-tooling.md`.
+AI-native tooling is advisory until real consumer adoption proves the review
+signal is stable. The canonical craft skill coordinates evidence and explicit
+owner gates; it does not execute a model, generate app scaffolds, automate
+compliance judgment, or join the package graph. See `docs/ai-native-tooling.md`.

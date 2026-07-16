@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -15,6 +15,7 @@ import {
 import { renderTokenArtifacts, validateTokenSource } from "./token-generation.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
 import { runBuildArtifactFixtures } from "./validation/build-artifacts.mjs";
+import { findGalleryIdentityPolicyFailures } from "./validation/gallery-css-variables.mjs";
 import { runGalleryProductionFixtures } from "./validation/gallery-production.mjs";
 import { resolveGalleryReleaseState } from "./validation/gallery-release-state.mjs";
 import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
@@ -60,6 +61,7 @@ import { runReleaseScreenshotFixtures, stableReleaseScreenshotSet } from "./vali
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
 import { runTarballContentsFixtures } from "./validation/tarball-contents.mjs";
+import { validateCalibrationPack, validateCraftRun } from "../skills/sanchika-craft/scripts/validate-run.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const failures = [];
@@ -103,6 +105,33 @@ const actualPackages = readdirSync(join(root, "packages"))
   .sort();
 const expectedApps = ["gallery"];
 const actualApps = readdirSync(join(root, "apps")).filter((entry) => !entry.startsWith(".")).sort();
+
+const craftSkillRoot = join(root, "skills/sanchika-craft");
+const expectedCraftSkillFiles = [
+  "SKILL.md", "agents/openai.yaml", "assets/calibration/current-baseline.webp", "assets/calibration/fake-authority.webp",
+  "assets/calibration/generic-ai-saas.webp", "assets/calibration/metadata.json", "assets/calibration/mobile-a11y-failure.webp",
+  "assets/calibration/off-brief-editorial.webp", "assets/run-template.json", "references/protocol.md", "scripts/validate-run.mjs",
+].sort();
+const actualCraftSkillFiles = readdirSync(craftSkillRoot, { recursive: true })
+  .filter((path) => typeof path === "string" && statSync(join(craftSkillRoot, path)).isFile())
+  .map((path) => path.replaceAll("\\", "/"))
+  .sort();
+if (JSON.stringify(actualCraftSkillFiles) !== JSON.stringify(expectedCraftSkillFiles)) {
+  fail(`skills/sanchika-craft must contain only the canonical pilot files; found ${actualCraftSkillFiles.join(", ")}`);
+}
+for (const discoveryPath of [".agents/skills/sanchika-craft", ".claude/skills/sanchika-craft"]) {
+  if (!existsSync(join(root, discoveryPath)) || realpathSync(join(root, discoveryPath)) !== realpathSync(craftSkillRoot)) {
+    fail(`${discoveryPath} must resolve to the canonical skills/sanchika-craft directory`);
+  }
+}
+const craftValidators = {};
+for (const [statePath, allowTemplate] of [
+  ["skills/sanchika-craft/assets/run-template.json", true],
+  ["craft/runs/sanchika-landing-s10/state.json", false],
+]) {
+  for (const issue of validateCraftRun(readJson(statePath), craftValidators, { allowTemplate })) fail(`${statePath} ${issue.field}: ${issue.reason}`);
+}
+for (const issue of validateCalibrationPack(join(craftSkillRoot, "assets/calibration"))) fail(`craft calibration ${issue.field}: ${issue.reason}`);
 
 validateSensitiveExamples({ root, fail });
 
@@ -203,6 +232,10 @@ if (rootPackage.scripts?.["design:brief:fixtures"] !== "node scripts/validation/
 
 if (rootPackage.scripts?.["evidence:loop:fixtures"] !== "node scripts/validation/evidence-loop-fixtures.mjs") {
   fail("root package must expose evidence:loop:fixtures for evidence-loop runtime regression checks");
+}
+
+if (!rootPackage.scripts?.verify?.includes("node skills/sanchika-craft/scripts/validate-run.mjs skills/sanchika-craft/assets/run-template.json")) {
+  fail("root verify must validate the canonical Sanchika craft run template");
 }
 
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
@@ -1084,8 +1117,7 @@ for (const duplicatedInventory of [/const\s+primitiveNames\s*=/, /const\s+patter
   if (duplicatedInventory.test(`${gallerySiteSource}\n${galleryPrimitiveDetailSource}\n${galleryPatternDetailSource}\n${gallerySearchSource}`)) fail(`gallery inventories must not duplicate package metadata with ${duplicatedInventory}`);
 }
 for (const [path, source] of galleryStyleSources) {
-  if (/--sk-[a-z0-9-]+\s*:/.test(source)) fail(`${path} must not author or override --sk-* variables`);
-  if (/--lab-|oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(source)) fail(`${path} must not contain retired lab values or raw foundation colors`);
+  for (const identityFailure of findGalleryIdentityPolicyFailures({ path, source })) fail(identityFailure);
 }
 
 for (const sourceUrl of [

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "gate": "C2R-A",
+  "status": "awaiting_owner",
+  "decision": "pending",
+  "comparisonArtifact": "evidence/c2r-a-owner-comparison.webp",
+  "qualifyingOptions": ["Option Alpha", "Option Beta"],
+  "allowedDecisions": ["Option Alpha", "Option Beta", "reject all"],
+  "recordedAt": null,
+  "evidenceLabels": ["ai-visual-proxy", "ai-recognition-proxy", "not-user-validated"]
+}

@@ -1,0 +1,22 @@
+@font-face {
+  font-family: "Anek Sanchika Provisional";
+  src: url("../assets/fonts/AnekDevanagari-Variable-subset.woff2")
+    format("woff2-variations");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 100 800;
+  font-stretch: 75% 125%;
+}
+
+:root {
+  --gallery-brand-canvas: oklch(98% 0 0);
+  --gallery-brand-surface: oklch(95% 0.012 234);
+  --gallery-brand-ink: oklch(18% 0.025 248);
+  --gallery-brand-muted: oklch(45% 0.035 244);
+  --gallery-brand-line: oklch(74% 0.035 236);
+  --gallery-brand-teal: oklch(34% 0.105 196);
+  --gallery-brand-signal: oklch(84% 0.165 92);
+  --gallery-brand-accent: oklch(58% 0.2 29);
+  --gallery-brand-inverse: oklch(98% 0 0);
+  --gallery-brand-font: "Anek Sanchika Provisional", Arial, sans-serif;
+}

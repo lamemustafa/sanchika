@@ -7,8 +7,9 @@ V0 deliberately excludes:
   scraping.
 - Storybook, CLI, registry, MCP server, Web Components, Vue/Svelte adapters, and
   native token export.
+- `@sanchika/craft`, provider adapters, prompt libraries, craft dashboards,
+  recurring AI review, cross-run adjudication, or CI-hosted generation.
 - Dark mode and high-contrast themes.
 - Public production-readiness claims.
 - Government, official, bank-grade, filing-ready, audit-proof, or CA-verified
   claims without evidence.
-

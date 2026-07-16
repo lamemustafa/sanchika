@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { assertGalleryBuildArtifacts } from "./validation/build-artifacts.mjs";
-import { findUnresolvedGalleryVariables, runGalleryVariableFixtures } from "./validation/gallery-css-variables.mjs";
+import { findGalleryIdentityPolicyFailures, findUnresolvedGalleryVariables, runGalleryVariableFixtures } from "./validation/gallery-css-variables.mjs";
 import { inspectGalleryAssetGraph, runGalleryOutputFixtures } from "./validation/gallery-output.mjs";
 import { runGalleryProductionFixtures, validateGalleryProduction } from "./validation/gallery-production.mjs";
 import { resolveGalleryReleaseState } from "./validation/gallery-release-state.mjs";
@@ -93,12 +93,11 @@ const appSources = readdirSync(join(root, "apps/gallery/src"), { recursive: true
   .filter((path) => typeof path === "string" && statSync(join(root, "apps/gallery/src", path)).isFile())
   .map((path) => [path.replaceAll("\\", "/"), readFileSync(join(root, "apps/gallery/src", path), "utf8")]);
 for (const [path, source] of appSources) {
-  if (/(^|\/)lab(\/|$)/i.test(path) || /--lab-/.test(source)) failures.push(`retired lab source remains at ${path}`);
+  const isCraftLabRoute = path === "pages/lab/[territory].astro";
+  if ((/(^|\/)lab(\/|$)/i.test(path) && !isCraftLabRoute) || /--lab-/.test(source)) failures.push(`retired lab source remains at ${path}`);
+  if (isCraftLabRoute && !source.includes('process.env.SANCHIKA_CRAFT_LAB !== "1"')) failures.push("canonical craft lab route must remain environment gated");
   if (path.endsWith(".css")) {
-    if (/--sk-[a-z0-9-]+\s*:/.test(source)) failures.push(`${path} must not author --sk-* variables`);
-    if (/oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(source)) failures.push(`${path} must not contain raw foundation colors`);
-    for (const match of source.matchAll(/font-family\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package typography tokens`);
-    for (const match of source.matchAll(/box-shadow\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package elevation tokens`);
+    failures.push(...findGalleryIdentityPolicyFailures({ path, source }));
   }
 }
 

@@ -47,7 +47,7 @@
     "publish:tarball-check": "node scripts/check-packed-tarball-consumer.mjs",
     "smoke:check": "pnpm gallery:check && pnpm check:tokens && pnpm check:gallery && pnpm check:content && pnpm gallery:browser && node scripts/smoke-gallery.mjs",
     "smoke": "pnpm build && pnpm gallery:build && pnpm smoke:check",
-    "verify": "pnpm validate && pnpm review:gate:fixtures && pnpm review:gate:sync-fixtures && pnpm typecheck && pnpm build && pnpm trust:brief:fixtures && pnpm design:brief:fixtures && pnpm evidence:loop:fixtures && pnpm typecheck:api && pnpm artifact:check && pnpm consumer:check && pnpm smoke:check",
+    "verify": "pnpm validate && pnpm review:gate:fixtures && pnpm review:gate:sync-fixtures && pnpm typecheck && pnpm build && node skills/sanchika-craft/scripts/validate-run.mjs skills/sanchika-craft/assets/run-template.json && pnpm trust:brief:fixtures && pnpm design:brief:fixtures && pnpm evidence:loop:fixtures && pnpm typecheck:api && pnpm artifact:check && pnpm consumer:check && pnpm smoke:check",
     "release:tarballs": "pnpm build && node scripts/check-packed-tarball-consumer.mjs --emit-dir dist/release",
     "release:stable-tarballs": "node scripts/run-stable-release.mjs"
   },

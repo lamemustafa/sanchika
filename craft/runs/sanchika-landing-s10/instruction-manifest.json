@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "sourceCommit": "f5f86eae29d573576a40c002da7210d7bc7a4dc4",
+  "plainRequest": "Redesign the Sanchika landing page so it no longer feels generic, computer-written, soulless, or untrustworthy. Make it distinctive, relatable, professional, fast, accessible, and genuinely crafted.",
+  "plainRequestControl": {
+    "isolation": "fresh context with only the plain request and same-commit repository access",
+    "retainedArtifact": "evidence/without-skill-control.webp",
+    "codeRetained": false
+  },
+  "hashes": {
+    "canonicalSkill": "733a1c65d1a9d20a85cede2e73c51fbedbc9b6f5d8e6b693e5df778776a46dfa",
+    "protocol": "1adde0f763085ffd449e5d923d4bf2a805b98e2584c652d92a927389b77a37fb",
+    "runTemplate": "85261e3d0cf581d90defcb385b703383d59f82964766217f13581776258cd47c",
+    "frozenLabContent": "9e10d08f4ca532b1e4d4ba95d3c0f309cd9aa664604470b226c25217dfdf698b"
+  },
+  "reviewIsolation": {
+    "visualReviewerCount": 4,
+    "recognitionMatcherCount": 3,
+    "producerReviewedOwnOutput": false,
+    "evidenceLabels": ["ai-visual-proxy", "ai-recognition-proxy", "not-user-validated"]
+  }
+}

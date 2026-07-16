@@ -24,6 +24,23 @@ export function findUnresolvedGalleryVariables({ html, copiedCss }) {
     .sort((left, right) => left.variable.localeCompare(right.variable));
 }
 
+export function findGalleryIdentityPolicyFailures({ path, source }) {
+  const failures = [];
+  const isIdentityLayer = path === "styles/identity.css" || path.endsWith("/styles/identity.css");
+  if (/--lab-/.test(source)) failures.push(`${path} must not contain retired lab variables`);
+  if (/--sk-[a-z0-9-]+\s*:/.test(source)) failures.push(`${path} must not author --sk-* variables`);
+  if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(source)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
+  const colorSource = isIdentityLayer ? source.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;]+;/gi, "") : source;
+  if (/oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(colorSource)) failures.push(`${path} must not contain raw colors outside gallery identity declarations`);
+  if (isIdentityLayer && /\.sk-[a-z0-9-]+/i.test(source)) failures.push("styles/identity.css must not style package selectors");
+  if (isIdentityLayer && /url\(\s*["']?https?:/i.test(source)) failures.push("styles/identity.css must not load external font or image origins");
+  for (const match of source.matchAll(/font-family\s*:\s*([^;]+)/gi)) {
+    if (!isIdentityLayer && !match[1].trim().startsWith("var(")) failures.push(`${path} must use package or gallery identity typography variables`);
+  }
+  for (const match of source.matchAll(/box-shadow\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package elevation tokens`);
+  return failures;
+}
+
 export function runGalleryVariableFixtures() {
   const fixtures = [
     {
