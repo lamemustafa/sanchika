@@ -27,7 +27,11 @@ export function findUnresolvedGalleryVariables({ html, copiedCss }) {
 export function findGalleryIdentityPolicyFailures({ path, source }) {
   const failures = [];
   const activeSource = decodeCssEscapes(stripCssComments(source));
-  const isIdentityLayer = path.replaceAll("\\", "/") === "styles/identity.css";
+  const normalizedPath = path.replaceAll("\\", "/").replace(/^\.\//, "");
+  const galleryRelativePath = normalizedPath.startsWith("apps/gallery/src/")
+    ? normalizedPath.slice("apps/gallery/src/".length)
+    : normalizedPath;
+  const isIdentityLayer = galleryRelativePath === "styles/identity.css";
   if (/--lab-/.test(activeSource)) failures.push(`${path} must not contain retired lab variables`);
   if (/--sk-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not author --sk-* variables`);
   if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
@@ -199,6 +203,28 @@ export function runGalleryVariableFixtures() {
       "nested identity stylesheet must not receive canonical identity privileges",
     );
 
+  const canonicalFullPathFailures = findGalleryIdentityPolicyFailures({
+    path: "apps/gallery/src/styles/identity.css",
+    source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+  });
+  if (canonicalFullPathFailures.length)
+    failures.push(
+      `canonical full identity path must receive identity privileges: ${canonicalFullPathFailures.join(", ")}`,
+    );
+
+  const nestedFullPathFailures = findGalleryIdentityPolicyFailures({
+    path: "apps/gallery/src/components/styles/identity.css",
+    source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+  });
+  if (
+    !nestedFullPathFailures.some((failure) =>
+      failure.includes("outside styles/identity.css"),
+    )
+  )
+    failures.push(
+      "nested full identity path must not receive canonical identity privileges",
+    );
+
   const identityColorFixtures = [
     {
       source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
@@ -230,7 +256,7 @@ export function runGalleryVariableFixtures() {
       identityFixtures.length +
       selectorFixtures.length +
       identityColorFixtures.length +
-      1,
+      3,
     failures,
   };
 }

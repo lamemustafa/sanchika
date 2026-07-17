@@ -150,8 +150,8 @@
       "preference": { "reviewers": 4, "preferredToBaseline": 4, "preferredToControl": 4 },
       "medians": { "relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4 },
       "recognition": {
-        "semanticBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false },
-        "identityBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false }
+        "semanticBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/alpha-semantic-blind.webp" },
+        "identityBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/alpha-identity-blind.webp" }
       }
     },
     {
@@ -168,8 +168,8 @@
       "preference": { "reviewers": 4, "preferredToBaseline": 4, "preferredToControl": 4 },
       "medians": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
       "recognition": {
-        "semanticBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false },
-        "identityBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false }
+        "semanticBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/beta-semantic-blind.webp" },
+        "identityBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/beta-identity-blind.webp" }
       }
     },
     {

@@ -108,6 +108,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
           },
           evidenceLabels: ["ai-comprehension-proxy", "not-user-validated"],
           scores: { comprehension: 4 },
+          findings: [`${role} comprehension evidence passed.`],
           vetoes: [],
         });
   };
@@ -245,6 +246,18 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     () =>
       validate((run) => {
         run.reviews[1].reviewerId = run.reviews[0].reviewerId;
+      }),
+    "reviews",
+  );
+  runCase(
+    "owner gate canonicalizes reviewer identities",
+    () =>
+      validate((run) => {
+        const visualReviews = run.reviews.filter((review) =>
+          ["brand", "craft", "trust", "accessibility"].includes(review.role),
+        );
+        for (const [index, review] of visualReviews.entries())
+          review.reviewerId = `${" ".repeat(index)}reviewer${" ".repeat(3 - index)}`;
       }),
     "reviews",
   );
@@ -966,6 +979,29 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "reviews",
   );
   runCase(
+    "production completion requires substantive copy results",
+    () =>
+      validate((run) => {
+        makeComplete(run);
+        for (const review of run.reviews.filter((item) =>
+          ["practitioner", "developer", "claims", "voice"].includes(item.role),
+        )) {
+          delete review.scores;
+          delete review.findings;
+        }
+      }),
+    "reviews",
+  );
+  runCase(
+    "production completion requires browser capability",
+    () =>
+      validate((run) => {
+        makeComplete(run);
+        run.capabilities.browser = false;
+      }),
+    "capabilities.browser",
+  );
+  runCase(
     "calibration authenticates control bytes",
     () => {
       const source = join(
@@ -1028,6 +1064,15 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "calibration.generic-ai-saas.file",
   );
   runCase(
+    "malformed calibration metadata returns structured issues",
+    () =>
+      validateCraftRun(structuredClone(baseRun), validators, {
+        repoRoot,
+        calibrationMetadata: { schemaVersion: 1 },
+      }),
+    "calibrationMetadata.controls",
+  );
+  runCase(
     "capability-blocked review may persist unavailable isolation",
     () =>
       validate((run) => {
@@ -1083,6 +1128,27 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         delete run.evidenceDigests[primaryArtifact];
       }),
     "directions.0.artifactRefs.0",
+  );
+  runCase(
+    "qualified recognition proxies require retained artifacts",
+    () =>
+      validate((run) => {
+        run.directions[0].artifactRefs = [primaryArtifact];
+      }),
+    "directions.0.recognition.semanticBlind.artifact",
+  );
+  runCase(
+    "directions require distinct retained artifact sets",
+    () =>
+      validate((run) => {
+        run.directions[1].artifactRefs = structuredClone(
+          run.directions[0].artifactRefs,
+        );
+        run.directions[1].recognition = structuredClone(
+          run.directions[0].recognition,
+        );
+      }),
+    "directions",
   );
   runCase(
     "advanced run manifest requires a prior snapshot",

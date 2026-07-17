@@ -145,9 +145,26 @@ export function validateCraftRun(run, validators, options = {}) {
 
   validateEmbeddedContracts(run, validators ?? {}, options, add);
   validateState(run, add);
+  const calibrationMetadata =
+    options.calibrationMetadata ?? canonicalCalibrationMetadata;
+  const calibrationMetadataValid =
+    isRecord(calibrationMetadata) &&
+    calibrationMetadata.schemaVersion === 1 &&
+    Array.isArray(calibrationMetadata.controls) &&
+    calibrationMetadata.controls.every(
+      (control) =>
+        isRecord(control) &&
+        Array.isArray(control.relevantRoles) &&
+        Array.isArray(control.seededFailures),
+    );
+  if (!calibrationMetadataValid)
+    add(
+      "calibrationMetadata.controls",
+      "Calibration metadata must use schemaVersion 1 and contain structured controls.",
+    );
   validateReviews(
     run,
-    options.calibrationMetadata ?? canonicalCalibrationMetadata,
+    calibrationMetadataValid ? calibrationMetadata : { controls: [] },
     add,
   );
   validateDirections(run, options, add);
@@ -190,6 +207,11 @@ export function validateCraftRun(run, validators, options = {}) {
       "ready-for-consumer-pr is reserved for complete, production-approved runs.",
     );
   if (run.status === "complete") {
+    if (run.capabilities?.browser !== true)
+      add(
+        "capabilities.browser",
+        "Complete runs require browser capability for production verification.",
+      );
     if (
       !isRecord(run.productionApproval) ||
       run.productionApproval.decision !== "approved" ||
@@ -667,6 +689,19 @@ function validateDirections(run, options, add) {
   const directionIds = directions.map((direction) => direction?.id);
   if (new Set(directionIds).size !== directionIds.length)
     add("directions", "Direction IDs must be unique within a craft run.");
+  const artifactSetsByRound = new Map();
+  for (const direction of directions) {
+    const key = JSON.stringify([...asArray(direction?.artifactRefs)].sort());
+    if (!key || key === "[]" || !Number.isInteger(direction?.reviewRound)) continue;
+    const roundArtifactSets = artifactSetsByRound.get(direction.reviewRound) ?? new Set();
+    if (roundArtifactSets.has(key))
+      add(
+        "directions",
+        "Directions in the same review round must retain distinct artifact sets.",
+      );
+    roundArtifactSets.add(key);
+    artifactSetsByRound.set(direction.reviewRound, roundArtifactSets);
+  }
   for (const [index, direction] of directions.entries()) {
     for (const field of ["id", "designBriefId", "territory"])
       requireText(direction?.[field], `directions.${index}.${field}`, add);
@@ -770,7 +805,28 @@ function validateDirections(run, options, add) {
             `directions.${index}.recognition.${proxy}`,
             "Qualified directions require 2/3 correct recognition without color-only matching.",
           );
+        requireText(
+          result?.artifact,
+          `directions.${index}.recognition.${proxy}.artifact`,
+          add,
+        );
+        if (
+          typeof result?.artifact === "string" &&
+          !asArray(direction.artifactRefs).includes(result.artifact)
+        )
+          add(
+            `directions.${index}.recognition.${proxy}.artifact`,
+            "Recognition proxy evidence must be retained in the direction artifact set.",
+          );
       }
+      if (
+        direction?.recognition?.semanticBlind?.artifact ===
+        direction?.recognition?.identityBlind?.artifact
+      )
+        add(
+          `directions.${index}.recognition`,
+          "Semantic-blind and identity-blind recognition require distinct retained artifacts.",
+        );
     }
   }
 }
@@ -779,6 +835,14 @@ function validateReviews(run, calibrationMetadata, add) {
   const reviews = asArray(run.reviews);
   for (const [index, review] of reviews.entries()) {
     requireText(review?.reviewerId, `reviews.${index}.reviewerId`, add);
+    if (
+      typeof review?.reviewerId === "string" &&
+      review.reviewerId !== review.reviewerId.trim()
+    )
+      add(
+        `reviews.${index}.reviewerId`,
+        "Reviewer IDs must not contain surrounding whitespace.",
+      );
     if (!Number.isInteger(review?.reviewRound) || review.reviewRound < 1)
       add(`reviews.${index}.reviewRound`, "Review reviewRound must be a positive integer.");
     else if (review.reviewRound > run.reviewRound)
@@ -836,6 +900,18 @@ function validateReviews(run, calibrationMetadata, add) {
         `reviews.${index}.evidenceLabels`,
         "Copy reviews require ai-comprehension-proxy and not-user-validated labels.",
       );
+    if (copyRoles.includes(review?.role)) {
+      if (!Number.isInteger(review?.scores?.comprehension))
+        add(
+          `reviews.${index}.scores.comprehension`,
+          "Copy reviews require an explicit 0-4 comprehension score.",
+        );
+      requireNonEmptyTextArray(
+        review?.findings,
+        `reviews.${index}.findings`,
+        add,
+      );
+    }
     requireArray(review?.vetoes, `reviews.${index}.vetoes`, add);
     for (const [vetoIndex, veto] of asArray(review?.vetoes).entries())
       validateVetoAssessment(
@@ -1083,7 +1159,10 @@ function validateOwnerGate(run, add) {
       "reviews",
       "Owner gate requires one calibrated review from each visual role.",
     );
-  if (new Set(passedReviews.map((review) => review.reviewerId)).size !== visualRoles.length)
+  if (
+    new Set(passedReviews.map((review) => canonicalReviewerId(review.reviewerId)))
+      .size !== visualRoles.length
+  )
     add("reviews", "Owner gate requires four distinct calibrated reviewer identities.");
   if (
     !asArray(run.directions).some(
@@ -1454,15 +1533,26 @@ function validateProductionReviews(run, add) {
       review?.producer === false &&
       review?.calibration?.passed === true &&
       review?.disqualified !== true &&
-      asArray(review?.evidenceLabels).includes("ai-comprehension-proxy"),
+      asArray(review?.evidenceLabels).includes("ai-comprehension-proxy") &&
+      Number.isInteger(review?.scores?.comprehension) &&
+      review.scores.comprehension >= 3 &&
+      asArray(review?.findings).some(
+        (finding) => typeof finding === "string" && finding.trim(),
+      ),
   );
   const roles = new Set(reviews.map((review) => review.role));
-  const reviewerIds = new Set(reviews.map((review) => review.reviewerId));
+  const reviewerIds = new Set(
+    reviews.map((review) => canonicalReviewerId(review.reviewerId)),
+  );
   if (copyRoles.some((role) => !roles.has(role)) || reviewerIds.size < copyRoles.length)
     add(
       "reviews",
       "Complete runs require one distinct, calibrated current-round review for every copy role.",
     );
+}
+
+function canonicalReviewerId(value) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
 export function parseArguments(args) {
