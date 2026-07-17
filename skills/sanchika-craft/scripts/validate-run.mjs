@@ -39,6 +39,8 @@ const evidenceLabels = [
   "not-user-validated",
 ];
 const visualRoles = ["brand", "craft", "trust", "accessibility"];
+const copyRoles = ["practitioner", "developer", "claims", "voice"];
+const instructionManifestSchemaVersion = 1;
 const controlIds = [
   "current-baseline",
   "generic-ai-saas",
@@ -198,6 +200,7 @@ export function validateCraftRun(run, validators, options = {}) {
         "productionApproval",
         "Complete runs require a distinct timestamped owner production approval.",
       );
+    validateProductionReviews(run, add);
     validateProductionEvidence(run, options, add);
   } else if (
     run.productionApproval !== undefined &&
@@ -218,7 +221,7 @@ export function validateCraftTransition(previous, next) {
     if (previous?.[field] !== next?.[field])
       add(field, `${field} cannot change while resuming a run.`);
   }
-  if (JSON.stringify(previous?.surface) !== JSON.stringify(next?.surface))
+  if (!isDeepStrictEqual(previous?.surface, next?.surface))
     add(
       "surface",
       "Run surface and source commit cannot change while resuming.",
@@ -274,6 +277,24 @@ export function validateCraftTransition(previous, next) {
     add(
       "directions",
       "Prior-round directions must remain an unchanged prefix of later snapshots.",
+    );
+  const reviewedRounds = new Set(
+    asArray(previous?.reviews)
+      .map((review) => review?.reviewRound)
+      .filter(Number.isInteger),
+  );
+  const reviewedDirectionsChanged = asArray(previous?.directions)
+    .filter((direction) => reviewedRounds.has(direction?.reviewRound))
+    .some((direction) => {
+      const nextDirection = asArray(next?.directions).find(
+        (candidate) => candidate?.id === direction?.id,
+      );
+      return !isDeepStrictEqual(direction, nextDirection);
+    });
+  if (reviewedDirectionsChanged)
+    add(
+      "directions",
+      "Directions with retained review evidence cannot change or disappear.",
     );
   if (!rebrief) {
     for (const field of ["trustBrief", "designBrief"]) {
@@ -735,10 +756,7 @@ function validateReviews(run, calibrationMetadata, add) {
     if (
       ![
         ...visualRoles,
-        "practitioner",
-        "developer",
-        "claims",
-        "voice",
+        ...copyRoles,
       ].includes(review?.role)
     )
       add(`reviews.${index}.role`, "Unknown reviewer role.");
@@ -778,6 +796,23 @@ function validateReviews(run, calibrationMetadata, add) {
       add(
         `reviews.${index}.evidenceLabels`,
         "Visual reviews require ai-visual-proxy and not-user-validated labels.",
+      );
+    if (
+      copyRoles.includes(review?.role) &&
+      (!asArray(review?.evidenceLabels).includes("ai-comprehension-proxy") ||
+        !asArray(review?.evidenceLabels).includes("not-user-validated"))
+    )
+      add(
+        `reviews.${index}.evidenceLabels`,
+        "Copy reviews require ai-comprehension-proxy and not-user-validated labels.",
+      );
+    requireArray(review?.vetoes, `reviews.${index}.vetoes`, add);
+    for (const [vetoIndex, veto] of asArray(review?.vetoes).entries())
+      validateVetoAssessment(
+        veto,
+        `reviews.${index}.vetoes.${vetoIndex}`,
+        asArray(run.directions).map((direction) => direction?.id),
+        add,
       );
     if (visualRoles.includes(review?.role)) {
       requireNonEmptyTextArray(
@@ -1298,6 +1333,25 @@ function preserveHistoryPrefix(previous, next, field, add) {
     add(field, `Resume must preserve the complete ${field} history as an unchanged prefix.`);
 }
 
+function validateVetoAssessment(veto, field, directionIds, add) {
+  if (typeof veto === "string") {
+    if (!veto.trim()) add(field, "Veto assessments must not be empty.");
+    return;
+  }
+  if (!isRecord(veto)) {
+    add(field, "Veto assessments must be a non-empty string or structured record.");
+    return;
+  }
+  requireText(veto.reason, `${field}.reason`, add);
+  if (typeof veto.resolved !== "boolean")
+    add(`${field}.resolved`, "Structured veto assessments require an explicit resolved boolean.");
+  if (veto.directionId !== undefined) {
+    requireText(veto.directionId, `${field}.directionId`, add);
+    if (!directionIds.includes(veto.directionId))
+      add(`${field}.directionId`, "Structured veto assessments must identify an existing direction.");
+  }
+}
+
 function vetoTargetsDirection(veto, directionId, directionIds) {
   if (typeof veto === "string") {
     const targets = directionIds.filter((candidate) => veto.includes(candidate));
@@ -1355,6 +1409,25 @@ function validateProductionEvidence(run, options, add) {
   if (runIds.size !== 3) add("productionEvidence.mobileMeasurements", "Mobile measurements must record three distinct runs.");
 }
 
+function validateProductionReviews(run, add) {
+  const reviews = asArray(run.reviews).filter(
+    (review) =>
+      copyRoles.includes(review?.role) &&
+      review?.reviewRound === run.reviewRound &&
+      review?.producer === false &&
+      review?.calibration?.passed === true &&
+      review?.disqualified !== true &&
+      asArray(review?.evidenceLabels).includes("ai-comprehension-proxy"),
+  );
+  const roles = new Set(reviews.map((review) => review.role));
+  const reviewerIds = new Set(reviews.map((review) => review.reviewerId));
+  if (copyRoles.some((role) => !roles.has(role)) || reviewerIds.size < copyRoles.length)
+    add(
+      "reviews",
+      "Complete runs require one distinct, calibrated current-round review for every copy role.",
+    );
+}
+
 export function parseArguments(args) {
   if (
     !Array.isArray(args) ||
@@ -1371,6 +1444,11 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
   const add = (field, reason) => issues.push({ field, reason });
   if (!isRecord(manifest))
     return [{ field: "instructionManifest", reason: "Instruction manifest must be an object." }];
+  if (manifest.schemaVersion !== instructionManifestSchemaVersion)
+    add(
+      "instructionManifest.schemaVersion",
+      `Instruction manifest schemaVersion must be ${instructionManifestSchemaVersion}.`,
+    );
   if (manifest.protocolVersion !== run.protocolVersion)
     add("instructionManifest.protocolVersion", "Instruction manifest protocolVersion must match the run.");
   if (manifest.sourceCommit !== run.surface?.sourceCommit)
@@ -1447,7 +1525,7 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
       "instructionManifest.plainRequestControl.codeRetained",
       "Without-skill control code must not be retained.",
     );
-  if (requiresTransitionEvidence(run)) {
+  if (requiresTransitionEvidence(run, manifest)) {
     const expectedPrevious = `craft/runs/${run.runId}/transitions/previous-state.json`;
     const previousReference = manifest.transition?.previousState;
     const previousPath = resolve(repoRoot, previousReference ?? "");
@@ -1494,8 +1572,9 @@ export function loadRunPreviousState(manifest, run, repoRoot) {
   return JSON.parse(readFileSync(resolve(repoRoot, expected), "utf8"));
 }
 
-export function requiresTransitionEvidence(run) {
+export function requiresTransitionEvidence(run, manifest) {
   return (
+    (isRecord(manifest) && Object.hasOwn(manifest, "transition")) ||
     run?.phase !== "shape" ||
     run?.ownerDecision === "rebrief" ||
     run?.reviewRound > 1 ||
@@ -1594,7 +1673,7 @@ async function main() {
   issues.push(
     ...validateCalibrationPack(calibrationDirectory),
   );
-  if (!allowTemplate && requiresTransitionEvidence(run) && manifest) {
+  if (!allowTemplate && requiresTransitionEvidence(run, manifest) && manifest) {
     try {
       const retainedPreviousPath = resolve(
         repoRoot,

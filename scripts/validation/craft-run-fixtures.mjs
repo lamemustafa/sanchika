@@ -15,6 +15,7 @@ import {
   validateCraftRun,
   validateCraftTransition,
   validateInstructionManifest,
+  requiresTransitionEvidence,
 } from "../../skills/sanchika-craft/scripts/validate-run.mjs";
 
 export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
@@ -49,6 +50,54 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     mutate?.(run);
     return validateCraftRun(run, validators, { repoRoot });
   };
+  const makeComplete = (run, { includeCopyReviews = true } = {}) => {
+    run.phase = "verify";
+    run.status = "complete";
+    run.ownerDecision = "approved";
+    run.selectedDirectionId = "direction-alpha";
+    run.productionApproval = {
+      decision: "approved",
+      approvedBy: "owner",
+      approvedAt: "2026-07-17T00:00:00.000Z",
+    };
+    run.evidenceLoop.decision = "ready-for-consumer-pr";
+    run.evidenceLoop.adoptionEvidence.status = "verified";
+    delete run.stopReason;
+    const gate = {
+      status: "passed",
+      artifact: `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+    };
+    run.productionEvidence = {
+      repositoryGates: gate,
+      browserAccessibilityMatrix: gate,
+      rollbackEvidence: gate,
+      postDeploySmoke: gate,
+      mobileMeasurements: [1, 2, 3].map((number) => ({
+        runId: `run-${number}`,
+        profileId: "mobile-v1",
+        coldCache: true,
+        lcpMs: 1200,
+        cls: 0,
+      })),
+    };
+    if (includeCopyReviews)
+      for (const role of ["practitioner", "developer", "claims", "voice"])
+        run.reviews.push({
+          reviewerId: `${role}-01`,
+          reviewRound: run.reviewRound,
+          role,
+          producer: false,
+          calibration: {
+            passed: true,
+            corrections: 0,
+            fullReruns: 0,
+            detectedFailures: [],
+          },
+          evidenceLabels: ["ai-comprehension-proxy", "not-user-validated"],
+          scores: { comprehension: 4 },
+          vetoes: [],
+        });
+  };
 
   runCase("valid terminal owner-gate run", () => validate(), null);
   runCase(
@@ -68,6 +117,22 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
           .vetoes.push("direction-alpha remains blocked");
       }),
     "directions.0.vetoes",
+  );
+  runCase(
+    "trust review requires an explicit veto assessment array",
+    () =>
+      validate((run) => {
+        delete run.reviews.find((review) => review.role === "trust").vetoes;
+      }),
+    "reviews.2.vetoes",
+  );
+  runCase(
+    "trust review rejects malformed veto assessments",
+    () =>
+      validate((run) => {
+        run.reviews.find((review) => review.role === "trust").vetoes = [null];
+      }),
+    "reviews.2.vetoes.0",
   );
   runCase(
     "qualified direction below a rubric median",
@@ -335,6 +400,44 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       return validateCraftTransition(previous, next);
     },
     "reviews",
+  );
+  runCase(
+    "reviewed current-round directions remain immutable",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "review";
+      previous.status = "active";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "owner_gate";
+      next.status = "awaiting_owner";
+      next.directions[0].territory = "rewritten-after-review";
+      return validateCraftTransition(previous, next);
+    },
+    "directions",
+  );
+  runCase(
+    "transition surface comparison ignores object key order",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "review";
+      previous.status = "active";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(baseRun);
+      next.phase = "review";
+      next.status = "active";
+      next.ownerDecision = "pending";
+      delete next.stopReason;
+      next.surface = {
+        sourceCommit: previous.surface.sourceCommit,
+        route: previous.surface.route,
+        repo: previous.surface.repo,
+      };
+      return validateCraftTransition(previous, next);
+    },
+    null,
   );
   runCase(
     "capability resume lowers design thresholds",
@@ -714,6 +817,34 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "productionApproval",
   );
   runCase(
+    "production completion requires every copy review role",
+    () =>
+      validate((run) => {
+        makeComplete(run, { includeCopyReviews: false });
+      }),
+    "reviews",
+  );
+  runCase(
+    "production completion accepts distinct calibrated copy reviewers",
+    () =>
+      validate((run) => {
+        makeComplete(run);
+      }),
+    null,
+  );
+  runCase(
+    "production completion rejects reused copy reviewer identities",
+    () =>
+      validate((run) => {
+        makeComplete(run);
+        for (const review of run.reviews.filter((item) =>
+          ["practitioner", "developer", "claims", "voice"].includes(item.role),
+        ))
+          review.reviewerId = "copy-reviewer-01";
+      }),
+    "reviews",
+  );
+  runCase(
     "calibration authenticates control bytes",
     () => {
       const source = join(
@@ -774,6 +905,40 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
     "instructionManifest.plainRequestControl.sha256",
+  );
+  runCase(
+    "manifest requires its supported schema version",
+    () => {
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      manifest.schemaVersion = 999;
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.schemaVersion",
+  );
+  runCase(
+    "manifest requires an explicit schema version",
+    () => {
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      delete manifest.schemaVersion;
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.schemaVersion",
   );
   runCase(
     "manifest rejects retained counterfactual code",
@@ -837,6 +1002,59 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         ),
       );
       delete manifest.transition;
+      return validateInstructionManifest(manifest, run, repoRoot);
+    },
+    "instructionManifest.transition.previousState",
+  );
+  runCase(
+    "retained manifest transition survives a replacement shape reset",
+    () => {
+      const run = structuredClone(baseRun);
+      run.phase = "shape";
+      run.status = "active";
+      run.ownerDecision = "pending";
+      run.reviewRound = 1;
+      run.directions = [];
+      run.iterations = [];
+      run.reviews = [];
+      delete run.stopReason;
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      return requiresTransitionEvidence(run, manifest)
+        ? []
+        : [{ field: "transitionEvidence", reason: "missing" }];
+    },
+    null,
+  );
+  runCase(
+    "replacement shape reset rejects a malformed retained transition",
+    () => {
+      const run = structuredClone(baseRun);
+      run.phase = "shape";
+      run.status = "active";
+      run.ownerDecision = "pending";
+      run.reviewRound = 1;
+      run.directions = [];
+      run.iterations = [];
+      run.reviews = [];
+      delete run.stopReason;
+      const manifest = JSON.parse(
+        readFileSync(
+          join(
+            repoRoot,
+            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
+          ),
+          "utf8",
+        ),
+      );
+      manifest.transition = null;
       return validateInstructionManifest(manifest, run, repoRoot);
     },
     "instructionManifest.transition.previousState",

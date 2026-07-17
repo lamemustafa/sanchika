@@ -26,7 +26,7 @@ export function findUnresolvedGalleryVariables({ html, copiedCss }) {
 
 export function findGalleryIdentityPolicyFailures({ path, source }) {
   const failures = [];
-  const activeSource = stripCssComments(source);
+  const activeSource = decodeCssEscapes(stripCssComments(source));
   const isIdentityLayer = path.replaceAll("\\", "/") === "styles/identity.css";
   if (/--lab-/.test(activeSource)) failures.push(`${path} must not contain retired lab variables`);
   if (/--sk-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not author --sk-* variables`);
@@ -128,6 +128,16 @@ export function runGalleryVariableFixtures() {
       blocked: true,
     },
     {
+      name: "escaped external import",
+      source: '@import "\\68 ttps://fonts.example/style.css";',
+      blocked: true,
+    },
+    {
+      name: "escaped external URL function",
+      source: '@font-face { src: url(\\68 ttps://fonts.example/font.woff2); }',
+      blocked: true,
+    },
+    {
       name: "protocol-relative import",
       source: '@import url("//fonts.example/style.css");',
       blocked: true,
@@ -156,6 +166,7 @@ export function runGalleryVariableFixtures() {
 
   const selectorFixtures = [
     { source: '.sk-button { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '.\\73 k-button { color: var(--gallery-brand-ink); }', blocked: true },
     { source: '[class~="sk-button"] { color: var(--gallery-brand-ink); }', blocked: true },
     { source: '[class^="sk-"] { color: var(--gallery-brand-ink); }', blocked: true },
     { source: '.craft-button { color: var(--gallery-brand-ink); }', blocked: false },
@@ -197,6 +208,22 @@ function containsExternalCssOrigin(source) {
     /@import\s+(?:url\(\s*)?["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active) ||
     /(?:-webkit-)?image-set\([^)]*["']\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active)
   );
+}
+
+function decodeCssEscapes(source) {
+  return source
+    .replace(/\\(?:\r\n|[\n\r\f])/g, "")
+    .replace(/\\([0-9a-f]{1,6})[\t\n\f\r ]?/gi, (_match, hex) => {
+      const codePoint = Number.parseInt(hex, 16);
+      if (
+        codePoint === 0 ||
+        codePoint > 0x10ffff ||
+        (codePoint >= 0xd800 && codePoint <= 0xdfff)
+      )
+        return "\ufffd";
+      return String.fromCodePoint(codePoint);
+    })
+    .replace(/\\([^\n\r\f0-9a-f])/gi, "$1");
 }
 
 function extractHtmlCss(html) {

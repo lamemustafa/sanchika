@@ -189,7 +189,7 @@ for (const statePath of craftStatePaths) {
     calibrationMetadata: runCalibrationMetadata,
   }))
     fail(`${statePath} ${issue.field}: ${issue.reason}`);
-  if (manifest && requiresTransitionEvidence(run)) {
+  if (manifest && requiresTransitionEvidence(run, manifest)) {
     try {
       const previous = loadRunPreviousState(manifest, run, root);
       for (const issue of validateCraftRun(previous, craftValidators, {
