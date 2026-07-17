@@ -31,8 +31,12 @@ export function findGalleryIdentityPolicyFailures({ path, source }) {
   if (/--lab-/.test(activeSource)) failures.push(`${path} must not contain retired lab variables`);
   if (/--sk-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not author --sk-* variables`);
   if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
+  if (isIdentityLayer)
+    for (const match of activeSource.matchAll(/--gallery-brand-[a-z0-9-]+\s*:\s*([^;]+);/gi))
+      if (containsNonOklchColorLiteral(match[1]))
+        failures.push("styles/identity.css gallery color variables must use OKLCH, not hex or other color functions");
   const colorSource = isIdentityLayer ? activeSource.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;]+;/gi, "") : activeSource;
-  if (/oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(colorSource)) failures.push(`${path} must not contain raw colors outside gallery identity declarations`);
+  if (/#[0-9a-f]{3,8}\b|\b(?:oklch|rgba?|hsla?|hwb|lab|lch|color)\s*\(/i.test(colorSource)) failures.push(`${path} must not contain raw colors outside gallery identity declarations`);
   if (isIdentityLayer && (/\.sk-[a-z0-9-]+/i.test(activeSource) || /\[\s*class\b[^\]]*sk-/i.test(activeSource))) failures.push("styles/identity.css must not style package selectors");
   if (isIdentityLayer && containsExternalCssOrigin(activeSource)) failures.push("styles/identity.css must not load external font or image origins");
   for (const match of activeSource.matchAll(/font-family\s*:\s*([^;]+)/gi)) {
@@ -195,8 +199,38 @@ export function runGalleryVariableFixtures() {
       "nested identity stylesheet must not receive canonical identity privileges",
     );
 
+  const identityColorFixtures = [
+    {
+      source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+      blocked: false,
+    },
+    {
+      source: ":root { --gallery-brand-ink: #fff; }",
+      blocked: true,
+    },
+    {
+      source: ":root { --gallery-brand-ink: rgb(20 30 40); }",
+      blocked: true,
+    },
+  ];
+  for (const fixture of identityColorFixtures) {
+    const blocked = findGalleryIdentityPolicyFailures({
+      path: "styles/identity.css",
+      source: fixture.source,
+    }).some((failure) => failure.includes("must use OKLCH"));
+    if (blocked !== fixture.blocked)
+      failures.push(
+        `identity color ${fixture.source}: expected blocked=${fixture.blocked}; found ${blocked}`,
+      );
+  }
+
   return {
-    count: fixtures.length + identityFixtures.length + selectorFixtures.length + 1,
+    count:
+      fixtures.length +
+      identityFixtures.length +
+      selectorFixtures.length +
+      identityColorFixtures.length +
+      1,
     failures,
   };
 }
@@ -208,6 +242,10 @@ function containsExternalCssOrigin(source) {
     /@import\s+(?:url\(\s*)?["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active) ||
     /(?:-webkit-)?image-set\([^)]*["']\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active)
   );
+}
+
+function containsNonOklchColorLiteral(source) {
+  return /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|color)\s*\(/i.test(source);
 }
 
 function decodeCssEscapes(source) {

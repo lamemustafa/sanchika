@@ -135,20 +135,6 @@ for (const discoveryPath of [".agents/skills/sanchika-craft", ".claude/skills/sa
   }
 }
 const craftValidators = await loadPatternValidators(root);
-const craftRun = readJson("craft/runs/sanchika-landing-s10/state.json");
-const craftRunFixtures = runCraftRunFixtures({
-  baseRun: craftRun,
-  validators: craftValidators,
-  repoRoot: root,
-});
-for (const fixtureFailure of craftRunFixtures.failures)
-  fail(`craft run fixture ${fixtureFailure}`);
-const craftTemplatePath = "skills/sanchika-craft/assets/run-template.json";
-for (const issue of validateCraftRun(readJson(craftTemplatePath), craftValidators, {
-  allowTemplate: true,
-  repoRoot: root,
-}))
-  fail(`${craftTemplatePath} ${issue.field}: ${issue.reason}`);
 const craftRunRoot = join(root, "craft/runs");
 const craftRunDirectories = readdirSync(craftRunRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
@@ -158,6 +144,44 @@ const craftStatePaths = craftRunDirectories.map(
   (runId) => `craft/runs/${runId}/state.json`,
 );
 if (craftStatePaths.length === 0) fail("craft/runs must contain at least one persisted run");
+const craftFixtureStatePath = craftStatePaths.find((statePath) => {
+  if (!existsSync(join(root, statePath))) return false;
+  const candidate = readJson(statePath);
+  const roles = new Set(
+    Array.isArray(candidate.reviews)
+      ? candidate.reviews.map((review) => review?.role)
+      : [],
+  );
+  return (
+    Array.isArray(candidate.directions) &&
+    candidate.directions.length >= 2 &&
+    candidate.directions[0]?.qualified === true &&
+    Array.isArray(candidate.iterations) &&
+    candidate.iterations.length > 0 &&
+    ["brand", "craft", "trust", "accessibility"].every((role) =>
+      roles.has(role),
+    ) &&
+    existsSync(join(root, dirname(statePath), "instruction-manifest.json"))
+  );
+});
+let craftRunFixtures = { count: 0, failures: [] };
+if (!craftFixtureStatePath) {
+  fail("craft run fixtures require one discovered reviewed run with two directions, iteration history, and an instruction manifest");
+} else {
+  craftRunFixtures = runCraftRunFixtures({
+    baseRun: readJson(craftFixtureStatePath),
+    validators: craftValidators,
+    repoRoot: root,
+  });
+  for (const fixtureFailure of craftRunFixtures.failures)
+    fail(`craft run fixture ${fixtureFailure}`);
+}
+const craftTemplatePath = "skills/sanchika-craft/assets/run-template.json";
+for (const issue of validateCraftRun(readJson(craftTemplatePath), craftValidators, {
+  allowTemplate: true,
+  repoRoot: root,
+}))
+  fail(`${craftTemplatePath} ${issue.field}: ${issue.reason}`);
 for (const statePath of craftStatePaths) {
   if (!existsSync(join(root, statePath))) {
     fail(`${dirname(statePath)} requires state.json`);

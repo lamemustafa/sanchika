@@ -50,11 +50,24 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     mutate?.(run);
     return validateCraftRun(run, validators, { repoRoot });
   };
+  const primaryDirectionId = baseRun.directions[0].id;
+  const alternateDirectionId = baseRun.directions.at(-1).id;
+  const primaryArtifact = baseRun.directions[0].artifactRefs[0];
+  const alternateArtifact = baseRun.directions[1].artifactRefs[0];
+  const baseRunRoot = `craft/runs/${baseRun.runId}`;
+  const baseManifestPath = join(
+    repoRoot,
+    baseRunRoot,
+    "instruction-manifest.json",
+  );
+  const readBaseManifest = () =>
+    JSON.parse(readFileSync(baseManifestPath, "utf8"));
+  const withoutSkillArtifact = `${baseRunRoot}/${readBaseManifest().plainRequestControl.retainedArtifact}`;
   const makeComplete = (run, { includeCopyReviews = true } = {}) => {
     run.phase = "verify";
     run.status = "complete";
     run.ownerDecision = "approved";
-    run.selectedDirectionId = "direction-alpha";
+    run.selectedDirectionId = primaryDirectionId;
     run.productionApproval = {
       decision: "approved",
       approvedBy: "owner",
@@ -65,7 +78,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     delete run.stopReason;
     const gate = {
       status: "passed",
-      artifact: `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+      artifact: primaryArtifact,
     };
     run.productionEvidence = {
       repositoryGates: gate,
@@ -114,7 +127,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       validate((run) => {
         run.reviews
           .find((review) => review.role === "trust")
-          .vetoes.push("direction-alpha remains blocked");
+          .vetoes.push(`${primaryDirectionId} remains blocked`);
       }),
     "directions.0.vetoes",
   );
@@ -163,7 +176,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "aggregate preference differs from per-review controls",
     () =>
       validate((run) => {
-        run.reviews[0].directionComparisons["direction-alpha"].baseline = false;
+        run.reviews[0].directionComparisons[primaryDirectionId].baseline = false;
       }),
     "directions.0.preference",
   );
@@ -223,9 +236,9 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "direction rubric score exceeds the scale",
     () =>
       validate((run) => {
-        run.reviews[0].directionScores["direction-alpha"].trust = 100;
+        run.reviews[0].directionScores[primaryDirectionId].trust = 100;
       }),
-    "reviews.0.directionScores.direction-alpha.trust",
+    `reviews.0.directionScores.${primaryDirectionId}.trust`,
   );
   runCase(
     "owner gate reuses one reviewer identity",
@@ -284,7 +297,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.phase = "verify";
         run.status = "complete";
         run.ownerDecision = "approved";
-        run.selectedDirectionId = "direction-alpha";
+        run.selectedDirectionId = primaryDirectionId;
         run.evidenceLoop.decision = "ready-for-consumer-pr";
         delete run.stopReason;
         const gate = {
@@ -355,7 +368,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
             changeHypothesis: "First attempt",
             invariants: ["trust boundary"],
             artifactRefs: [
-              `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+              primaryArtifact,
             ],
             result: "not_improved",
           },
@@ -365,7 +378,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
             changeHypothesis: "Second attempt",
             invariants: ["trust boundary"],
             artifactRefs: [
-              `craft/runs/${run.runId}/evidence/direction-beta.webp`,
+              alternateArtifact,
             ],
             result: "not_improved",
           },
@@ -418,6 +431,22 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "directions",
   );
   runCase(
+    "reviewed artifacts remain immutable before the owner gate",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "review";
+      previous.status = "active";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "owner_gate";
+      next.status = "awaiting_owner";
+      next.directions[0].artifactRefs = [alternateArtifact];
+      return validateCraftTransition(previous, next);
+    },
+    "directions",
+  );
+  runCase(
     "transition surface comparison ignores object key order",
     () => {
       const previous = structuredClone(baseRun);
@@ -435,6 +464,98 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         route: previous.surface.route,
         repo: previous.surface.repo,
       };
+      return validateCraftTransition(previous, next);
+    },
+    null,
+  );
+  runCase(
+    "new directions cannot be backdated into a closed round",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "shape";
+      previous.status = "active";
+      previous.ownerDecision = "rebrief";
+      previous.reviewRound = 2;
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "explore";
+      next.ownerDecision = "pending";
+      next.directions.push({
+        ...structuredClone(next.directions[0]),
+        id: "backdated-direction",
+        reviewRound: 1,
+      });
+      return validateCraftTransition(previous, next);
+    },
+    "directions",
+  );
+  runCase(
+    "new iterations cannot be backdated into a closed round",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "shape";
+      previous.status = "active";
+      previous.ownerDecision = "rebrief";
+      previous.reviewRound = 2;
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "explore";
+      next.ownerDecision = "pending";
+      next.iterations.push({
+        ...structuredClone(next.iterations[0]),
+        reviewRound: 1,
+      });
+      return validateCraftTransition(previous, next);
+    },
+    "iterations",
+  );
+  runCase(
+    "new reviews cannot be backdated into a closed round",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "shape";
+      previous.status = "active";
+      previous.ownerDecision = "rebrief";
+      previous.reviewRound = 2;
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "explore";
+      next.ownerDecision = "pending";
+      next.reviews.push({
+        ...structuredClone(next.reviews[0]),
+        reviewerId: "backdated-reviewer",
+        reviewRound: 1,
+      });
+      return validateCraftTransition(previous, next);
+    },
+    "reviews",
+  );
+  runCase(
+    "new audit entries may append to the active round",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "shape";
+      previous.status = "active";
+      previous.ownerDecision = "rebrief";
+      previous.reviewRound = 2;
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "explore";
+      next.ownerDecision = "pending";
+      next.directions.push({
+        ...structuredClone(next.directions[0]),
+        id: "active-round-direction",
+        reviewRound: 2,
+      });
+      next.iterations.push({
+        ...structuredClone(next.iterations[0]),
+        reviewRound: 2,
+      });
+      next.reviews.push({
+        ...structuredClone(next.reviews[0]),
+        reviewerId: "active-round-reviewer",
+        reviewRound: 2,
+      });
       return validateCraftTransition(previous, next);
     },
     null,
@@ -466,7 +587,23 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       next.phase = "build";
       next.status = "active";
       next.ownerDecision = "approved";
-      next.selectedDirectionId = "direction-gamma";
+      next.selectedDirectionId = "missing-direction";
+      return validateCraftTransition(previous, next);
+    },
+    "selectedDirectionId",
+  );
+  runCase(
+    "later phases preserve the owner-selected direction",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "build";
+      previous.status = "active";
+      previous.ownerDecision = "approved";
+      previous.selectedDirectionId = primaryDirectionId;
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.phase = "reconcile";
+      next.selectedDirectionId = alternateDirectionId;
       return validateCraftTransition(previous, next);
     },
     "selectedDirectionId",
@@ -501,7 +638,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         review.preference = ["direction-round-2"];
         review.directionScores = {
           "direction-round-2": structuredClone(
-            review.directionScores["direction-alpha"],
+            review.directionScores[primaryDirectionId],
           ),
         };
         review.directionComparisons = {
@@ -547,9 +684,9 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "visual review compares every direction",
     () =>
       validate((run) => {
-        delete run.reviews[0].directionComparisons["direction-gamma"];
+        delete run.reviews[0].directionComparisons[alternateDirectionId];
       }),
-    "reviews.0.directionComparisons.direction-gamma",
+    `reviews.0.directionComparisons.${alternateDirectionId}`,
   );
   runCase(
     "disqualified review cannot prove an improved revision",
@@ -576,7 +713,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
               changeHypothesis: `Attempt ${attempt + 1}`,
               invariants: ["trust boundary"],
               artifactRefs: [
-                `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+                primaryArtifact,
               ],
               result: "not_improved",
             });
@@ -614,7 +751,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       try {
         const evidenceDirectory = join(
           temporaryRoot,
-          "craft/runs/sanchika-landing-s10/evidence",
+          `${baseRunRoot}/evidence`,
         );
         mkdirSync(evidenceDirectory, { recursive: true });
         const outside = join(temporaryRoot, "outside.json");
@@ -622,7 +759,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         symlinkSync(outside, join(evidenceDirectory, "escape.json"));
         const run = structuredClone(baseRun);
         run.directions[0].artifactRefs = [
-          "craft/runs/sanchika-landing-s10/evidence/escape.json",
+          `${baseRunRoot}/evidence/escape.json`,
         ];
         return validateCraftRun(run, validators, { repoRoot: temporaryRoot });
       } finally {
@@ -634,15 +771,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   runCase(
     "manifest rejects mutable canonical instruction sources",
     () => {
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       manifest.sources.canonicalSkill = "skills/sanchika-craft/SKILL.md";
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
@@ -680,7 +809,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.phase = "build";
         run.status = "active";
         run.ownerDecision = "approved";
-        run.selectedDirectionId = "direction-alpha";
+        run.selectedDirectionId = primaryDirectionId;
         delete run.stopReason;
         run.reviews = run.reviews.filter(
           (review) => review.role !== "accessibility",
@@ -708,15 +837,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   runCase(
     "manifest source roles cannot alias one snapshot",
     () => {
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       manifest.sources.protocol = manifest.sources.canonicalSkill;
       manifest.hashes.protocol = manifest.hashes.canonicalSkill;
       return validateInstructionManifest(manifest, baseRun, repoRoot);
@@ -792,13 +913,13 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.phase = "verify";
         run.status = "complete";
         run.ownerDecision = "approved";
-        run.selectedDirectionId = "direction-alpha";
+        run.selectedDirectionId = primaryDirectionId;
         run.productionApproval = null;
         run.evidenceLoop.decision = "ready-for-consumer-pr";
         delete run.stopReason;
         const gate = {
           status: "passed",
-          artifact: `craft/runs/${run.runId}/evidence/direction-alpha.webp`,
+          artifact: primaryArtifact,
         };
         run.productionEvidence = {
           repositoryGates: gate,
@@ -877,6 +998,36 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "calibration.current-baseline.sha256",
   );
   runCase(
+    "calibration controls require distinct canonical artifacts",
+    () => {
+      const source = join(
+        repoRoot,
+        "skills/sanchika-craft/assets/calibration",
+      );
+      const temporaryRoot = mkdtempSync(join(tmpdir(), "sanchika-calibration-"));
+      try {
+        const metadata = JSON.parse(
+          readFileSync(join(source, "metadata.json"), "utf8"),
+        );
+        for (const control of metadata.controls)
+          copyFileSync(
+            join(source, control.file),
+            join(temporaryRoot, control.file),
+          );
+        metadata.controls[1].file = metadata.controls[0].file;
+        metadata.controls[1].sha256 = metadata.controls[0].sha256;
+        writeFileSync(
+          join(temporaryRoot, "metadata.json"),
+          `${JSON.stringify(metadata, null, 2)}\n`,
+        );
+        return validateCalibrationPack(temporaryRoot);
+      } finally {
+        rmSync(temporaryRoot, { recursive: true, force: true });
+      }
+    },
+    "calibration.generic-ai-saas.file",
+  );
+  runCase(
     "capability-blocked review may persist unavailable isolation",
     () =>
       validate((run) => {
@@ -892,15 +1043,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   runCase(
     "manifest authenticates the without-skill control",
     () => {
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       manifest.plainRequestControl.sha256 = "0".repeat(64);
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
@@ -909,15 +1052,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   runCase(
     "manifest requires its supported schema version",
     () => {
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       manifest.schemaVersion = 999;
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
@@ -926,15 +1061,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   runCase(
     "manifest requires an explicit schema version",
     () => {
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       delete manifest.schemaVersion;
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
@@ -943,15 +1070,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   runCase(
     "manifest rejects retained counterfactual code",
     () => {
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       manifest.plainRequestControl.codeRetained = true;
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
@@ -961,24 +1080,14 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "terminal references require evidence digests",
     () =>
       validate((run) => {
-        delete run.evidenceDigests[
-          "craft/runs/sanchika-landing-s10/evidence/direction-alpha.webp"
-        ];
+        delete run.evidenceDigests[primaryArtifact];
       }),
     "directions.0.artifactRefs.0",
   );
   runCase(
     "advanced run manifest requires a prior snapshot",
     () => {
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       delete manifest.transition;
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
@@ -992,15 +1101,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       run.status = "active";
       run.ownerDecision = "pending";
       delete run.stopReason;
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       delete manifest.transition;
       return validateInstructionManifest(manifest, run, repoRoot);
     },
@@ -1018,15 +1119,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       run.iterations = [];
       run.reviews = [];
       delete run.stopReason;
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       return requiresTransitionEvidence(run, manifest)
         ? []
         : [{ field: "transitionEvidence", reason: "missing" }];
@@ -1045,15 +1138,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       run.iterations = [];
       run.reviews = [];
       delete run.stopReason;
-      const manifest = JSON.parse(
-        readFileSync(
-          join(
-            repoRoot,
-            "craft/runs/sanchika-landing-s10/instruction-manifest.json",
-          ),
-          "utf8",
-        ),
-      );
+      const manifest = readBaseManifest();
       manifest.transition = null;
       return validateInstructionManifest(manifest, run, repoRoot);
     },
@@ -1123,7 +1208,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
             changeHypothesis: `Attempt ${attempt}`,
             invariants: ["trust boundary"],
             artifactRefs: [
-              "craft/runs/sanchika-landing-s10/evidence/direction-alpha.webp",
+              primaryArtifact,
             ],
             result: "not_improved",
           });
@@ -1149,7 +1234,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.evidenceLoop.renderEvidence.find(
           (evidence) => evidence.type === "mobile-screenshot",
         ).artifact =
-          "craft/runs/sanchika-landing-s10/evidence/without-skill-control.webp";
+          withoutSkillArtifact;
       }),
     "evidenceLoop.renderEvidence.1.artifact",
   );

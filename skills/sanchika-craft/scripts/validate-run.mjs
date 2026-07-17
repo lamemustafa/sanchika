@@ -258,6 +258,22 @@ export function validateCraftTransition(previous, next) {
     );
   preserveHistoryPrefix(previous?.iterations, next?.iterations, "iterations", add);
   preserveHistoryPrefix(previous?.reviews, next?.reviews, "reviews", add);
+  validateAppendedReviewRounds(previous, next, "iterations", add);
+  validateAppendedReviewRounds(previous, next, "reviews", add);
+  const previousDirectionIds = new Set(
+    asArray(previous?.directions).map((direction) => direction?.id),
+  );
+  if (
+    asArray(next?.directions).some(
+      (direction) =>
+        !previousDirectionIds.has(direction?.id) &&
+        direction?.reviewRound !== next?.reviewRound,
+    )
+  )
+    add(
+      "directions",
+      "New directions must belong to the active review round.",
+    );
   if (rebrief)
     preserveHistoryPrefix(
       previous?.directions,
@@ -342,6 +358,15 @@ export function validateCraftTransition(previous, next) {
         "The selected owner-gate direction cannot change while entering build.",
       );
   }
+  if (
+    phaseAtLeast(previous?.phase, "build") &&
+    previous?.ownerDecision === "approved" &&
+    previous?.selectedDirectionId !== next?.selectedDirectionId
+  )
+    add(
+      "selectedDirectionId",
+      "The owner-selected direction cannot change after production build begins.",
+    );
   return issues;
 }
 
@@ -375,6 +400,11 @@ export function validateCalibrationPack(directory) {
   let total = statSync(metadataPath).size;
   for (const control of controls) {
     requireText(control.file, `calibration.${control.id}.file`, add);
+    if (control.file !== `${control.id}.webp`)
+      add(
+        `calibration.${control.id}.file`,
+        `Calibration control ${control.id} must use its distinct canonical ${control.id}.webp artifact.`,
+      );
     if (
       typeof control.file !== "string" ||
       basename(control.file) !== control.file ||
@@ -1331,6 +1361,13 @@ function preserveHistoryPrefix(previous, next, field, add) {
   }
   if (next.length < previous.length || !previous.every((entry, index) => isDeepStrictEqual(entry, next[index])))
     add(field, `Resume must preserve the complete ${field} history as an unchanged prefix.`);
+}
+
+function validateAppendedReviewRounds(previous, next, field, add) {
+  const previousEntries = asArray(previous?.[field]);
+  const appendedEntries = asArray(next?.[field]).slice(previousEntries.length);
+  if (appendedEntries.some((entry) => entry?.reviewRound !== next?.reviewRound))
+    add(field, `New ${field} entries must belong to the active review round.`);
 }
 
 function validateVetoAssessment(veto, field, directionIds, add) {
