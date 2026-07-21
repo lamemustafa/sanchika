@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "sourceCommit": "f5f86eae29d573576a40c002da7210d7bc7a4dc4",
+  "plainRequest": "Redesign the Sanchika landing page so it no longer feels generic, computer-written, soulless, or untrustworthy. Make it distinctive, relatable, professional, fast, accessible, and genuinely crafted.",
+  "plainRequestControl": {
+    "isolation": "fresh context with only the plain request and same-commit repository access",
+    "retainedArtifact": "evidence/without-skill-control.webp",
+    "sha256": "fd3ea9bf35445127de0a5900e1f7382dab6f84390eb63ec4a7c6e1d5c0feded7",
+    "codeRetained": false
+  },
+  "hashes": {
+    "canonicalSkill": "733a1c65d1a9d20a85cede2e73c51fbedbc9b6f5d8e6b693e5df778776a46dfa",
+    "protocol": "000c07c67516bca46b9e6905f61b0364a359e0c13f0e0f74a849d050493aac98",
+    "runTemplate": "37a9adc49fe071e944b09c12b9905bdf5be082ccb513e80393c7d31f741d0f90",
+    "calibrationMetadata": "d97c9fab623ff75551908b02e9d23703986e90327e1781a725125cc793635595",
+    "frozenLabContent": "9e10d08f4ca532b1e4d4ba95d3c0f309cd9aa664604470b226c25217dfdf698b"
+  },
+  "sources": {
+    "canonicalSkill": "craft/runs/sanchika-landing-s10/instructions/SKILL.md",
+    "protocol": "craft/runs/sanchika-landing-s10/instructions/protocol.md",
+    "runTemplate": "craft/runs/sanchika-landing-s10/instructions/run-template.json",
+    "calibrationMetadata": "craft/runs/sanchika-landing-s10/instructions/calibration/metadata.json"
+  },
+  "transition": {
+    "previousState": "craft/runs/sanchika-landing-s10/transitions/previous-state.json",
+    "sha256": "fb8214ffa8e6c5eb9d6efe4c256bb6c5ab686dae4fa05b69c1b5af0d6f67888f"
+  },
+  "terminalEvidence": {
+    "ownerDecision": {
+      "path": "craft/runs/sanchika-landing-s10/owner-decision.json",
+      "sha256": "959c3a90f842bd61288c7e2c92da1d1828956cf19a3c877653bb55c45d63d55e"
+    }
+  },
+  "reviewIsolation": {
+    "visualReviewerCount": 4,
+    "recognitionMatcherCount": 3,
+    "producerReviewedOwnOutput": false,
+    "evidenceLabels": ["ai-visual-proxy", "ai-recognition-proxy", "not-user-validated"]
+  }
+}

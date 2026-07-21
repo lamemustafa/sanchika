@@ -9,8 +9,11 @@ verification scripts.
 
 - Keep Impeccable, Codex, Claude, and similar assistants outside Sanchika's
   runtime dependency graph.
-- Do not add agent plugins, MCP servers, prompt packs, or generated hook bundles
-  to this repository without a separate trust review.
+- Permit one provider-neutral repository skill at `skills/sanchika-craft/`, with
+  discovery links for supported coding-agent harnesses. It remains development
+  tooling and is never exported by a package.
+- Do not add another agent plugin, MCP server, provider adapter, prompt library,
+  generated hook bundle, or `@sanchika/craft` package.
 - Treat `$impeccable ...` as a harness-level skill command when the current
   agent environment exposes it. Do not document it as a package script.
 - Treat `pnpm dlx impeccable detect <paths>` or a locally installed detector as
@@ -45,6 +48,16 @@ real rendered surface exists:
 7. Promote a detector to CI only after it has low-noise evidence on at least one
    real ComplyEaze adoption and its failure modes are documented.
 
+For S10 craft runs, use protocol `0.1.0` and persist the lifecycle
+`shape -> explore -> review -> owner gate -> build -> reconcile -> verify` in
+`craft/runs/<run-id>/state.json`. Use only `active`, `awaiting_owner`,
+`complete`, or `stopped`. The skill validator reuses the existing TrustBrief,
+DesignBrief, and EvidenceLoop validators; it does not add a runtime API.
+
+All isolated reviewer output is AI proxy evidence. It may guide an owner gate,
+but it is never user validation, human testing, compliance judgment, or proof of
+customer outcomes. Only the owner can approve a direction or production.
+
 ## Non-Goals
 
 - No model runtime.
@@ -53,3 +66,6 @@ real rendered surface exists:
   telemetry.
 - No production-readiness claim until a real ComplyEaze surface consumes
   Sanchika with accessibility, visual review, and rollback evidence.
+- No recurring generation or critique workflow, review dashboard, reviewer
+  tournament, or cross-run adjudication until Sanchika and two consumer runs
+  supply evidence for that hardening.

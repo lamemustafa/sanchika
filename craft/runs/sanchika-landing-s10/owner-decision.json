@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "gate": "C2R-A",
+  "status": "recorded",
+  "decision": "reject all",
+  "comparisonArtifact": "evidence/c2r-a-owner-comparison.webp",
+  "qualifyingOptions": ["Option Alpha", "Option Beta"],
+  "allowedDecisions": ["Option Alpha", "Option Beta", "reject all"],
+  "recordedAt": "2026-07-16T18:43:29Z",
+  "ownerRationale": "Option Alpha and Option Beta look materially the same to the owner, and neither is acceptable.",
+  "evidenceLabels": ["ai-visual-proxy", "ai-recognition-proxy", "not-user-validated"]
+}

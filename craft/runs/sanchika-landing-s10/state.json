@@ -1,0 +1,598 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "runId": "sanchika-landing-s10",
+  "surface": {
+    "repo": "lamemustafa/sanchika",
+    "route": "/",
+    "sourceCommit": "f5f86eae29d573576a40c002da7210d7bc7a4dc4"
+  },
+  "capabilities": {
+    "browser": true,
+    "isolatedReview": true,
+    "rasterGeneration": false
+  },
+  "phase": "owner_gate",
+  "status": "stopped",
+  "reviewRound": 1,
+  "trustBrief": {
+    "id": "sanchika-landing-trust-v1",
+    "consumerMode": "external/operational-saas",
+    "register": "product",
+    "surface": "/",
+    "userJob": "Understand how Sanchika turns source, uncertainty, and human review into inspectable interface contracts.",
+    "primaryDecision": "Choose a qualifying identity direction that can carry the production Sanchika gallery.",
+    "dataSensitivity": ["public-copy"],
+    "trustBoundaries": [
+      "Sanchika supplies contracts and a review loop, not compliance judgment, customer evidence, or an application runtime.",
+      "AX-031 is synthetic evidence and every review result is an AI proxy, not user validation."
+    ],
+    "evidenceRequirements": [
+      "Source, uncertainty, review state, owner accountability, and validation limits remain distinct and visible."
+    ],
+    "selectedPatterns": [
+      { "name": "EvidencePanel", "states": ["pending-review"] }
+    ],
+    "claims": [
+      {
+        "claim": "Code-native Sanchika pilot",
+        "evidence": "Repository-owned AX-031 fixture, browser captures, calibrated isolated reviews, and recognition proxies"
+      }
+    ],
+    "nonGoals": [
+      "No AI runtime, automated compliance judgment, customer proof, authority signal, dashboard, provider adapter, or raster dependency."
+    ],
+    "verificationGates": [
+      "wcag-22-aa",
+      "keyboard-focus",
+      "non-color-state",
+      "desktop-render",
+      "mobile-render",
+      "reduced-motion",
+      "rollback-path"
+    ]
+  },
+  "designBrief": {
+    "id": "sanchika-landing-design-v1",
+    "trustBrief": {
+      "id": "sanchika-landing-trust-v1",
+      "consumerMode": "external/operational-saas",
+      "register": "product",
+      "surface": "/",
+      "userJob": "Understand how Sanchika turns source, uncertainty, and human review into inspectable interface contracts.",
+      "primaryDecision": "Choose a qualifying identity direction that can carry the production Sanchika gallery.",
+      "dataSensitivity": ["public-copy"],
+      "trustBoundaries": [
+        "Sanchika supplies contracts and a review loop, not compliance judgment, customer evidence, or an application runtime.",
+        "AX-031 is synthetic evidence and every review result is an AI proxy, not user validation."
+      ],
+      "evidenceRequirements": [
+        "Source, uncertainty, review state, owner accountability, and validation limits remain distinct and visible."
+      ],
+      "selectedPatterns": [
+        { "name": "EvidencePanel", "states": ["pending-review"] }
+      ],
+      "claims": [
+        {
+          "claim": "Code-native Sanchika pilot",
+          "evidence": "Repository-owned AX-031 fixture, browser captures, calibrated isolated reviews, and recognition proxies"
+        }
+      ],
+      "nonGoals": [
+        "No AI runtime, automated compliance judgment, customer proof, authority signal, dashboard, provider adapter, or raster dependency."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "register": "product",
+    "surface": "/",
+    "firstViewportSignal": "Make regulated interfaces that show their work.",
+    "emotionalIntent": "Prepared, clear, accountable, and unmistakably crafted without borrowing authority.",
+    "narrativeArc": [
+      "State the promise and contract boundary",
+      "Reveal the synthetic source",
+      "Separate provisional interpretation",
+      "Pause at accountable human review"
+    ],
+    "informationPriority": [
+      "Product promise",
+      "Contract boundary",
+      "Source",
+      "Uncertainty",
+      "Human decision",
+      "Next safe action"
+    ],
+    "responsiveConstraints": [
+      "Mobile preserves source, interpretation, and review in semantic reading order without overflow.",
+      "Desktop uses code-native plane geometry while keeping all three accountable parts legible."
+    ],
+    "interactionStates": ["focus", "hover", "selected", "blocked"],
+    "visualQualityGates": [
+      "not-generic-saas",
+      "first-viewport-product-signal",
+      "source-visible",
+      "human-review-visible",
+      "responsive-fit",
+      "keyboardable",
+      "reduced-motion",
+      "performance-budget"
+    ],
+    "verificationEvidence": [
+      "Desktop render",
+      "Mobile render",
+      "Four calibrated isolated visual reviews",
+      "Three semantic-blind and identity-blind matchers",
+      "Browser and accessibility verification before production"
+    ],
+    "nonGoals": [
+      "No dashboard shell, fake authority, generic AI SaaS language, rasterized UI, decorative motion, or motion-gated content."
+    ]
+  },
+  "directions": [
+    {
+      "id": "direction-alpha",
+      "designBriefId": "sanchika-landing-design-v1",
+      "reviewRound": 1,
+      "territory": "joined-planes",
+      "artifactRefs": [
+        "craft/runs/sanchika-landing-s10/evidence/direction-alpha.webp",
+        "craft/runs/sanchika-landing-s10/evidence/alpha-semantic-blind.webp",
+        "craft/runs/sanchika-landing-s10/evidence/alpha-identity-blind.webp"
+      ],
+      "qualified": true,
+      "preference": { "reviewers": 4, "preferredToBaseline": 4, "preferredToControl": 4 },
+      "medians": { "relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4 },
+      "recognition": {
+        "semanticBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/alpha-semantic-blind.webp" },
+        "identityBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/alpha-identity-blind.webp" }
+      }
+    },
+    {
+      "id": "direction-beta",
+      "designBriefId": "sanchika-landing-design-v1",
+      "reviewRound": 1,
+      "territory": "variable-measure",
+      "artifactRefs": [
+        "craft/runs/sanchika-landing-s10/evidence/direction-beta.webp",
+        "craft/runs/sanchika-landing-s10/evidence/beta-semantic-blind.webp",
+        "craft/runs/sanchika-landing-s10/evidence/beta-identity-blind.webp"
+      ],
+      "qualified": true,
+      "preference": { "reviewers": 4, "preferredToBaseline": 4, "preferredToControl": 4 },
+      "medians": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
+      "recognition": {
+        "semanticBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/beta-semantic-blind.webp" },
+        "identityBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false, "artifact": "craft/runs/sanchika-landing-s10/evidence/beta-identity-blind.webp" }
+      }
+    },
+    {
+      "id": "direction-gamma",
+      "designBriefId": "sanchika-landing-design-v1",
+      "reviewRound": 1,
+      "territory": "decision-theatre",
+      "artifactRefs": [
+        "craft/runs/sanchika-landing-s10/evidence/direction-gamma.webp"
+      ],
+      "qualified": false,
+      "disqualificationReasons": [
+        "Only three of four reviewers preferred it to the current baseline.",
+        "The initial accessibility veto was not the territory's only material craft concern."
+      ],
+      "recognition": {
+        "semanticBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false },
+        "identityBlind": { "correctMatchers": 3, "matcherCount": 3, "colorOnly": false }
+      }
+    }
+  ],
+  "iterations": [
+    {
+      "reviewRound": 1,
+      "failingCriterion": "dark-checkpoint-legibility",
+      "changeHypothesis": "Raising secondary-text contrast and size and allowing resilient wrapping will clear the accessibility veto without changing territory identity.",
+      "invariants": [
+        "territory geometry",
+        "provisional wordmark",
+        "frozen copy",
+        "source-interpretation-review order",
+        "interaction behavior"
+      ],
+      "artifactRefs": [
+        "craft/runs/sanchika-landing-s10/evidence/alpha-revision.webp",
+        "craft/runs/sanchika-landing-s10/evidence/beta-revision.webp"
+      ],
+      "result": "improved"
+    }
+  ],
+  "reviews": [
+    {
+      "reviewerId": "brand-01",
+      "role": "brand",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
+      "directionScores": {
+        "direction-alpha": { "relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4 },
+        "direction-beta": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
+        "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 3 }
+      },
+      "preference": ["direction-alpha", "direction-beta", "direction-gamma"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true },
+        "direction-gamma": { "baseline": true, "withoutSkillControl": true }
+      },
+      "vetoes": []
+    },
+    {
+      "reviewerId": "craft-01",
+      "role": "craft",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": { "relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4 },
+      "directionScores": {
+        "direction-alpha": { "relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4 },
+        "direction-beta": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
+        "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 3 }
+      },
+      "preference": ["direction-beta", "direction-alpha", "direction-gamma"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true },
+        "direction-gamma": { "baseline": true, "withoutSkillControl": false }
+      },
+      "vetoes": ["direction-gamma does not preserve co-equal accountable parts"]
+    },
+    {
+      "reviewerId": "trust-01",
+      "role": "trust",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4 },
+      "directionScores": {
+        "direction-alpha": { "relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 3 },
+        "direction-beta": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 3 },
+        "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 3 }
+      },
+      "preference": ["direction-alpha", "direction-beta", "direction-gamma"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true },
+        "direction-gamma": { "baseline": true, "withoutSkillControl": true }
+      },
+      "vetoes": []
+    },
+    {
+      "reviewerId": "accessibility-01",
+      "role": "accessibility",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": { "relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4, "accessibility": 4 },
+      "directionScores": {
+        "direction-alpha": { "relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4, "accessibility": 4 },
+        "direction-beta": { "relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4, "accessibility": 4 },
+        "direction-gamma": { "relevance": 4, "distinctiveness": 4, "craft": 3, "trust": 4, "accessibility": 2 }
+      },
+      "preference": ["direction-alpha", "direction-beta"],
+      "directionComparisons": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true },
+        "direction-gamma": { "baseline": false, "withoutSkillControl": false }
+      },
+      "vetoes": ["direction-gamma remains too dominant and crowded as a default family grammar"],
+      "revisionAssessments": [
+        {
+          "iterationIndex": 0,
+          "preferCount": 4,
+          "medianBefore": 1,
+          "medianAfter": 4,
+          "criticalRegressions": []
+        }
+      ]
+    }
+  ],
+  "ownerDecision": "rejected",
+  "selectedDirectionId": null,
+  "assets": [
+    {
+      "path": "apps/gallery/src/assets/fonts/AnekDevanagari-Variable-subset.woff2",
+      "origin": "https://github.com/google/fonts/blob/ac1371ad5eccb06352daf399448b673a79c98024/ofl/anekdevanagari/AnekDevanagari%5Bwdth%2Cwght%5D.ttf",
+      "licence": "SIL Open Font License 1.1",
+      "sha256": "ee7f019997e631bb456bc2e637e26e37104d31b3b668c05743c41fc41fa308fb",
+      "job": "identity",
+      "retained": false,
+      "disposition": "Deleted with the rejected provisional wordmark after C2R-A. Provenance remains in this terminal run record."
+    }
+  ],
+  "evidenceDigests": {
+    "craft/runs/sanchika-landing-s10/evidence/alpha-identity-blind.webp": "b107e469f6f8cfdf34d4468439afadaeb0bc5a7d808ae1cdb9884acd7a58c9a5",
+    "craft/runs/sanchika-landing-s10/evidence/alpha-revision.webp": "fb7d711efa1a16ce3398b1ce86ae074354e437c95ea4d8c91dfe7134eb68627b",
+    "craft/runs/sanchika-landing-s10/evidence/alpha-semantic-blind.webp": "1be37d02168e78dd293ecdaa10f9254f4a3fc37d4d61548b47328e252659771c",
+    "craft/runs/sanchika-landing-s10/evidence/beta-identity-blind.webp": "fb507a6b93647be102778ce900cdc8d2ef928d8d63232514e704d01ef466da64",
+    "craft/runs/sanchika-landing-s10/evidence/beta-revision.webp": "de0c30a3f5b07aaf1767466d2c0a468f323ccf1f0691a421a9a59fead2edacb2",
+    "craft/runs/sanchika-landing-s10/evidence/beta-semantic-blind.webp": "19a0994ee3430726198341efbc6e219aa8cd7cbbd517dff7af8a52e1768e5363",
+    "craft/runs/sanchika-landing-s10/evidence/c2r-a-owner-comparison.webp": "15e813f63a965404ed6c905db2b8309e6f629a2603b543f1c86cf68be53f53eb",
+    "craft/runs/sanchika-landing-s10/evidence/direction-alpha-mobile-390.webp": "563379154bd044f98a48e6cb0c7677a296477872a5b7350b94b0d2be98a2532d",
+    "craft/runs/sanchika-landing-s10/evidence/direction-alpha.webp": "1dc1ec014850f37929b574cef8a473b8dd7ad21037685d06a0672478b68f259b",
+    "craft/runs/sanchika-landing-s10/evidence/direction-beta.webp": "1ac0dc70d91a54f0d3a5f13fa0059fa075aaf4fa4dc0d05157564266818fc754",
+    "craft/runs/sanchika-landing-s10/evidence/direction-gamma.webp": "9b8e04ab2e40e5d51352b0802815ba7e37dcdd295822df518bdcdd569f97b570",
+    "craft/runs/sanchika-landing-s10/evidence/without-skill-control.webp": "fd3ea9bf35445127de0a5900e1f7382dab6f84390eb63ec4a7c6e1d5c0feded7"
+  },
+  "reconciliation": [
+    {
+      "subject": "direction-alpha",
+      "decision": "delete",
+      "reason": "Owner rejected Option Alpha at C2R-A; remove its gallery lab implementation and retain optimized evidence only."
+    },
+    {
+      "subject": "direction-beta",
+      "decision": "delete",
+      "reason": "Owner rejected Option Beta at C2R-A; remove its gallery lab implementation and retain optimized evidence only."
+    },
+    {
+      "subject": "direction-gamma",
+      "decision": "delete",
+      "reason": "Direction did not qualify and was not presented as an owner-selectable production option."
+    },
+    {
+      "subject": "provisional-wordmark-and-font",
+      "decision": "delete",
+      "reason": "No identity direction was approved, so provisional identity assets must not remain in the gallery."
+    },
+    {
+      "subject": "optimized-comparison-evidence",
+      "decision": "retain",
+      "reason": "Preserve the auditable counterfactual, direction, recognition, and owner-comparison evidence for this terminal run."
+    },
+    {
+      "subject": "canonical-craft-core",
+      "decision": "retain",
+      "reason": "The provider-neutral skill, validator, calibration pack, protocol, and terminal run evidence are independent of owner approval for a visual direction."
+    }
+  ],
+  "evidenceLoop": {
+    "id": "sanchika-landing-evidence-v1",
+    "trustBrief": {
+      "id": "sanchika-landing-trust-v1",
+      "consumerMode": "external/operational-saas",
+      "register": "product",
+      "surface": "/",
+      "userJob": "Understand how Sanchika turns source, uncertainty, and human review into inspectable interface contracts.",
+      "primaryDecision": "Choose a qualifying identity direction that can carry the production Sanchika gallery.",
+      "dataSensitivity": ["public-copy"],
+      "trustBoundaries": [
+        "Sanchika supplies contracts and a review loop, not compliance judgment, customer evidence, or an application runtime.",
+        "AX-031 is synthetic evidence and every review result is an AI proxy, not user validation."
+      ],
+      "evidenceRequirements": [
+        "Source, uncertainty, review state, owner accountability, and validation limits remain distinct and visible."
+      ],
+      "selectedPatterns": [
+        { "name": "EvidencePanel", "states": ["pending-review"] }
+      ],
+      "claims": [
+        {
+          "claim": "Code-native Sanchika pilot",
+          "evidence": "Repository-owned AX-031 fixture, browser captures, calibrated isolated reviews, and recognition proxies"
+        }
+      ],
+      "nonGoals": [
+        "No AI runtime, automated compliance judgment, customer proof, authority signal, dashboard, provider adapter, or raster dependency."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "designBrief": {
+      "id": "sanchika-landing-design-v1",
+      "trustBrief": {
+        "id": "sanchika-landing-trust-v1",
+        "consumerMode": "external/operational-saas",
+        "register": "product",
+        "surface": "/",
+        "userJob": "Understand how Sanchika turns source, uncertainty, and human review into inspectable interface contracts.",
+        "primaryDecision": "Choose a qualifying identity direction that can carry the production Sanchika gallery.",
+        "dataSensitivity": ["public-copy"],
+        "trustBoundaries": [
+          "Sanchika supplies contracts and a review loop, not compliance judgment, customer evidence, or an application runtime.",
+          "AX-031 is synthetic evidence and every review result is an AI proxy, not user validation."
+        ],
+        "evidenceRequirements": [
+          "Source, uncertainty, review state, owner accountability, and validation limits remain distinct and visible."
+        ],
+        "selectedPatterns": [
+          { "name": "EvidencePanel", "states": ["pending-review"] }
+        ],
+        "claims": [
+          {
+            "claim": "Code-native Sanchika pilot",
+            "evidence": "Repository-owned AX-031 fixture, browser captures, calibrated isolated reviews, and recognition proxies"
+          }
+        ],
+        "nonGoals": [
+          "No AI runtime, automated compliance judgment, customer proof, authority signal, dashboard, provider adapter, or raster dependency."
+        ],
+        "verificationGates": [
+          "wcag-22-aa",
+          "keyboard-focus",
+          "non-color-state",
+          "desktop-render",
+          "mobile-render",
+          "reduced-motion",
+          "rollback-path"
+        ]
+      },
+      "register": "product",
+      "surface": "/",
+      "firstViewportSignal": "Make regulated interfaces that show their work.",
+      "emotionalIntent": "Prepared, clear, accountable, and unmistakably crafted without borrowing authority.",
+      "narrativeArc": [
+        "State the promise and contract boundary",
+        "Reveal the synthetic source",
+        "Separate provisional interpretation",
+        "Pause at accountable human review"
+      ],
+      "informationPriority": [
+        "Product promise",
+        "Contract boundary",
+        "Source",
+        "Uncertainty",
+        "Human decision",
+        "Next safe action"
+      ],
+      "responsiveConstraints": [
+        "Mobile preserves source, interpretation, and review in semantic reading order without overflow.",
+        "Desktop uses code-native plane geometry while keeping all three accountable parts legible."
+      ],
+      "interactionStates": ["focus", "hover", "selected", "blocked"],
+      "visualQualityGates": [
+        "not-generic-saas",
+        "first-viewport-product-signal",
+        "source-visible",
+        "human-review-visible",
+        "responsive-fit",
+        "keyboardable",
+        "reduced-motion",
+        "performance-budget"
+      ],
+      "verificationEvidence": [
+        "Desktop render",
+        "Mobile render",
+        "Four calibrated isolated visual reviews",
+        "Three semantic-blind and identity-blind matchers",
+        "Browser and accessibility verification before production"
+      ],
+      "nonGoals": [
+        "No dashboard shell, fake authority, generic AI SaaS language, rasterized UI, decorative motion, or motion-gated content."
+      ]
+    },
+    "renderEvidence": [
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-landing-s10/evidence/c2r-a-owner-comparison.webp",
+        "finding": "Two anonymized code-native directions qualified for owner selection."
+      },
+      {
+        "type": "mobile-screenshot",
+        "artifact": "craft/runs/sanchika-landing-s10/evidence/direction-alpha-mobile-390.webp",
+        "finding": "Actual 390x844 first-viewport render of reviewed Direction Alpha; AI proxy evidence only, not user validation."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/sanchika-landing-s10/evidence/direction-alpha-mobile-390.webp",
+        "finding": "The only shared legibility veto cleared after a 4-of-4 preferred revision and a median increase from 1 to 4."
+      }
+    ],
+    "adoptionEvidence": {
+      "consumerRepo": "lamemustafa/sanchika",
+      "consumerSurface": "/",
+      "status": "deferred",
+      "changedFiles": [
+        "craft/runs/sanchika-landing-s10/state.json",
+        "craft/runs/sanchika-landing-s10/owner-decision.json",
+        "craft/runs/sanchika-landing-s10/review-summaries.json",
+        "craft/runs/sanchika-landing-s10/verification-evidence.json"
+      ],
+      "verificationRun": "Gated lab build, gallery typecheck, calibrated review, and 3-of-3 recognition completed before the owner rejected all qualifying directions; rejected lab code was then removed.",
+      "rollbackPlan": "No production gallery identity was adopted; canonical gallery behavior remains unchanged apart from the independently merged H0 navigation fix."
+    },
+    "decision": "blocked-by-boundary",
+    "residualRisks": [
+      "The owner rejected all qualifying directions, so this run cannot advance to production or consumer adoption.",
+      "All review and recognition results are AI proxy evidence, not user validation."
+    ],
+    "nextActions": [
+      "Begin a new craft run only after the owner supplies or approves a materially new design brief.",
+      "Do not reuse the rejected territory implementations as production identity."
+    ]
+  },
+  "nextAction": "Start a new Sanchika landing craft run only after a materially new owner brief.",
+  "stopReason": "owner_rejected"
+}

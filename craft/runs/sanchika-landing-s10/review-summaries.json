@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "runId": "sanchika-landing-s10",
+  "evidenceLabels": [
+    "ai-visual-proxy",
+    "ai-recognition-proxy",
+    "not-user-validated"
+  ],
+  "calibration": {
+    "controls": [
+      "current-baseline",
+      "generic-ai-saas",
+      "off-brief-editorial",
+      "fake-authority",
+      "mobile-a11y-failure"
+    ],
+    "rolesPassed": ["brand", "craft", "trust", "accessibility"],
+    "disqualifiedRoles": [],
+    "promptCorrections": 0
+  },
+  "visualReviews": [
+    {
+      "role": "brand",
+      "summary": "Alpha is the clearest and most scalable identity grammar; Beta is more expressive; both make the evidence chain and Indian relevance specific without borrowing authority.",
+      "ranking": ["direction-alpha", "direction-beta", "direction-gamma"],
+      "qualifiedPreferences": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      }
+    },
+    {
+      "role": "craft",
+      "summary": "Beta has the strongest asymmetric rhythm; Alpha is the most resolved and extensible. Gamma makes the checkpoint too dominant for a default family grammar.",
+      "ranking": ["direction-beta", "direction-alpha", "direction-gamma"],
+      "qualifiedPreferences": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      }
+    },
+    {
+      "role": "trust",
+      "summary": "Alpha preserves the most balanced accountability chain. Alpha and Beta keep synthetic status, uncertainty, owner, approval state, and next safe action visible without implying automated judgment.",
+      "ranking": ["direction-alpha", "direction-beta", "direction-gamma"],
+      "qualifiedPreferences": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      }
+    },
+    {
+      "role": "accessibility",
+      "summary": "Alpha and Beta reflow into a coherent source-to-review mobile sequence without visible overflow. The shared dark-checkpoint contrast veto cleared after the single focused revision; Gamma remained over-dominant and crowded.",
+      "ranking": ["direction-alpha", "direction-beta", "direction-gamma"],
+      "qualifiedPreferences": {
+        "direction-alpha": { "baseline": true, "withoutSkillControl": true },
+        "direction-beta": { "baseline": true, "withoutSkillControl": true }
+      }
+    }
+  ],
+  "revisionAssessment": {
+    "criterion": "dark-checkpoint-legibility",
+    "reviewersPreferringAfter": 4,
+    "reviewerCount": 4,
+    "medianBefore": 1,
+    "medianAfter": 4,
+    "criticalRegressions": [],
+    "trustVetoRemaining": false,
+    "accessibilityVetoRemaining": false
+  },
+  "recognition": {
+    "matcherCount": 3,
+    "semanticBlind": {
+      "direction-alpha": { "correct": 3, "rationale": "Aligned planes and labeled open seams remained recognizable." },
+      "direction-beta": { "correct": 3, "rationale": "Unequal measures and narrow Witness Joint intervals remained recognizable." },
+      "direction-gamma": { "correct": 3, "rationale": "Stacked evidence beside one oversized review stage remained recognizable." }
+    },
+    "identityBlind": {
+      "direction-alpha": { "correct": 3, "rationale": "The joined plane topology survived replacement of the wordmark and copy." },
+      "direction-beta": { "correct": 3, "rationale": "Variable typographic measure and column staging survived identity removal." },
+      "direction-gamma": { "correct": 3, "rationale": "The theatrical checkpoint hierarchy survived identity removal." }
+    },
+    "colorOnlyMatches": 0
+  },
+  "qualification": {
+    "direction-alpha": true,
+    "direction-beta": true,
+    "direction-gamma": false
+  }
+}

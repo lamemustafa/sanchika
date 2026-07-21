@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sanchika Craft"
+  short_description: "Run evidence-gated interface craft loops"
+  default_prompt: "Use $sanchika-craft to shape, review, build, and verify a regulated interface with explicit owner gates."

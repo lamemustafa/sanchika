@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "runId": "sanchika-landing-s10",
+  "capturedAt": "2026-07-16T18:43:29Z",
+  "sourceCommit": "f5f86eae29d573576a40c002da7210d7bc7a4dc4",
+  "phase": "owner_gate",
+  "status": "stopped",
+  "terminalOutcome": {
+    "ownerDecision": "reject all",
+    "stopReason": "owner_rejected",
+    "reason": "The owner found the two qualifying options materially alike and accepted neither.",
+    "productionIdentityAdopted": false,
+    "consumerAdoptionAuthorized": false,
+    "rejectedLabCodeRemoved": true,
+    "optimizedEvidenceRetained": true
+  },
+  "completedEvidence": {
+    "ratification": {
+      "status": "passed",
+      "sources": ["PRODUCT.md", "DESIGN.md", "docs/ai-native-tooling.md", "docs/architecture.md", "docs/non-goals.md"]
+    },
+    "craftCore": {
+      "status": "passed",
+      "skill": "skills/sanchika-craft/SKILL.md",
+      "protocolVersion": "0.1.0",
+      "runValidation": "Craft run valid: sanchika-landing-s10 (owner_gate/stopped)",
+      "calibrationPackBytes": 128245
+    },
+    "counterfactual": {
+      "status": "passed",
+      "sameCommit": true,
+      "freshContext": true,
+      "plainRequestOnly": true,
+      "codeRetained": false,
+      "artifact": "evidence/without-skill-control.webp"
+    },
+    "directionLab": {
+      "status": "passed",
+      "territories": ["joined-planes", "variable-measure", "decision-theatre"],
+      "productionBuildRoutes": 61,
+      "gatedLabBuildRoutes": 64,
+      "productionLabRoutes": 0,
+      "rasterGeneration": false,
+      "retainedMobileEvidence": "evidence/direction-alpha-mobile-390.webp (390x844)",
+      "terminalDisposition": "All territory, provisional identity, and provisional font code removed after owner rejection; optimized evidence retained."
+    },
+    "review": {
+      "status": "passed",
+      "calibratedVisualRoles": 4,
+      "recognitionMatchers": 3,
+      "semanticBlindCorrectPerTerritory": 3,
+      "identityBlindCorrectPerTerritory": 3,
+      "colorOnlyMatches": 0,
+      "qualifyingDirections": ["direction-alpha", "direction-beta"],
+      "rejectedDirections": ["direction-gamma"],
+      "reviewArtifact": "review-summaries.json"
+    },
+    "focusedRevision": {
+      "status": "passed",
+      "criterion": "dark-checkpoint-legibility",
+      "preference": "4/4 after",
+      "medianBefore": 1,
+      "medianAfter": 4,
+      "criticalRegressions": 0,
+      "remainingTrustVetoes": 0,
+      "remainingAccessibilityVetoes": 0
+    },
+    "repositoryVerification": {
+      "status": "passed",
+      "command": "pnpm verify",
+      "validate": "passed",
+      "reviewGateFixtures": "6/6 passed",
+      "reviewGateSyncFixtures": "2/2 passed",
+      "typecheck": "passed",
+      "build": "passed",
+      "templateRun": "passed",
+      "pilotRun": "passed",
+      "trustBriefFixtures": "26/26 passed",
+      "designBriefFixtures": "14/14 passed",
+      "evidenceLoopFixtures": "6/6 passed",
+      "packageApi": "passed",
+      "packageArtifacts": "passed",
+      "consumerCheck": "passed",
+      "browserCells": "42/42 passed",
+      "axeRoutes": "7/7 passed",
+      "productionSmokeRoutes": "61/61 passed",
+      "baselineLcpMs": 1228,
+      "baselineCls": 0,
+      "baselineCssGzipBytes": 15436,
+      "baselineSearchScriptGzipBytes": 1057
+    },
+    "budgets": {
+      "committedCreativeEvidenceBytes": 997960,
+      "creativeEvidenceLimitBytes": 1000000,
+      "selfHostedFontBytes": 0,
+      "selfHostedFontLimitBytes": 160000,
+      "externalOrigins": 0
+    }
+  },
+  "pendingRequiredGates": [],
+  "notStartedBecauseOwnerRejected": [
+    "selected-direction typeface bracket and production build",
+    "four-role copy comprehension review",
+    "C2R-B production approval",
+    "production browser and three-run performance matrix",
+    "production identity deployment",
+    "S11 consumer adoption"
+  ],
+  "parallelH0": {
+    "sanchikaPr": 50,
+    "sanchikaState": "merged as dd03c363e23523fe3961892d62d851de764d4101; remote and local task branches deleted; canonical local master fast-forwarded",
+    "axalPr": 193,
+    "complyEazePr": 194,
+    "complyEazeState": "mergeable with clean current-head Codex comments; GitHub Actions jobs were not started because account billing or spend limit is blocked"
+  },
+  "evidenceLabels": [
+    "ai-visual-proxy",
+    "ai-recognition-proxy",
+    "browser-verified",
+    "not-user-validated"
+  ]
+}

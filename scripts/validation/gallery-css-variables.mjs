@@ -24,6 +24,32 @@ export function findUnresolvedGalleryVariables({ html, copiedCss }) {
     .sort((left, right) => left.variable.localeCompare(right.variable));
 }
 
+export function findGalleryIdentityPolicyFailures({ path, source }) {
+  const failures = [];
+  const activeSource = decodeCssEscapes(stripCssComments(source));
+  const normalizedPath = path.replaceAll("\\", "/").replace(/^\.\//, "");
+  const galleryRelativePath = normalizedPath.startsWith("apps/gallery/src/")
+    ? normalizedPath.slice("apps/gallery/src/".length)
+    : normalizedPath;
+  const isIdentityLayer = galleryRelativePath === "styles/identity.css";
+  if (/--lab-/.test(activeSource)) failures.push(`${path} must not contain retired lab variables`);
+  if (/--sk-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not author --sk-* variables`);
+  if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
+  if (isIdentityLayer)
+    for (const match of activeSource.matchAll(/--gallery-brand-[a-z0-9-]+\s*:\s*([^;}]+)(?=;|})/gi))
+      if (containsNonOklchColorLiteral(match[1]))
+        failures.push("styles/identity.css gallery color variables must use OKLCH, not hex or other color functions");
+  const colorSource = isIdentityLayer ? activeSource.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;}]+(?=;|})/gi, "") : activeSource;
+  if (/#[0-9a-f]{3,8}\b|\b(?:oklch|rgba?|hsla?|hwb|lab|lch|color)\s*\(/i.test(colorSource)) failures.push(`${path} must not contain raw colors outside gallery identity declarations`);
+  if (isIdentityLayer && (/\.sk-[a-z0-9-]+/i.test(activeSource) || /\[\s*class\b[^\]]*sk-/i.test(activeSource))) failures.push("styles/identity.css must not style package selectors");
+  if (isIdentityLayer && containsExternalCssOrigin(activeSource)) failures.push("styles/identity.css must not load external font or image origins");
+  for (const match of activeSource.matchAll(/font-family\s*:\s*([^;]+)/gi)) {
+    if (!isIdentityLayer && !match[1].trim().startsWith("var(")) failures.push(`${path} must use package or gallery identity typography variables`);
+  }
+  for (const match of activeSource.matchAll(/box-shadow\s*:\s*([^;]+)/gi)) if (!match[1].trim().startsWith("var(")) failures.push(`${path} must use package elevation tokens`);
+  return failures;
+}
+
 export function runGalleryVariableFixtures() {
   const fixtures = [
     {
@@ -49,6 +75,12 @@ export function runGalleryVariableFixtures() {
       html: '<style>/* .card { gap: var(--sk-missing); } */</style>',
       copiedCss: [],
       expected: [],
+    },
+    {
+      name: "comment delimiters inside strings preserve policy checks",
+      html: '<style>.card { content: "/*"; color: var(--sk-missing); content: "*/"; }</style>',
+      copiedCss: [],
+      expected: ["--sk-missing"],
     },
     {
       name: "nested var usage",
@@ -78,7 +110,199 @@ export function runGalleryVariableFixtures() {
     }
   }
 
-  return { count: fixtures.length, failures };
+  const identityFixtures = [
+    {
+      name: "comment delimiters inside strings do not hide external origins",
+      source: '.card { content: "/*"; } @import "https://fonts.example/style.css"; .card { content: "*/"; }',
+      blocked: true,
+    },
+    {
+      name: "relative identity asset",
+      source: '@font-face { src: url("../assets/font.woff2"); }',
+      blocked: false,
+    },
+    {
+      name: "absolute URL function",
+      source: '@font-face { src: url("https://fonts.example/font.woff2"); }',
+      blocked: true,
+    },
+    {
+      name: "protocol-relative URL function",
+      source: "@font-face { src: url(//cdn.example/font.woff2); }",
+      blocked: true,
+    },
+    {
+      name: "scheme URL without slashes",
+      source: "@font-face { src: url(https:fonts.example/font.woff2); }",
+      blocked: true,
+    },
+    {
+      name: "embedded data URL",
+      source: "@font-face { src: url(data:font/woff2;base64,AA==); }",
+      blocked: false,
+    },
+    {
+      name: "quoted external import",
+      source: '@import "https://fonts.example/style.css";',
+      blocked: true,
+    },
+    {
+      name: "escaped external import",
+      source: '@import "\\68 ttps://fonts.example/style.css";',
+      blocked: true,
+    },
+    {
+      name: "escaped external URL function",
+      source: '@font-face { src: url(\\68 ttps://fonts.example/font.woff2); }',
+      blocked: true,
+    },
+    {
+      name: "protocol-relative import",
+      source: '@import url("//fonts.example/style.css");',
+      blocked: true,
+    },
+    {
+      name: "external image-set string",
+      source: 'background-image: image-set("https://cdn.example/identity.webp" 1x);',
+      blocked: true,
+    },
+    {
+      name: "local image-set string",
+      source: 'background-image: image-set("../assets/identity.webp" 1x);',
+      blocked: false,
+    },
+  ];
+  for (const fixture of identityFixtures) {
+    const blocked = findGalleryIdentityPolicyFailures({
+      path: "styles/identity.css",
+      source: fixture.source,
+    }).some((failure) => failure.includes("external font or image origins"));
+    if (blocked !== fixture.blocked)
+      failures.push(
+        `${fixture.name}: expected external origin blocked=${fixture.blocked}; found ${blocked}`,
+      );
+  }
+
+  const selectorFixtures = [
+    { source: '.sk-button { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '.\\73 k-button { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '[class~="sk-button"] { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '[class^="sk-"] { color: var(--gallery-brand-ink); }', blocked: true },
+    { source: '.craft-button { color: var(--gallery-brand-ink); }', blocked: false },
+  ];
+  for (const fixture of selectorFixtures) {
+    const blocked = findGalleryIdentityPolicyFailures({
+      path: "styles/identity.css",
+      source: fixture.source,
+    }).some((failure) => failure.includes("package selectors"));
+    if (blocked !== fixture.blocked)
+      failures.push(
+        `identity selector ${fixture.source}: expected blocked=${fixture.blocked}; found ${blocked}`,
+      );
+  }
+
+  const nestedIdentityFailures = findGalleryIdentityPolicyFailures({
+    path: "components/styles/identity.css",
+    source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+  });
+  if (
+    !nestedIdentityFailures.some((failure) =>
+      failure.includes("outside styles/identity.css"),
+    )
+  )
+    failures.push(
+      "nested identity stylesheet must not receive canonical identity privileges",
+    );
+
+  const canonicalFullPathFailures = findGalleryIdentityPolicyFailures({
+    path: "apps/gallery/src/styles/identity.css",
+    source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+  });
+  if (canonicalFullPathFailures.length)
+    failures.push(
+      `canonical full identity path must receive identity privileges: ${canonicalFullPathFailures.join(", ")}`,
+    );
+
+  const nestedFullPathFailures = findGalleryIdentityPolicyFailures({
+    path: "apps/gallery/src/components/styles/identity.css",
+    source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+  });
+  if (
+    !nestedFullPathFailures.some((failure) =>
+      failure.includes("outside styles/identity.css"),
+    )
+  )
+    failures.push(
+      "nested full identity path must not receive canonical identity privileges",
+    );
+
+  const identityColorFixtures = [
+    {
+      source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+      blocked: false,
+    },
+    {
+      source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40) }",
+      blocked: false,
+    },
+    {
+      source: ":root { --gallery-brand-ink: #fff; }",
+      blocked: true,
+    },
+    {
+      source: ":root { --gallery-brand-ink: rgb(20 30 40); }",
+      blocked: true,
+    },
+  ];
+  for (const fixture of identityColorFixtures) {
+    const blocked = findGalleryIdentityPolicyFailures({
+      path: "styles/identity.css",
+      source: fixture.source,
+    }).some((failure) => failure.includes("must use OKLCH"));
+    if (blocked !== fixture.blocked)
+      failures.push(
+        `identity color ${fixture.source}: expected blocked=${fixture.blocked}; found ${blocked}`,
+      );
+  }
+
+  return {
+    count:
+      fixtures.length +
+      identityFixtures.length +
+      selectorFixtures.length +
+      identityColorFixtures.length +
+      3,
+    failures,
+  };
+}
+
+function containsExternalCssOrigin(source) {
+  const active = stripCssComments(source);
+  return (
+    /url\(\s*["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active) ||
+    /@import\s+(?:url\(\s*)?["']?\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active) ||
+    /(?:-webkit-)?image-set\([^)]*["']\s*(?:(?!data:|blob:)[a-z][a-z0-9+.-]*:|\/\/)/i.test(active)
+  );
+}
+
+function containsNonOklchColorLiteral(source) {
+  return /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|color)\s*\(/i.test(source);
+}
+
+function decodeCssEscapes(source) {
+  return source
+    .replace(/\\(?:\r\n|[\n\r\f])/g, "")
+    .replace(/\\([0-9a-f]{1,6})[\t\n\f\r ]?/gi, (_match, hex) => {
+      const codePoint = Number.parseInt(hex, 16);
+      if (
+        codePoint === 0 ||
+        codePoint > 0x10ffff ||
+        (codePoint >= 0xd800 && codePoint <= 0xdfff)
+      )
+        return "\ufffd";
+      return String.fromCodePoint(codePoint);
+    })
+    .replace(/\\([^\n\r\f0-9a-f])/gi, "$1");
 }
 
 function extractHtmlCss(html) {
@@ -104,5 +328,30 @@ function extractHtmlCss(html) {
 }
 
 function stripCssComments(css) {
-  return css.replace(/\/\*[\s\S]*?\*\//g, "");
+  let active = "";
+  let quote = null;
+  let escaped = false;
+  for (let index = 0; index < css.length; index += 1) {
+    const character = css[index];
+    if (quote) {
+      active += character;
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === quote) quote = null;
+      continue;
+    }
+    if (character === "\"" || character === "'") {
+      quote = character;
+      active += character;
+      continue;
+    }
+    if (character === "/" && css[index + 1] === "*") {
+      const end = css.indexOf("*/", index + 2);
+      active += " ";
+      index = end === -1 ? css.length : end + 1;
+      continue;
+    }
+    active += character;
+  }
+  return active;
 }

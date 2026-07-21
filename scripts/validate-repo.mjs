@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   evaluateContrastPairs,
@@ -15,6 +15,7 @@ import {
 import { renderTokenArtifacts, validateTokenSource } from "./token-generation.mjs";
 import { validateCiWorkflow } from "./validation/ci-workflow.mjs";
 import { runBuildArtifactFixtures } from "./validation/build-artifacts.mjs";
+import { findGalleryIdentityPolicyFailures } from "./validation/gallery-css-variables.mjs";
 import { runGalleryProductionFixtures } from "./validation/gallery-production.mjs";
 import { resolveGalleryReleaseState } from "./validation/gallery-release-state.mjs";
 import { validatePagesWorkflow } from "./validation/pages-workflow.mjs";
@@ -60,6 +61,17 @@ import { runReleaseScreenshotFixtures, stableReleaseScreenshotSet } from "./vali
 import { validateSensitiveExamples } from "./validation/sensitive-examples.mjs";
 import { validateTrustBriefContracts } from "./validation/trust-brief-contracts.mjs";
 import { runTarballContentsFixtures } from "./validation/tarball-contents.mjs";
+import {
+  loadPatternValidators,
+  loadRunCalibrationMetadata,
+  loadRunPreviousState,
+  requiresTransitionEvidence,
+  validateCalibrationPack,
+  validateCraftRun,
+  validateCraftTransition,
+  validateInstructionManifest,
+} from "../skills/sanchika-craft/scripts/validate-run.mjs";
+import { runCraftRunFixtures } from "./validation/craft-run-fixtures.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const failures = [];
@@ -103,6 +115,122 @@ const actualPackages = readdirSync(join(root, "packages"))
   .sort();
 const expectedApps = ["gallery"];
 const actualApps = readdirSync(join(root, "apps")).filter((entry) => !entry.startsWith(".")).sort();
+
+const craftSkillRoot = join(root, "skills/sanchika-craft");
+const expectedCraftSkillFiles = [
+  "SKILL.md", "agents/openai.yaml", "assets/calibration/current-baseline.webp", "assets/calibration/fake-authority.webp",
+  "assets/calibration/generic-ai-saas.webp", "assets/calibration/metadata.json", "assets/calibration/mobile-a11y-failure.webp",
+  "assets/calibration/off-brief-editorial.webp", "assets/run-template.json", "references/protocol.md", "scripts/validate-run.mjs",
+].sort();
+const actualCraftSkillFiles = readdirSync(craftSkillRoot, { recursive: true })
+  .filter((path) => typeof path === "string" && statSync(join(craftSkillRoot, path)).isFile())
+  .map((path) => path.replaceAll("\\", "/"))
+  .sort();
+if (JSON.stringify(actualCraftSkillFiles) !== JSON.stringify(expectedCraftSkillFiles)) {
+  fail(`skills/sanchika-craft must contain only the canonical pilot files; found ${actualCraftSkillFiles.join(", ")}`);
+}
+for (const discoveryPath of [".agents/skills/sanchika-craft", ".claude/skills/sanchika-craft"]) {
+  if (!existsSync(join(root, discoveryPath)) || realpathSync(join(root, discoveryPath)) !== realpathSync(craftSkillRoot)) {
+    fail(`${discoveryPath} must resolve to the canonical skills/sanchika-craft directory`);
+  }
+}
+const craftValidators = await loadPatternValidators(root);
+const craftRunRoot = join(root, "craft/runs");
+const craftRunDirectories = readdirSync(craftRunRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
+const craftStatePaths = craftRunDirectories.map(
+  (runId) => `craft/runs/${runId}/state.json`,
+);
+if (craftStatePaths.length === 0) fail("craft/runs must contain at least one persisted run");
+const craftFixtureStatePath = craftStatePaths.find((statePath) => {
+  if (!existsSync(join(root, statePath))) return false;
+  const candidate = readJson(statePath);
+  const roles = new Set(
+    Array.isArray(candidate.reviews)
+      ? candidate.reviews.map((review) => review?.role)
+      : [],
+  );
+  return (
+    Array.isArray(candidate.directions) &&
+    candidate.directions.length >= 2 &&
+    candidate.directions[0]?.qualified === true &&
+    Array.isArray(candidate.iterations) &&
+    candidate.iterations.length > 0 &&
+    ["brand", "craft", "trust", "accessibility"].every((role) =>
+      roles.has(role),
+    ) &&
+    existsSync(join(root, dirname(statePath), "instruction-manifest.json"))
+  );
+});
+let craftRunFixtures = { count: 0, failures: [] };
+if (!craftFixtureStatePath) {
+  fail("craft run fixtures require one discovered reviewed run with two directions, iteration history, and an instruction manifest");
+} else {
+  craftRunFixtures = runCraftRunFixtures({
+    baseRun: readJson(craftFixtureStatePath),
+    validators: craftValidators,
+    repoRoot: root,
+  });
+  for (const fixtureFailure of craftRunFixtures.failures)
+    fail(`craft run fixture ${fixtureFailure}`);
+}
+const craftTemplatePath = "skills/sanchika-craft/assets/run-template.json";
+for (const issue of validateCraftRun(readJson(craftTemplatePath), craftValidators, {
+  allowTemplate: true,
+  repoRoot: root,
+}))
+  fail(`${craftTemplatePath} ${issue.field}: ${issue.reason}`);
+for (const statePath of craftStatePaths) {
+  if (!existsSync(join(root, statePath))) {
+    fail(`${dirname(statePath)} requires state.json`);
+    continue;
+  }
+  const run = readJson(statePath);
+  const manifestPath = join(dirname(statePath), "instruction-manifest.json");
+  let runCalibrationMetadata;
+  let manifest;
+  if (!existsSync(join(root, manifestPath))) {
+    fail(`${statePath} requires ${manifestPath}`);
+  } else {
+    manifest = readJson(manifestPath);
+    const manifestIssues = validateInstructionManifest(manifest, run, root);
+    for (const issue of manifestIssues)
+      fail(`${manifestPath} ${issue.field}: ${issue.reason}`);
+    if (manifestIssues.length === 0) {
+      runCalibrationMetadata = loadRunCalibrationMetadata(manifest, run, root);
+      for (const issue of validateCalibrationPack(
+        dirname(join(root, manifest.sources.calibrationMetadata)),
+      ))
+        fail(`${manifestPath} ${issue.field}: ${issue.reason}`);
+    }
+  }
+  for (const issue of validateCraftRun(run, craftValidators, {
+    allowTemplate: false,
+    repoRoot: root,
+    expectedRunId: dirname(statePath).split("/").at(-1),
+    calibrationMetadata: runCalibrationMetadata,
+  }))
+    fail(`${statePath} ${issue.field}: ${issue.reason}`);
+  if (manifest && requiresTransitionEvidence(run, manifest)) {
+    try {
+      const previous = loadRunPreviousState(manifest, run, root);
+      for (const issue of validateCraftRun(previous, craftValidators, {
+        allowTemplate: false,
+        repoRoot: root,
+        expectedRunId: run.runId,
+        calibrationMetadata: runCalibrationMetadata,
+      }))
+        fail(`${manifest.transition.previousState} ${issue.field}: ${issue.reason}`);
+      for (const issue of validateCraftTransition(previous, run))
+        fail(`${statePath} transition ${issue.field}: ${issue.reason}`);
+    } catch (error) {
+      fail(`${statePath} prior transition snapshot is unreadable: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+}
+for (const issue of validateCalibrationPack(join(craftSkillRoot, "assets/calibration"))) fail(`craft calibration ${issue.field}: ${issue.reason}`);
 
 validateSensitiveExamples({ root, fail });
 
@@ -204,6 +332,9 @@ if (rootPackage.scripts?.["design:brief:fixtures"] !== "node scripts/validation/
 if (rootPackage.scripts?.["evidence:loop:fixtures"] !== "node scripts/validation/evidence-loop-fixtures.mjs") {
   fail("root package must expose evidence:loop:fixtures for evidence-loop runtime regression checks");
 }
+
+if (rootPackage.scripts?.verify?.includes("craft/runs/sanchika-landing-s10/state.json"))
+  fail("root verify must rely on repository-wide craft run discovery, not a hard-coded pilot path");
 
 if (rootPackage.scripts?.["github:ruleset"] !== "node scripts/render-github-master-ruleset.mjs") {
   fail("root package must expose github:ruleset for reproducible branch ruleset setup");
@@ -1084,8 +1215,7 @@ for (const duplicatedInventory of [/const\s+primitiveNames\s*=/, /const\s+patter
   if (duplicatedInventory.test(`${gallerySiteSource}\n${galleryPrimitiveDetailSource}\n${galleryPatternDetailSource}\n${gallerySearchSource}`)) fail(`gallery inventories must not duplicate package metadata with ${duplicatedInventory}`);
 }
 for (const [path, source] of galleryStyleSources) {
-  if (/--sk-[a-z0-9-]+\s*:/.test(source)) fail(`${path} must not author or override --sk-* variables`);
-  if (/--lab-|oklch\(\s*(?:\d|\.)|#[0-9a-f]{3,8}\b/i.test(source)) fail(`${path} must not contain retired lab values or raw foundation colors`);
+  for (const identityFailure of findGalleryIdentityPolicyFailures({ path, source })) fail(identityFailure);
 }
 
 for (const sourceUrl of [
@@ -2174,6 +2304,7 @@ console.log(`Sanchika build artifact fixtures passed (${buildArtifactFixtures.co
 console.log(`Sanchika gallery production fixtures passed (${galleryProductionFixtures.count} cases).`);
 console.log(`Sanchika tarball content fixtures passed (${tarballContentsFixtures.count} cases).`);
 console.log(`Sanchika product pattern fixtures passed (${productPatternFixtures.count} cases).`);
+console.log(`Sanchika craft run fixtures passed (${craftRunFixtures.count} cases).`);
 console.log(`Sanchika release manifest fixtures passed (${releaseManifestFixtureCount} cases).`);
 console.log(`Sanchika release screenshot fixtures passed (${releaseScreenshotFixtures.count} cases).`);
 console.log(`Sanchika release readiness fixtures passed (${releaseReadinessFixtures.count} cases).`);
