@@ -24,6 +24,8 @@ a { color: inherit; }
 .craft-lab__masthead p { margin: 0; opacity: 0.76; }
 .craft-lab__wordmark { font-size: 1.35rem; font-weight: 760; letter-spacing: -0.045em; text-decoration: none; }
 .craft-lab__masthead a:not(.craft-lab__wordmark) { text-decoration-thickness: 1px; text-underline-offset: 0.3em; }
+.craft-lab__masthead a, .craft-lab__actions a { display: inline-flex; align-items: center; min-block-size: 2.75rem; }
+.craft-lab a:focus-visible { outline: 2px solid var(--gallery-brand-accent); outline-offset: 0.25rem; }
 
 .craft-lab__hero { position: relative; display: grid; grid-template-columns: minmax(0, 0.93fr) minmax(28rem, 1.07fr); gap: clamp(2.5rem, 7vw, 9rem); max-width: 1480px; min-height: min(720px, calc(100vh - 4.5rem)); margin: auto; padding: clamp(3.5rem, 8vw, 9rem) clamp(1.2rem, 4vw, 4rem) clamp(4rem, 8vw, 8rem); }
 .craft-lab__hero-copy { position: relative; z-index: 1; max-width: 43rem; align-self: center; }
@@ -85,6 +87,7 @@ a { color: inherit; }
 .craft-lab--craft-language .craft-lab__joint { top: 51%; left: 31%; width: 44%; color: var(--gallery-brand-accent); transform: rotate(0); }
 .craft-lab--craft-language .craft-lab__composition p { top: 52%; left: 6%; color: var(--gallery-brand-accent); }
 .craft-lab--craft-language .craft-lab__proof { background: var(--gallery-brand-proof-bg); color: var(--gallery-brand-proof-ink); }
+.craft-lab--craft-language .craft-lab__proof .sk-pattern-review-desk-preview { color: var(--sk-color-ink-primary); }
 .craft-lab--craft-language .craft-lab__footer { color: var(--gallery-brand-ink); }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

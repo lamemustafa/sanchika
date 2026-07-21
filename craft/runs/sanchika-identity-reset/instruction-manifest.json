@@ -31,6 +31,6 @@
   },
   "transition": {
     "previousState": "craft/runs/sanchika-identity-reset/transitions/previous-state.json",
-    "sha256": "7dce79619d59ebf34ee0c5129394ff328e95ac60f02b611fef55368112064ffc"
+    "sha256": "1e67199c107048922b82575f40d8447a0cc0783ffecebb8d45fa6d5c7b7dd19f"
   }
 }

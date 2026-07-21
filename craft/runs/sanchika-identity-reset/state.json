@@ -8,13 +8,12 @@
     "sourceCommit": "70f016aa0a2a455433652b7779c3ff5c310af138"
   },
   "capabilities": {
-    "browser": false,
+    "browser": true,
     "isolatedReview": true,
     "rasterGeneration": false
   },
   "phase": "explore",
-  "status": "stopped",
-  "stopReason": "capability_blocked",
+  "status": "active",
   "reviewRound": 1,
   "trustBrief": {
     "id": "sanchika-identity-reset-trust-v1",
@@ -176,7 +175,10 @@
     "craft/runs/sanchika-identity-reset/evidence/shape-accessibility.md": "bbe09ed1e70c272036d242a73a3e6524b62f706be4f92030a1bbdd1d540fa62e",
     "craft/runs/sanchika-identity-reset/evidence/living-collection.html": "a1bace283a03e8bb5f318d9ebc10dd3ceebf9cbc80983e061125bb4c6b1b834d",
     "craft/runs/sanchika-identity-reset/evidence/witness-joint.html": "bae246c7150be63687ac22eb7d9a6ea05f0d4c7e18d8aebe22a59cd56182dff7",
-    "craft/runs/sanchika-identity-reset/evidence/craft-language.html": "f6bf4d445058e200ac10f0f41b00cc33a335804d339bb3a0ca398cc61bf268fc"
+    "craft/runs/sanchika-identity-reset/evidence/craft-language.html": "f6bf4d445058e200ac10f0f41b00cc33a335804d339bb3a0ca398cc61bf268fc",
+    "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop.png": "2bf837f9f47aaad04f760fd6412033cb6ed4d4aa68366cc6312ae32b99d61823",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop.png": "aacd0d9b74f806ae6067a2a67520757f705825767adc39853f320c82345bf478",
+    "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop.png": "cf1ad27bf5565f89efac9d657f0b666f096be9dd441c8dca6ed11c84addf3289"
   },
   "reconciliation": [],
   "evidenceLoop": {
@@ -316,6 +318,26 @@
         "type": "accessibility-note",
         "artifact": "craft/runs/sanchika-identity-reset/evidence/shape-accessibility.md",
         "finding": "Accessibility constraints are explicit at shape and must be verified again against interactive direction code."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop.png",
+        "finding": "Owner-provided live desktop capture of Direction A. It shows real proof below the identity composition, but browser chrome and an unrelated desktop overlay remain in the capture."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop.png",
+        "finding": "Owner-provided live desktop capture of Direction B. It proves route rendering only; it is not a mobile, keyboard, forced-colors, or reduced-motion result."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop.png",
+        "finding": "Owner-provided live desktop capture of Direction C. The proof transition needs contrast review before any direction can qualify."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/mobile-433-browser-evidence.md",
+        "finding": "Owner-provided 433px responsive browser captures show all three live routes and confirm the repaired Direction C proof foreground; they are supporting evidence only and leave the clean 390px and interaction matrix open."
       }
     ],
     "adoptionEvidence": {
@@ -327,20 +349,20 @@
         "apps/gallery/src/components/craft/IdentityResetDirection.astro",
         "apps/gallery/src/styles/craft-lab.css"
       ],
-      "verificationRun": "SANCHIKA_CRAFT_LAB=true pnpm build emitted all three routes. A normal pnpm build emitted 61 production pages and no craft-lab route.",
+      "verificationRun": "SANCHIKA_CRAFT_LAB=true pnpm build emitted all three routes. A normal pnpm build emitted 61 production pages and no craft-lab route. Owner-driven local Astro dev served each desktop direction successfully.",
       "rollbackPlan": "Delete the isolated lab and restore the recorded source commit before any production adoption."
     },
     "decision": "needs-design-revision",
     "residualRisks": [
-      "No direction has desktop/mobile browser captures or accessibility interaction evidence.",
+      "433px responsive browser captures are retained, but a clean 390px matrix plus keyboard, forced-colors, and reduced-motion evidence is still missing.",
       "No identity direction has been selected by the owner.",
       "No production gallery code has been changed."
     ],
     "nextActions": [
-      "Restore a browser-capture capability and retain desktop and 390px renders for all three directions.",
+      "Retain 390px renders for all three directions without browser chrome or unrelated desktop overlays.",
       "Run keyboard, forced-colors, and reduced-motion checks.",
       "Run calibrated isolated review before the owner gate."
     ]
   },
-  "nextAction": "Restore browser capture capability, then resume explore with the retained directions and acceptance thresholds."
+  "nextAction": "Capture the 390px and accessibility matrix, then run isolated review with the retained directions and acceptance thresholds."
 }

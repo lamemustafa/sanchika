@@ -12,7 +12,7 @@
     "isolatedReview": true,
     "rasterGeneration": false
   },
-  "phase": "shape",
+  "phase": "explore",
   "status": "active",
   "reviewRound": 1,
   "trustBrief": {
@@ -135,13 +135,51 @@
       "No dashboard shell, fake authority, generic AI SaaS language, generic S monogram, fake product evidence, decorative motion, or motion-gated content."
     ]
   },
-  "directions": [],
+  "directions": [
+    {
+      "id": "living-collection",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 1,
+      "territory": "collection-as-living-grammar",
+      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/living-collection.html"],
+      "qualified": false,
+      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+    },
+    {
+      "id": "witness-joint",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 1,
+      "territory": "accountable-open-interval",
+      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/witness-joint.html"],
+      "qualified": false,
+      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+    },
+    {
+      "id": "craft-language",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 1,
+      "territory": "crafted-reproducible-language",
+      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/craft-language.html"],
+      "qualified": false,
+      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+    }
+  ],
   "iterations": [],
   "reviews": [],
   "ownerDecision": "pending",
   "selectedDirectionId": null,
   "assets": [],
-  "evidenceDigests": {},
+  "evidenceDigests": {
+    "craft/runs/sanchika-identity-reset/evidence/shape-desktop.webp": "d523adaa6fb2d1c3ce6ee5aa2b8900e8e91b29c389c334735d7e3701d55e72c0",
+    "craft/runs/sanchika-identity-reset/evidence/shape-mobile.webp": "a6c1b2e07cfa7a4f5107e4e3f4a4898e5a04b7288a9b5770257533509633453a",
+    "craft/runs/sanchika-identity-reset/evidence/shape-accessibility.md": "bbe09ed1e70c272036d242a73a3e6524b62f706be4f92030a1bbdd1d540fa62e",
+    "craft/runs/sanchika-identity-reset/evidence/living-collection.html": "a1bace283a03e8bb5f318d9ebc10dd3ceebf9cbc80983e061125bb4c6b1b834d",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint.html": "bae246c7150be63687ac22eb7d9a6ea05f0d4c7e18d8aebe22a59cd56182dff7",
+    "craft/runs/sanchika-identity-reset/evidence/craft-language.html": "f6bf4d445058e200ac10f0f41b00cc33a335804d339bb3a0ca398cc61bf268fc",
+    "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop.png": "2bf837f9f47aaad04f760fd6412033cb6ed4d4aa68366cc6312ae32b99d61823",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop.png": "aacd0d9b74f806ae6067a2a67520757f705825767adc39853f320c82345bf478",
+    "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop.png": "cf1ad27bf5565f89efac9d657f0b666f096be9dd441c8dca6ed11c84addf3289"
+  },
   "reconciliation": [],
   "evidenceLoop": {
     "id": "sanchika-identity-reset-evidence-loop-v1",
@@ -280,19 +318,46 @@
         "type": "accessibility-note",
         "artifact": "craft/runs/sanchika-identity-reset/evidence/shape-accessibility.md",
         "finding": "Accessibility constraints are explicit at shape and must be verified again against interactive direction code."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop.png",
+        "finding": "Owner-provided live desktop capture of Direction A. It shows real proof below the identity composition, but browser chrome and an unrelated desktop overlay remain in the capture."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop.png",
+        "finding": "Owner-provided live desktop capture of Direction B. It proves route rendering only; it is not a mobile, keyboard, forced-colors, or reduced-motion result."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop.png",
+        "finding": "Owner-provided live desktop capture of Direction C. The proof transition needs contrast review before any direction can qualify."
       }
     ],
     "adoptionEvidence": {
       "consumerRepo": "lamemustafa/sanchika",
       "consumerSurface": "/",
       "status": "proposed",
-      "changedFiles": ["craft/runs/sanchika-identity-reset/evidence/shape-desktop.webp"],
-      "verificationRun": "Shape evidence only; no production adoption or deployment has run.",
+      "changedFiles": [
+        "apps/gallery/src/pages/craft-lab/[direction].astro",
+        "apps/gallery/src/components/craft/IdentityResetDirection.astro",
+        "apps/gallery/src/styles/craft-lab.css"
+      ],
+      "verificationRun": "SANCHIKA_CRAFT_LAB=true pnpm build emitted all three routes. A normal pnpm build emitted 61 production pages and no craft-lab route. Owner-driven local Astro dev served each desktop direction successfully.",
       "rollbackPlan": "Delete the isolated lab and restore the recorded source commit before any production adoption."
     },
     "decision": "needs-design-revision",
-    "residualRisks": ["No identity direction has been selected by the owner.", "No production gallery code has been changed."],
-    "nextActions": ["Explore three code-native directions with identical proof scope.", "Run calibrated isolated review before the owner gate."]
+    "residualRisks": [
+      "Only desktop captures are available; 390px mobile, keyboard, forced-colors, and reduced-motion evidence are still missing.",
+      "No identity direction has been selected by the owner.",
+      "No production gallery code has been changed."
+    ],
+    "nextActions": [
+      "Retain 390px renders for all three directions without browser chrome or unrelated desktop overlays.",
+      "Run keyboard, forced-colors, and reduced-motion checks.",
+      "Run calibrated isolated review before the owner gate."
+    ]
   },
-  "nextAction": "Explore three materially distinct code-native landing directions from the retained owner brief."
+  "nextAction": "Capture the 390px and accessibility matrix, then run isolated review with the retained directions and acceptance thresholds."
 }
