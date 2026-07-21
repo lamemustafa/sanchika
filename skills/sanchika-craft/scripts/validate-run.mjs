@@ -1233,9 +1233,13 @@ function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
 function isIsoTimestamp(value) {
-  if (typeof value !== "string") return false;
+  if (
+    typeof value !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)
+  )
+    return false;
   const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+  return Number.isFinite(timestamp);
 }
 function readWebpDimensions(bytes) {
   if (
@@ -1490,11 +1494,15 @@ function median(values) {
 function validateProductionEvidence(run, options, add) {
   const evidence = run.productionEvidence;
   if (!isRecord(evidence)) return add("productionEvidence", "Complete runs require production verification evidence.");
-  for (const field of ["repositoryGates", "browserAccessibilityMatrix", "rollbackEvidence", "postDeploySmoke"]) {
+  const fields = ["repositoryGates", "browserAccessibilityMatrix", "rollbackEvidence", "postDeploySmoke"];
+  const artifacts = new Set();
+  for (const field of fields) {
     const record = evidence[field];
     if (!isRecord(record) || record.status !== "passed")
       add(`productionEvidence.${field}`, `${field} must record a passed result.`);
     requireText(record?.artifact, `productionEvidence.${field}.artifact`, add);
+    if (typeof record?.artifact === "string" && record.artifact.trim())
+      artifacts.add(record.artifact);
     validateArtifactReferences(
       run,
       record?.artifact ? [record.artifact] : [],
@@ -1503,6 +1511,11 @@ function validateProductionEvidence(run, options, add) {
       add,
     );
   }
+  if (artifacts.size !== fields.length)
+    add(
+      "productionEvidence",
+      "Complete runs require distinct retained artifacts for repository, browser, rollback, and post-deploy gates.",
+    );
   const measurements = evidence.mobileMeasurements;
   if (!Array.isArray(measurements) || measurements.length !== 3) {
     add("productionEvidence.mobileMeasurements", "Complete runs require exactly three cold-cache mobile measurements.");
@@ -1580,6 +1593,14 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
     add("instructionManifest.protocolVersion", "Instruction manifest protocolVersion must match the run.");
   if (manifest.sourceCommit !== run.surface?.sourceCommit)
     add("instructionManifest.sourceCommit", "Instruction manifest sourceCommit must match the run.");
+  if (
+    /^[0-9a-f]{40}$/i.test(manifest.sourceCommit ?? "") &&
+    !repositoryHasCommit(repoRoot, manifest.sourceCommit)
+  )
+    add(
+      "instructionManifest.sourceCommit",
+      "Instruction manifest sourceCommit must resolve to a commit in the recorded repository.",
+    );
   const instructionRoot = resolve(
     repoRoot,
     `craft/runs/${run.runId}/instructions`,
@@ -1680,7 +1701,57 @@ export function validateInstructionManifest(manifest, run, repoRoot) {
         "Previous-state SHA-256 must match the retained snapshot.",
       );
   }
+  validateOwnerRejectionEvidence(manifest, run, repoRoot, add);
   return issues;
+}
+
+function repositoryHasCommit(repoRoot, sourceCommit) {
+  if (!repoRoot) return false;
+  const result = spawnSync("git", ["cat-file", "-e", `${sourceCommit}^{commit}`], {
+    cwd: repoRoot,
+    stdio: "ignore",
+  });
+  return !result.error && result.status === 0;
+}
+
+function validateOwnerRejectionEvidence(manifest, run, repoRoot, add) {
+  if (run?.status !== "stopped" || run?.stopReason !== "owner_rejected") return;
+  const field = "instructionManifest.terminalEvidence.ownerDecision";
+  const expectedPath = `craft/runs/${run.runId}/owner-decision.json`;
+  const ownerDecision = manifest.terminalEvidence?.ownerDecision;
+  const ownerDecisionPath =
+    typeof ownerDecision?.path === "string"
+      ? resolve(repoRoot, ownerDecision.path)
+      : null;
+  const runRoot = resolve(repoRoot, `craft/runs/${run.runId}`);
+  if (
+    ownerDecision?.path !== expectedPath ||
+    !ownerDecisionPath ||
+    !existsSync(ownerDecisionPath) ||
+    !statSync(ownerDecisionPath).isFile() ||
+    !isContainedPath(runRoot, ownerDecisionPath) ||
+    !isContainedPath(realpathSync(runRoot), realpathSync(ownerDecisionPath))
+  ) {
+    add(field, `Owner-rejected runs must retain an authenticated decision record at ${expectedPath}.`);
+    return;
+  }
+  if (
+    !/^[0-9a-f]{64}$/i.test(ownerDecision.sha256 ?? "") ||
+    sha256(readFileSync(ownerDecisionPath)) !== ownerDecision.sha256.toLowerCase()
+  )
+    add(`${field}.sha256`, "Owner decision SHA-256 must match the retained bytes.");
+  let decision;
+  try {
+    decision = JSON.parse(readFileSync(ownerDecisionPath, "utf8"));
+  } catch {
+    add(field, "Owner decision record must be readable JSON.");
+    return;
+  }
+  if (!isRecord(decision) || decision.decision !== "reject all")
+    add(`${field}.decision`, "Owner-rejected runs require a recorded reject-all decision.");
+  if (!isIsoTimestamp(decision?.recordedAt))
+    add(`${field}.recordedAt`, "Owner decision must record a valid ISO timestamp.");
+  requireText(decision?.ownerRationale, `${field}.ownerRationale`, add);
 }
 
 export function loadRunCalibrationMetadata(manifest, run, repoRoot) {

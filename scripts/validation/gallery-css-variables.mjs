@@ -77,6 +77,12 @@ export function runGalleryVariableFixtures() {
       expected: [],
     },
     {
+      name: "comment delimiters inside strings preserve policy checks",
+      html: '<style>.card { content: "/*"; color: var(--sk-missing); content: "*/"; }</style>',
+      copiedCss: [],
+      expected: ["--sk-missing"],
+    },
+    {
       name: "nested var usage",
       html: '<style>:root { --sk-ink: black; --sk-fallback: gray; } .card { color: var(--sk-ink, var(--sk-fallback)); }</style>',
       copiedCss: [],
@@ -105,6 +111,11 @@ export function runGalleryVariableFixtures() {
   }
 
   const identityFixtures = [
+    {
+      name: "comment delimiters inside strings do not hide external origins",
+      source: '.card { content: "/*"; } @import "https://fonts.example/style.css"; .card { content: "*/"; }',
+      blocked: true,
+    },
     {
       name: "relative identity asset",
       source: '@font-face { src: url("../assets/font.woff2"); }',
@@ -313,5 +324,30 @@ function extractHtmlCss(html) {
 }
 
 function stripCssComments(css) {
-  return css.replace(/\/\*[\s\S]*?\*\//g, "");
+  let active = "";
+  let quote = null;
+  let escaped = false;
+  for (let index = 0; index < css.length; index += 1) {
+    const character = css[index];
+    if (quote) {
+      active += character;
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === quote) quote = null;
+      continue;
+    }
+    if (character === "\"" || character === "'") {
+      quote = character;
+      active += character;
+      continue;
+    }
+    if (character === "/" && css[index + 1] === "*") {
+      const end = css.indexOf("*/", index + 2);
+      active += " ";
+      index = end === -1 ? css.length : end + 1;
+      continue;
+    }
+    active += character;
+  }
+  return active;
 }

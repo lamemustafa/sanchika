@@ -63,6 +63,33 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
   const readBaseManifest = () =>
     JSON.parse(readFileSync(baseManifestPath, "utf8"));
   const withoutSkillArtifact = `${baseRunRoot}/${readBaseManifest().plainRequestControl.retainedArtifact}`;
+  const productionGateFields = [
+    "repositoryGates",
+    "browserAccessibilityMatrix",
+    "rollbackEvidence",
+    "postDeploySmoke",
+  ];
+  const productionGateArtifacts = [
+    primaryArtifact,
+    `${baseRunRoot}/evidence/alpha-semantic-blind.webp`,
+    `${baseRunRoot}/evidence/alpha-identity-blind.webp`,
+    alternateArtifact,
+  ];
+  const productionEvidence = (artifacts = productionGateArtifacts) => ({
+    ...Object.fromEntries(
+      productionGateFields.map((field, index) => [
+        field,
+        { status: "passed", artifact: artifacts[index] },
+      ]),
+    ),
+    mobileMeasurements: [1, 2, 3].map((number) => ({
+      runId: `run-${number}`,
+      profileId: "mobile-v1",
+      coldCache: true,
+      lcpMs: 1200,
+      cls: 0,
+    })),
+  });
   const makeComplete = (run, { includeCopyReviews = true } = {}) => {
     run.phase = "verify";
     run.status = "complete";
@@ -76,23 +103,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     run.evidenceLoop.decision = "ready-for-consumer-pr";
     run.evidenceLoop.adoptionEvidence.status = "verified";
     delete run.stopReason;
-    const gate = {
-      status: "passed",
-      artifact: primaryArtifact,
-    };
-    run.productionEvidence = {
-      repositoryGates: gate,
-      browserAccessibilityMatrix: gate,
-      rollbackEvidence: gate,
-      postDeploySmoke: gate,
-      mobileMeasurements: [1, 2, 3].map((number) => ({
-        runId: `run-${number}`,
-        profileId: "mobile-v1",
-        coldCache: true,
-        lcpMs: 1200,
-        cls: 0,
-      })),
-    };
+    run.productionEvidence = productionEvidence();
     if (includeCopyReviews)
       for (const role of ["practitioner", "developer", "claims", "voice"])
         run.reviews.push({
@@ -313,23 +324,10 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.selectedDirectionId = primaryDirectionId;
         run.evidenceLoop.decision = "ready-for-consumer-pr";
         delete run.stopReason;
-        const gate = {
-          status: "passed",
-          artifact: `craft/runs/${run.runId}/evidence/missing.webp`,
-        };
-        run.productionEvidence = {
-          repositoryGates: gate,
-          browserAccessibilityMatrix: gate,
-          rollbackEvidence: gate,
-          postDeploySmoke: gate,
-          mobileMeasurements: [1, 2, 3].map((number) => ({
-            runId: `run-${number}`,
-            profileId: "mobile-v1",
-            coldCache: true,
-            lcpMs: 1200,
-            cls: 0,
-          })),
-        };
+        run.productionEvidence = productionEvidence([
+          `craft/runs/${run.runId}/evidence/missing.webp`,
+          ...productionGateArtifacts.slice(1),
+        ]);
       }),
     "productionEvidence.repositoryGates.artifact.0",
   );
@@ -930,23 +928,7 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
         run.productionApproval = null;
         run.evidenceLoop.decision = "ready-for-consumer-pr";
         delete run.stopReason;
-        const gate = {
-          status: "passed",
-          artifact: primaryArtifact,
-        };
-        run.productionEvidence = {
-          repositoryGates: gate,
-          browserAccessibilityMatrix: gate,
-          rollbackEvidence: gate,
-          postDeploySmoke: gate,
-          mobileMeasurements: [1, 2, 3].map((number) => ({
-            runId: `run-${number}`,
-            profileId: "mobile-v1",
-            coldCache: true,
-            lcpMs: 1200,
-            cls: 0,
-          })),
-        };
+        run.productionEvidence = productionEvidence();
       }),
     "productionApproval",
   );
@@ -963,6 +945,34 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     () =>
       validate((run) => {
         makeComplete(run);
+      }),
+    null,
+  );
+  runCase(
+    "production completion requires separate evidence for every gate",
+    () =>
+      validate((run) => {
+        makeComplete(run);
+        run.productionEvidence.postDeploySmoke.artifact =
+          run.productionEvidence.repositoryGates.artifact;
+      }),
+    "productionEvidence",
+  );
+  runCase(
+    "production approval accepts ISO timestamps without milliseconds",
+    () =>
+      validate((run) => {
+        makeComplete(run);
+        run.productionApproval.approvedAt = "2026-07-17T00:00:00Z";
+      }),
+    null,
+  );
+  runCase(
+    "production approval accepts ISO offsets",
+    () =>
+      validate((run) => {
+        makeComplete(run);
+        run.productionApproval.approvedAt = "2026-07-17T05:30:00+05:30";
       }),
     null,
   );
@@ -1093,6 +1103,26 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       return validateInstructionManifest(manifest, baseRun, repoRoot);
     },
     "instructionManifest.plainRequestControl.sha256",
+  );
+  runCase(
+    "manifest authenticates the owner rejection record",
+    () => {
+      const manifest = readBaseManifest();
+      manifest.terminalEvidence.ownerDecision.sha256 = "0".repeat(64);
+      return validateInstructionManifest(manifest, baseRun, repoRoot);
+    },
+    "instructionManifest.terminalEvidence.ownerDecision.sha256",
+  );
+  runCase(
+    "manifest source commit must resolve in the repository",
+    () => {
+      const run = structuredClone(baseRun);
+      const manifest = readBaseManifest();
+      run.surface.sourceCommit = "0".repeat(40);
+      manifest.sourceCommit = run.surface.sourceCommit;
+      return validateInstructionManifest(manifest, run, repoRoot);
+    },
+    "instructionManifest.sourceCommit",
   );
   runCase(
     "manifest requires its supported schema version",

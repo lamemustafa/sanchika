@@ -26,6 +26,12 @@
     "previousState": "craft/runs/sanchika-landing-s10/transitions/previous-state.json",
     "sha256": "fb8214ffa8e6c5eb9d6efe4c256bb6c5ab686dae4fa05b69c1b5af0d6f67888f"
   },
+  "terminalEvidence": {
+    "ownerDecision": {
+      "path": "craft/runs/sanchika-landing-s10/owner-decision.json",
+      "sha256": "959c3a90f842bd61288c7e2c92da1d1828956cf19a3c877653bb55c45d63d55e"
+    }
+  },
   "reviewIsolation": {
     "visualReviewerCount": 4,
     "recognitionMatcherCount": 3,
