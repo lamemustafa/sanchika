@@ -36,10 +36,10 @@ export function findGalleryIdentityPolicyFailures({ path, source }) {
   if (/--sk-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not author --sk-* variables`);
   if (!isIdentityLayer && /--gallery-brand-[a-z0-9-]+\s*:/.test(activeSource)) failures.push(`${path} must not define gallery identity variables outside styles/identity.css`);
   if (isIdentityLayer)
-    for (const match of activeSource.matchAll(/--gallery-brand-[a-z0-9-]+\s*:\s*([^;]+);/gi))
+    for (const match of activeSource.matchAll(/--gallery-brand-[a-z0-9-]+\s*:\s*([^;}]+)(?=;|})/gi))
       if (containsNonOklchColorLiteral(match[1]))
         failures.push("styles/identity.css gallery color variables must use OKLCH, not hex or other color functions");
-  const colorSource = isIdentityLayer ? activeSource.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;]+;/gi, "") : activeSource;
+  const colorSource = isIdentityLayer ? activeSource.replace(/--gallery-brand-[a-z0-9-]+\s*:\s*[^;}]+(?=;|})/gi, "") : activeSource;
   if (/#[0-9a-f]{3,8}\b|\b(?:oklch|rgba?|hsla?|hwb|lab|lch|color)\s*\(/i.test(colorSource)) failures.push(`${path} must not contain raw colors outside gallery identity declarations`);
   if (isIdentityLayer && (/\.sk-[a-z0-9-]+/i.test(activeSource) || /\[\s*class\b[^\]]*sk-/i.test(activeSource))) failures.push("styles/identity.css must not style package selectors");
   if (isIdentityLayer && containsExternalCssOrigin(activeSource)) failures.push("styles/identity.css must not load external font or image origins");
@@ -239,6 +239,10 @@ export function runGalleryVariableFixtures() {
   const identityColorFixtures = [
     {
       source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40); }",
+      blocked: false,
+    },
+    {
+      source: ":root { --gallery-brand-ink: oklch(0.2 0.1 40) }",
       blocked: false,
     },
     {

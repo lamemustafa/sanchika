@@ -949,6 +949,23 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     null,
   );
   runCase(
+    "capability-blocked runs cannot advance phases while resuming",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "review";
+      previous.status = "stopped";
+      previous.ownerDecision = "pending";
+      previous.stopReason = "capability_blocked";
+      previous.nextAction = "Restore isolated reviewer capacity and resume review.";
+      const next = structuredClone(previous);
+      next.phase = "owner_gate";
+      next.status = "awaiting_owner";
+      delete next.stopReason;
+      return validateCraftTransition(previous, next);
+    },
+    "phase",
+  );
+  runCase(
     "production completion requires separate evidence for every gate",
     () =>
       validate((run) => {

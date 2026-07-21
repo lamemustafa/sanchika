@@ -265,6 +265,15 @@ export function validateCraftTransition(previous, next) {
     previous?.status === "stopped" &&
     previous?.stopReason === "capability_blocked" &&
     previous?.phase === next?.phase;
+  if (
+    previous?.status === "stopped" &&
+    previous?.stopReason === "capability_blocked" &&
+    !capabilityResume
+  )
+    add(
+      "phase",
+      "Capability-blocked runs must resume at the same phase before advancing.",
+    );
   const expectedReviewRound = rebrief
     ? (previous?.reviewRound ?? 0) + 1
     : previous?.reviewRound;
