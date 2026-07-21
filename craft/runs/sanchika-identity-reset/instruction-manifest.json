@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "sourceCommit": "70f016aa0a2a455433652b7779c3ff5c310af138",
+  "plainRequest": "Redesign the Sanchika landing page so it feels like a reproducible design language where humans and AI make serious interfaces with emotional coherence, craft, beauty, trustworthiness, and a genuine memorable soul. Avoid generic SaaS, fake dashboards, or empty technical marketing.",
+  "plainRequestControl": {
+    "isolation": "fresh context with only the plain owner request and same-commit repository access",
+    "retainedArtifact": "evidence/without-skill-control.webp",
+    "sha256": "abdac899500a9d7828b8935f747066e6792f9fc1a7d66448791bbc5864236a02",
+    "codeRetained": false
+  },
+  "hashes": {
+    "canonicalSkill": "69713515c37a7746eca7b7e8e28b97d5198a1b4b14b92af7b5f700f46030506a",
+    "protocol": "d6741cd5095cca0168c32bf46a9d292b5475a7cfb9e3de9df0aabb17bd765bd0",
+    "runTemplate": "ed8dcec16d15c8bc78944ad69502b9205f3698ad8c81ef271c2b66e6b6e21397",
+    "calibrationMetadata": "d97c9fab623ff75551908b02e9d23703986e90327e1781a725125cc793635595",
+    "ownerBrief": "c790837424350d0cae532fc66093bb6a319f061d7a856083f748b8322187aa1a"
+  },
+  "sources": {
+    "canonicalSkill": "craft/runs/sanchika-identity-reset/instructions/SKILL.md",
+    "protocol": "craft/runs/sanchika-identity-reset/instructions/protocol.md",
+    "runTemplate": "craft/runs/sanchika-identity-reset/instructions/run-template.json",
+    "calibrationMetadata": "craft/runs/sanchika-identity-reset/instructions/calibration/metadata.json"
+  },
+  "ownerBrief": "craft/runs/sanchika-identity-reset/instructions/owner-brief.md",
+  "reviewIsolation": {
+    "visualReviewerCount": 4,
+    "recognitionMatcherCount": 3,
+    "producerReviewedOwnOutput": false,
+    "evidenceLabels": ["ai-visual-proxy", "ai-recognition-proxy", "not-user-validated"]
+  },
+  "transition": {
+    "previousState": "craft/runs/sanchika-identity-reset/transitions/previous-state.json",
+    "sha256": "7dce79619d59ebf34ee0c5129394ff328e95ac60f02b611fef55368112064ffc"
+  }
+}

@@ -1,0 +1,73 @@
+---
+import ReviewDeskPreview from "../showcase/ReviewDeskPreview.astro";
+import { auditTrail, reviewEvidence, reviewQueue } from "../../content/showcase";
+
+type Direction = "living-collection" | "witness-joint" | "craft-language";
+
+interface Props {
+  direction: Direction;
+}
+
+const { direction } = Astro.props;
+const directionMeta = {
+  "living-collection": {
+    label: "Direction A · Living collection",
+    title: "A system is not a shelf of parts.",
+    treatment: "The grammar gathers difference without smoothing it away.",
+  },
+  "witness-joint": {
+    label: "Direction B · Witness joint",
+    title: "Leave room for the human who must decide.",
+    treatment: "The open interval makes the boundary visible before the proof begins.",
+  },
+  "craft-language": {
+    label: "Direction C · Craft language",
+    title: "Make repeatability feel made, not mass-produced.",
+    treatment: "A working language gives people and agents a shared handhold without erasing judgment.",
+  },
+} as const;
+const meta = directionMeta[direction];
+---
+
+<main id="craft-main" class:list={["craft-lab", `craft-lab--${direction}`]} data-sanchika-example="synthetic">
+  <header class="craft-lab__masthead">
+    <a class="craft-lab__wordmark" href="#craft-proof" aria-label="Sanchika craft direction proof">Sanchika</a>
+    <p>{meta.label}</p>
+    <a href="#craft-proof">Real contract proof <span aria-hidden="true">↓</span></a>
+  </header>
+
+  <section class="craft-lab__hero" aria-labelledby="craft-title">
+    <div class="craft-lab__hero-copy">
+      <p class="craft-lab__direction-label">{meta.label}</p>
+      <h1 id="craft-title">{meta.title}</h1>
+      <p class="craft-lab__premise">Sanchika is a living collection of interface grammar: a reusable way for people and coding agents to make serious work coherent, source-aware, and recognisably crafted.</p>
+      <p class="craft-lab__treatment">{meta.treatment}</p>
+      <div class="craft-lab__actions">
+        <a href="#craft-proof">Inspect real proof <span aria-hidden="true">↓</span></a>
+        <a href="/adoption/">Read the boundary <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+
+    <div class="craft-lab__composition" aria-label="Identity composition: source, interpretation, and accountable decision remain distinct.">
+      <span class="craft-lab__composition-word craft-lab__composition-word--source">source</span>
+      <span class="craft-lab__composition-word craft-lab__composition-word--interpretation">interpretation</span>
+      <span class="craft-lab__joint" aria-hidden="true"></span>
+      <span class="craft-lab__composition-word craft-lab__composition-word--decision">accountable<br />decision</span>
+      <p>Witness Joint<br /><span>the space no contract should close</span></p>
+    </div>
+  </section>
+
+  <section id="craft-proof" class="craft-lab__proof" aria-labelledby="craft-proof-title">
+    <div class="craft-lab__proof-intro">
+      <p>Not a mock-up</p>
+      <h2 id="craft-proof-title">One real Sanchika contract, rendered as HTML.</h2>
+      <p>Source, uncertainty, and an accountable reviewer remain legible inside the proof. The identity ends at the gallery boundary.</p>
+    </div>
+    <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />
+  </section>
+
+  <footer class="craft-lab__footer">
+    <span>Sanchika is a design contract, not compliance judgment.</span>
+    <span>All gallery records are synthetic.</span>
+  </footer>
+</main>

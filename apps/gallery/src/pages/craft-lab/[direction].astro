@@ -1,0 +1,19 @@
+---
+import IdentityResetDirection from "../../components/craft/IdentityResetDirection.astro";
+import CraftLabLayout from "../../layouts/CraftLabLayout.astro";
+
+export function getStaticPaths() {
+  if (process.env.SANCHIKA_CRAFT_LAB !== "true") return [];
+  return ["living-collection", "witness-joint", "craft-language"].map((direction) => ({ params: { direction } }));
+}
+
+const directions = ["living-collection", "witness-joint", "craft-language"] as const;
+const { direction } = Astro.params;
+if (!directions.includes(direction as (typeof directions)[number])) {
+  throw new Error("Unknown Sanchika craft direction.");
+}
+---
+
+<CraftLabLayout title="Sanchika identity reset lab" description="Private, environment-gated Sanchika identity exploration.">
+  <IdentityResetDirection direction={direction as (typeof directions)[number]} />
+</CraftLabLayout>

@@ -1,0 +1,32 @@
+.craft-lab--living-collection {
+  --gallery-brand-bg: oklch(0.17 0.035 258);
+  --gallery-brand-ink: oklch(0.96 0.014 118);
+  --gallery-brand-accent: oklch(0.82 0.19 126);
+  --gallery-brand-accent-ink: oklch(0.2 0.045 258);
+  --gallery-brand-secondary: oklch(0.72 0.19 25);
+  --gallery-brand-proof-bg: oklch(0.82 0.19 126);
+  --gallery-brand-proof-ink: oklch(0.2 0.045 258);
+  --gallery-brand-divider: oklch(0.82 0.19 126 / 0.28);
+}
+
+.craft-lab--witness-joint {
+  --gallery-brand-bg: oklch(0.28 0.11 265);
+  --gallery-brand-ink: oklch(0.98 0.01 95);
+  --gallery-brand-accent: oklch(0.76 0.18 48);
+  --gallery-brand-accent-ink: oklch(0.2 0.055 266);
+  --gallery-brand-secondary: oklch(0.98 0.01 95 / 0.75);
+  --gallery-brand-proof-bg: oklch(0.98 0.01 95);
+  --gallery-brand-proof-ink: oklch(0.2 0.055 266);
+  --gallery-brand-divider: oklch(0.98 0.01 95 / 0.28);
+}
+
+.craft-lab--craft-language {
+  --gallery-brand-bg: oklch(0.96 0 0);
+  --gallery-brand-ink: oklch(0.17 0.014 25);
+  --gallery-brand-accent: oklch(0.49 0.2 26);
+  --gallery-brand-accent-ink: oklch(0.98 0 0);
+  --gallery-brand-secondary: oklch(0.17 0.014 25);
+  --gallery-brand-proof-bg: oklch(0.17 0.014 25);
+  --gallery-brand-proof-ink: oklch(0.96 0 0);
+  --gallery-brand-divider: oklch(0.17 0.014 25 / 0.28);
+}

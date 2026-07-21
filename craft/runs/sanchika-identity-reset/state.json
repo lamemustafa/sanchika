@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "runId": "sanchika-identity-reset",
+  "surface": {
+    "repo": "lamemustafa/sanchika",
+    "route": "/",
+    "sourceCommit": "70f016aa0a2a455433652b7779c3ff5c310af138"
+  },
+  "capabilities": {
+    "browser": false,
+    "isolatedReview": true,
+    "rasterGeneration": false
+  },
+  "phase": "explore",
+  "status": "stopped",
+  "stopReason": "capability_blocked",
+  "reviewRound": 1,
+  "trustBrief": {
+    "id": "sanchika-identity-reset-trust-v1",
+    "consumerMode": "external/operational-saas",
+    "register": "product",
+    "surface": "/",
+    "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
+    "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
+    "dataSensitivity": ["public-copy"],
+    "trustBoundaries": [
+      "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
+      "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
+    ],
+    "evidenceRequirements": [
+      "Source, uncertainty, review state, and accountable human decision remain separate in any real proof surface.",
+      "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
+    ],
+    "selectedPatterns": [
+      { "name": "EvidencePanel", "states": ["pending-review"] }
+    ],
+    "claims": [
+      {
+        "claim": "Code-native Sanchika identity exploration",
+        "evidence": "Repository-owned shape renders, a fresh plain-language control, and later calibrated isolated review."
+      }
+    ],
+    "nonGoals": [
+      "No AI runtime, automated compliance judgment, customer proof, authority signal, fake dashboard, generic component grid, or raster dependency."
+    ],
+    "verificationGates": [
+      "wcag-22-aa",
+      "keyboard-focus",
+      "non-color-state",
+      "desktop-render",
+      "mobile-render",
+      "reduced-motion",
+      "rollback-path"
+    ]
+  },
+  "designBrief": {
+    "id": "sanchika-identity-reset-design-v1",
+    "trustBrief": {
+      "id": "sanchika-identity-reset-trust-v1",
+      "consumerMode": "external/operational-saas",
+      "register": "product",
+      "surface": "/",
+      "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
+      "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
+      "dataSensitivity": ["public-copy"],
+      "trustBoundaries": [
+        "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
+        "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
+      ],
+      "evidenceRequirements": [
+        "Source, uncertainty, review state, and accountable human decision remain separate in any real proof surface.",
+        "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
+      ],
+      "selectedPatterns": [
+        { "name": "EvidencePanel", "states": ["pending-review"] }
+      ],
+      "claims": [
+        {
+          "claim": "Code-native Sanchika identity exploration",
+          "evidence": "Repository-owned shape renders, a fresh plain-language control, and later calibrated isolated review."
+        }
+      ],
+      "nonGoals": [
+        "No AI runtime, automated compliance judgment, customer proof, authority signal, fake dashboard, generic component grid, or raster dependency."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "register": "product",
+    "surface": "/",
+    "firstViewportSignal": "Sanchika is a living collection of interface grammar that helps humans and coding agents make serious work feel coherent and recognisably crafted.",
+    "emotionalIntent": "Memorable, alive, and genuinely made with care while remaining calm, trustworthy, and accountable under pressure.",
+    "narrativeArc": [
+      "Gather distinct intent without flattening it",
+      "Reveal the shared grammar that makes a system reproducible",
+      "Hold a visible Witness Joint for source, interpretation, and human accountability",
+      "Show one real contract proof after the identity establishes its point of view"
+    ],
+    "informationPriority": [
+      "Living system premise",
+      "What becomes repeatable for people and coding agents",
+      "Contract boundary",
+      "Source, uncertainty, and accountable human review",
+      "Next safe action"
+    ],
+    "responsiveConstraints": [
+      "Mobile keeps the wordmark, premise, collection verbs, and Witness Joint in a single reading order without relying on color or motion.",
+      "Desktop gives the identity enough compositional scale to feel authored while preserving a real HTML proof area and visible boundary."
+    ],
+    "interactionStates": ["focus", "hover", "selected", "blocked"],
+    "visualQualityGates": [
+      "not-generic-saas",
+      "first-viewport-product-signal",
+      "source-visible",
+      "human-review-visible",
+      "responsive-fit",
+      "keyboardable",
+      "reduced-motion",
+      "performance-budget"
+    ],
+    "verificationEvidence": [
+      "Desktop shape and direction renders",
+      "Mobile shape and direction renders",
+      "Keyboard, forced-colors, and reduced-motion notes",
+      "Calibrated isolated visual review before the owner gate"
+    ],
+    "nonGoals": [
+      "No dashboard shell, fake authority, generic AI SaaS language, generic S monogram, fake product evidence, decorative motion, or motion-gated content."
+    ]
+  },
+  "directions": [
+    {
+      "id": "living-collection",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 1,
+      "territory": "collection-as-living-grammar",
+      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/living-collection.html"],
+      "qualified": false,
+      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+    },
+    {
+      "id": "witness-joint",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 1,
+      "territory": "accountable-open-interval",
+      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/witness-joint.html"],
+      "qualified": false,
+      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+    },
+    {
+      "id": "craft-language",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 1,
+      "territory": "crafted-reproducible-language",
+      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/craft-language.html"],
+      "qualified": false,
+      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+    }
+  ],
+  "iterations": [],
+  "reviews": [],
+  "ownerDecision": "pending",
+  "selectedDirectionId": null,
+  "assets": [],
+  "evidenceDigests": {
+    "craft/runs/sanchika-identity-reset/evidence/shape-desktop.webp": "d523adaa6fb2d1c3ce6ee5aa2b8900e8e91b29c389c334735d7e3701d55e72c0",
+    "craft/runs/sanchika-identity-reset/evidence/shape-mobile.webp": "a6c1b2e07cfa7a4f5107e4e3f4a4898e5a04b7288a9b5770257533509633453a",
+    "craft/runs/sanchika-identity-reset/evidence/shape-accessibility.md": "bbe09ed1e70c272036d242a73a3e6524b62f706be4f92030a1bbdd1d540fa62e",
+    "craft/runs/sanchika-identity-reset/evidence/living-collection.html": "a1bace283a03e8bb5f318d9ebc10dd3ceebf9cbc80983e061125bb4c6b1b834d",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint.html": "bae246c7150be63687ac22eb7d9a6ea05f0d4c7e18d8aebe22a59cd56182dff7",
+    "craft/runs/sanchika-identity-reset/evidence/craft-language.html": "f6bf4d445058e200ac10f0f41b00cc33a335804d339bb3a0ca398cc61bf268fc"
+  },
+  "reconciliation": [],
+  "evidenceLoop": {
+    "id": "sanchika-identity-reset-evidence-loop-v1",
+    "trustBrief": {
+      "id": "sanchika-identity-reset-trust-v1",
+      "consumerMode": "external/operational-saas",
+      "register": "product",
+      "surface": "/",
+      "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
+      "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
+      "dataSensitivity": ["public-copy"],
+      "trustBoundaries": [
+        "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
+        "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
+      ],
+      "evidenceRequirements": [
+        "Source, uncertainty, review state, and accountable human decision remain separate in any real proof surface.",
+        "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
+      ],
+      "selectedPatterns": [
+        { "name": "EvidencePanel", "states": ["pending-review"] }
+      ],
+      "claims": [
+        {
+          "claim": "Code-native Sanchika identity exploration",
+          "evidence": "Repository-owned shape renders, a fresh plain-language control, and later calibrated isolated review."
+        }
+      ],
+      "nonGoals": [
+        "No AI runtime, automated compliance judgment, customer proof, authority signal, fake dashboard, generic component grid, or raster dependency."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "designBrief": {
+      "id": "sanchika-identity-reset-design-v1",
+      "trustBrief": {
+        "id": "sanchika-identity-reset-trust-v1",
+        "consumerMode": "external/operational-saas",
+        "register": "product",
+        "surface": "/",
+        "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
+        "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
+        "dataSensitivity": ["public-copy"],
+        "trustBoundaries": [
+          "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
+          "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
+        ],
+        "evidenceRequirements": [
+          "Source, uncertainty, review state, and accountable human decision remain separate in any real proof surface.",
+          "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
+        ],
+        "selectedPatterns": [
+          { "name": "EvidencePanel", "states": ["pending-review"] }
+        ],
+        "claims": [
+          {
+            "claim": "Code-native Sanchika identity exploration",
+            "evidence": "Repository-owned shape renders, a fresh plain-language control, and later calibrated isolated review."
+          }
+        ],
+        "nonGoals": [
+          "No AI runtime, automated compliance judgment, customer proof, authority signal, fake dashboard, generic component grid, or raster dependency."
+        ],
+        "verificationGates": [
+          "wcag-22-aa",
+          "keyboard-focus",
+          "non-color-state",
+          "desktop-render",
+          "mobile-render",
+          "reduced-motion",
+          "rollback-path"
+        ]
+      },
+      "register": "product",
+      "surface": "/",
+      "firstViewportSignal": "Sanchika is a living collection of interface grammar that helps humans and coding agents make serious work feel coherent and recognisably crafted.",
+      "emotionalIntent": "Memorable, alive, and genuinely made with care while remaining calm, trustworthy, and accountable under pressure.",
+      "narrativeArc": [
+        "Gather distinct intent without flattening it",
+        "Reveal the shared grammar that makes a system reproducible",
+        "Hold a visible Witness Joint for source, interpretation, and human accountability",
+        "Show one real contract proof after the identity establishes its point of view"
+      ],
+      "informationPriority": [
+        "Living system premise",
+        "What becomes repeatable for people and coding agents",
+        "Contract boundary",
+        "Source, uncertainty, and accountable human review",
+        "Next safe action"
+      ],
+      "responsiveConstraints": [
+        "Mobile keeps the wordmark, premise, collection verbs, and Witness Joint in a single reading order without relying on color or motion.",
+        "Desktop gives the identity enough compositional scale to feel authored while preserving a real HTML proof area and visible boundary."
+      ],
+      "interactionStates": ["focus", "hover", "selected", "blocked"],
+      "visualQualityGates": [
+        "not-generic-saas",
+        "first-viewport-product-signal",
+        "source-visible",
+        "human-review-visible",
+        "responsive-fit",
+        "keyboardable",
+        "reduced-motion",
+        "performance-budget"
+      ],
+      "verificationEvidence": [
+        "Desktop shape and direction renders",
+        "Mobile shape and direction renders",
+        "Keyboard, forced-colors, and reduced-motion notes",
+        "Calibrated isolated visual review before the owner gate"
+      ],
+      "nonGoals": [
+        "No dashboard shell, fake authority, generic AI SaaS language, generic S monogram, fake product evidence, decorative motion, or motion-gated content."
+      ]
+    },
+    "renderEvidence": [
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/shape-desktop.webp",
+        "finding": "The desktop shape record establishes the collection verbs and an explicitly labelled Witness Joint before direction exploration."
+      },
+      {
+        "type": "mobile-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/shape-mobile.webp",
+        "finding": "The 390px shape record preserves a single reading order and does not rely on motion or colour alone."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/shape-accessibility.md",
+        "finding": "Accessibility constraints are explicit at shape and must be verified again against interactive direction code."
+      }
+    ],
+    "adoptionEvidence": {
+      "consumerRepo": "lamemustafa/sanchika",
+      "consumerSurface": "/",
+      "status": "proposed",
+      "changedFiles": [
+        "apps/gallery/src/pages/craft-lab/[direction].astro",
+        "apps/gallery/src/components/craft/IdentityResetDirection.astro",
+        "apps/gallery/src/styles/craft-lab.css"
+      ],
+      "verificationRun": "SANCHIKA_CRAFT_LAB=true pnpm build emitted all three routes. A normal pnpm build emitted 61 production pages and no craft-lab route.",
+      "rollbackPlan": "Delete the isolated lab and restore the recorded source commit before any production adoption."
+    },
+    "decision": "needs-design-revision",
+    "residualRisks": [
+      "No direction has desktop/mobile browser captures or accessibility interaction evidence.",
+      "No identity direction has been selected by the owner.",
+      "No production gallery code has been changed."
+    ],
+    "nextActions": [
+      "Restore a browser-capture capability and retain desktop and 390px renders for all three directions.",
+      "Run keyboard, forced-colors, and reduced-motion checks.",
+      "Run calibrated isolated review before the owner gate."
+    ]
+  },
+  "nextAction": "Restore browser capture capability, then resume explore with the retained directions and acceptance thresholds."
+}
