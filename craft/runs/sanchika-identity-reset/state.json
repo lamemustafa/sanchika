@@ -12,7 +12,7 @@
     "isolatedReview": true,
     "rasterGeneration": false
   },
-  "phase": "build",
+  "phase": "reconcile",
   "status": "active",
   "reviewRound": 2,
   "trustBrief": {
@@ -1249,5 +1249,5 @@
       "Complete C2R-B, the required browser/performance matrix, repository verification, and the distinct production owner gate."
     ]
   },
-  "nextAction": "Build the owner-approved Witness Joint R2 family into the gallery production surface; do not treat direction approval as production approval."
+  "nextAction": "Reconcile the production implementation, retained evidence, and rollback path before the distinct owner production decision."
 }
