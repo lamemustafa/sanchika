@@ -66,13 +66,8 @@ for (const path of actualDocumentPaths) {
   }
 }
 
-const isolatedLabStylesheets = new Set(
-  actualDocumentPaths.some((path) => /(^|\/)craft-lab\//.test(path))
-    ? []
-    : [...outputFiles.keys()].filter((path) => /^_astro\/CraftLabLayout\.[\w-]+\.css$/.test(path)),
-);
 for (const path of [...outputFiles.keys()].filter((path) => path.endsWith(".css"))) {
-  if (!stylesheetConsumers.has(path) && !isolatedLabStylesheets.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any shipping document`);
+  if (!stylesheetConsumers.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any shipping document`);
 }
 const landingHtml = outputFiles.get("index.html") ?? "";
 const landingGraph = inspectGalleryAssetGraph({ html: landingHtml, outputFiles, allowUnreferencedStylesheets: true, allowedInlineScriptMarkers: ["docs-search", "site-search-shortcut", "witness-proof-replay"] });

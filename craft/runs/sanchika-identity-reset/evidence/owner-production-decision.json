@@ -1,0 +1,15 @@
+{
+  "decision": "approved",
+  "approvedBy": "owner",
+  "approvedAt": "2026-07-23T12:31:46Z",
+  "scope": "S10 Witness Joint gallery production on master",
+  "evidence": {
+    "identityMerge": "b21141278e1f27a41e2257482515e8a4e736a693",
+    "smokeAlignmentMerge": "4af6a7f1df60423e87c5a21c65e52ab9d5d22e15",
+    "postDeploySmoke": "craft/runs/sanchika-identity-reset/evidence/production-post-deploy-smoke.md"
+  },
+  "limitations": [
+    "AI proxy and controlled browser evidence are not human validation.",
+    "S11 consumer adoption remains separately scoped and owner-directed."
+  ]
+}
