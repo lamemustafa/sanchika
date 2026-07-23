@@ -1,99 +1,93 @@
 ---
-import { primitiveClassName } from "@sanchika/primitives";
 import ModeComparison from "../components/ModeComparison.astro";
-import ProofStrip from "../components/ProofStrip.astro";
 import SearchDirectory from "../components/SearchDirectory.astro";
-import StatusSummary from "../components/StatusSummary.astro";
-import PublicHero from "../components/showcase/PublicHero.astro";
 import ReviewDeskPreview from "../components/showcase/ReviewDeskPreview.astro";
 import { auditTrail, reviewEvidence, reviewQueue } from "../content/showcase";
-import { currentStableRelease, currentStableReleaseUrl } from "../content/site";
+import { currentStableRelease, currentStableReleaseUrl, noNextReleaseAnnouncement } from "../content/site";
 import GalleryLayout from "../layouts/GalleryLayout.astro";
 
-const title = "Sanchika | Evidence-first interface contracts";
-const description = "Sanchika is a typed, inspectable design contract for evidence-first compliance interfaces, with static proof across ComplyEaze, Axal, Pack, and Tools.";
-const navigation = [
-  ["Foundations", "Tokens, typography, motion", "/foundations/"],
-  ["Primitives", "28 semantic contracts", "/primitives/"],
-  ["Patterns", "20 product patterns", "/patterns/"],
-  ["Product modes", "Four distinct operating boundaries", "/modes/"],
-  ["Adoption", "Artifacts, consumers, rollback", "/adoption/"],
-] as const;
-const sectionJumps = [
-  ["Proof", "#hero-proof"],
-  ["System", "#system-definition"],
-  ["Modes", "#mode-comparison-title"],
-  ["Search", "#landing-docs"],
-  ["Status", "#status-title"],
-] as const;
+const title = "Sanchika | Interface contracts that show their work";
+const description = "Sanchika gives coding agents and engineers a repeatable way to turn source, uncertainty, and human review into clear, accessible product UI.";
 ---
 
 <GalleryLayout {title} {description} canonical="https://sanchika.complyeaze.com/">
-  <main id="main-content" class="site-main landing" data-sanchika-example="synthetic" tabindex="-1">
-    <section class="landing-hero" aria-label="Sanchika introduction and review proof">
-      <nav class="landing-jumps" aria-label="Landing page sections">
-        {sectionJumps.map(([label, href]) => <a href={href}>{label}</a>)}
-      </nav>
-      <PublicHero
-        eyebrow="Typed contracts · human judgment visible"
-        title="Build compliance interfaces that show their evidence."
-        lede="Sanchika is an AI-native design-system SDK for Indian compliance teams. Its typed, inspectable contracts keep Chartered Accountant (CA) judgment visible."
-        primary={{ label: "Inspect the proof", href: "#hero-proof" }}
-        secondary={{ label: "Browse contracts", href: "/primitives/" }}
-      >
-        <aside class="sk-pattern-public-hero-note" aria-label="Sanchika boundary">
-          <span>What Sanchika does not do</span>
-          <strong>No model runtime. No automated compliance judgment.</strong>
-        </aside>
-      </PublicHero>
-      <div id="hero-proof" class="landing-hero__proof">
-        <div class="landing-hero__proof-label">
-          <span>Composed package proof</span>
-          <strong>One record. One accountable decision.</strong>
-          <span>Source → blocker → owner → review → next safe action</span>
+  <main id="main-content" class="site-main landing witness-landing" data-sanchika-example="synthetic" tabindex="-1">
+    <!-- sanchika-marketing-copy:start -->
+    <section class="witness-hero" aria-labelledby="witness-hero-title">
+      <div class="witness-hero__copy">
+        <p class="witness-label">Sanchika · a working collection</p>
+        <h1 id="witness-hero-title">Make regulated interfaces that show their work.</h1>
+        <p class="witness-hero__deck">Sanchika gives coding agents and engineers a repeatable way to turn source, uncertainty, and human review into clear, accessible product UI.</p>
+        <p class="witness-hero__boundary">It supplies contracts and a review loop—not compliance judgment, customer evidence, or an application runtime.</p>
+        <div class="witness-actions" aria-label="Sanchika landing actions">
+          <a href="#decision-proof">Watch the decision <span aria-hidden="true">↓</span></a>
+          <a href="/primitives/">Read the contracts <span aria-hidden="true">→</span></a>
         </div>
+      </div>
+      <div class="witness-hero__joint" aria-hidden="true">
+        <span>Source</span><i></i><b>Interpretation</b><i></i><span>Human decision</span>
+      </div>
+    </section>
+    <!-- sanchika-marketing-copy:end -->
+
+    <section id="decision-proof" class="witness-proof" aria-labelledby="decision-proof-title">
+      <!-- sanchika-marketing-copy:start -->
+      <div class="witness-section-heading">
+        <div><p class="witness-label">01 · Decision proof</p><h2 id="decision-proof-title">Leave room for the human who must decide.</h2></div>
+        <div><p>AX-031 keeps a linked synthetic source, an interpretation boundary, and a named CA checkpoint visibly separate.</p><button type="button" class="witness-replay" data-witness-replay aria-describedby="decision-proof-status">Replay proof sequence</button><p id="decision-proof-status" class="witness-status" aria-live="polite">Settled proof shown. Motion is optional.</p></div>
+      </div>
+      <!-- sanchika-marketing-copy:end -->
+      <div class="witness-proof__stage" data-witness-proof>
         <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />
       </div>
     </section>
 
-    <section id="system-definition" class="definition" aria-labelledby="definition-title">
-      <div><p class="eyebrow">The system, briefly</p><h2 id="definition-title">Typed foundations. Portable contracts. Product-shaped proof.</h2></div>
-      <div class="definition__ledger">
-        <p><strong>Tokens</strong><span>Generated semantic roles for color, typography, spacing, focus, and motion.</span></p>
-        <p><strong>Contracts</strong><span>Framework-agnostic behavior with React-ready primitive APIs.</span></p>
-        <p><strong>Package CSS</strong><span>Stable entrypoints for tokens, primitives, and product patterns.</span></p>
-        <p><strong>Gallery proof</strong><span>Static, synthetic compositions that expose source and limitations.</span></p>
-      </div>
+    <section class="witness-range" aria-labelledby="witness-range-title">
+      <!-- sanchika-marketing-copy:start -->
+      <div class="witness-section-heading"><div><p class="witness-label">02 · Range without sameness</p><h2 id="witness-range-title">One grammar. Four working conditions.</h2></div><p>ComplyEaze, Axal, Pack, and Tools keep evidence legible while changing density, custody, and the next safe action.</p></div>
+      <!-- sanchika-marketing-copy:end -->
+      <ModeComparison />
     </section>
 
-    <ModeComparison />
-
-    <section class="contract-navigation" aria-labelledby="contract-navigation-title">
-      <div class="section-heading">
-        <div><p class="eyebrow">System map</p><h2 id="contract-navigation-title">Start from the decision you need to make.</h2></div>
-        <p>Detailed contracts live on generated routes, not in an endless landing-page ledger.</p>
-      </div>
-      <nav aria-label="Sanchika contract areas">
-        {navigation.map(([label, detail, href], index) => (
-          <a class={primitiveClassName("LinkCard", { variant: "default" })} href={href}>
-            <span>{String(index + 1).padStart(2, "0")}</span><strong>{label}</strong><small>{detail}</small><em aria-hidden="true">↗</em>
-          </a>
-        ))}
-      </nav>
+    <section class="witness-method" aria-labelledby="witness-method-title">
+      <!-- sanchika-marketing-copy:start -->
+      <div><p class="witness-label">03 · Method</p><h2 id="witness-method-title">Contracts first. Craft loop clearly labelled.</h2></div>
+      <ol>
+        <li><strong>Tokens</strong><span>Set semantic color, type, focus, and motion roles.</span></li>
+        <li><strong>Primitives</strong><span>Define finite states and accessible behavior.</span></li>
+        <li><strong>Patterns</strong><span>Carry the boundary into a product-shaped job.</span></li>
+      </ol>
+      <aside><strong>Pilot-stage craft loop</strong><span>Repository development tooling for evidence-gated interface work; it is not package runtime or product authority.</span></aside>
+      <!-- sanchika-marketing-copy:end -->
+      <SearchDirectory instanceId="landing-docs" compact />
     </section>
 
-    <SearchDirectory instanceId="landing-docs" compact />
-    <ProofStrip />
-    <StatusSummary />
-
-    <section class="source-coda" aria-labelledby="source-coda-title">
-      <div><p class="eyebrow">Open evidence</p><h2 id="source-coda-title">Inspect before you adopt.</h2><p>Source, entrypoints, release evidence, adoption boundaries, support, security, and trademark terms remain public and linked. The gallery demonstrates contracts; consumers still own authorization, real data, runtime behavior, and professional review.</p></div>
-      <div class="source-coda__links">
-        <a href="https://github.com/lamemustafa/sanchika">GitHub source</a>
-        <a href={currentStableReleaseUrl}>Release v{currentStableRelease} evidence</a>
-        <a href="/adoption/">Adoption boundary</a>
-        <a href="/sanchika-manifest.json">Machine-readable manifest</a>
-      </div>
+    <!-- sanchika-marketing-copy:start -->
+    <section class="witness-truth" aria-labelledby="witness-truth-title">
+      <div><p class="witness-label">04 · Current truth</p><h2 id="witness-truth-title">Useful, bounded, and still in review.</h2></div>
+      <dl>
+        <div><dt>Release</dt><dd><a href={currentStableReleaseUrl}>v{currentStableRelease}</a><span>Tokens, primitives, and patterns are the stable package set. {noNextReleaseAnnouncement}</span></dd></div>
+        <div><dt>Proof</dt><dd>Synthetic AX-031<span>The gallery demonstrates contracts, not customer evidence.</span></dd></div>
+        <div><dt>Adoption</dt><dd><a href="/adoption/">ComplyEaze first</a><span>Axal, Pack, and Tools remain separate adoption work.</span></dd></div>
+        <div><dt>Next action</dt><dd><a href="/primitives/">Inspect a contract</a><span>Then test it in the consumer that owns the runtime.</span></dd></div>
+      </dl>
     </section>
+    <!-- sanchika-marketing-copy:end -->
   </main>
+  <script is:inline data-sanchika-gallery-script="witness-proof-replay">
+    const replay = document.querySelector("[data-witness-replay]");
+    const proof = document.querySelector("[data-witness-proof]");
+    const status = document.querySelector("#decision-proof-status");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (replay instanceof HTMLButtonElement && proof instanceof HTMLElement && status instanceof HTMLElement) {
+      replay.addEventListener("click", () => {
+        if (reducedMotion.matches) { status.textContent = "Motion reduced; the settled proof remains visible."; return; }
+        proof.classList.remove("is-replaying");
+        void proof.offsetWidth;
+        proof.classList.add("is-replaying");
+        status.textContent = "Replaying the 720 millisecond proof sequence.";
+      });
+      proof.addEventListener("animationend", () => { proof.classList.remove("is-replaying"); status.textContent = "Settled proof shown. Motion is optional."; });
+    }
+  </script>
 </GalleryLayout>

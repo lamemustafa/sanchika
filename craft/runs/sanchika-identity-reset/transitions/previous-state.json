@@ -12,9 +12,9 @@
     "isolatedReview": true,
     "rasterGeneration": false
   },
-  "phase": "explore",
-  "status": "active",
-  "reviewRound": 1,
+  "phase": "owner_gate",
+  "status": "awaiting_owner",
+  "reviewRound": 2,
   "trustBrief": {
     "id": "sanchika-identity-reset-trust-v1",
     "consumerMode": "external/operational-saas",
@@ -22,7 +22,9 @@
     "surface": "/",
     "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
     "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
-    "dataSensitivity": ["public-copy"],
+    "dataSensitivity": [
+      "public-copy"
+    ],
     "trustBoundaries": [
       "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
       "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
@@ -32,7 +34,12 @@
       "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
     ],
     "selectedPatterns": [
-      { "name": "EvidencePanel", "states": ["pending-review"] }
+      {
+        "name": "EvidencePanel",
+        "states": [
+          "pending-review"
+        ]
+      }
     ],
     "claims": [
       {
@@ -62,7 +69,9 @@
       "surface": "/",
       "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
       "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
-      "dataSensitivity": ["public-copy"],
+      "dataSensitivity": [
+        "public-copy"
+      ],
       "trustBoundaries": [
         "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
         "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
@@ -72,7 +81,12 @@
         "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
       ],
       "selectedPatterns": [
-        { "name": "EvidencePanel", "states": ["pending-review"] }
+        {
+          "name": "EvidencePanel",
+          "states": [
+            "pending-review"
+          ]
+        }
       ],
       "claims": [
         {
@@ -114,7 +128,12 @@
       "Mobile keeps the wordmark, premise, collection verbs, and Witness Joint in a single reading order without relying on color or motion.",
       "Desktop gives the identity enough compositional scale to feel authored while preserving a real HTML proof area and visible boundary."
     ],
-    "interactionStates": ["focus", "hover", "selected", "blocked"],
+    "interactionStates": [
+      "focus",
+      "hover",
+      "selected",
+      "blocked"
+    ],
     "visualQualityGates": [
       "not-generic-saas",
       "first-viewport-product-signal",
@@ -141,34 +160,808 @@
       "designBriefId": "sanchika-identity-reset-design-v1",
       "reviewRound": 1,
       "territory": "collection-as-living-grammar",
-      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/living-collection.html"],
+      "artifactRefs": [
+        "craft/runs/sanchika-identity-reset/evidence/living-collection.html",
+        "craft/runs/sanchika-identity-reset/evidence/living-collection-mobile-390-revision.webp",
+        "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop-revision.webp"
+      ],
       "qualified": false,
-      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+      "disqualificationReasons": [
+        "Calibrated review does not prefer this direction to both controls and retains a craft veto for the lime-ring composition; it cannot qualify by assertion."
+      ]
     },
     {
       "id": "witness-joint",
       "designBriefId": "sanchika-identity-reset-design-v1",
       "reviewRound": 1,
       "territory": "accountable-open-interval",
-      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/witness-joint.html"],
+      "artifactRefs": [
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint.html",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-mobile-390-revision.webp",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop-revision.webp",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-semantic-blind.webp",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-identity-blind.webp",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-recognition-evidence.md"
+      ],
       "qualified": false,
-      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+      "recognition": {
+        "semanticBlind": {
+          "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-semantic-blind.webp",
+          "matcherCount": 3,
+          "correctMatchers": 3,
+          "colorOnly": false
+        },
+        "identityBlind": {
+          "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-identity-blind.webp",
+          "matcherCount": 3,
+          "correctMatchers": 3,
+          "colorOnly": false
+        }
+      },
+      "disqualificationReasons": [
+        "Calibrated review and both recognition proxies identify this as the leading direction, but behavioural keyboard, forced-colors, and reduced-motion checks remain before it can qualify."
+      ]
     },
     {
       "id": "craft-language",
       "designBriefId": "sanchika-identity-reset-design-v1",
       "reviewRound": 1,
       "territory": "crafted-reproducible-language",
-      "artifactRefs": ["craft/runs/sanchika-identity-reset/evidence/craft-language.html"],
+      "artifactRefs": [
+        "craft/runs/sanchika-identity-reset/evidence/craft-language.html",
+        "craft/runs/sanchika-identity-reset/evidence/craft-language-mobile-390-revision.webp",
+        "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop-revision.webp"
+      ],
       "qualified": false,
-      "disqualificationReasons": ["Browser captures, responsive checks, and isolated review have not run; this direction cannot qualify by assertion."]
+      "disqualificationReasons": [
+        "Calibrated review does not prefer this direction to the baseline and retains a craft veto for its opening proof staging; it cannot qualify by assertion."
+      ]
+    },
+    {
+      "id": "living-collection-r2",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 2,
+      "territory": "collection-as-living-grammar",
+      "artifactRefs": [
+        "craft/runs/sanchika-identity-reset/evidence/living-collection-r2-typeface-board.webp",
+        "craft/runs/sanchika-identity-reset/evidence/round-two-browser-evidence.md"
+      ],
+      "qualified": false,
+      "disqualificationReasons": [
+        "Awaiting fresh calibrated review and recognition evidence for the Anek-controlled rebrief."
+      ]
+    },
+    {
+      "id": "witness-joint-r2",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 2,
+      "territory": "accountable-open-interval",
+      "artifactRefs": [
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-typeface-board.webp",
+        "craft/runs/sanchika-identity-reset/evidence/round-two-browser-evidence.md",
+        "craft/runs/sanchika-identity-reset/evidence/round-two-behavioral-accessibility-evidence.md",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-semantic-blind.webp",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-identity-blind.webp",
+        "craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-recognition-evidence.md"
+      ],
+      "qualified": true,
+      "preference": {
+        "reviewers": 4,
+        "preferredToBaseline": 4,
+        "preferredToControl": 4
+      },
+      "medians": {
+        "relevance": 4,
+        "distinctiveness": 3.5,
+        "craft": 3,
+        "trust": 4
+      },
+      "recognition": {
+        "semanticBlind": {
+          "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-semantic-blind.webp",
+          "matcherCount": 3,
+          "correctMatchers": 3,
+          "colorOnly": false
+        },
+        "identityBlind": {
+          "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-identity-blind.webp",
+          "matcherCount": 3,
+          "correctMatchers": 3,
+          "colorOnly": false
+        }
+      },
+      "disqualificationReasons": []
+    },
+    {
+      "id": "craft-language-r2",
+      "designBriefId": "sanchika-identity-reset-design-v1",
+      "reviewRound": 2,
+      "territory": "crafted-reproducible-language",
+      "artifactRefs": [
+        "craft/runs/sanchika-identity-reset/evidence/craft-language-r2-typeface-board.webp",
+        "craft/runs/sanchika-identity-reset/evidence/round-two-browser-evidence.md"
+      ],
+      "qualified": false,
+      "disqualificationReasons": [
+        "Awaiting fresh calibrated review and recognition evidence for the Anek-controlled rebrief."
+      ]
     }
   ],
   "iterations": [],
-  "reviews": [],
+  "reviews": [
+    {
+      "reviewerId": "brand-proxy-identity-r2",
+      "reviewRound": 1,
+      "role": "brand",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 4,
+        "distinctiveness": 4,
+        "craft": 3,
+        "trust": 4
+      },
+      "directionScores": {
+        "living-collection": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 2,
+          "trust": 3
+        },
+        "witness-joint": {
+          "relevance": 4,
+          "distinctiveness": 4,
+          "craft": 3,
+          "trust": 4
+        },
+        "craft-language": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 4
+        }
+      },
+      "preference": [
+        "witness-joint"
+      ],
+      "directionComparisons": {
+        "living-collection": {
+          "baseline": false,
+          "withoutSkillControl": false
+        },
+        "witness-joint": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "craft-language": {
+          "baseline": false,
+          "withoutSkillControl": false
+        }
+      },
+      "findings": [
+        "AI proxy evidence only, not human validation.",
+        "Witness Joint is the only direction preferred to both controls: its visible interval gives source, interpretation, and accountable decision a memorable, ownable form without impersonating provenance or authority.",
+        "Living Collection has energy but its lime ring competes with meaning-bearing copy; Craft Language remains less singular than the honest without-skill control."
+      ],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "craft-identity-reset-01",
+      "reviewRound": 1,
+      "role": "craft",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 3,
+        "distinctiveness": 3,
+        "craft": 2,
+        "trust": 3
+      },
+      "directionScores": {
+        "living-collection": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 2,
+          "trust": 3
+        },
+        "witness-joint": {
+          "relevance": 4,
+          "distinctiveness": 4,
+          "craft": 4,
+          "trust": 4
+        },
+        "craft-language": {
+          "relevance": 3,
+          "distinctiveness": 2,
+          "craft": 3,
+          "trust": 3
+        }
+      },
+      "preference": [
+        "witness-joint",
+        "living-collection",
+        "craft-language"
+      ],
+      "directionComparisons": {
+        "living-collection": {
+          "baseline": false,
+          "withoutSkillControl": false
+        },
+        "witness-joint": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "craft-language": {
+          "baseline": false,
+          "withoutSkillControl": false
+        }
+      },
+      "findings": [
+        "AI proxy evidence only, not human validation.",
+        "Witness Joint resolves its prior overlap: source, interpretation, accountable decision, and caption now occupy distinct visual intervals, while the labelled synthetic contract enters the first desktop composition.",
+        "Living Collection's retained desktop composition still lets its lime arc overpower meaning-bearing text; Craft Language remains a familiar display-poster treatment."
+      ],
+      "vetoes": [
+        {
+          "directionId": "living-collection",
+          "reason": "The retained desktop composition still lets the lime arc overpower meaning-bearing text.",
+          "resolved": false
+        },
+        {
+          "directionId": "living-collection",
+          "reason": "The rendered contract is not staged within the opening visual evidence.",
+          "resolved": false
+        },
+        {
+          "directionId": "craft-language",
+          "reason": "The rendered contract is not staged within the opening visual evidence.",
+          "resolved": false
+        }
+      ],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "trust-identity-reset-20260723",
+      "reviewRound": 1,
+      "role": "trust",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 3,
+        "distinctiveness": 3,
+        "craft": 3,
+        "trust": 3
+      },
+      "directionScores": {
+        "living-collection": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        },
+        "witness-joint": {
+          "relevance": 4,
+          "distinctiveness": 4,
+          "craft": 3,
+          "trust": 4
+        },
+        "craft-language": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 4,
+          "trust": 3
+        }
+      },
+      "preference": [
+        "witness-joint",
+        "craft-language",
+        "living-collection"
+      ],
+      "directionComparisons": {
+        "living-collection": {
+          "baseline": false,
+          "withoutSkillControl": true
+        },
+        "witness-joint": {
+          "baseline": false,
+          "withoutSkillControl": true
+        },
+        "craft-language": {
+          "baseline": false,
+          "withoutSkillControl": true
+        }
+      },
+      "findings": [
+        "AI visual-proxy evidence only; this is not user validation or human testing.",
+        "All directions preserve an honest non-runtime boundary: the proof is labelled synthetic, the footer says Sanchika is a design contract rather than compliance judgment, and no false authority or automated-decision claim was found.",
+        "Witness Joint best makes the accountable human explicit; the current baseline remains stronger on first-view boundary clarity, and behavioural accessibility modes remain unverified."
+      ],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "accessibility-identity-reset-01",
+      "reviewRound": 1,
+      "role": "accessibility",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 4,
+        "distinctiveness": 3,
+        "craft": 3,
+        "trust": 3
+      },
+      "directionScores": {
+        "living-collection": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        },
+        "witness-joint": {
+          "relevance": 4,
+          "distinctiveness": 4,
+          "craft": 3,
+          "trust": 4
+        },
+        "craft-language": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 2,
+          "trust": 3
+        }
+      },
+      "preference": [
+        "witness-joint",
+        "living-collection",
+        "craft-language"
+      ],
+      "directionComparisons": {
+        "living-collection": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "witness-joint": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "craft-language": {
+          "baseline": false,
+          "withoutSkillControl": true
+        }
+      },
+      "findings": [
+        "AI proxy evidence only, not human validation.",
+        "The target-size veto is resolved: a rebuilt 390px browser matrix reports every native anchor and summary at least 44px, with no under-threshold targets across all three routes.",
+        "All directions share one readable DOM order, worded states, native disclosures, and no horizontal overflow at 390px; behavioural keyboard, forced-colors, and reduced-motion checks remain open."
+      ],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "brand-r2-fresh-isolated",
+      "reviewRound": 2,
+      "role": "brand",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 4,
+        "distinctiveness": 3,
+        "craft": 3,
+        "trust": 4
+      },
+      "directionScores": {
+        "living-collection-r2": {
+          "relevance": 4,
+          "distinctiveness": 4,
+          "craft": 3,
+          "trust": 3
+        },
+        "witness-joint-r2": {
+          "relevance": 4,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 4
+        },
+        "craft-language-r2": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        }
+      },
+      "preference": [
+        "witness-joint-r2",
+        "living-collection-r2",
+        "craft-language-r2"
+      ],
+      "directionComparisons": {
+        "living-collection-r2": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "witness-joint-r2": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "craft-language-r2": {
+          "baseline": false,
+          "withoutSkillControl": true
+        }
+      },
+      "findings": [
+        "Calibration passed for generic-AI-SaaS, off-brief editorial, and fake-authority controls.",
+        "Witness Joint best expresses an ownable open interval and explicit human boundary; its crop annotation remains dense.",
+        "Living Collection has recognisable energy, but the competing colour field needs tighter dominance control.",
+        "Craft Language is legible but less ownable than the other R2 directions.",
+        "AI visual-proxy evidence only; this is not user validation or owner selection."
+      ],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "craft-typeface-r2-visual-01",
+      "reviewRound": 2,
+      "role": "craft",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 4,
+        "distinctiveness": 4,
+        "craft": 4,
+        "trust": 4
+      },
+      "directionScores": {
+        "living-collection-r2": {
+          "relevance": 3,
+          "distinctiveness": 4,
+          "craft": 3,
+          "trust": 3
+        },
+        "witness-joint-r2": {
+          "relevance": 4,
+          "distinctiveness": 4,
+          "craft": 4,
+          "trust": 4
+        },
+        "craft-language-r2": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        }
+      },
+      "preference": [
+        "witness-joint-r2",
+        "living-collection-r2",
+        "craft-language-r2"
+      ],
+      "directionComparisons": {
+        "living-collection-r2": {
+          "baseline": true,
+          "withoutSkillControl": false
+        },
+        "witness-joint-r2": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "craft-language-r2": {
+          "baseline": false,
+          "withoutSkillControl": false
+        }
+      },
+      "findings": [
+        "Anek gives all boards a coherent humanist display voice without serif theatre or generic AI-SaaS styling.",
+        "Witness Joint is the strongest identity-family candidate: the ruled interval makes source, interpretation, and accountable decision memorable while hierarchy holds at desktop and mobile.",
+        "Living Collection needs tighter dominance rules around its proof-card field.",
+        "Craft Language is legible and safe, but its internal markers read as secondary decoration.",
+        "AI visual-proxy evidence only; this is not user validation or an owner-selection decision."
+      ],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "r2-trust-fresh-isolated",
+      "reviewRound": 2,
+      "role": "trust",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 4,
+        "distinctiveness": 3,
+        "craft": 3,
+        "trust": 4
+      },
+      "directionScores": {
+        "living-collection-r2": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        },
+        "witness-joint-r2": {
+          "relevance": 4,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 4
+        },
+        "craft-language-r2": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        }
+      },
+      "preference": [
+        "witness-joint-r2",
+        "living-collection-r2",
+        "craft-language-r2"
+      ],
+      "directionComparisons": {
+        "living-collection-r2": {
+          "baseline": false,
+          "withoutSkillControl": true
+        },
+        "witness-joint-r2": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "craft-language-r2": {
+          "baseline": false,
+          "withoutSkillControl": true
+        }
+      },
+      "findings": [
+        "Relevant generic-AI-SaaS, fake-authority, and mobile-accessibility calibration controls were detected; off-brief editorial controls are not trust-role calibration.",
+        "No R2 board makes a government, ministry, certification, statutory-accuracy, performance, or automated-compliance claim.",
+        "Witness Joint best keeps source and interpretation distinct with an accountable human decision-maker; production copy should retain the baseline's explicit no-runtime boundary.",
+        "The specimen labels synthetic records and the direction structures are identity constructs, not authority or product evidence.",
+        "AI visual-proxy evidence only; this is not user validation."
+      ],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "accessibility-proxy-r2-isolated-01",
+      "reviewRound": 2,
+      "role": "accessibility",
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "detectedFailures": [
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ],
+        "corrections": 0,
+        "fullReruns": 0
+      },
+      "evidenceLabels": [
+        "ai-visual-proxy",
+        "not-user-validated"
+      ],
+      "scores": {
+        "relevance": 4,
+        "distinctiveness": 4,
+        "craft": 3,
+        "trust": 4
+      },
+      "directionScores": {
+        "living-collection-r2": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        },
+        "witness-joint-r2": {
+          "relevance": 4,
+          "distinctiveness": 4,
+          "craft": 3,
+          "trust": 4
+        },
+        "craft-language-r2": {
+          "relevance": 3,
+          "distinctiveness": 3,
+          "craft": 3,
+          "trust": 3
+        }
+      },
+      "preference": [
+        "witness-joint-r2",
+        "living-collection-r2",
+        "craft-language-r2"
+      ],
+      "directionComparisons": {
+        "living-collection-r2": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "witness-joint-r2": {
+          "baseline": true,
+          "withoutSkillControl": true
+        },
+        "craft-language-r2": {
+          "baseline": false,
+          "withoutSkillControl": false
+        }
+      },
+      "findings": [
+        "Calibration control exposes low contrast, undersized controls, motion-only signal, color-only state, and long-identifier overflow.",
+        "Retained browser evidence establishes loaded local Anek, one main landmark, proof heading, no overflow, and at least 44px target blocks at 1440px and 390px.",
+        "Witness Joint has the clearest desktop-to-mobile reading path and explicit human-decision boundary.",
+        "A direct headless-Chrome Tab run reached all 12 actionable controls in sequence, with visible focus indicators and no hidden focus target or trap.",
+        "Direct forced-colors and reduced-motion emulation passed for all three routes; this is browser-verified laboratory evidence, not human validation."
+      ],
+      "vetoes": [],
+      "revisionAssessments": []
+    }
+  ],
   "ownerDecision": "pending",
   "selectedDirectionId": null,
-  "assets": [],
+  "assets": [
+    {
+      "path": "apps/gallery/public/fonts/AnekDevanagari-Latin-Variable.woff2",
+      "origin": "https://fonts.gstatic.com/s/anekdevanagari/v17/jVyS7nP0CGrUsxB-QiRgw0NlLaVH8S3tUx_4QQ.woff2",
+      "licence": "SIL Open Font License 1.1; source pinned to google/fonts ac1371ad5eccb06352daf399448b673a79c98024/ofl/anekdevanagari; Latin subset selected because the lab displays no Devanagari.",
+      "sha256": "3a555aa25f31b51a84c965a66b5fca3128d638dd9d0dd0112904dde7c7e30cf4",
+      "job": "identity",
+      "retained": true
+    }
+  ],
   "evidenceDigests": {
     "craft/runs/sanchika-identity-reset/evidence/shape-desktop.webp": "d523adaa6fb2d1c3ce6ee5aa2b8900e8e91b29c389c334735d7e3701d55e72c0",
     "craft/runs/sanchika-identity-reset/evidence/shape-mobile.webp": "a6c1b2e07cfa7a4f5107e4e3f4a4898e5a04b7288a9b5770257533509633453a",
@@ -176,9 +969,27 @@
     "craft/runs/sanchika-identity-reset/evidence/living-collection.html": "a1bace283a03e8bb5f318d9ebc10dd3ceebf9cbc80983e061125bb4c6b1b834d",
     "craft/runs/sanchika-identity-reset/evidence/witness-joint.html": "bae246c7150be63687ac22eb7d9a6ea05f0d4c7e18d8aebe22a59cd56182dff7",
     "craft/runs/sanchika-identity-reset/evidence/craft-language.html": "f6bf4d445058e200ac10f0f41b00cc33a335804d339bb3a0ca398cc61bf268fc",
-    "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop.png": "2bf837f9f47aaad04f760fd6412033cb6ed4d4aa68366cc6312ae32b99d61823",
-    "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop.png": "aacd0d9b74f806ae6067a2a67520757f705825767adc39853f320c82345bf478",
-    "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop.png": "cf1ad27bf5565f89efac9d657f0b666f096be9dd441c8dca6ed11c84addf3289"
+    "craft/runs/sanchika-identity-reset/evidence/living-collection-mobile-390-revision.webp": "e8f55a4b84ceb47c89f8e6b27e9b6c5f0d4a6b090101572a4a3fa71102b0c1ff",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint-mobile-390-revision.webp": "6e1a3fccf16cf570cc1f06e9ac95c1a4eea572cbbd3882ee148696a38cd138c9",
+    "craft/runs/sanchika-identity-reset/evidence/craft-language-mobile-390-revision.webp": "8bef84fe7567dfecc700047835899ac347db7b0eb4fa5af8262366df2eb0cad4",
+    "craft/runs/sanchika-identity-reset/evidence/mobile-390-browser-evidence.md": "d7b60eb86eb81a799263cfbbe237a980a6791b73ef11e620c39da17d4b6418b8",
+    "craft/runs/sanchika-identity-reset/evidence/mobile-433-browser-evidence.md": "b3a791fabf936a930787abff2176e5092d287ce6a951c78980e4a1c6d5a8c654",
+    "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop-revision.webp": "51e7e2601845b99484651a1f13ddb1e17c491a554fc43e32cd28b841a72c4906",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop-revision.webp": "d10bdff276e5a9ed81cd2aec5bcd03456623c8afede378521e44bfa1897a955b",
+    "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop-revision.webp": "41998127068b2850d6945a2306ba8006433be025de812bf1a88d09ab62a6dcd9",
+    "craft/runs/sanchika-identity-reset/evidence/desktop-revision-browser-evidence.md": "b276827e552fa6118a6748b99d4beca71246e9fbac76de92af262e43d67c1de4",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint-semantic-blind.webp": "142c9faa308ebd6687ebb022d5d1607a523b13b24fcf118796ef90e6573a16c1",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint-identity-blind.webp": "d7a078f6cae6800cd0c6145f332239fafc972cac23da00eb6d8596d121c154f6",
+    "craft/runs/sanchika-identity-reset/evidence/witness-joint-recognition-evidence.md": "ab62fe0b10198097d26615b1b788c8ac427e5d884a24538b492b36da4d774d9b"
+    ,"craft/runs/sanchika-identity-reset/evidence/living-collection-r2-typeface-board.webp": "643b202e5779acb4bbc42d292d3461dfca9a7657a2be8ab192cf245574896125"
+    ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-typeface-board.webp": "de53f837460a956ef9b156667e3bd506ccdfb75a228c4e0630893cfefe622f50"
+    ,"craft/runs/sanchika-identity-reset/evidence/craft-language-r2-typeface-board.webp": "eb785670f46fdf22cc64f80d4b02d3ee2c5154541b110de6a471f50046ddee8e"
+    ,"craft/runs/sanchika-identity-reset/evidence/typeface-rebrief-evidence.md": "e8ecbaee0cf6b2f46807509ffae41b855006e97ed3c9a6c15b1dc249571d8a05"
+    ,"craft/runs/sanchika-identity-reset/evidence/round-two-browser-evidence.md": "c92c3b9b1914d93505f457e37829a3e159a5c4572e981663d80e6328f01e55b5"
+    ,"craft/runs/sanchika-identity-reset/evidence/round-two-behavioral-accessibility-evidence.md": "4ad8e213af4c3f04625a13bb80e625422ae24b31344b66d3846e5fef681c7cb9"
+    ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-semantic-blind.webp": "acf17f004a7ffe4a47d34e9ab2daf0763bd9b89ddfa7b7465f1ea9f3093280e6"
+    ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-identity-blind.webp": "6f9370f1098b481abfefb9a814d9c65d78c0a2dd68a8d4c6fec2ec8cb2b411b2"
+    ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-recognition-evidence.md": "9d29944d4629d51aa95471e0e9df017f166b0898419d75dbb684641a1d2595f3"
   },
   "reconciliation": [],
   "evidenceLoop": {
@@ -190,7 +1001,9 @@
       "surface": "/",
       "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
       "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
-      "dataSensitivity": ["public-copy"],
+      "dataSensitivity": [
+        "public-copy"
+      ],
       "trustBoundaries": [
         "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
         "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
@@ -200,7 +1013,12 @@
         "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
       ],
       "selectedPatterns": [
-        { "name": "EvidencePanel", "states": ["pending-review"] }
+        {
+          "name": "EvidencePanel",
+          "states": [
+            "pending-review"
+          ]
+        }
       ],
       "claims": [
         {
@@ -230,7 +1048,9 @@
         "surface": "/",
         "userJob": "Understand how Sanchika lets people and coding agents create serious, emotionally coherent interface work without losing source, uncertainty, or human accountability.",
         "primaryDecision": "Choose an identity direction that makes Sanchika feel like a living, reusable design language rather than a generic component catalogue.",
-        "dataSensitivity": ["public-copy"],
+        "dataSensitivity": [
+          "public-copy"
+        ],
         "trustBoundaries": [
           "Sanchika supplies contracts and a development-time craft loop, not compliance judgment, customer evidence, or an application runtime.",
           "Any source, interpretation, and human decision shown in product proof stays synthetic, explicit, and visibly distinct."
@@ -240,7 +1060,12 @@
           "Identity geometry is labelled as identity and never presented as provenance, product evidence, or authority."
         ],
         "selectedPatterns": [
-          { "name": "EvidencePanel", "states": ["pending-review"] }
+          {
+            "name": "EvidencePanel",
+            "states": [
+              "pending-review"
+            ]
+          }
         ],
         "claims": [
           {
@@ -282,7 +1107,12 @@
         "Mobile keeps the wordmark, premise, collection verbs, and Witness Joint in a single reading order without relying on color or motion.",
         "Desktop gives the identity enough compositional scale to feel authored while preserving a real HTML proof area and visible boundary."
       ],
-      "interactionStates": ["focus", "hover", "selected", "blocked"],
+      "interactionStates": [
+        "focus",
+        "hover",
+        "selected",
+        "blocked"
+      ],
       "visualQualityGates": [
         "not-generic-saas",
         "first-viewport-product-signal",
@@ -310,7 +1140,7 @@
         "finding": "The desktop shape record establishes the collection verbs and an explicitly labelled Witness Joint before direction exploration."
       },
       {
-        "type": "mobile-screenshot",
+        "type": "desktop-screenshot",
         "artifact": "craft/runs/sanchika-identity-reset/evidence/shape-mobile.webp",
         "finding": "The 390px shape record preserves a single reading order and does not rely on motion or colour alone."
       },
@@ -320,19 +1150,74 @@
         "finding": "Accessibility constraints are explicit at shape and must be verified again against interactive direction code."
       },
       {
-        "type": "desktop-screenshot",
-        "artifact": "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop.png",
-        "finding": "Owner-provided live desktop capture of Direction A. It shows real proof below the identity composition, but browser chrome and an unrelated desktop overlay remain in the capture."
+        "type": "mobile-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/living-collection-mobile-390-revision.webp",
+        "finding": "Clean 390px browser capture of Direction A after the proof-stage revision and narrow-width ring removal."
       },
       {
         "type": "desktop-screenshot",
-        "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop.png",
-        "finding": "Owner-provided live desktop capture of Direction B. It proves route rendering only; it is not a mobile, keyboard, forced-colors, or reduced-motion result."
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/living-collection-desktop-revision.webp",
+        "finding": "Clean 1440px browser capture of Direction A after the proof-stage revision."
+      },
+      {
+        "type": "mobile-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-mobile-390-revision.webp",
+        "finding": "Clean 390px browser capture of Direction B with the Witness Joint retained in the mobile reading order."
       },
       {
         "type": "desktop-screenshot",
-        "artifact": "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop.png",
-        "finding": "Owner-provided live desktop capture of Direction C. The proof transition needs contrast review before any direction can qualify."
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-desktop-revision.webp",
+        "finding": "Clean 1440px browser capture of Direction B with the proof in the same identity frame."
+      },
+      {
+        "type": "mobile-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/craft-language-mobile-390-revision.webp",
+        "finding": "Clean 390px browser capture of Direction C after the in-stage proof and light-surface foreground repair."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/craft-language-desktop-revision.webp",
+        "finding": "Clean 1440px browser capture of Direction C after the proof-stage revision."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/mobile-390-browser-evidence.md",
+        "finding": "Measured 390px width, no horizontal overflow, a 44px minimum actionable proof target, and the in-stage proof heading across all routes; keyboard focus and behavioural accessibility modes remain open."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-recognition-evidence.md",
+        "finding": "Three independent AI matchers recognised both semantic-blind and identity-blind Witness Joint boards from geometry and composition, not colour; this is not human validation."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/living-collection-r2-typeface-board.webp",
+        "finding": "Round-two paired 1440px and 390px code-native capture with the self-hosted Anek Latin variable specimen."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-typeface-board.webp",
+        "finding": "Round-two paired 1440px and 390px code-native capture with the self-hosted Anek Latin variable specimen."
+      },
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/craft-language-r2-typeface-board.webp",
+        "finding": "Round-two paired 1440px and 390px code-native capture with the self-hosted Anek Latin variable specimen."
+      },
+      {
+        "type": "manual-review-note",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/typeface-rebrief-evidence.md",
+        "finding": "Official source, SIL OFL 1.1, local payload, variable axes, Latin script coverage, and browser-loaded local font evidence."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/round-two-browser-evidence.md",
+        "finding": "Round-two browser evidence records the loaded local font, desktop/mobile landmark, overflow, and target-size observations, plus the remaining keyboard and preference-emulation limits."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/sanchika-identity-reset/evidence/round-two-behavioral-accessibility-evidence.md",
+        "finding": "A direct Chrome run verified the full 12-control keyboard sequence plus reduced-motion and forced-colors behavior for all three 390px R2 routes."
       }
     ],
     "adoptionEvidence": {
@@ -344,20 +1229,20 @@
         "apps/gallery/src/components/craft/IdentityResetDirection.astro",
         "apps/gallery/src/styles/craft-lab.css"
       ],
-      "verificationRun": "SANCHIKA_CRAFT_LAB=true pnpm build emitted all three routes. A normal pnpm build emitted 61 production pages and no craft-lab route. Owner-driven local Astro dev served each desktop direction successfully.",
+      "verificationRun": "SANCHIKA_CRAFT_LAB=true node_modules/.bin/astro build emitted 64 pages, including all three craft-lab routes. The local pnpm launcher did not yield a usable run, which is recorded as an environment gap. A locally served static artifact confirmed the self-hosted font request and the retained desktop/mobile browser observations.",
       "rollbackPlan": "Delete the isolated lab and restore the recorded source commit before any production adoption."
     },
     "decision": "needs-design-revision",
     "residualRisks": [
-      "Only desktop captures are available; 390px mobile, keyboard, forced-colors, and reduced-motion evidence are still missing.",
-      "No identity direction has been selected by the owner.",
-      "No production gallery code has been changed."
+      "Round-one direction renders and AI proxy reviews are preserved as historical audit evidence only; they cannot qualify a direction because the required self-hosted Anek specimen was absent.",
+      "R2 browser checks are controlled 390px laboratory evidence only; they do not replace manual assistive-technology testing, user validation, production performance measurements, or the separate owner decision.",
+      "No identity direction has been selected by the owner and no production gallery code has been changed."
     ],
     "nextActions": [
-      "Retain 390px renders for all three directions without browser chrome or unrelated desktop overlays.",
-      "Run keyboard, forced-colors, and reduced-motion checks.",
-      "Run calibrated isolated review before the owner gate."
+      "Present the only qualifying R2 direction anonymously at the owner gate.",
+      "Retain the browser evidence boundary and do not treat it as user validation.",
+      "Do not select a direction for production or alter the public gallery until the owner explicitly decides."
     ]
   },
-  "nextAction": "Capture the 390px and accessibility matrix, then run isolated review with the retained directions and acceptance thresholds."
+  "nextAction": "Owner decision required: approve the anonymously qualified R2 direction for the isolated production-build phase, or reject all directions. No production approval is implied."
 }

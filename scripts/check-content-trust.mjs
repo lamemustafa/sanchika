@@ -93,12 +93,12 @@ function lintTrustCopy(text, { requireBoundaryDisclosure = true } = {}) {
 
 function validateProductionPathTrust({ documentPath, visibleText, failures }) {
   const requirements = new Map([
-    ["index.html", ["No model runtime", "No automated compliance judgment", "Synthetic examples", `Current stable release: v${galleryReleaseState.currentStable}`, galleryReleaseState.nextAnnouncement]],
+    ["index.html", ["It supplies contracts and a review loop—not compliance judgment, customer evidence, or an application runtime.", "Synthetic AX-031", `v${galleryReleaseState.currentStable}`, galleryReleaseState.nextAnnouncement]],
     ["modes/complyeaze/index.html", ["Product-family boundary", "Credentials or artifacts", "person choosing the route"]],
     ["modes/axal/index.html", ["Saved synthetic context", "judgment stays human", "Source evidence", "CA decision required"]],
     ["modes/pack/index.html", ["Credentials, session cookies, and downloaded files", "No ComplyEaze account", "Inspect permission contract", "manual download path"]],
     ["modes/tools/index.html", ["Search and entered work stay in the browser", "Nothing is uploaded", "Professional review", "outputs remain drafts"]],
-    ["adoption/index.html", ["Consumers own product copy, authorization", "Real consumer adoption remains incomplete", "rollback"]],
+    ["adoption/index.html", ["Use the artifact path", "Real consumer adoption remains incomplete", "rollback"]],
   ]);
   for (const required of requirements.get(documentPath) ?? []) {
     if (!visibleText.includes(required)) failures.push(`apps/gallery/dist/${documentPath} missing trust disclosure: ${required}`);

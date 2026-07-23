@@ -2,6 +2,7 @@
 @import "@sanchika/primitives/styles.css";
 @import "@sanchika/patterns/styles.css";
 @import "./shell.css";
+@import "./identity.css";
 @import "./landing.css";
 @import "./docs.css";
 @import "./search.css";

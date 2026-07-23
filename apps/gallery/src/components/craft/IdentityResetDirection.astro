@@ -48,22 +48,24 @@ const meta = directionMeta[direction];
       </div>
     </div>
 
-    <div class="craft-lab__composition" aria-label="Identity composition: source, interpretation, and accountable decision remain distinct.">
-      <span class="craft-lab__composition-word craft-lab__composition-word--source">source</span>
-      <span class="craft-lab__composition-word craft-lab__composition-word--interpretation">interpretation</span>
-      <span class="craft-lab__joint" aria-hidden="true"></span>
-      <span class="craft-lab__composition-word craft-lab__composition-word--decision">accountable<br />decision</span>
-      <p>Witness Joint<br /><span>the space no contract should close</span></p>
-    </div>
-  </section>
+    <div class="craft-lab__hero-stage">
+      <div class="craft-lab__composition" aria-label="Identity composition: source, interpretation, and accountable decision remain distinct.">
+        <span class="craft-lab__composition-word craft-lab__composition-word--source">source</span>
+        <span class="craft-lab__composition-word craft-lab__composition-word--interpretation">interpretation</span>
+        <span class="craft-lab__joint" aria-hidden="true"></span>
+        <span class="craft-lab__composition-word craft-lab__composition-word--decision">accountable<br />decision</span>
+        <p>Witness Joint<br /><span>the space no contract should close</span></p>
+      </div>
 
-  <section id="craft-proof" class="craft-lab__proof" aria-labelledby="craft-proof-title">
-    <div class="craft-lab__proof-intro">
-      <p>Rendered contract specimen · synthetic records</p>
-      <h2 id="craft-proof-title">One real Sanchika contract, rendered as HTML.</h2>
-      <p>Source, uncertainty, and an accountable reviewer remain legible inside the proof. The identity ends at the gallery boundary.</p>
+      <section id="craft-proof" class="craft-lab__proof" aria-labelledby="craft-proof-title">
+        <div class="craft-lab__proof-intro">
+          <p>Rendered contract specimen · synthetic records</p>
+          <h2 id="craft-proof-title">The proof belongs in the same frame.</h2>
+          <p>Source, uncertainty, and human review remain legible in real HTML. Identity does not become evidence.</p>
+        </div>
+        <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />
+      </section>
     </div>
-    <ReviewDeskPreview queue={reviewQueue} evidence={reviewEvidence} audit={auditTrail} />
   </section>
 
   <footer class="craft-lab__footer">

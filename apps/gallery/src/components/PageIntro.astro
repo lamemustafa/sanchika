@@ -4,8 +4,12 @@ interface Props {
   title: string;
   description: string;
   meta?: string;
+  example?: string;
+  contract?: string;
+  limit?: string;
+  failure?: string;
 }
-const { eyebrow, title, description, meta } = Astro.props;
+const { eyebrow, title, description, meta, example, contract, limit, failure } = Astro.props;
 ---
 
 <header class="page-intro">
@@ -13,4 +17,10 @@ const { eyebrow, title, description, meta } = Astro.props;
   <h1>{title}</h1>
   <p>{description}</p>
   {meta && <small>{meta}</small>}
+  {(example || contract || limit || failure) && <dl class="page-intro__guide">
+    {example && <div><dt>Rendered example</dt><dd>{example}</dd></div>}
+    {contract && <div><dt>Contract / API</dt><dd>{contract}</dd></div>}
+    {limit && <div><dt>Limit</dt><dd>{limit}</dd></div>}
+    {failure && <div><dt>Failure state</dt><dd>{failure}</dd></div>}
+  </dl>}
 </header>

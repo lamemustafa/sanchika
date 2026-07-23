@@ -336,12 +336,12 @@ export function validateCraftTransition(previous, next) {
       const nextDirection = asArray(next?.directions).find(
         (candidate) => candidate?.id === direction?.id,
       );
-      return !isDeepStrictEqual(direction, nextDirection);
+      return !reviewedDirectionCanAdvance(direction, nextDirection);
     });
   if (reviewedDirectionsChanged)
     add(
       "directions",
-      "Directions with retained review evidence cannot change or disappear.",
+      "Reviewed directions may only append retained evidence and update recognition or qualification metadata before the owner gate.",
     );
   if (!rebrief) {
     for (const field of ["trustBrief", "designBrief"]) {
@@ -691,6 +691,33 @@ function validateState(run, add) {
   } else if (run.selectedDirectionId !== null && run.selectedDirectionId !== undefined) {
     add("selectedDirectionId", "Only an approved owner decision may select a direction.");
   }
+}
+
+function reviewedDirectionCanAdvance(previous, next) {
+  if (!isRecord(previous) || !isRecord(next)) return false;
+  const mutableFields = new Set([
+    "artifactRefs",
+    "recognition",
+    "qualified",
+    "preference",
+    "medians",
+    "disqualificationReasons",
+  ]);
+  const protectedPrevious = Object.fromEntries(
+    Object.entries(previous).filter(([field]) => !mutableFields.has(field)),
+  );
+  const protectedNext = Object.fromEntries(
+    Object.entries(next).filter(([field]) => !mutableFields.has(field)),
+  );
+  const previousArtifacts = asArray(previous.artifactRefs);
+  const nextArtifacts = asArray(next.artifactRefs);
+  return (
+    isDeepStrictEqual(protectedPrevious, protectedNext) &&
+    nextArtifacts.length >= previousArtifacts.length &&
+    previousArtifacts.every(
+      (artifact, index) => artifact === nextArtifacts[index],
+    )
+  );
 }
 
 function validateDirections(run, options, add) {

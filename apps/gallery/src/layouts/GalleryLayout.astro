@@ -32,17 +32,18 @@ const nav = [
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content="https://sanchika.complyeaze.com/og-witness-joint.svg" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    {dataFavicon && <link rel="icon" href="data:," />}
+    {dataFavicon && <link rel="icon" href="/favicon.svg" type="image/svg+xml" />}
   </head>
   <body>
     <a class="site-skip" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <div class="site-header__inner">
         <a class="site-brand" href="/" aria-label="Sanchika home">
-          <span aria-hidden="true">S</span>
+          <span class="site-brand__joint" aria-hidden="true"><i></i><i></i></span>
           <span><strong>Sanchika</strong><small>Evidence contracts</small></span>
         </a>
         <nav class="site-primary-navigation site-primary-navigation--desktop" aria-label="Primary navigation">

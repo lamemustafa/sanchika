@@ -458,6 +458,34 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     "directions",
   );
   runCase(
+    "reviewed directions may append recognition evidence before the owner gate",
+    () => {
+      const previous = structuredClone(baseRun);
+      previous.phase = "review";
+      previous.status = "active";
+      previous.ownerDecision = "pending";
+      delete previous.stopReason;
+      const next = structuredClone(previous);
+      next.directions[0].artifactRefs.push(
+        `${baseRunRoot}/evidence/alpha-semantic-blind.webp`,
+      );
+      next.directions[0].recognition = {
+        semanticBlind: {
+          artifact: `${baseRunRoot}/evidence/alpha-semantic-blind.webp`,
+          matcherCount: 3,
+          correctMatchers: 2,
+          colorOnly: false,
+        },
+      };
+      next.directions[0].qualified = false;
+      next.directions[0].disqualificationReasons = [
+        "Identity-blind recognition evidence remains required.",
+      ];
+      return validateCraftTransition(previous, next);
+    },
+    null,
+  );
+  runCase(
     "transition surface comparison ignores object key order",
     () => {
       const previous = structuredClone(baseRun);

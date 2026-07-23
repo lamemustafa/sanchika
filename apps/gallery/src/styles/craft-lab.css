@@ -3,28 +3,26 @@
 @import "@sanchika/patterns/styles.css";
 @import "./identity.css";
 
-:root {
-  color-scheme: dark;
-}
+:root { color-scheme: dark; }
 
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
 
-body { margin: 0; min-width: 320px; background: var(--gallery-brand-bg); color: var(--gallery-brand-ink); font-family: var(--sk-font-family-sans, system-ui, sans-serif); }
+body { margin: 0; min-width: 320px; background: var(--gallery-brand-bg); color: var(--gallery-brand-ink); font-family: var(--gallery-brand-font); font-synthesis: none; }
 
 a { color: inherit; }
 
-.craft-lab__skip { position: fixed; z-index: 10; top: 0.75rem; left: 0.75rem; transform: translateY(-180%); padding: 0.7rem 0.9rem; background: var(--gallery-brand-accent); color: var(--gallery-brand-accent-ink); font-weight: 700; }
+.craft-lab__skip { position: fixed; z-index: 10; top: 0.75rem; left: 0.75rem; display: inline-flex; align-items: center; min-block-size: 44px; transform: translateY(-180%); padding: 0.7rem 0.9rem; background: var(--gallery-brand-accent); color: var(--gallery-brand-accent-ink); font-weight: 700; }
 .craft-lab__skip:focus { transform: translateY(0); }
 
 .craft-lab { min-height: 100vh; overflow: clip; }
 .craft-lab__masthead { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; max-width: 1480px; margin: auto; padding: 1.4rem clamp(1.2rem, 4vw, 4rem); font-size: 0.78rem; font-weight: 650; letter-spacing: 0.01em; }
 .craft-lab__masthead > :last-child { justify-self: end; }
 .craft-lab__masthead p { margin: 0; opacity: 0.76; }
-.craft-lab__wordmark { font-size: 1.35rem; font-weight: 760; letter-spacing: -0.045em; text-decoration: none; }
+.craft-lab__wordmark { font-size: 1.35rem; font-weight: 760; letter-spacing: -0.04em; text-decoration: none; }
 .craft-lab__masthead a:not(.craft-lab__wordmark) { text-decoration-thickness: 1px; text-underline-offset: 0.3em; }
-.craft-lab__masthead a, .craft-lab__actions a { display: inline-flex; align-items: center; min-block-size: 2.75rem; }
+.craft-lab__masthead a, .craft-lab__actions a { display: inline-flex; align-items: center; min-block-size: 44px; }
 .craft-lab a:focus-visible { outline: 2px solid var(--gallery-brand-accent); outline-offset: 0.25rem; }
 
 .craft-lab__hero { position: relative; display: grid; grid-template-columns: minmax(0, 0.93fr) minmax(28rem, 1.07fr); gap: clamp(2.5rem, 7vw, 9rem); max-width: 1480px; min-height: min(720px, calc(100vh - 4.5rem)); margin: auto; padding: clamp(3.5rem, 8vw, 9rem) clamp(1.2rem, 4vw, 4rem) clamp(4rem, 8vw, 8rem); }
@@ -36,8 +34,9 @@ a { color: inherit; }
 .craft-lab__actions { display: flex; flex-wrap: wrap; gap: 0.8rem 1.5rem; margin-top: 2.5rem; font-size: 0.95rem; font-weight: 700; }
 .craft-lab__actions a { text-decoration-thickness: 1px; text-underline-offset: 0.35em; }
 
-.craft-lab__composition { position: relative; align-self: stretch; min-height: 28rem; }
-.craft-lab__composition-word { position: absolute; display: block; font-size: clamp(2.15rem, 4.5vw, 5.2rem); font-weight: 740; line-height: 0.83; letter-spacing: -0.055em; }
+.craft-lab__hero-stage { position: relative; z-index: 1; display: grid; align-content: center; gap: clamp(2rem, 4vw, 4rem); min-width: 0; }
+.craft-lab__composition { position: relative; align-self: stretch; min-height: 22rem; }
+.craft-lab__composition-word { position: absolute; display: block; font-size: clamp(2.15rem, 4.5vw, 5.2rem); font-weight: 740; line-height: 0.83; letter-spacing: -0.035em; }
 .craft-lab__composition-word--source { top: 3%; left: 0; }
 .craft-lab__composition-word--interpretation { top: 34%; right: 0; text-align: right; }
 .craft-lab__composition-word--decision { bottom: 4%; left: 11%; }
@@ -48,32 +47,34 @@ a { color: inherit; }
 .craft-lab__composition p { position: absolute; top: 51%; left: 21%; margin: 1.2rem 0 0; font-size: 0.78rem; font-weight: 700; line-height: 1.25; }
 .craft-lab__composition p span { font-weight: 520; opacity: 0.72; }
 
-.craft-lab__proof { max-width: 1480px; margin: auto; padding: clamp(4rem, 8vw, 9rem) clamp(1.2rem, 4vw, 4rem); }
+.craft-lab__proof { min-width: 0; padding: clamp(1.25rem, 2.5vw, 2rem); color: var(--gallery-brand-proof-ink); background: var(--gallery-brand-proof-bg); }
 .craft-lab__proof-intro { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(16rem, 0.65fr); column-gap: clamp(2rem, 8vw, 10rem); align-items: end; margin-bottom: 2.25rem; }
 .craft-lab__proof-intro > p:first-child { grid-column: 1 / -1; }
 .craft-lab h2 { max-width: 16ch; margin: 0; font-size: clamp(2.2rem, 4.3vw, 4.8rem); line-height: 0.94; letter-spacing: -0.035em; text-wrap: balance; }
 .craft-lab__proof-intro > p:last-child { max-width: 43ch; margin: 0; font-size: 1rem; line-height: 1.55; opacity: 0.75; }
-.craft-lab__proof .sk-pattern-review-desk-preview { box-shadow: var(--sk-shadow-card); }
+.craft-lab__proof .sk-pattern-review-desk-preview { max-block-size: 27rem; overflow: auto; box-shadow: var(--sk-shadow-card); }
+.craft-lab .sk-pattern-checkpoint-actions a,
+.craft-lab .sk-pattern-audit-trail-preview > a,
+.craft-lab .sk-pattern-evidence-panel .sk-link { display: inline-flex; align-items: center; min-block-size: 44px; }
+.craft-lab .sk-pattern-evidence-panel summary { display: flex; align-items: center; min-block-size: 44px; }
 
 .craft-lab__footer { display: flex; justify-content: space-between; gap: 1rem; max-width: 1480px; margin: auto; padding: 1.5rem clamp(1.2rem, 4vw, 4rem) 2.5rem; border-top: 1px solid var(--gallery-brand-divider); font-size: 0.76rem; opacity: 0.76; }
 
-.craft-lab--living-collection .craft-lab__hero::after { position: absolute; right: -14vw; bottom: -22vw; width: min(70vw, 60rem); aspect-ratio: 1; border: min(9vw, 8rem) solid var(--gallery-brand-accent); border-radius: 50%; content: ""; }
+.craft-lab--living-collection .craft-lab__hero::after { position: absolute; z-index: 0; right: -8vw; bottom: 6%; width: min(42vw, 34rem); aspect-ratio: 1; border: min(4vw, 3.5rem) solid var(--gallery-brand-accent); border-radius: 50%; opacity: 0.22; content: ""; }
 .craft-lab--living-collection .craft-lab__composition { color: var(--gallery-brand-accent); }
 .craft-lab--living-collection .craft-lab__composition-word--interpretation { color: var(--gallery-brand-secondary); }
 .craft-lab--living-collection .craft-lab__composition-word--decision { color: var(--gallery-brand-ink); }
-.craft-lab--living-collection .craft-lab__proof { background: var(--gallery-brand-proof-bg); color: var(--gallery-brand-proof-ink); }
 .craft-lab--living-collection .craft-lab__proof .sk-pattern-review-desk-preview { border-color: var(--gallery-brand-proof-ink); }
 .craft-lab--living-collection .craft-lab__footer { color: var(--gallery-brand-accent); }
 
 .craft-lab--witness-joint .craft-lab__hero { min-height: min(810px, calc(100vh - 4.5rem)); }
-.craft-lab--witness-joint .craft-lab__composition { border-top: 1px solid var(--gallery-brand-secondary); border-bottom: 1px solid var(--gallery-brand-secondary); }
+.craft-lab--witness-joint .craft-lab__composition { min-height: 28rem; border-top: 1px solid var(--gallery-brand-secondary); border-bottom: 1px solid var(--gallery-brand-secondary); }
 .craft-lab--witness-joint .craft-lab__composition::before { position: absolute; top: 0; bottom: 0; left: 50%; width: 16%; border-right: 1px solid var(--gallery-brand-secondary); border-left: 1px solid var(--gallery-brand-secondary); content: ""; }
 .craft-lab--witness-joint .craft-lab__composition-word--source { top: 11%; left: 5%; }
-.craft-lab--witness-joint .craft-lab__composition-word--interpretation { top: 43%; right: 5%; }
-.craft-lab--witness-joint .craft-lab__composition-word--decision { bottom: 11%; left: 5%; }
+.craft-lab--witness-joint .craft-lab__composition-word--interpretation { top: 27%; right: 5%; }
+.craft-lab--witness-joint .craft-lab__composition-word--decision { bottom: 8%; left: 5%; }
 .craft-lab--witness-joint .craft-lab__joint { z-index: 1; left: 42%; width: 20%; color: var(--gallery-brand-accent); }
-.craft-lab--witness-joint .craft-lab__composition p { z-index: 2; top: 52%; left: 34%; color: var(--gallery-brand-accent); }
-.craft-lab--witness-joint .craft-lab__proof { background: var(--gallery-brand-proof-bg); color: var(--gallery-brand-proof-ink); }
+.craft-lab--witness-joint .craft-lab__composition p { z-index: 2; top: 13%; left: 56%; color: var(--gallery-brand-accent); }
 .craft-lab--witness-joint .craft-lab__footer { color: var(--gallery-brand-ink); }
 
 .craft-lab--craft-language .craft-lab__hero { grid-template-columns: minmax(0, 1.1fr) minmax(24rem, 0.9fr); }
@@ -86,7 +87,7 @@ a { color: inherit; }
 .craft-lab--craft-language .craft-lab__composition-word--decision { bottom: 6%; left: 6%; }
 .craft-lab--craft-language .craft-lab__joint { top: 51%; left: 31%; width: 44%; color: var(--gallery-brand-accent); transform: rotate(0); }
 .craft-lab--craft-language .craft-lab__composition p { top: 52%; left: 6%; color: var(--gallery-brand-accent); }
-.craft-lab--craft-language .craft-lab__proof { background: var(--gallery-brand-proof-bg); color: var(--gallery-brand-proof-ink); }
+.craft-lab--craft-language { color-scheme: light; }
 .craft-lab--craft-language .craft-lab__proof .sk-pattern-review-desk-preview { color: var(--sk-color-ink-primary); }
 .craft-lab--craft-language .craft-lab__footer { color: var(--gallery-brand-ink); }
 
@@ -97,14 +98,18 @@ a { color: inherit; }
   .craft-lab__masthead p { display: none; }
   .craft-lab__hero { grid-template-columns: 1fr; min-height: 0; gap: 3rem; padding-top: 4.5rem; }
   .craft-lab h1 { max-width: 11ch; font-size: clamp(3.1rem, 15vw, 5.2rem); }
-  .craft-lab__composition { min-height: 22rem; }
+  .craft-lab__hero-stage { gap: 2.25rem; }
+  .craft-lab__composition { min-height: 20rem; }
+  .craft-lab--witness-joint .craft-lab__composition { min-height: 20rem; }
   .craft-lab__composition-word--interpretation { top: 35%; }
   .craft-lab__composition-word--decision { left: 6%; }
   .craft-lab__composition p { left: 15%; }
+  .craft-lab__proof { padding: 1.25rem; }
   .craft-lab__proof-intro { grid-template-columns: 1fr; gap: 1.5rem; }
+  .craft-lab__proof .sk-pattern-review-desk-preview { max-block-size: none; }
   .craft-lab h2 { max-width: 13ch; }
   .craft-lab__footer { flex-direction: column; }
-  .craft-lab--living-collection .craft-lab__hero::after { right: -38vw; bottom: -25vw; width: 115vw; }
+  .craft-lab--living-collection .craft-lab__hero::after { display: none; }
   .craft-lab--witness-joint .craft-lab__composition::before { left: 50%; width: 21%; }
   .craft-lab--witness-joint .craft-lab__composition p { left: 25%; }
   .craft-lab--craft-language .craft-lab__hero { grid-template-columns: 1fr; }
