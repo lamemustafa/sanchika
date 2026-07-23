@@ -343,6 +343,14 @@ export function validateCraftTransition(previous, next) {
       "directions",
       "Reviewed directions may only append retained evidence and update recognition or qualification metadata before the owner gate.",
     );
+  if (
+    ["approved", "rejected"].includes(previous?.ownerDecision) &&
+    !isDeepStrictEqual(previous?.directions, next?.directions)
+  )
+    add(
+      "directions",
+      "Directions become immutable after the owner has made a decision.",
+    );
   if (!rebrief) {
     for (const field of ["trustBrief", "designBrief"]) {
       if (!isDeepStrictEqual(previous?.[field], next?.[field]))

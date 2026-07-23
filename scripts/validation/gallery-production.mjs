@@ -107,6 +107,8 @@ export function validateGalleryProduction({ outputFiles, expectedDocumentPaths, 
   if (!index.includes("One grammar. Four working conditions.")) fail("landing must render the four-mode comparison");
   if (!index.includes("Contracts first. Craft loop clearly labelled.")) fail("landing must label the pilot-stage craft method");
   if (!index.includes("Useful, bounded, and still in review.")) fail("landing must expose honest status treatment");
+  if (!index.includes('property="og:image" content="https://sanchika.complyeaze.com/og-witness-joint.png"')) fail("landing must publish a raster Open Graph image");
+  if (!index.includes('name="twitter:image" content="https://sanchika.complyeaze.com/og-witness-joint.png"')) fail("landing must publish a raster Twitter image");
   if (!index.includes(`releases/tag/v${stableRelease}`)) fail("landing must show and link the current stable release");
   if (!index.includes(landingNextReleaseStatement)) fail("landing must state the canonical optional next-release status");
   if (new RegExp(`v${stableRelease}[^<]{0,80}(?:planned|unreleased)`, "i").test(index)) fail("landing must not duplicate the current stable version as planned");
@@ -144,7 +146,7 @@ export function runGalleryProductionFixtures() {
     limitations: ["Physical assistive-technology testing remains necessary."],
     preferredSources: [{ label: "Source", url: "https://github.com/lamemustafa/sanchika" }],
   };
-  const validIndex = '<main><h1>Make regulated interfaces that show their work.</h1><p>Sanchika gives coding agents and engineers a repeatable way to turn source, uncertainty, and human review into clear, accessible product UI.</p><p>It supplies contracts and a review loop—not compliance judgment, customer evidence, or an application runtime.</p><h2>Leave room for the human who must decide.</h2><h2>One grammar. Four working conditions.</h2><h2>Contracts first. Craft loop clearly labelled.</h2><h2>Useful, bounded, and still in review.</h2><p>No next package release is currently announced.</p><a href="https://github.com/lamemustafa/sanchika/releases/tag/v0.1.0">Release evidence</a><a href="/" data-docs-search-item>Home</a><a href="/patterns/reviewdeskpreview/" data-docs-search-item>ReviewDeskPreview</a></main>';
+  const validIndex = '<meta property="og:image" content="https://sanchika.complyeaze.com/og-witness-joint.png"><meta name="twitter:image" content="https://sanchika.complyeaze.com/og-witness-joint.png"><main><h1>Make regulated interfaces that show their work.</h1><p>Sanchika gives coding agents and engineers a repeatable way to turn source, uncertainty, and human review into clear, accessible product UI.</p><p>It supplies contracts and a review loop—not compliance judgment, customer evidence, or an application runtime.</p><h2>Leave room for the human who must decide.</h2><h2>One grammar. Four working conditions.</h2><h2>Contracts first. Craft loop clearly labelled.</h2><h2>Useful, bounded, and still in review.</h2><p>No next package release is currently announced.</p><a href="https://github.com/lamemustafa/sanchika/releases/tag/v0.1.0">Release evidence</a><a href="/" data-docs-search-item>Home</a><a href="/patterns/reviewdeskpreview/" data-docs-search-item>ReviewDeskPreview</a></main>';
   const validLlms = [
     "# Sanchika",
     "Current stable release: v0.1.0. GitHub release artifacts; not published to npm.",
