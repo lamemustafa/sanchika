@@ -1,0 +1,581 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "runId": "tools-sanchika-public",
+  "surface": {
+    "repo": "lamemustafa/complyeaze-tools",
+    "route": "/sanchika/",
+    "sourceCommit": "e17700e14d9a1d370a6fefec5de9ffd86f282b85"
+  },
+  "capabilities": {
+    "browser": true,
+    "isolatedReview": true,
+    "rasterGeneration": false
+  },
+  "phase": "build",
+  "status": "active",
+  "reviewRound": 1,
+  "trustBrief": {
+    "id": "tools-sanchika-public-trust-v1",
+    "consumerMode": "tools/local-artifact",
+    "register": "product",
+    "surface": "/sanchika/",
+    "userJob": "Understand why the Tools public artifact boundary matters before choosing the Sanchika proof route or a browser-local tool.",
+    "primaryDecision": "Decide whether this proof surface explains a browser-local artifact boundary without implying saved workflow, compliance authority, or product-family visual uniformity.",
+    "dataSensitivity": [
+      "public-copy"
+    ],
+    "trustBoundaries": [
+      "Tools creates static browser-local artifacts only; Axal owns persistence, collaboration, audit trails, and recurring work.",
+      "Files are processed in your browser. No account or file upload required.",
+      "The public proof page must not send pasted rows or generated drafts through an application API."
+    ],
+    "evidenceRequirements": [
+      "Source and provenance for every Sanchika claim remain visible and reviewable.",
+      "The generated artifact and its export boundary stay explicit before a visitor follows a tool route.",
+      "Browser evidence proves that desktop and mobile preserve the no-account and no-upload boundary."
+    ],
+    "selectedPatterns": [
+      {
+        "name": "EvidencePanel",
+        "states": [
+          "pending-review"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "claim": "ComplyEaze Tools is a static browser-local artifact surface with a separately reviewed Sanchika proof route.",
+        "evidence": "The existing public route, source repository, static CSP, and this consumer run identify the boundary and pending S11 proof."
+      }
+    ],
+    "nonGoals": [
+      "No product spec is inferred from a design-system page.",
+      "No generic route or tool scaffold is introduced before a selected direction completes the owner gate.",
+      "No backend, account, upload, telemetry, remote worker, persisted artifact, or compliance decision is in scope."
+    ],
+    "verificationGates": [
+      "wcag-22-aa",
+      "keyboard-focus",
+      "non-color-state",
+      "desktop-render",
+      "mobile-render",
+      "reduced-motion",
+      "rollback-path"
+    ]
+  },
+  "designBrief": {
+    "id": "tools-sanchika-public-design-v1",
+    "trustBrief": {
+      "id": "tools-sanchika-public-trust-v1",
+      "consumerMode": "tools/local-artifact",
+      "register": "product",
+      "surface": "/sanchika/",
+      "userJob": "Understand why the Tools public artifact boundary matters before choosing the Sanchika proof route or a browser-local tool.",
+      "primaryDecision": "Decide whether this proof surface explains a browser-local artifact boundary without implying saved workflow, compliance authority, or product-family visual uniformity.",
+      "dataSensitivity": [
+        "public-copy"
+      ],
+      "trustBoundaries": [
+        "Tools creates static browser-local artifacts only; Axal owns persistence, collaboration, audit trails, and recurring work.",
+        "Files are processed in your browser. No account or file upload required.",
+        "The public proof page must not send pasted rows or generated drafts through an application API."
+      ],
+      "evidenceRequirements": [
+        "Source and provenance for every Sanchika claim remain visible and reviewable.",
+        "The generated artifact and its export boundary stay explicit before a visitor follows a tool route.",
+        "Browser evidence proves that desktop and mobile preserve the no-account and no-upload boundary."
+      ],
+      "selectedPatterns": [
+        {
+          "name": "EvidencePanel",
+          "states": [
+            "pending-review"
+          ]
+        }
+      ],
+      "claims": [
+        {
+          "claim": "ComplyEaze Tools is a static browser-local artifact surface with a separately reviewed Sanchika proof route.",
+          "evidence": "The existing public route, source repository, static CSP, and this consumer run identify the boundary and pending S11 proof."
+        }
+      ],
+      "nonGoals": [
+        "No product spec is inferred from a design-system page.",
+        "No generic route or tool scaffold is introduced before a selected direction completes the owner gate.",
+        "No backend, account, upload, telemetry, remote worker, persisted artifact, or compliance decision is in scope."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "register": "product",
+    "surface": "/sanchika/",
+    "firstViewportSignal": "ComplyEaze Tools makes browser-local artifact boundaries and the Sanchika proof route understandable before a visitor is asked to leave the page.",
+    "emotionalIntent": "Practical confidence: a clear local workbench for review-minded people, not a design-system shrine or generic SaaS sales page.",
+    "narrativeArc": [
+      "Name the browser-local artifact boundary.",
+      "Show how source, proof, and export remain distinct.",
+      "Give a precise next route without promising stored workflow or compliance judgment."
+    ],
+    "informationPriority": [
+      "Browser-local boundary",
+      "Source and proof",
+      "What Tools does not store",
+      "Safe next route"
+    ],
+    "responsiveConstraints": [
+      "Mobile keeps the boundary, source link, and next action in one reading order without horizontal overflow.",
+      "Desktop separates local artifact work from the Sanchika proof without importing Sanchika identity geometry."
+    ],
+    "interactionStates": [
+      "focus",
+      "hover",
+      "blocked"
+    ],
+    "visualQualityGates": [
+      "not-generic-saas",
+      "first-viewport-product-signal",
+      "source-visible",
+      "human-review-visible",
+      "responsive-fit",
+      "keyboardable",
+      "reduced-motion",
+      "performance-budget"
+    ],
+    "verificationEvidence": [
+      "Desktop render comparison",
+      "Mobile render comparison",
+      "Keyboard, accessible-name, and reduced-motion review"
+    ],
+    "nonGoals": [
+      "No product spec, dashboard shell, fake artifact evidence, Sanchika wordmark transfer, generated imagery, or motion-gated content."
+    ]
+  },
+  "directions": [
+    {
+      "id": "workbench-strip",
+      "designBriefId": "tools-sanchika-public-design-v1",
+      "reviewRound": 1,
+      "territory": "local-artifact-workbench",
+      "artifactRefs": [
+        "craft/runs/tools-sanchika-public/evidence/workbench-strip.html",
+        "craft/runs/tools-sanchika-public/evidence/workbench-strip-desktop.webp",
+        "craft/runs/tools-sanchika-public/evidence/workbench-strip-mobile.webp"
+      ],
+      "qualified": false,
+      "disqualificationReasons": [
+        "Trust veto: a plausible ZIP filename violates the Tools no-committed-filename boundary."
+      ]
+    },
+    {
+      "id": "field-guide",
+      "designBriefId": "tools-sanchika-public-design-v1",
+      "reviewRound": 1,
+      "territory": "local-boundary-field-guide",
+      "artifactRefs": [
+        "craft/runs/tools-sanchika-public/evidence/field-guide.html",
+        "craft/runs/tools-sanchika-public/evidence/field-guide-desktop.webp",
+        "craft/runs/tools-sanchika-public/evidence/field-guide-mobile.webp",
+        "craft/runs/tools-sanchika-public/evidence/field-guide-semantic-blind.html",
+        "craft/runs/tools-sanchika-public/evidence/field-guide-identity-blind.html"
+      ],
+      "qualified": true,
+      "preference": {
+        "reviewers": 4,
+        "preferredToBaseline": 4,
+        "preferredToControl": 4
+      },
+      "medians": {
+        "relevance": 4,
+        "distinctiveness": 3,
+        "craft": 4,
+        "trust": 4
+      },
+      "recognition": {
+        "semanticBlind": {
+          "correctMatchers": 3,
+          "matcherCount": 3,
+          "colorOnly": false,
+          "artifact": "craft/runs/tools-sanchika-public/evidence/field-guide-semantic-blind.html"
+        },
+        "identityBlind": {
+          "correctMatchers": 3,
+          "matcherCount": 3,
+          "colorOnly": false,
+          "artifact": "craft/runs/tools-sanchika-public/evidence/field-guide-identity-blind.html"
+        }
+      },
+      "disqualificationReasons": []
+    },
+    {
+      "id": "proof-index",
+      "designBriefId": "tools-sanchika-public-design-v1",
+      "reviewRound": 1,
+      "territory": "local-proof-index",
+      "artifactRefs": [
+        "craft/runs/tools-sanchika-public/evidence/proof-index.html",
+        "craft/runs/tools-sanchika-public/evidence/proof-index-desktop.webp",
+        "craft/runs/tools-sanchika-public/evidence/proof-index-mobile.webp"
+      ],
+      "qualified": false,
+      "disqualificationReasons": [
+        "No recognition proxy was retained for this review round."
+      ]
+    }
+  ],
+  "iterations": [],
+  "reviews": [
+    {
+      "reviewerId": "brand-reviewer-1",
+      "role": "brand",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": {"relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4},
+      "directionScores": {
+        "workbench-strip": {"relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4},
+        "field-guide": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4},
+        "proof-index": {"relevance": 4, "distinctiveness": 3, "craft": 3, "trust": 4}
+      },
+      "preference": ["workbench-strip", "field-guide", "proof-index"],
+      "directionComparisons": {
+        "workbench-strip": {"baseline": true, "withoutSkillControl": true},
+        "field-guide": {"baseline": true, "withoutSkillControl": true},
+        "proof-index": {"baseline": true, "withoutSkillControl": true}
+      },
+      "vetoes": []
+    },
+    {
+      "reviewerId": "craft-reviewer-1",
+      "role": "craft",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "attractive-but-off-brief",
+          "serif-theatre",
+          "mono-heavy-metadata",
+          "text-only-poster-without-product-proof",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": {"relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4},
+      "directionScores": {
+        "workbench-strip": {"relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4},
+        "field-guide": {"relevance": 4, "distinctiveness": 3, "craft": 3, "trust": 4},
+        "proof-index": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4}
+      },
+      "preference": ["workbench-strip", "proof-index", "field-guide"],
+      "directionComparisons": {
+        "workbench-strip": {"baseline": true, "withoutSkillControl": true},
+        "field-guide": {"baseline": true, "withoutSkillControl": true},
+        "proof-index": {"baseline": true, "withoutSkillControl": true}
+      },
+      "vetoes": []
+    },
+    {
+      "reviewerId": "trust-reviewer-1",
+      "role": "trust",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "generic-purple-gradient",
+          "glass-bento-cliche",
+          "unsupported-accuracy-and-speed-claims",
+          "generic-ai-copy",
+          "fake-government-seal",
+          "unsupported-ministry-approval",
+          "guaranteed-statutory-accuracy",
+          "automated-compliance-judgment",
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4},
+      "directionScores": {
+        "workbench-strip": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 2},
+        "field-guide": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4},
+        "proof-index": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4}
+      },
+      "preference": ["field-guide", "proof-index", "workbench-strip"],
+      "directionComparisons": {
+        "workbench-strip": {"baseline": false, "withoutSkillControl": true},
+        "field-guide": {"baseline": true, "withoutSkillControl": true},
+        "proof-index": {"baseline": true, "withoutSkillControl": true}
+      },
+      "vetoes": [
+        {
+          "directionId": "workbench-strip",
+          "reason": "The plausible ZIP filename weakens the Tools synthetic and no-file-custody boundary.",
+          "resolved": false
+        }
+      ]
+    },
+    {
+      "reviewerId": "accessibility-reviewer-1",
+      "role": "accessibility",
+      "reviewRound": 1,
+      "producer": false,
+      "calibration": {
+        "passed": true,
+        "corrections": 0,
+        "fullReruns": 0,
+        "detectedFailures": [
+          "low-text-contrast",
+          "sub-44px-targets",
+          "motion-only-status",
+          "color-only-state",
+          "long-identifier-overflow"
+        ]
+      },
+      "evidenceLabels": ["ai-visual-proxy", "not-user-validated"],
+      "scores": {"relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4},
+      "directionScores": {
+        "workbench-strip": {"relevance": 4, "distinctiveness": 4, "craft": 4, "trust": 4},
+        "field-guide": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4},
+        "proof-index": {"relevance": 4, "distinctiveness": 3, "craft": 4, "trust": 4}
+      },
+      "preference": ["workbench-strip", "field-guide", "proof-index"],
+      "directionComparisons": {
+        "workbench-strip": {"baseline": true, "withoutSkillControl": true},
+        "field-guide": {"baseline": true, "withoutSkillControl": true},
+        "proof-index": {"baseline": true, "withoutSkillControl": true}
+      },
+      "vetoes": []
+    }
+  ],
+  "ownerDecision": "approved",
+  "selectedDirectionId": "field-guide",
+  "assets": [],
+  "evidenceDigests": {},
+  "reconciliation": [],
+  "evidenceLoop": {
+    "id": "tools-sanchika-public-loop",
+    "trustBrief": {
+      "id": "tools-sanchika-public-trust-v1",
+      "consumerMode": "tools/local-artifact",
+      "register": "product",
+      "surface": "/sanchika/",
+      "userJob": "Understand why the Tools public artifact boundary matters before choosing the Sanchika proof route or a browser-local tool.",
+      "primaryDecision": "Decide whether this proof surface explains a browser-local artifact boundary without implying saved workflow, compliance authority, or product-family visual uniformity.",
+      "dataSensitivity": [
+        "public-copy"
+      ],
+      "trustBoundaries": [
+        "Tools creates static browser-local artifacts only; Axal owns persistence, collaboration, audit trails, and recurring work.",
+        "Files are processed in your browser. No account or file upload required.",
+        "The public proof page must not send pasted rows or generated drafts through an application API."
+      ],
+      "evidenceRequirements": [
+        "Source and provenance for every Sanchika claim remain visible and reviewable.",
+        "The generated artifact and its export boundary stay explicit before a visitor follows a tool route.",
+        "Browser evidence proves that desktop and mobile preserve the no-account and no-upload boundary."
+      ],
+      "selectedPatterns": [
+        {
+          "name": "EvidencePanel",
+          "states": [
+            "pending-review"
+          ]
+        }
+      ],
+      "claims": [
+        {
+          "claim": "ComplyEaze Tools is a static browser-local artifact surface with a separately reviewed Sanchika proof route.",
+          "evidence": "The existing public route, source repository, static CSP, and this consumer run identify the boundary and pending S11 proof."
+        }
+      ],
+      "nonGoals": [
+        "No product spec is inferred from a design-system page.",
+        "No generic route or tool scaffold is introduced before a selected direction completes the owner gate.",
+        "No backend, account, upload, telemetry, remote worker, persisted artifact, or compliance decision is in scope."
+      ],
+      "verificationGates": [
+        "wcag-22-aa",
+        "keyboard-focus",
+        "non-color-state",
+        "desktop-render",
+        "mobile-render",
+        "reduced-motion",
+        "rollback-path"
+      ]
+    },
+    "designBrief": {
+      "id": "tools-sanchika-public-design-v1",
+      "trustBrief": {
+        "id": "tools-sanchika-public-trust-v1",
+        "consumerMode": "tools/local-artifact",
+        "register": "product",
+        "surface": "/sanchika/",
+        "userJob": "Understand why the Tools public artifact boundary matters before choosing the Sanchika proof route or a browser-local tool.",
+        "primaryDecision": "Decide whether this proof surface explains a browser-local artifact boundary without implying saved workflow, compliance authority, or product-family visual uniformity.",
+        "dataSensitivity": [
+          "public-copy"
+        ],
+        "trustBoundaries": [
+          "Tools creates static browser-local artifacts only; Axal owns persistence, collaboration, audit trails, and recurring work.",
+          "Files are processed in your browser. No account or file upload required.",
+          "The public proof page must not send pasted rows or generated drafts through an application API."
+        ],
+        "evidenceRequirements": [
+          "Source and provenance for every Sanchika claim remain visible and reviewable.",
+          "The generated artifact and its export boundary stay explicit before a visitor follows a tool route.",
+          "Browser evidence proves that desktop and mobile preserve the no-account and no-upload boundary."
+        ],
+        "selectedPatterns": [
+          {
+            "name": "EvidencePanel",
+            "states": [
+              "pending-review"
+            ]
+          }
+        ],
+        "claims": [
+          {
+            "claim": "ComplyEaze Tools is a static browser-local artifact surface with a separately reviewed Sanchika proof route.",
+            "evidence": "The existing public route, source repository, static CSP, and this consumer run identify the boundary and pending S11 proof."
+          }
+        ],
+        "nonGoals": [
+          "No product spec is inferred from a design-system page.",
+          "No generic route or tool scaffold is introduced before a selected direction completes the owner gate.",
+          "No backend, account, upload, telemetry, remote worker, persisted artifact, or compliance decision is in scope."
+        ],
+        "verificationGates": [
+          "wcag-22-aa",
+          "keyboard-focus",
+          "non-color-state",
+          "desktop-render",
+          "mobile-render",
+          "reduced-motion",
+          "rollback-path"
+        ]
+      },
+      "register": "product",
+      "surface": "/sanchika/",
+      "firstViewportSignal": "ComplyEaze Tools makes browser-local artifact boundaries and the Sanchika proof route understandable before a visitor is asked to leave the page.",
+      "emotionalIntent": "Practical confidence: a clear local workbench for review-minded people, not a design-system shrine or generic SaaS sales page.",
+      "narrativeArc": [
+        "Name the browser-local artifact boundary.",
+        "Show how source, proof, and export remain distinct.",
+        "Give a precise next route without promising stored workflow or compliance judgment."
+      ],
+      "informationPriority": [
+        "Browser-local boundary",
+        "Source and proof",
+        "What Tools does not store",
+        "Safe next route"
+      ],
+      "responsiveConstraints": [
+        "Mobile keeps the boundary, source link, and next action in one reading order without horizontal overflow.",
+        "Desktop separates local artifact work from the Sanchika proof without importing Sanchika identity geometry."
+      ],
+      "interactionStates": [
+        "focus",
+        "hover",
+        "blocked"
+      ],
+      "visualQualityGates": [
+        "not-generic-saas",
+        "first-viewport-product-signal",
+        "source-visible",
+        "human-review-visible",
+        "responsive-fit",
+        "keyboardable",
+        "reduced-motion",
+        "performance-budget"
+      ],
+      "verificationEvidence": [
+        "Desktop render comparison",
+        "Mobile render comparison",
+        "Keyboard, accessible-name, and reduced-motion review"
+      ],
+      "nonGoals": [
+        "No product spec, dashboard shell, fake artifact evidence, Sanchika wordmark transfer, generated imagery, or motion-gated content."
+      ]
+    },
+    "renderEvidence": [
+      {
+        "type": "desktop-screenshot",
+        "artifact": "craft/runs/tools-sanchika-public/evidence/without-skill-control.webp",
+        "finding": "Isolated plain-request comparison control at 1440px; it is not reviewed adoption evidence."
+      },
+      {
+        "type": "mobile-screenshot",
+        "artifact": "craft/runs/tools-sanchika-public/evidence/without-skill-control-mobile.webp",
+        "finding": "Isolated plain-request comparison control at 390px; it is not reviewed adoption evidence."
+      },
+      {
+        "type": "accessibility-note",
+        "artifact": "craft/runs/tools-sanchika-public/evidence/shape-boundary.md",
+        "finding": "Accessibility acceptance remains a required post-selection gate; this shape record prevents premature claims."
+      }
+    ],
+    "adoptionEvidence": {
+      "consumerRepo": "lamemustafa/complyeaze-tools",
+      "consumerSurface": "/sanchika/",
+      "status": "proposed",
+      "changedFiles": [
+        "apps/site/src/pages/sanchika.astro",
+        "apps/site/src/styles/sanchika.css"
+      ],
+      "verificationRun": "Shape phase only; no consumer implementation has been changed.",
+      "rollbackPlan": "Retain the live e1993cb5b23f359a0afe3d98c57d3693d4048bee Tools route as the rollback baseline until a reviewed replacement is deployed."
+    },
+    "decision": "needs-design-revision",
+    "residualRisks": [
+      "No owner selection, Tools implementation, or production verification has occurred.",
+      "Field Guide claims about source, supported input, and review date must be conditional on real tool metadata."
+    ],
+    "nextActions": [
+      "Implement the approved local-boundary direction in the isolated Tools worktree, then reconcile browser and policy evidence."
+    ]
+  },
+  "nextAction": "Implement the approved local-boundary direction in the isolated Tools worktree without changing the static, browser-local privacy boundary."
+}

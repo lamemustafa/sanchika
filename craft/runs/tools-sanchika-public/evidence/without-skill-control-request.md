@@ -1,0 +1,1 @@
+Redesign the ComplyEaze Tools /sanchika landing page so it no longer feels generic, computer-written, soulless, or untrustworthy. Make it distinctive, relatable, professional, fast, accessible, and genuinely crafted.

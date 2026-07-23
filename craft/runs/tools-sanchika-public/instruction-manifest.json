@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": "0.1.0",
+  "sourceCommit": "e17700e14d9a1d370a6fefec5de9ffd86f282b85",
+  "plainRequest": "Redesign the ComplyEaze Tools /sanchika landing page so it no longer feels generic, computer-written, soulless, or untrustworthy. Make it distinctive, relatable, professional, fast, accessible, and genuinely crafted.",
+  "plainRequestControl": {
+    "isolation": "fresh context with only the plain owner request and the same Tools source baseline",
+    "retainedArtifact": "evidence/without-skill-control.webp",
+    "sha256": "01cc5ec5987fdf0e4a4080ca2f9e2905d463d0e20c1449e7548b4da1cb680a22",
+    "codeRetained": false
+  },
+  "hashes": {
+    "canonicalSkill": "69713515c37a7746eca7b7e8e28b97d5198a1b4b14b92af7b5f700f46030506a",
+    "protocol": "d6741cd5095cca0168c32bf46a9d292b5475a7cfb9e3de9df0aabb17bd765bd0",
+    "runTemplate": "ed8dcec16d15c8bc78944ad69502b9205f3698ad8c81ef271c2b66e6b6e21397",
+    "calibrationMetadata": "d97c9fab623ff75551908b02e9d23703986e90327e1781a725125cc793635595"
+  },
+  "sources": {
+    "canonicalSkill": "craft/runs/tools-sanchika-public/instructions/SKILL.md",
+    "protocol": "craft/runs/tools-sanchika-public/instructions/protocol.md",
+    "runTemplate": "craft/runs/tools-sanchika-public/instructions/run-template.json",
+    "calibrationMetadata": "craft/runs/tools-sanchika-public/instructions/calibration/metadata.json"
+  },
+  "reviewIsolation": {
+    "visualReviewerCount": 4,
+    "recognitionMatcherCount": 3,
+    "producerReviewedOwnOutput": false,
+    "evidenceLabels": ["ai-visual-proxy", "ai-recognition-proxy", "not-user-validated"]
+  },
+  "transition": {
+    "previousState": "craft/runs/tools-sanchika-public/transitions/previous-state.json",
+    "sha256": "f2fceb108f826d442b468141427ec413bdb5fcf46b49e0f5ccda71a6f7829481"
+  }
+}
