@@ -591,7 +591,7 @@
         "apps/site/src/pages/sanchika.astro",
         "apps/site/src/styles/sanchika.css"
       ],
-      "verificationRun": "The owner-authorized 726ec6e7 production image sha256:ceccfcf2df95b02a8df80d5f244666bcc4d063081aa377d428f67ab26b70ea87 passed publish run 30035356063 and deploy run 30036814269. Public-edge HTTP and health checks plus responsive browser observations passed; the retained production checkpoint lists open completion gates.",
+      "verificationRun": "The owner-authorized 726ec6e7 production image sha256:ceccfcf2df95b02a8df80d5f244666bcc4d063081aa377d428f67ab26b70ea87 passed publish run 30035356063 and deploy run 30036814269. Public-edge HTTP and health checks passed. The live browser matrix passed keyboard focus; landmarks and named links; 320, 390, 768, and 1440px viewports; no-JavaScript static rendering; reduced motion; forced colors; a 195 CSS-pixel 200%-equivalent reflow check; long unbroken identifier stress; and a self-origin-only resource inventory. The retained production checkpoint lists the remaining completion gates.",
       "rollbackPlan": "The immediate prior production image is sha256:425e07f6397f01d128584a2b9c1c85cdf96d2be97afc4cc2b54073bbef643eee from source 41d66511 and deploy run 29512360936. Redeploy that immutable digest through the existing Deploy Production workflow if rollback is required."
     },
     "decision": "needs-verification",
@@ -599,14 +599,12 @@
       "Tools PR #90 merged with an explicitly allowed missing independent current-head connector review; this remains audit context for the production decision.",
       "The production browser console records a Cloudflare JavaScript Detection request blocked by the intentionally strict `connect-src 'none'` CSP. The application itself made no network request and the page remained functional; resolving the edge-feature/CSP conflict requires a deliberate security decision.",
       "The required three comparable cold-cache 390px mobile measurements are not retained because the required Chrome DevTools MCP is unavailable in this environment.",
-      "The remaining production browser accessibility matrix (reduced motion, forced colors, 200% zoom, and long-content checks) is open.",
       "The current local build links to source rather than claiming per-tool source, supported-input, or review-date metadata."
     ],
     "nextActions": [
-      "Configure the required Chrome DevTools MCP, then retain three distinct cold-cache 390px mobile measurements using one comparable profile.",
-      "Complete the remaining production browser accessibility matrix and retain its artifact.",
+      "Configure the required Chrome DevTools MCP, start a fresh Codex session, then retain three distinct cold-cache 390px mobile measurements using one comparable profile.",
       "Have the owner decide whether Cloudflare JavaScript Detection should be disabled for this route or whether another edge configuration resolves its conflict with the deliberate `connect-src 'none'` privacy boundary; do not weaken the CSP by default."
     ]
   },
-  "nextAction": "Configure the required Chrome DevTools MCP, then retain three distinct cold-cache 390px mobile measurements using one comparable profile."
+  "nextAction": "Configure the required Chrome DevTools MCP, start a fresh Codex session, then retain three distinct cold-cache 390px mobile measurements using one comparable profile."
 }
