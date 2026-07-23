@@ -1,12 +1,12 @@
 ---
 export function getStaticPaths() {
-  if (process.env.SANCHIKA_CRAFT_LAB !== "true") return [];
+  if (import.meta.env.SANCHIKA_CRAFT_LAB !== "true") return [];
   return ["living-collection", "witness-joint", "craft-language"].map((direction) => ({ params: { direction } }));
 }
 
 const directions = ["living-collection", "witness-joint", "craft-language"] as const;
 const { direction } = Astro.params;
-const labEnabled = process.env.SANCHIKA_CRAFT_LAB === "true";
+const labEnabled = import.meta.env.SANCHIKA_CRAFT_LAB === "true";
 if (!directions.includes(direction as (typeof directions)[number])) {
   throw new Error("Unknown Sanchika craft direction.");
 }
