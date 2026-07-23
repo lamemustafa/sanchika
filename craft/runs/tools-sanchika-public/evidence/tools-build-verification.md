@@ -52,3 +52,12 @@ runtime-network evidence only.
 This is local implementation evidence only. Production approval, merged-source
 evidence, cold-cache measurements, rollback verification, and post-deploy
 smoke remain distinct gates.
+
+## Pull request checkpoint
+
+Tools [PR #90](https://github.com/lamemustafa/complyeaze-tools/pull/90) is open
+at `9f1aa723da2b12171b596d057ce0c4bcf10529ae`. Its CI, dependency review, and
+Review gate status are green; there are no review threads. The Review gate
+explicitly reports `allowed-missing-head-review`: no independent
+`chatgpt-codex-connector` review exists for this exact head. That is an audit
+signal, not an approval to merge or deploy.
