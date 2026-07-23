@@ -1613,14 +1613,30 @@ function canonicalReviewerId(value) {
 }
 
 export function parseArguments(args) {
-  if (
-    !Array.isArray(args) ||
-    (args.length !== 1 && args.length !== 3) ||
-    !args[0] ||
-    (args.length === 3 && (args[1] !== "--previous" || !args[2]))
-  )
-    throw new Error("Usage: validate-run.mjs <state.json> [--previous <state.json>]");
-  return { statePath: args[0], previousPath: args[2] };
+  if (!Array.isArray(args) || !args[0] || args.length % 2 === 0)
+    throw new Error(
+      "Usage: validate-run.mjs <state.json> [--previous <state.json>] [--repo-root <consumer-repo-root>]",
+    );
+  const options = { statePath: args[0], previousPath: undefined, repoRoot: undefined };
+  for (let index = 1; index < args.length; index += 2) {
+    const flag = args[index];
+    const value = args[index + 1];
+    if (!value || !["--previous", "--repo-root"].includes(flag) ||
+      (flag === "--previous" && options.previousPath) ||
+      (flag === "--repo-root" && options.repoRoot))
+      throw new Error(
+        "Usage: validate-run.mjs <state.json> [--previous <state.json>] [--repo-root <consumer-repo-root>]",
+      );
+    if (flag === "--previous") options.previousPath = value;
+    if (flag === "--repo-root") options.repoRoot = value;
+  }
+  return options;
+}
+
+export function resolveRunPath(candidate, consumerRepoRoot, cwd = process.cwd()) {
+  return isAbsolute(candidate)
+    ? resolve(candidate)
+    : resolve(consumerRepoRoot ?? cwd, candidate);
 }
 
 export function validateInstructionManifest(manifest, run, repoRoot) {
@@ -1869,13 +1885,16 @@ function sha256(bytes) {
 }
 
 async function main() {
-  const { statePath, previousPath } = parseArguments(process.argv.slice(2));
-  const repoRoot = resolve(scriptDir, "../../..");
-  const validators = await loadPatternValidators(repoRoot);
-  const run = JSON.parse(readFileSync(resolve(statePath), "utf8"));
-  const allowTemplate = basename(statePath) === "run-template.json";
+  const { statePath, previousPath, repoRoot: suppliedRepoRoot } = parseArguments(process.argv.slice(2));
+  const skillRepoRoot = resolve(scriptDir, "../../..");
+  const repoRoot = suppliedRepoRoot ? resolve(suppliedRepoRoot) : skillRepoRoot;
+  const consumerRepoRoot = suppliedRepoRoot ? repoRoot : undefined;
+  const resolvedStatePath = resolveRunPath(statePath, consumerRepoRoot);
+  const validators = await loadPatternValidators(skillRepoRoot);
+  const run = JSON.parse(readFileSync(resolvedStatePath, "utf8"));
+  const allowTemplate = basename(resolvedStatePath) === "run-template.json";
   const issues = [];
-  const manifestPath = join(dirname(resolve(statePath)), "instruction-manifest.json");
+  const manifestPath = join(dirname(resolvedStatePath), "instruction-manifest.json");
   let calibrationDirectory = join(scriptDir, "../assets/calibration");
   let calibrationMetadata = canonicalCalibrationMetadata;
   let manifest;
@@ -1909,7 +1928,7 @@ async function main() {
   issues.push(...validateCraftRun(run, validators, {
     allowTemplate,
     repoRoot,
-    expectedRunId: allowTemplate ? undefined : basename(dirname(resolve(statePath))),
+    expectedRunId: allowTemplate ? undefined : basename(dirname(resolvedStatePath)),
     calibrationMetadata,
   }));
   issues.push(
@@ -1923,7 +1942,7 @@ async function main() {
       );
       if (
         previousPath &&
-        resolve(previousPath) !== retainedPreviousPath
+        resolveRunPath(previousPath, consumerRepoRoot) !== retainedPreviousPath
       )
         issues.push({
           field: "arguments.previous",

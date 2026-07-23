@@ -47,6 +47,17 @@ node skills/sanchika-craft/scripts/validate-run.mjs \
   --previous craft/runs/<run-id>/transitions/previous-state.json
 ```
 
+For a consumer-owned run outside the Sanchika checkout, keep the validator
+canonical and pass that consumer repository explicitly. The validator still
+loads contract validators from Sanchika while it resolves run evidence and the
+recorded source commit inside the named consumer repository:
+
+```bash
+node /path/to/sanchika/skills/sanchika-craft/scripts/validate-run.mjs \
+  craft/runs/<run-id>/state.json \
+  --repo-root /path/to/consumer-repo
+```
+
 Stop at `owner_gate` with `status: awaiting_owner`. Only the owner can approve a
 direction or production, and those are separate persisted decisions. A
 subscription, quota, browser, or reviewer-capability interruption must save
