@@ -9,7 +9,7 @@
 .witness-actions a:first-child { color: var(--gallery-brand-paper); background: var(--gallery-brand-deep); border-color: var(--gallery-brand-deep); }
 .witness-hero__joint { display: grid; grid-template-columns: 1fr auto 1.15fr auto 1fr; align-items: center; gap: 0.5rem; min-block-size: clamp(13rem, 25vw, 20rem); color: var(--gallery-brand-ink); font-size: clamp(0.8rem, 1.35vw, 1.1rem); font-weight: 720; line-height: 1.05; }
 .witness-hero__joint > :is(span, b) { align-self: end; max-inline-size: 7ch; }
-.witness-hero__joint b { align-self: start; color: var(--gallery-brand-joint); }
+.witness-hero__joint b { align-self: start; color: var(--gallery-brand-ink); }
 .witness-hero__joint i { display: block; inline-size: clamp(1.2rem, 3vw, 3rem); block-size: var(--sk-border-width-strong); background: var(--gallery-brand-joint); }
 .witness-hero__joint i:first-of-type { translate: 0 4rem; }
 .witness-hero__joint i:last-of-type { translate: 0 -4rem; }
@@ -30,15 +30,19 @@
 .mode-panel { padding: clamp(1.25rem, 3vw, 3.5rem); border: 0; border-radius: 0; background: var(--gallery-brand-paper); }
 .mode-panel h3 { font-family: var(--gallery-brand-font); letter-spacing: -0.03em; }
 .mode-panel--core { grid-template-columns: minmax(0, 1.25fr) minmax(14rem, 0.75fr); background: var(--gallery-brand-soft); }
+html[data-sanchika-gallery-document="production"] .mode-panel--core :is(h3, p, dt, dd, strong, span) { color: var(--gallery-brand-ink); }
+html[data-sanchika-gallery-document="production"] .mode-panel--core .eyebrow { color: var(--gallery-brand-muted); }
 .mode-panel--core dl { border-inline-start-color: var(--gallery-brand-joint); }
-.mode-panel--axal { background: var(--gallery-brand-deep); }
+.mode-panel--axal { color: var(--gallery-brand-paper); background: var(--gallery-brand-deep); }
+html[data-sanchika-gallery-document="production"] .mode-panel--axal :is(h3, p, span, strong) { color: var(--gallery-brand-paper); }
+html[data-sanchika-gallery-document="production"] .mode-panel--axal .eyebrow { color: var(--gallery-brand-paper); }
 .mode-panel--axal a { color: var(--gallery-brand-paper); }
 .mode-panel--pack { background: color-mix(in oklch, var(--gallery-brand-mark) 18%, var(--gallery-brand-paper)); }
 .mode-panel--tools { background: var(--gallery-brand-paper); }
 .witness-method { display: grid; grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr); gap: clamp(2rem, 7vw, 8rem); padding-block: clamp(3rem, 8vw, 8rem); border-block: var(--sk-border-width-default) solid var(--gallery-brand-line); }
 .witness-method > ol { display: grid; gap: var(--sk-border-width-default); margin: 0; padding: 0; list-style: none; background: var(--gallery-brand-line); }
 .witness-method > ol li { display: grid; grid-template-columns: minmax(7rem, 0.3fr) 1fr; gap: 1rem; padding: 1.2rem; background: var(--gallery-brand-paper); }
-.witness-method > ol strong { color: var(--gallery-brand-joint); }
+.witness-method > ol strong { color: var(--gallery-brand-ink); }
 .witness-method > aside { display: grid; gap: 0.5rem; grid-column: 2; padding: 1.2rem; border: var(--sk-border-width-default) solid var(--gallery-brand-joint); }
 .witness-method > aside span { color: var(--gallery-brand-muted); }
 .witness-method > .docs-search { grid-column: 1 / -1; }
@@ -47,6 +51,7 @@
 .witness-truth dl div { display: grid; gap: 0.55rem; padding: 1.25rem; background: var(--gallery-brand-paper); }
 .witness-truth dt { color: var(--gallery-brand-muted); font-family: var(--gallery-brand-mono); font-size: 0.75rem; text-transform: uppercase; }
 .witness-truth dd { display: grid; gap: 0.45rem; margin: 0; font-weight: 720; }
+.witness-truth dd a { display: inline-flex; align-items: center; inline-size: fit-content; min-block-size: 2.75rem; }
 .witness-truth dd span { color: var(--gallery-brand-muted); font-size: 0.9rem; font-weight: 400; line-height: 1.45; }
 .page-intro__guide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sk-border-width-default); margin: var(--sk-space-6) 0 0; background: var(--gallery-brand-line); }
 .page-intro__guide div { padding: var(--sk-space-3); background: var(--gallery-brand-paper); }
