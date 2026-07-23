@@ -576,6 +576,11 @@
         "type": "manual-review-note",
         "artifact": "craft/runs/tools-sanchika-public/evidence/tools-build-verification.md",
         "finding": "Repository, browser-semantic, keyboard, responsive, and static-network verification; not user validation or production evidence."
+      },
+      {
+        "type": "manual-review-note",
+        "artifact": "craft/runs/tools-sanchika-public/evidence/tools-production-checkpoint.md",
+        "finding": "Owner-authorized digest-pinned production deployment, public-edge smoke, and responsive browser observations; retained completion blockers remain explicit."
       }
     ],
     "adoptionEvidence": {
@@ -586,18 +591,22 @@
         "apps/site/src/pages/sanchika.astro",
         "apps/site/src/styles/sanchika.css"
       ],
-      "verificationRun": "Local implementation passed pnpm verify, policy scans, and browser verification against the built static route at 1440×900 and 390×844.",
-      "rollbackPlan": "Retain the live e1993cb5b23f359a0afe3d98c57d3693d4048bee Tools route as the rollback baseline until a reviewed replacement is deployed."
+      "verificationRun": "The owner-authorized 726ec6e7 production image sha256:ceccfcf2df95b02a8df80d5f244666bcc4d063081aa377d428f67ab26b70ea87 passed publish run 30035356063 and deploy run 30036814269. Public-edge HTTP and health checks plus responsive browser observations passed; the retained production checkpoint lists open completion gates.",
+      "rollbackPlan": "The immediate prior production image is sha256:425e07f6397f01d128584a2b9c1c85cdf96d2be97afc4cc2b54073bbef643eee from source 41d66511 and deploy run 29512360936. Redeploy that immutable digest through the existing Deploy Production workflow if rollback is required."
     },
     "decision": "needs-verification",
     "residualRisks": [
       "Tools PR #90 merged with an explicitly allowed missing independent current-head connector review; this remains audit context for the production decision.",
-      "Production approval, production-source evidence, cold-cache measurements, rollback verification, and post-deploy smoke have not occurred.",
+      "The production browser console records a Cloudflare JavaScript Detection request blocked by the intentionally strict `connect-src 'none'` CSP. The application itself made no network request and the page remained functional; resolving the edge-feature/CSP conflict requires a deliberate security decision.",
+      "The required three comparable cold-cache 390px mobile measurements are not retained because the required Chrome DevTools MCP is unavailable in this environment.",
+      "The remaining production browser accessibility matrix (reduced motion, forced colors, 200% zoom, and long-content checks) is open.",
       "The current local build links to source rather than claiming per-tool source, supported-input, or review-date metadata."
     ],
     "nextActions": [
-      "Request the separate production approval, then capture production-source, cold-cache, rollback, and post-deploy smoke evidence for merged Tools commit 726ec6e7."
+      "Configure the required Chrome DevTools MCP, then retain three distinct cold-cache 390px mobile measurements using one comparable profile.",
+      "Complete the remaining production browser accessibility matrix and retain its artifact.",
+      "Have the owner decide whether Cloudflare JavaScript Detection should be disabled for this route or whether another edge configuration resolves its conflict with the deliberate `connect-src 'none'` privacy boundary; do not weaken the CSP by default."
     ]
   },
-  "nextAction": "Request the separate production approval, then capture production-source, cold-cache, rollback, and post-deploy smoke evidence for merged Tools commit 726ec6e7."
+  "nextAction": "Configure the required Chrome DevTools MCP, then retain three distinct cold-cache 390px mobile measurements using one comparable profile."
 }
