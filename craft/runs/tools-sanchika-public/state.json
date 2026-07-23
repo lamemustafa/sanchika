@@ -591,13 +591,13 @@
     },
     "decision": "needs-verification",
     "residualRisks": [
-      "No independent chatgpt-codex-connector review exists for Tools PR #90 current head; its Review gate allows this as an audit signal, not a merge or deployment approval.",
-      "Production approval, merged-source evidence, cold-cache measurements, rollback verification, and post-deploy smoke have not occurred.",
+      "Tools PR #90 merged with an explicitly allowed missing independent current-head connector review; this remains audit context for the production decision.",
+      "Production approval, production-source evidence, cold-cache measurements, rollback verification, and post-deploy smoke have not occurred.",
       "The current local build links to source rather than claiming per-tool source, supported-input, or review-date metadata."
     ],
     "nextActions": [
-      "Obtain an independent current-head review for Tools PR #90 at 9f1aa72, then retain merged-source evidence before requesting production approval."
+      "Request the separate production approval, then capture production-source, cold-cache, rollback, and post-deploy smoke evidence for merged Tools commit 726ec6e7."
     ]
   },
-  "nextAction": "Obtain an independent current-head review for Tools PR #90 at 9f1aa72, retain merged-source evidence, then request the separate production approval."
+  "nextAction": "Request the separate production approval, then capture production-source, cold-cache, rollback, and post-deploy smoke evidence for merged Tools commit 726ec6e7."
 }

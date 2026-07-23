@@ -55,9 +55,11 @@ smoke remain distinct gates.
 
 ## Pull request checkpoint
 
-Tools [PR #90](https://github.com/lamemustafa/complyeaze-tools/pull/90) is open
-at `9f1aa723da2b12171b596d057ce0c4bcf10529ae`. Its CI, dependency review, and
-Review gate status are green; there are no review threads. The Review gate
-explicitly reports `allowed-missing-head-review`: no independent
-`chatgpt-codex-connector` review exists for this exact head. That is an audit
-signal, not an approval to merge or deploy.
+Tools [PR #90](https://github.com/lamemustafa/complyeaze-tools/pull/90) merged
+to `master` at `726ec6e7ddf9fda1c38f221be6c950fafc330876` after a rebase onto
+current `master`, an Astro 7.1.3 update, and an explicit `svgo: 4.0.2` override.
+The rebased head passed CI, CodeQL, dependency review, and the Review gate; it
+had no review threads. The Review gate allowed a missing independent
+`chatgpt-codex-connector` current-head review as an audit signal. The owner
+then explicitly approved this merge. That merge decision is not production
+approval.
