@@ -14,7 +14,7 @@ if (documents.length !== 61) failures.push(`production gallery must emit 61 HTML
 if (documents.some((path) => /(^|\/)lab(\/|$)/.test(path))) failures.push("production gallery must not emit lab routes");
 
 const checks = new Map([
-  ["index.html", ["Build compliance interfaces that show their evidence.", "sk-pattern-review-desk-preview", "Related by evidence. Different by work.", "Find the contract behind the interface.", "Proven, limited, current.", galleryReleaseState.nextAnnouncement]],
+  ["index.html", ["Make regulated interfaces that show their work.", "Sanchika gives coding agents and engineers a repeatable way to turn source, uncertainty, and human review into clear, accessible product UI.", "It supplies contracts and a review loop—not compliance judgment, customer evidence, or an application runtime.", "sk-pattern-review-desk-preview", "One grammar. Four working conditions.", "Contracts first. Craft loop clearly labelled.", "Useful, bounded, and still in review.", galleryReleaseState.nextAnnouncement]],
   ["foundations/index.html", ["Evidence Modernism grammar", "/foundations/typography/"]],
   ["foundations/tokens/index.html", ["108 generated tokens", "@sanchika/tokens/theme.css"]],
   ["foundations/motion/index.html", ["Motion confirms state", "focus-feedback", "skeleton-loading"]],

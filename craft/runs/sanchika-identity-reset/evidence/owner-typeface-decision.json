@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "runId": "sanchika-identity-reset",
+  "decision": "approved",
+  "typeface": "Anek Devanagari",
+  "approvedBy": "owner",
+  "approvedAt": "2026-07-23T10:19:00Z",
+  "scope": "Freeze the existing self-hosted Anek Latin variable specimen for the S10 gallery identity build; no production-release approval."
+}

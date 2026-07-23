@@ -1,0 +1,25 @@
+---
+export function getStaticPaths() {
+  if (import.meta.env.SANCHIKA_CRAFT_LAB !== "true") return [];
+  return ["living-collection", "witness-joint", "craft-language"].map((direction) => ({ params: { direction } }));
+}
+
+const directions = ["living-collection", "witness-joint", "craft-language"] as const;
+const { direction } = Astro.params;
+const labEnabled = import.meta.env.SANCHIKA_CRAFT_LAB === "true";
+if (!directions.includes(direction as (typeof directions)[number])) {
+  throw new Error("Unknown Sanchika craft direction.");
+}
+const { default: IdentityResetDirection } = labEnabled
+  ? await import("../../components/craft/IdentityResetDirection.astro")
+  : { default: null };
+const { default: CraftLabLayout } = labEnabled
+  ? await import("../../layouts/CraftLabLayout.astro")
+  : { default: null };
+---
+
+{labEnabled && CraftLabLayout && IdentityResetDirection && (
+  <CraftLabLayout title="Sanchika identity reset lab" description="Private, environment-gated Sanchika identity exploration.">
+    <IdentityResetDirection direction={direction as (typeof directions)[number]} />
+  </CraftLabLayout>
+)}

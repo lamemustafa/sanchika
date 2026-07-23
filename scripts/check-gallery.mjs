@@ -51,7 +51,7 @@ const stylesheetConsumers = new Set();
 const inlineScripts = [];
 for (const path of actualDocumentPaths) {
   const html = outputFiles.get(path) ?? "";
-  const graph = inspectGalleryAssetGraph({ html, outputFiles, allowUnreferencedStylesheets: true, allowedInlineScriptMarkers: ["docs-search", "tool-filter", "site-search-shortcut"] });
+  const graph = inspectGalleryAssetGraph({ html, outputFiles, allowUnreferencedStylesheets: true, allowedInlineScriptMarkers: ["docs-search", "tool-filter", "site-search-shortcut", "witness-proof-replay"] });
   for (const stylesheet of graph.stylesheetPaths) stylesheetConsumers.add(stylesheet);
   for (const failure of graph.failures) failures.push(`${path}: ${failure}`);
   for (const unresolved of findUnresolvedGalleryVariables({ html, copiedCss: graph.stylesheets })) failures.push(`${path} references undefined ${unresolved.variable} in ${unresolved.locations.join(", ")}`);
@@ -66,11 +66,16 @@ for (const path of actualDocumentPaths) {
   }
 }
 
+const isolatedLabStylesheets = new Set(
+  actualDocumentPaths.some((path) => /(^|\/)craft-lab\//.test(path))
+    ? []
+    : [...outputFiles.keys()].filter((path) => /^_astro\/CraftLabLayout\.[\w-]+\.css$/.test(path)),
+);
 for (const path of [...outputFiles.keys()].filter((path) => path.endsWith(".css"))) {
-  if (!stylesheetConsumers.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any shipping document`);
+  if (!stylesheetConsumers.has(path) && !isolatedLabStylesheets.has(path)) failures.push(`emitted stylesheet ${path} is not referenced by any shipping document`);
 }
 const landingHtml = outputFiles.get("index.html") ?? "";
-const landingGraph = inspectGalleryAssetGraph({ html: landingHtml, outputFiles, allowUnreferencedStylesheets: true, allowedInlineScriptMarkers: ["docs-search", "site-search-shortcut"] });
+const landingGraph = inspectGalleryAssetGraph({ html: landingHtml, outputFiles, allowUnreferencedStylesheets: true, allowedInlineScriptMarkers: ["docs-search", "site-search-shortcut", "witness-proof-replay"] });
 const landingCss = landingGraph.stylesheetPaths.map((path) => ({ path, raw: Buffer.byteLength(outputFiles.get(path) ?? ""), gzip: gzipSync(outputFiles.get(path) ?? "").byteLength }));
 const landingCssGzip = landingCss.reduce((sum, asset) => sum + asset.gzip, 0);
 const landingJs = inlineScripts.filter((script) => script.path === "index.html");
@@ -79,6 +84,10 @@ if (landingCssGzip > 70 * 1024) failures.push(`landing CSS exceeds 70 KB gzip: $
 if (landingJsGzip > 15 * 1024) failures.push(`landing client JavaScript exceeds 15 KB gzip: ${landingJsGzip}`);
 const landingWords = visibleText(landingHtml).split(/\s+/).filter(Boolean).length;
 if (landingWords > 1800) failures.push(`landing visible copy exceeds 1,800 words: ${landingWords}`);
+const marketingBlocks = [...landingHtml.matchAll(/<!-- sanchika-marketing-copy:start -->([\s\S]*?)<!-- sanchika-marketing-copy:end -->/g)].map((match) => match[1]);
+if (marketingBlocks.length === 0) failures.push("landing must declare its auditable marketing-copy boundary");
+const marketingWords = visibleText(marketingBlocks.join(" ")).split(/\s+/).filter(Boolean).length;
+if (marketingWords > 320) failures.push(`landing marketing copy exceeds 320 words: ${marketingWords}`);
 
 const productionFailures = validateGalleryProduction({
   outputFiles,
@@ -114,7 +123,7 @@ if (failures.length) {
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
-console.log(`Sanchika gallery artifact check passed (${expectedDocumentPaths.length} HTML routes; ${landingWords} landing words).`);
+console.log(`Sanchika gallery artifact check passed (${expectedDocumentPaths.length} HTML routes; ${landingWords} landing words; ${marketingWords} marketing words).`);
 console.log(`Sanchika gallery CSS: ${landingCss.map((asset) => `${asset.path} ${asset.raw} raw/${asset.gzip} gzip`).join(", ")}.`);
 for (const script of inlineScripts) console.log(`Sanchika client script ${script.path}:${script.marker}: ${script.raw} raw bytes; ${script.gzip} gzip bytes.`);
 console.log(`Sanchika gallery production fixtures passed (${runGalleryProductionFixtures().count} cases).`);
