@@ -1406,6 +1406,22 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
     },
     "arguments",
   );
+  runCase(
+    "consumer repository root is accepted",
+    () => {
+      const parsed = parseArguments([
+        "state.json",
+        "--repo-root",
+        "../consumer-repo",
+        "--previous",
+        "previous.json",
+      ]);
+      return parsed.repoRoot === "../consumer-repo" && parsed.previousPath === "previous.json"
+        ? []
+        : [{ field: "arguments", reason: "consumer root was not retained" }];
+    },
+    null,
+  );
 
   return { count: cases.length, failures };
 }
