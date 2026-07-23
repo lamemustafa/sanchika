@@ -9,14 +9,17 @@ const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
 const requiredFragments = [
   '<html lang="en" data-sanchika-gallery-document="production">',
-  "<title>Sanchika | Evidence-first interface contracts</title>",
+  "<title>Sanchika | Interface contracts that show their work</title>",
   '<meta name="description"',
   '<link rel="canonical" href="https://sanchika.complyeaze.com/">',
-  "Build compliance interfaces that show their evidence.",
-  "Composed package proof",
-  "Related by evidence. Different by work.",
-  "Find the contract behind the interface.",
-  "Proven, limited, current.",
+  "Make regulated interfaces that show their work.",
+  "Sanchika gives coding agents and engineers a repeatable way to turn source, uncertainty, and human review into clear, accessible product UI.",
+  "It supplies contracts and a review loop—not compliance judgment, customer evidence, or an application runtime.",
+  "Leave room for the human who must decide.",
+  "One grammar. Four working conditions.",
+  "Contracts first. Craft loop clearly labelled.",
+  "Pilot-stage craft loop",
+  "Useful, bounded, and still in review.",
   "No next package release is currently announced.",
   'href="/sanchika-manifest.json"',
   'href="/llms.txt"',
@@ -86,7 +89,7 @@ try {
   const authoritativeReleaseVersion = expectedReleaseVersion ?? publishedRelease.tag_name.slice(1);
   if (publishedRelease.tag_name !== `v${authoritativeReleaseVersion}`) throw new Error(`Expected GitHub release v${authoritativeReleaseVersion}, received ${String(publishedRelease.tag_name)}`);
   if (liveReleaseVersion !== authoritativeReleaseVersion) throw new Error(`Expected live stable release v${authoritativeReleaseVersion}, received v${String(liveReleaseVersion)}`);
-  if (!body.includes(`Current stable release: v${liveReleaseVersion}`) || !body.includes(`releases/tag/v${liveReleaseVersion}`)) throw new Error("Landing release status does not agree with the generated manifest");
+  if (!body.includes(`href="https://github.com/lamemustafa/sanchika/releases/tag/v${liveReleaseVersion}"`) || !body.includes("Tokens, primitives, and patterns are the stable package set.")) throw new Error("Landing release status does not agree with the generated manifest");
   if (!llms.includes(`Current stable release: v${liveReleaseVersion}. GitHub release artifacts; not published to npm.`) || !llms.includes("No next package release is currently announced.")) throw new Error("Generated llms.txt release boundary is missing");
 
   console.log(`Sanchika Pages smoke check passed for ${targetUrl}`);
