@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   parseArguments,
+  resolveRunPath,
   validateCalibrationPack,
   validateCraftRun,
   validateCraftTransition,
@@ -1419,6 +1420,45 @@ export function runCraftRunFixtures({ baseRun, validators, repoRoot }) {
       return parsed.repoRoot === "../consumer-repo" && parsed.previousPath === "previous.json"
         ? []
         : [{ field: "arguments", reason: "consumer root was not retained" }];
+    },
+    null,
+  );
+  runCase(
+    "consumer repository root resolves relative run paths",
+    () => {
+      const consumerRoot = "/tmp/consumer-repo";
+      const statePath = resolveRunPath(
+        "craft/runs/consumer-run/state.json",
+        consumerRoot,
+      );
+      const previousPath = resolveRunPath(
+        "craft/runs/consumer-run/transitions/previous-state.json",
+        consumerRoot,
+      );
+      const absolutePath = resolveRunPath(
+        "/tmp/external/state.json",
+        consumerRoot,
+      );
+      return statePath === "/tmp/consumer-repo/craft/runs/consumer-run/state.json" &&
+        previousPath === "/tmp/consumer-repo/craft/runs/consumer-run/transitions/previous-state.json" &&
+        absolutePath === "/tmp/external/state.json"
+        ? []
+        : [{ field: "arguments", reason: "consumer paths were not resolved from its root" }];
+    },
+    null,
+  );
+  runCase(
+    "default invocation resolves relative run paths from the caller",
+    () => {
+      const callerRoot = "/tmp/caller";
+      const statePath = resolveRunPath(
+        "craft/runs/default-run/state.json",
+        undefined,
+        callerRoot,
+      );
+      return statePath === "/tmp/caller/craft/runs/default-run/state.json"
+        ? []
+        : [{ field: "arguments", reason: "default paths did not preserve caller resolution" }];
     },
     null,
   );

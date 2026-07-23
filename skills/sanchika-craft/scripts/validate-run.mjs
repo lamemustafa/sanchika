@@ -1633,6 +1633,12 @@ export function parseArguments(args) {
   return options;
 }
 
+export function resolveRunPath(candidate, consumerRepoRoot, cwd = process.cwd()) {
+  return isAbsolute(candidate)
+    ? resolve(candidate)
+    : resolve(consumerRepoRoot ?? cwd, candidate);
+}
+
 export function validateInstructionManifest(manifest, run, repoRoot) {
   const issues = [];
   const add = (field, reason) => issues.push({ field, reason });
@@ -1882,11 +1888,13 @@ async function main() {
   const { statePath, previousPath, repoRoot: suppliedRepoRoot } = parseArguments(process.argv.slice(2));
   const skillRepoRoot = resolve(scriptDir, "../../..");
   const repoRoot = suppliedRepoRoot ? resolve(suppliedRepoRoot) : skillRepoRoot;
+  const consumerRepoRoot = suppliedRepoRoot ? repoRoot : undefined;
+  const resolvedStatePath = resolveRunPath(statePath, consumerRepoRoot);
   const validators = await loadPatternValidators(skillRepoRoot);
-  const run = JSON.parse(readFileSync(resolve(statePath), "utf8"));
-  const allowTemplate = basename(statePath) === "run-template.json";
+  const run = JSON.parse(readFileSync(resolvedStatePath, "utf8"));
+  const allowTemplate = basename(resolvedStatePath) === "run-template.json";
   const issues = [];
-  const manifestPath = join(dirname(resolve(statePath)), "instruction-manifest.json");
+  const manifestPath = join(dirname(resolvedStatePath), "instruction-manifest.json");
   let calibrationDirectory = join(scriptDir, "../assets/calibration");
   let calibrationMetadata = canonicalCalibrationMetadata;
   let manifest;
@@ -1920,7 +1928,7 @@ async function main() {
   issues.push(...validateCraftRun(run, validators, {
     allowTemplate,
     repoRoot,
-    expectedRunId: allowTemplate ? undefined : basename(dirname(resolve(statePath))),
+    expectedRunId: allowTemplate ? undefined : basename(dirname(resolvedStatePath)),
     calibrationMetadata,
   }));
   issues.push(
@@ -1934,7 +1942,7 @@ async function main() {
       );
       if (
         previousPath &&
-        resolve(previousPath) !== retainedPreviousPath
+        resolveRunPath(previousPath, consumerRepoRoot) !== retainedPreviousPath
       )
         issues.push({
           field: "arguments.previous",
