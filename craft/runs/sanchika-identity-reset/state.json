@@ -12,8 +12,8 @@
     "isolatedReview": true,
     "rasterGeneration": false
   },
-  "phase": "build",
-  "status": "active",
+  "phase": "verify",
+  "status": "complete",
   "reviewRound": 2,
   "trustBrief": {
     "id": "sanchika-identity-reset-trust-v1",
@@ -948,6 +948,54 @@
       ],
       "vetoes": [],
       "revisionAssessments": []
+    },
+    {
+      "reviewerId": "copy-review-one",
+      "reviewRound": 2,
+      "role": "practitioner",
+      "producer": false,
+      "calibration": { "passed": true, "detectedFailures": [], "corrections": 0, "fullReruns": 0 },
+      "evidenceLabels": ["ai-comprehension-proxy", "not-user-validated"],
+      "scores": { "comprehension": 4 },
+      "findings": ["No blocker: the current production copy states exact contracts, failure states, and the 275-word audited marketing boundary."],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "copy-review-two",
+      "reviewRound": 2,
+      "role": "developer",
+      "producer": false,
+      "calibration": { "passed": true, "detectedFailures": [], "corrections": 0, "fullReruns": 0 },
+      "evidenceLabels": ["ai-comprehension-proxy", "not-user-validated"],
+      "scores": { "comprehension": 4 },
+      "findings": ["No blocker: productPatternContracts, versioned tarballs, and all five route-specific failure states are understandable and consistent."],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "copy-review-three",
+      "reviewRound": 2,
+      "role": "claims",
+      "producer": false,
+      "calibration": { "passed": true, "detectedFailures": [], "corrections": 0, "fullReruns": 0 },
+      "evidenceLabels": ["ai-comprehension-proxy", "not-user-validated"],
+      "scores": { "comprehension": 4 },
+      "findings": ["No blocker: the promise, boundary, actions, release truth, and copy cap make no unsupported production or authority claim."],
+      "vetoes": [],
+      "revisionAssessments": []
+    },
+    {
+      "reviewerId": "copy-review-four",
+      "reviewRound": 2,
+      "role": "voice",
+      "producer": false,
+      "calibration": { "passed": true, "detectedFailures": [], "corrections": 0, "fullReruns": 0 },
+      "evidenceLabels": ["ai-comprehension-proxy", "not-user-validated"],
+      "scores": { "comprehension": 4 },
+      "findings": ["No blocker: the full marketing boundary and route-specific failure states remain direct, specific, and consistent with the product voice."],
+      "vetoes": [],
+      "revisionAssessments": []
     }
   ],
   "ownerDecision": "approved",
@@ -995,8 +1043,56 @@
     ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-recognition-evidence.md": "9d29944d4629d51aa95471e0e9df017f166b0898419d75dbb684641a1d2595f3"
     ,"craft/runs/sanchika-identity-reset/evidence/production-browser-performance-evidence.md": "ec604d7d01525766d440739c419d868dbe9209173c40329f744c7d778ff88a8a"
     ,"craft/runs/sanchika-identity-reset/evidence/c2rb-copy-review-evidence.md": "b5cee0df8f6a89573d6f513531e3eafd3ef0573d72fd58128d12e2ef4fa44cbb"
+    ,"craft/runs/sanchika-identity-reset/evidence/production-repository-gates.md": "ae51adf142dcd54172f8c4ab032c92ba15ad1bf5212ebbb6fc4ecd03ff9e34cc"
+    ,"craft/runs/sanchika-identity-reset/evidence/production-rollback-evidence.md": "f104e94b5d7ebed461efc386fa9982f6a0996aea826e47909f86978c690d912f"
+    ,"craft/runs/sanchika-identity-reset/evidence/production-post-deploy-smoke.md": "8f6df93d0ceff06fa9c82750c624a8a4ec8361ce7185ef0654867948e7c93611"
+    ,"craft/runs/sanchika-identity-reset/evidence/owner-production-decision.json": "d8b8bbb709523c41e0d6c6f062ea32db19131405a3cc86254af3d03212f3536e"
   },
-  "reconciliation": [],
+  "productionApproval": {
+    "decision": "approved",
+    "approvedBy": "owner",
+    "approvedAt": "2026-07-23T12:31:46Z"
+  },
+  "productionEvidence": {
+    "repositoryGates": {
+      "status": "passed",
+      "artifact": "craft/runs/sanchika-identity-reset/evidence/production-repository-gates.md"
+    },
+    "browserAccessibilityMatrix": {
+      "status": "passed",
+      "artifact": "craft/runs/sanchika-identity-reset/evidence/production-browser-performance-evidence.md"
+    },
+    "rollbackEvidence": {
+      "status": "passed",
+      "artifact": "craft/runs/sanchika-identity-reset/evidence/production-rollback-evidence.md"
+    },
+    "postDeploySmoke": {
+      "status": "passed",
+      "artifact": "craft/runs/sanchika-identity-reset/evidence/production-post-deploy-smoke.md"
+    },
+    "mobileMeasurements": [
+      { "runId": "s10-mobile-cold-1", "profileId": "chrome-headless-150-390-mobile-throttled", "coldCache": true, "lcpMs": 1168, "cls": 0 },
+      { "runId": "s10-mobile-cold-2", "profileId": "chrome-headless-150-390-mobile-throttled", "coldCache": true, "lcpMs": 1148, "cls": 0 },
+      { "runId": "s10-mobile-cold-3", "profileId": "chrome-headless-150-390-mobile-throttled", "coldCache": true, "lcpMs": 1148, "cls": 0 }
+    ]
+  },
+  "reconciliation": [
+    {
+      "decision": "retain",
+      "scope": "witness-joint-production-identity",
+      "evidence": "Merged as b21141278e1f27a41e2257482515e8a4e736a693 after the owner-frozen Anek and selected Witness Joint direction."
+    },
+    {
+      "decision": "retain",
+      "scope": "pages-smoke-alignment",
+      "evidence": "Merged as 4af6a7f1df60423e87c5a21c65e52ab9d5d22e15; the live Pages smoke now verifies the production landing contract."
+    },
+    {
+      "decision": "delete",
+      "scope": "rejected-direction-lab-source",
+      "evidence": "Removed the environment-gated craft-lab route, layout, component, stylesheet, and its artifact-check exception; retained historical comparison evidence only."
+    }
+  ],
   "evidenceLoop": {
     "id": "sanchika-identity-reset-evidence-loop-v1",
     "trustBrief": {
@@ -1228,26 +1324,24 @@
     "adoptionEvidence": {
       "consumerRepo": "lamemustafa/sanchika",
       "consumerSurface": "/",
-      "status": "proposed",
+      "status": "verified",
       "changedFiles": [
-        "apps/gallery/src/pages/craft-lab/[direction].astro",
-        "apps/gallery/src/components/craft/IdentityResetDirection.astro",
-        "apps/gallery/src/styles/craft-lab.css"
+        "apps/gallery/src/pages/index.astro",
+        "apps/gallery/src/styles/identity.css",
+        "apps/gallery/src/styles/landing.css",
+        "scripts/check-pages-smoke.mjs"
       ],
-      "verificationRun": "SANCHIKA_CRAFT_LAB=true node_modules/.bin/astro build emitted 64 pages, including all three craft-lab routes. The local pnpm launcher did not yield a usable run, which is recorded as an environment gap. A locally served static artifact confirmed the self-hosted font request and the retained desktop/mobile browser observations.",
-      "rollbackPlan": "Delete the isolated lab and restore the recorded source commit before any production adoption."
+      "verificationRun": "GitHub Actions runs 30005468476, 30005847854, and 30006504279 passed; Pages run 30006504139 passed; `pnpm exec astro build`, `pnpm gallery:check`, `pnpm gallery:smoke`, and the live `node scripts/check-pages-smoke.mjs` passed for the normal production surface.",
+      "rollbackPlan": "Create a revert PR for b21141278e1f27a41e2257482515e8a4e736a693 and, when its smoke contract is also reverted, 4af6a7f1df60423e87c5a21c65e52ab9d5d22e15; pass normal gates and let Pages redeploy."
     },
-    "decision": "needs-verification",
+    "decision": "ready-for-consumer-pr",
     "residualRisks": [
-      "Round-one direction renders and AI proxy reviews are preserved as historical audit evidence only; they cannot qualify a direction because the required self-hosted Anek specimen was absent.",
-      "R2 browser checks are controlled 390px laboratory evidence only; they do not replace manual assistive-technology testing, user validation, production performance measurements, or the separate owner decision.",
-      "Direction approval authorizes only the isolated production-build phase. Production approval, consumer adoption, and S11 remain separate owner and verification gates."
+      "AI proxy and controlled browser evidence remain distinct from human validation and field Core Web Vitals.",
+      "S11 consumer adoption is separately scoped, sequenced, and owner-directed after this canonical production release."
     ],
     "nextActions": [
-      "Implement the approved identity family in the gallery production surface while retaining all source, uncertainty, and human-accountability boundaries.",
-      "Anek Devanagari is owner-frozen for the gallery identity layer; do not add another typeface comparison or production font asset.",
-      "Complete C2R-B, the required browser/performance matrix, repository verification, and the distinct production owner gate."
+      "Start S11 only after the owner selects the next consumer and preserves that consumer's identity boundaries."
     ]
   },
-  "nextAction": "Build the owner-approved Witness Joint R2 family into the gallery production surface; do not treat direction approval as production approval."
+  "nextAction": "S10 production is complete; S11 remains pending owner direction and consumer sequencing."
 }

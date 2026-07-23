@@ -12,8 +12,8 @@
     "isolatedReview": true,
     "rasterGeneration": false
   },
-  "phase": "owner_gate",
-  "status": "awaiting_owner",
+  "phase": "reconcile",
+  "status": "active",
   "reviewRound": 2,
   "trustBrief": {
     "id": "sanchika-identity-reset-trust-v1",
@@ -950,8 +950,8 @@
       "revisionAssessments": []
     }
   ],
-  "ownerDecision": "pending",
-  "selectedDirectionId": null,
+  "ownerDecision": "approved",
+  "selectedDirectionId": "witness-joint-r2",
   "assets": [
     {
       "path": "apps/gallery/public/fonts/AnekDevanagari-Latin-Variable.woff2",
@@ -987,9 +987,14 @@
     ,"craft/runs/sanchika-identity-reset/evidence/typeface-rebrief-evidence.md": "e8ecbaee0cf6b2f46807509ffae41b855006e97ed3c9a6c15b1dc249571d8a05"
     ,"craft/runs/sanchika-identity-reset/evidence/round-two-browser-evidence.md": "c92c3b9b1914d93505f457e37829a3e159a5c4572e981663d80e6328f01e55b5"
     ,"craft/runs/sanchika-identity-reset/evidence/round-two-behavioral-accessibility-evidence.md": "4ad8e213af4c3f04625a13bb80e625422ae24b31344b66d3846e5fef681c7cb9"
+    ,"craft/runs/sanchika-identity-reset/evidence/owner-direction-decision-r2.json": "9525c64adbd71f63586ec24c5dd9c0761c239529037165eadc3d911f9be4eac9"
+    ,"craft/runs/sanchika-identity-reset/evidence/typeface-freeze-recommendation.md": "dca73d8f16698181cac1324123995252e5f32bf4d9e52a7d4b413fd11b3fea68"
+    ,"craft/runs/sanchika-identity-reset/evidence/owner-typeface-decision.json": "653f91619d38e46050fa4e908e109b7934d03318a8de4c57be57adf9c988bc5e"
     ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-semantic-blind.webp": "acf17f004a7ffe4a47d34e9ab2daf0763bd9b89ddfa7b7465f1ea9f3093280e6"
     ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-identity-blind.webp": "6f9370f1098b481abfefb9a814d9c65d78c0a2dd68a8d4c6fec2ec8cb2b411b2"
     ,"craft/runs/sanchika-identity-reset/evidence/witness-joint-r2-recognition-evidence.md": "9d29944d4629d51aa95471e0e9df017f166b0898419d75dbb684641a1d2595f3"
+    ,"craft/runs/sanchika-identity-reset/evidence/production-browser-performance-evidence.md": "ec604d7d01525766d440739c419d868dbe9209173c40329f744c7d778ff88a8a"
+    ,"craft/runs/sanchika-identity-reset/evidence/c2rb-copy-review-evidence.md": "b5cee0df8f6a89573d6f513531e3eafd3ef0573d72fd58128d12e2ef4fa44cbb"
   },
   "reconciliation": [],
   "evidenceLoop": {
@@ -1232,17 +1237,17 @@
       "verificationRun": "SANCHIKA_CRAFT_LAB=true node_modules/.bin/astro build emitted 64 pages, including all three craft-lab routes. The local pnpm launcher did not yield a usable run, which is recorded as an environment gap. A locally served static artifact confirmed the self-hosted font request and the retained desktop/mobile browser observations.",
       "rollbackPlan": "Delete the isolated lab and restore the recorded source commit before any production adoption."
     },
-    "decision": "needs-design-revision",
+    "decision": "needs-verification",
     "residualRisks": [
       "Round-one direction renders and AI proxy reviews are preserved as historical audit evidence only; they cannot qualify a direction because the required self-hosted Anek specimen was absent.",
       "R2 browser checks are controlled 390px laboratory evidence only; they do not replace manual assistive-technology testing, user validation, production performance measurements, or the separate owner decision.",
-      "No identity direction has been selected by the owner and no production gallery code has been changed."
+      "Direction approval authorizes only the isolated production-build phase. Production approval, consumer adoption, and S11 remain separate owner and verification gates."
     ],
     "nextActions": [
-      "Present the only qualifying R2 direction anonymously at the owner gate.",
-      "Retain the browser evidence boundary and do not treat it as user validation.",
-      "Do not select a direction for production or alter the public gallery until the owner explicitly decides."
+      "Implement the approved identity family in the gallery production surface while retaining all source, uncertainty, and human-accountability boundaries.",
+      "Anek Devanagari is owner-frozen for the gallery identity layer; do not add another typeface comparison or production font asset.",
+      "Complete C2R-B, the required browser/performance matrix, repository verification, and the distinct production owner gate."
     ]
   },
-  "nextAction": "Owner decision required: approve the anonymously qualified R2 direction for the isolated production-build phase, or reject all directions. No production approval is implied."
+  "nextAction": "Reconcile the production implementation, retained evidence, and rollback path before the distinct owner production decision."
 }
